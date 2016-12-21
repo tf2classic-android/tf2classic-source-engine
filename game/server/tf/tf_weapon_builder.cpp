@@ -380,7 +380,7 @@ void CTFWeaponBuilder::SecondaryAttack( void )
 	{
 		// intentionally blank
 	}
-	else if ( m_iBuildState == BS_PLACING )
+	else if ( m_iBuildState == BS_PLACING || m_iBuildState == BS_PLACING_INVALID )
 	{
 		if ( m_hObjectBeingBuilt )
 		{
