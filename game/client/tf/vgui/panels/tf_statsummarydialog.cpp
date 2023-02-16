@@ -256,7 +256,7 @@ void CTFStatsSummaryDialog::UpdateBarCharts()
 
 #define MAKEFLAG(x)	( 1 << x )
 
-#define ALL_CLASSES 0xFFFFFFFF
+#define ALL_CLASSES 0x7FFFFFFF
 
 //-----------------------------------------------------------------------------
 // Purpose: Updates class details
