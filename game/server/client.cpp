@@ -36,7 +36,7 @@
 #include "basemultiplayerplayer.h"
 #include "voice_gamemgr.h"
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
 #include "tf_player.h"
 #include "tf_gamerules.h"
 #endif
@@ -56,6 +56,60 @@ extern CBaseEntity*	FindPickerEntity( CBasePlayer* pPlayer );
 extern bool IsInCommentaryMode( void );
 
 ConVar  *sv_cheats = NULL;
+
+enum eAllowPointServerCommand {
+	eAllowNever,
+	eAllowOfficial,
+	eAllowAlways
+};
+
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
+// The default value here should match the default of the convar
+eAllowPointServerCommand sAllowPointServerCommand = eAllowOfficial;
+#else
+eAllowPointServerCommand sAllowPointServerCommand = eAllowAlways;
+#endif // TF_DLL
+
+void sv_allow_point_servercommand_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
+{
+	ConVarRef var( pConVar );
+	if ( !var.IsValid() )
+	{
+		return;
+	}
+
+	const char *pNewValue = var.GetString();
+	if ( V_strcasecmp ( pNewValue, "always" ) == 0 )
+	{
+		sAllowPointServerCommand = eAllowAlways;
+	}
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
+	else if ( V_strcasecmp ( pNewValue, "official" ) == 0 )
+	{
+		sAllowPointServerCommand = eAllowOfficial;
+	}
+#endif // TF_DLL
+	else
+	{
+		sAllowPointServerCommand = eAllowNever;
+	}
+}
+
+ConVar sv_allow_point_servercommand ( "sv_allow_point_servercommand",
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
+                                      // The default value here should match the default of the convar
+                                      "official",
+#else
+                                      // Other games may use this in their official maps, and only TF exposes IsValveMap() currently
+                                      "always",
+#endif // TF_DLL
+                                      FCVAR_NONE,
+                                      "Allow use of point_servercommand entities in map. Potentially dangerous for untrusted maps.\n"
+                                      "  disallow : Always disallow\n"
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
+                                      "  official : Allowed for valve maps only\n"
+#endif // TF_DLL
+                                      "  always   : Allow for all maps", sv_allow_point_servercommand_changed );
 
 void ClientKill( edict_t *pEdict, const Vector &vecForce, bool bExplode = false )
 {
@@ -569,7 +623,22 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
-	engine->ServerCommand( UTIL_VarArgs( "%s\n", inputdata.value.String() ) );
+	bool bAllowed = ( sAllowPointServerCommand == eAllowAlways );
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
+	if ( sAllowPointServerCommand == eAllowOfficial )
+	{
+		bAllowed = TFGameRules() && TFGameRules()->IsValveMap();
+	}
+#endif // TF_DLL
+
+	if ( bAllowed )
+	{
+		engine->ServerCommand( UTIL_VarArgs( "%s\n", inputdata.value.String() ) );
+	}
+	else
+	{
+		Warning( "point_servercommand usage blocked by sv_allow_point_servercommand setting\n" );
+	}
 }
 
 BEGIN_DATADESC( CPointServerCommand )
@@ -1138,7 +1207,7 @@ void CC_God_f (void)
 	if ( !pPlayer )
 		return;
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
    if ( TFGameRules() && ( TFGameRules()->IsPVEModeActive() == false ) )
    {
 	   if ( gpGlobals->deathmatch )
@@ -1296,7 +1365,7 @@ CON_COMMAND_F( setang_exact, "Snap player eyes and orientation to specified pitc
 	pPlayer->Teleport( NULL, &newang, NULL );
 	pPlayer->SnapEyeAngles( newang );
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
 	static_cast<CTFPlayer*>( pPlayer )->DoAnimationEvent( PLAYERANIMEVENT_SNAP_YAW );
 #endif
 }
@@ -1349,6 +1418,7 @@ void CC_HurtMe_f(const CCommand &args)
 
 static ConCommand hurtme("hurtme", CC_HurtMe_f, "Hurts the player.\n\tArguments: <health to lose>", FCVAR_CHEAT);
 
+#ifdef DBGFLAG_ASSERT
 static bool IsInGroundList( CBaseEntity *ent, CBaseEntity *ground )
 {
 	if ( !ground || !ent )
@@ -1368,8 +1438,8 @@ static bool IsInGroundList( CBaseEntity *ent, CBaseEntity *ground )
 	}
 
 	return false;
-
 }
+#endif
 
 static int DescribeGroundList( CBaseEntity *ent )
 {

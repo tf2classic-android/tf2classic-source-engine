@@ -161,6 +161,11 @@ IServerNetworkable *CEntityFactoryDictionary::Create( const char *pClassName )
 	IEntityFactory *pFactory = FindFactory( pClassName );
 	if ( !pFactory )
 	{
+#ifdef STAGING_ONLY
+		static ConVarRef tf_bot_use_items( "tf_bot_use_items" );
+		if ( tf_bot_use_items.IsValid() && tf_bot_use_items.GetInt() )
+			return NULL;
+#endif
 		Warning("Attempted to create unknown entity type %s!\n", pClassName );
 		return NULL;
 	}
@@ -571,6 +576,24 @@ CBasePlayer	*UTIL_PlayerByIndex( int playerIndex )
 	}
 	
 	return pPlayer;
+}
+
+CBasePlayer *UTIL_PlayerBySteamID( const CSteamID &steamID )
+{
+	CSteamID steamIDPlayer;
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
+		if ( !pPlayer )
+			continue;
+
+		if ( !pPlayer->GetSteamID( &steamIDPlayer ) )
+			continue;
+
+		if ( steamIDPlayer == steamID )
+			return pPlayer;
+	}
+	return NULL;
 }
 
 CBasePlayer* UTIL_PlayerByName( const char *name )
@@ -1353,7 +1376,7 @@ void UTIL_SnapDirectionToAxis( Vector &direction, float epsilon )
 	}
 }
 
-char *UTIL_VarArgs( const char *format, ... )
+const char *UTIL_VarArgs( const char *format, ... )
 {
 	va_list		argptr;
 	static char		string[1024];

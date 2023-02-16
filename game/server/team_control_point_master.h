@@ -121,13 +121,18 @@ public:
 	bool ShouldScorePerCapture( void ){ return m_bScorePerCapture; }
 	bool ShouldPlayAllControlPointRounds( void ){ return m_bPlayAllRounds; }
 	int NumPlayableControlPointRounds( void ); // checks to see if there are any more rounds to play (but doesn't actually "get" one to play)
-	
-//	void ListRounds( void );
+
+#ifdef STAGING_ONLY
+	void ListRounds( void );
+#endif
 
 	float GetPartialCapturePointRate( void );
 
 	void SetLastOwnershipChangeTime( float m_flTime ) { m_flLastOwnershipChangeTime = m_flTime; }
 	float GetLastOwnershipChangeTime( void ) { return m_flLastOwnershipChangeTime; }
+
+	int GetCurrentRoundIndex() { return m_iCurrentRoundIndex; }
+	bool ShouldSwitchTeamsOnRoundWin( void ) { return m_bSwitchTeamsOnWin; }
 
 private:
 	void EXPORT CPMThink( void );
@@ -204,6 +209,10 @@ private:
 
 	COutputEvent m_OnWonByTeam1;
 	COutputEvent m_OnWonByTeam2;
+#if defined ( TF_CLASSIC )
+	COutputEvent m_OnWonByTeam3;
+	COutputEvent m_OnWonByTeam4;
+#endif
 
 	float m_flPartialCapturePointsRate;
 	float m_flLastOwnershipChangeTime;

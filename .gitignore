@@ -3,7 +3,6 @@
 *.vpc_crc
 *.vpc.*
 *.project
-*obj_*
 .waf*
 .lock-waf*
 __pycache__

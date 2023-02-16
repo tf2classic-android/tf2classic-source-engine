@@ -295,7 +295,7 @@ bool CPhysicsPushedEntities::SpeculativelyCheckPush( PhysicsPushedInfo_t &info, 
 		}
 		pBlocker->SetAbsOrigin( pushDestPosition );
 
-#ifndef TF_DLL
+#if !(defined( TF_DLL ) || defined( TF_CLASSIC ) )
 		DevMsg(1, "Ignoring player blocking train!\n");
 #endif
 		return true;
@@ -742,7 +742,9 @@ void CPhysicsPushedEntities::GenerateBlockingEntityListAddBox( const Vector &vec
 	}
 }
 
-
+#ifdef TF_DLL
+#include "tf_logic_robot_destruction.h"
+#endif
 //-----------------------------------------------------------------------------
 // Purpose: Gets a list of all entities hierarchically attached to the root 
 //-----------------------------------------------------------------------------
@@ -1841,7 +1843,9 @@ void CBaseEntity::PhysicsStepRunTimestep( float timestep )
 {
 	bool	wasonground;
 	bool	inwater;
+#if 0
 	bool	hitsound = false;
+#endif
 	float	speed, newspeed, control;
 	float	friction;
 
@@ -1862,10 +1866,12 @@ void CBaseEntity::PhysicsStepRunTimestep( float timestep )
 		{
 			if ( !( ( GetFlags() & FL_SWIM ) && ( GetWaterLevel() > 0 ) ) )
 			{
+#if 0
 				if ( GetAbsVelocity()[2] < ( GetCurrentGravity() * -0.1 ) )
 				{
 					hitsound = true;
 				}
+#endif
 
 				if ( !inwater )
 				{

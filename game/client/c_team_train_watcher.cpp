@@ -9,7 +9,7 @@
 #include "igameevents.h"
 #include "c_team_objectiveresource.h"
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined( TF_CLASSIC_CLIENT )
 #include "tf_shareddefs.h"
 #include "teamplayroundbased_gamerules.h"
 #endif
@@ -163,18 +163,13 @@ void C_TeamTrainWatcher::OnDataChanged( DataUpdateType_t updateType )
 			int nNumHills = ObjectiveResource()->GetNumNodeHillData( GetTeamNumber() );
 			if ( nNumHills > 0 )
 			{
-				float flStart, flEnd;
+				float flStart = 0, flEnd = 0;
 				for ( int i = 0 ; i < nNumHills ; i++ )
 				{
 					ObjectiveResource()->GetHillData( GetTeamNumber(), i, flStart, flEnd );
-					if ( m_flTotalProgress >= flStart && m_flTotalProgress<= flEnd )
-					{
-						ObjectiveResource()->SetTrainOnHill( GetTeamNumber(), i, true );
-					}
-					else
-					{
-						ObjectiveResource()->SetTrainOnHill( GetTeamNumber(), i, false );
-					}
+
+					bool state = ( m_flTotalProgress >= flStart && m_flTotalProgress <= flEnd );
+					ObjectiveResource()->SetTrainOnHill( GetTeamNumber(), i, state );
 				}
 			}
 		}

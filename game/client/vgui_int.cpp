@@ -33,10 +33,20 @@
 #include "tf_gamerules.h"
 #endif
 
+#if defined( TF_CLASSIC_CLIENT )
+#include "tf_mainmenu.h"
+#include "tf_mainmenu_interface.h"
+#include "tier0/icommandline.h"
+#endif
+
 using namespace vgui;
 
 void MP3Player_Create( vgui::VPANEL parent );
 void MP3Player_Destroy();
+
+#if defined( TF_CLASSIC_CLIENT )
+void OverrideMainMenu();
+#endif
 
 #include <vgui/IInputInternal.h>
 vgui::IInputInternal *g_InputInternal = NULL;
@@ -200,6 +210,7 @@ void VGui_CreateGlobalPanels( void )
 {
 	VPANEL gameToolParent = enginevgui->GetPanel( PANEL_CLIENTDLL_TOOLS );
 	VPANEL toolParent = enginevgui->GetPanel( PANEL_TOOLS );
+	//VPANEL GameUiDll = enginevgui->GetPanel( PANEL_GAMEUIDLL );
 #if defined( TRACK_BLOCKING_IO )
 	VPANEL gameDLLPanel = enginevgui->GetPanel( PANEL_GAMEDLL );
 #endif
@@ -207,6 +218,14 @@ void VGui_CreateGlobalPanels( void )
 	internalCenterPrint->Create( gameToolParent );
 	loadingdisc->Create( gameToolParent );
 	messagechars->Create( gameToolParent );
+
+#ifdef TF_CLASSIC_CLIENT
+	if ( CommandLine()->CheckParm( "-nonewmenu" ) == NULL )
+	{
+		MainMenu->Create( NULL );
+		OverrideMainMenu();
+	}
+#endif
 
 	// Debugging or related tool
 	fps->Create( toolParent );
@@ -247,6 +266,11 @@ void VGui_Shutdown()
 	loadingdisc->Destroy();
 	internalCenterPrint->Destroy();
 
+#if defined (TF_CLASSIC_CLIENT)
+	//verPanel->Destroy();
+	//MainMenu->Destroy();
+#endif
+
 	if ( g_pClientMode )
 	{
 		g_pClientMode->VGui_Shutdown();
@@ -271,13 +295,11 @@ void VGui_PreRender()
 	if ( IsPC() )
 	{
 		loadingdisc->SetLoadingVisible( engine->IsDrawingLoadingImage() && !engine->IsPlayingDemo() );
-		
-		bool bShowPausedImage = !enginevgui->IsGameUIVisible() && cl_showpausedimage.GetBool() && engine->IsPaused() && !engine->IsTakingScreenshot() && !engine->IsPlayingDemo();
 #if !defined( TF_CLIENT_DLL )
-		loadingdisc->SetPausedVisible( bShowPausedImage  );
+		loadingdisc->SetPausedVisible( !enginevgui->IsGameUIVisible() && cl_showpausedimage.GetBool() && engine->IsPaused() && !engine->IsTakingScreenshot() && !engine->IsPlayingDemo() );
 #else
-		bShowPausedImage &= ( TFGameRules() && !TFGameRules()->IsInTraining() );
-		loadingdisc->SetPausedVisible( bShowPausedImage );
+		bool bShowPausedImage = cl_showpausedimage.GetBool() && ( TFGameRules() && !TFGameRules()->IsInTraining() );
+		loadingdisc->SetPausedVisible( !enginevgui->IsGameUIVisible() && bShowPausedImage && engine->IsPaused() && !engine->IsTakingScreenshot() && !engine->IsPlayingDemo() );
 #endif
 	}
 }

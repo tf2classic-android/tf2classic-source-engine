@@ -239,7 +239,7 @@ void CBaseViewport::CreateDefaultPanels( void )
 	AddNewPanel( CreatePanelByName( PANEL_SCOREBOARD ), "PANEL_SCOREBOARD" );
 	AddNewPanel( CreatePanelByName( PANEL_INFO ), "PANEL_INFO" );
 	AddNewPanel( CreatePanelByName( PANEL_SPECGUI ), "PANEL_SPECGUI" );
-#if !defined( TF_CLIENT_DLL )
+#if !defined( TF_CLIENT_DLL ) && !defined( TF_CLASSIC_CLIENT )
 	AddNewPanel( CreatePanelByName( PANEL_SPECMENU ), "PANEL_SPECMENU" );
 	AddNewPanel( CreatePanelByName( PANEL_NAV_PROGRESS ), "PANEL_NAV_PROGRESS" );
 #endif // !TF_CLIENT_DLL
@@ -259,43 +259,6 @@ void CBaseViewport::UpdateAllPanels( void )
 			p->Update();
 		}
 	}
-}
-
-// Check if we have any visible panel (that's not the MainMenuOverride or the Scoreboard)
-bool CBaseViewport::IsAnyPanelVisibleExceptScores()
-{
-	int count = m_Panels.Count();
-	for ( int i = 0; i < count; i++ )
-	{
-		IViewPortPanel *p = m_Panels[i];
-
-		if ( p->IsVisible() && Q_strcmp("MainMenuOverride", p->GetName()) && Q_strcmp("scores", p->GetName()) )
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool CBaseViewport::IsPanelVisible( const char* panel )
-{
-	int count = m_Panels.Count();
-
-	for ( int i = 0; i < count; i++ )
-	{
-		IViewPortPanel *p = m_Panels[i];
-		if ( p->IsVisible() )
-		{
-			const char* panel_name = p->GetName();
-			if ( !Q_strcmp( panel, panel_name ) )
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
@@ -328,7 +291,7 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CSpectatorGUI( this );
 	}
-#if !defined( TF_CLIENT_DLL )
+#if !defined( TF_CLIENT_DLL ) && !defined( TF_CLASSIC_CLIENT )
 	else if ( Q_strcmp(PANEL_NAV_PROGRESS, szPanelName) == 0 )
 	{
 		newpanel = new CNavProgress( this );

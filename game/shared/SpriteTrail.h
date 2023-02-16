@@ -114,6 +114,11 @@ private:
 	string_t m_iszSpriteName;
 	bool	m_bAnimate;
 	bool	m_bDrawForMoveParent;
+
+#if defined( CLIENT_DLL )
+public:
+	void SetUpdateTime(float setTo){ m_flUpdateTime = setTo; }
+#endif
 };
 
 #endif // SPRITETRAIL_H

@@ -91,7 +91,7 @@ void CBaseViewModel::Spawn( void )
 #define VGUI_CONTROL_PANELS
 #endif
 
-#if defined ( TF_DLL )
+#if defined (TF_DLL) || defined (TF_CLASSIC)
 #define VGUI_CONTROL_PANELS
 #endif
 
@@ -409,13 +409,14 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 	AddViewModelBob( owner, vmorigin, vmangles );
 #if !defined ( CSTRIKE_DLL )
 	// This was causing weapon jitter when rotating in updated CS:S; original Source had this in above InPrediction block  07/14/10
-	// Add lag
-	CalcViewModelLag( vmorigin, vmangles, vmangoriginal );
+
 #endif
 
 #if defined( CLIENT_DLL )
 	if ( !prediction->InPrediction() )
 	{
+		// Add lag
+		CalcViewModelLag(vmorigin, vmangles, vmangoriginal);
 		// Let the viewmodel shake at about 10% of the amplitude of the player's view
 		vieweffects->ApplyShake( vmorigin, vmangles, 0.1 );	
 	}

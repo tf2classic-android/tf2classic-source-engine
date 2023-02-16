@@ -343,7 +343,8 @@ void DefaultRenderBoundsWorldspace( IClientRenderable *pRenderable, Vector &absM
 {
 	// Tracker 37433:  This fixes a bug where if the stunstick is being wielded by a combine soldier, the fact that the stick was
 	//  attached to the soldier's hand would move it such that it would get frustum culled near the edge of the screen.
-	C_BaseEntity *pEnt = pRenderable->GetIClientUnknown()->GetBaseEntity();
+	IClientUnknown *pUnk = pRenderable->GetIClientUnknown();
+	C_BaseEntity *pEnt = pUnk->GetBaseEntity();
 	if ( pEnt && pEnt->IsFollowingEntity() )
 	{
 		C_BaseEntity *pParent = pEnt->GetFollowedEntity();
@@ -1092,6 +1093,53 @@ void CClientLeafSystem::AddRenderableToLeaf( int leaf, ClientRenderHandle_t rend
 #ifdef VALIDATE_CLIENT_LEAF_SYSTEM
 	m_RenderablesInLeaf.ValidateAddElementToBucket( leaf, renderable );
 #endif
+
+#ifdef DUMP_RENDERABLE_LEAFS
+	static uint32 count = 0;
+	if (count < m_RenderablesInLeaf.NumAllocated())
+	{
+		count = m_RenderablesInLeaf.NumAllocated();
+		Msg("********** frame: %d count:%u ***************\n", gpGlobals->framecount, count );
+
+		if (count >= 20000)
+		{
+			for (int j = 0; j < m_RenderablesInLeaf.NumAllocated(); j++)
+			{
+				const ClientRenderHandle_t& renderable = m_RenderablesInLeaf.Element(j);
+				RenderableInfo_t& info = m_Renderables[renderable];
+
+				char pTemp[256];
+				const char *pClassName = "<unknown renderable>";
+				C_BaseEntity *pEnt = info.m_pRenderable->GetIClientUnknown()->GetBaseEntity();
+				if ( pEnt )
+				{
+					pClassName = pEnt->GetClassname();
+				}
+				else
+				{
+					CNewParticleEffect *pEffect = dynamic_cast< CNewParticleEffect*>( info.m_pRenderable );
+					if ( pEffect )
+					{
+						Vector mins, maxs;
+						pEffect->GetRenderBounds(mins, maxs);
+						Q_snprintf( pTemp, sizeof(pTemp), "ps: %s %.2f,%.2f", pEffect->GetEffectName(), maxs.x - mins.x, maxs.y - mins.y );
+						pClassName = pTemp;
+					}
+					else if ( dynamic_cast< CParticleEffectBinding* >( info.m_pRenderable ) )
+					{
+						pClassName = "<old particle system>";
+					}
+				}
+
+				Msg(" %d: %p group:%d %s %d %d TransCalc:%d renderframe:%d\n", j, info.m_pRenderable, info.m_RenderGroup, pClassName,
+					info.m_LeafList, info.m_RenderLeaf, info.m_TranslucencyCalculated, info.m_RenderFrame);
+			}
+
+			DebuggerBreak();
+		}
+	}
+#endif // DUMP_RENDERABLE_LEAFS
+
 	m_RenderablesInLeaf.AddElementToBucket( leaf, renderable );
 
 	if ( !ShouldRenderableReceiveShadow( renderable, SHADOW_FLAGS_PROJECTED_TEXTURE_TYPE_MASK ) )

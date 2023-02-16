@@ -14,7 +14,7 @@
 #include "c_pixel_visibility.h"
 #endif
 
-#ifdef TF_CLIENT_DLL
+#if defined( TF_CLIENT_DLL ) || defined(TF_CLASSIC_CLIENT)
 #include "tf_shareddefs.h"
 #endif
 
@@ -231,7 +231,7 @@ void CParticleSystemQuery::GetRandomPointsOnControllingObjectHitBox(
 					{
 						bSucesss = true;
 						
-						Vector vecWorldPosition;
+						Vector vecWorldPosition(0, 0, 0);
 						float u = 0, v = 0, w = 0;
 						int nHitbox = 0;
 						int nNumIters = nNumTrysToGetAPointInsideTheModel;
@@ -308,7 +308,7 @@ void CParticleSystemQuery::GetRandomPointsOnControllingObjectHitBox(
 
 			
 
-			Vector vecWorldPosition;
+			Vector vecWorldPosition(0, 0, 0);
 			float u = 0, v = 0, w = 0;
 			int nHitbox = 0;
 			int nNumIters = nNumTrysToGetAPointInsideTheModel;
@@ -551,7 +551,7 @@ static CollisionGroupNameRecord_t s_NameMap[]={
 	{ "NPC", COLLISION_GROUP_NPC },
 	{ "ACTOR", COLLISION_GROUP_NPC_ACTOR },
 	{ "PASSABLE", COLLISION_GROUP_PASSABLE_DOOR },	
-#if defined( TF_CLIENT_DLL )
+#if defined( TF_CLIENT_DLL ) || defined( TF_CLASSIC_CLIENT )
 	{ "ROCKETS", TFCOLLISION_GROUP_ROCKETS },
 #endif
 };

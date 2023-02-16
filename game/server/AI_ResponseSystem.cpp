@@ -44,6 +44,7 @@ inline static char *CopyString( const char *in )
 	return out;
 }
 
+#pragma pack(1)
 class Matcher
 {
 public:
@@ -541,6 +542,7 @@ struct Rule
 	bool				m_bMatchOnce : 1;
 	bool				m_bEnabled : 1;
 };
+#pragma pack()
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -3039,7 +3041,7 @@ CON_COMMAND( rr_reloadresponsesystems, "Reload all response system scripts." )
 
 	defaultresponsesytem.ReloadAllResponseSystems();
 
-#if defined( TF_DLL )
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
 	// This is kind of hacky, but I need to get it in for now!
 	if( g_pGameRules->IsMultiplayer() )
 	{

@@ -10,7 +10,7 @@
 #include "team_control_point_master.h"
 #include "teamplayroundbased_gamerules.h"
 
-#if defined ( TF_DLL )
+#if defined ( TF_DLL ) || defined ( TF_CLASSIC )
 #include "tf_gamerules.h"
 #endif
 
@@ -50,6 +50,10 @@ BEGIN_DATADESC( CTeamControlPointMaster )
 
 	DEFINE_OUTPUT( m_OnWonByTeam1,	"OnWonByTeam1" ),
 	DEFINE_OUTPUT( m_OnWonByTeam2,	"OnWonByTeam2" ),
+#if defined ( TF_CLASSIC )
+	DEFINE_OUTPUT( m_OnWonByTeam3, "OnWonByTeam3" ),
+	DEFINE_OUTPUT( m_OnWonByTeam4, "OnWonByTeam4" ),
+#endif
 
 END_DATADESC()
 
@@ -676,7 +680,7 @@ void CTeamControlPointMaster::CheckWinConditions( void )
 		{
 			bool bWinner = true;
 
-#if defined( TF_DLL)
+#if defined( TF_DLL ) || defined ( TF_CLASSIC )
 			if ( TFGameRules() && TFGameRules()->IsInKothMode() )
 			{
 				CTeamRoundTimer *pTimer = NULL;
@@ -688,6 +692,16 @@ void CTeamControlPointMaster::CheckWinConditions( void )
 				{
 					pTimer = TFGameRules()->GetBlueKothRoundTimer();
 				}
+#ifdef TF_CLASSIC
+				else if ( iWinners == TF_TEAM_GREEN )
+				{
+					pTimer = TFGameRules()->GetGreenKothRoundTimer();
+				}
+				else if ( iWinners == TF_TEAM_YELLOW )
+				{
+					pTimer = TFGameRules()->GetYellowKothRoundTimer();
+				}
+#endif
 
 				if ( pTimer )
 				{
@@ -915,6 +929,14 @@ void CTeamControlPointMaster::FireTeamWinOutput( int iWinningTeam )
 	case 2:
 		m_OnWonByTeam2.FireOutput(this,this);
 		break;
+#ifdef TF_CLASSIC
+	case 3:
+		m_OnWonByTeam3.FireOutput(this, this);
+		break;
+	case 4:
+		m_OnWonByTeam4.FireOutput(this, this);
+		break;
+#endif
 	default:
 		Assert(0);
 		break;
@@ -1056,65 +1078,44 @@ bool CTeamControlPointMaster::IsBaseControlPoint( int iPointIndex )
 int	CTeamControlPointMaster::GetBaseControlPoint( int iTeam )
 {
 	int iRetVal = -1;
-	int nLowestValue = 999, nHighestValue = -1;
-	int iLowestIndex = 0, iHighestIndex = 0;
+	int nLowestValue = 999;
+	int nHighestValue = -1;
+	CTeamControlPoint *pLowestPoint = NULL;
+	CTeamControlPoint *pHighestPoint = NULL;
 
-	for( int i = 0 ; i < (int)m_ControlPoints.Count() ; i++ )
+	for( unsigned int i = 0 ; i < m_ControlPoints.Count() ; i++ )
 	{
 		CTeamControlPoint *pPoint = m_ControlPoints[i];
 
-		int iPointIndex = m_ControlPoints[i]->GetPointIndex();
-
-		if ( PlayingMiniRounds() && iTeam > LAST_SHARED_TEAM )
+		if ( !PlayingMiniRounds() || ( IsInRound( pPoint ) && ( iTeam > LAST_SHARED_TEAM ) ) )
 		{
-			if ( IsInRound( pPoint ) ) // is this point in the current round?
-			{
-				if ( iPointIndex > nHighestValue )
-				{
-					nHighestValue = iPointIndex;
-					iHighestIndex = i;
-				}
+			int nTempValue = pPoint->GetPointIndex();
 
-				if ( iPointIndex < nLowestValue )
-				{
-					nLowestValue = iPointIndex;
-					iLowestIndex = i;
-				}
-			}
-		}
-		else
-		{
-			if ( pPoint->GetDefaultOwner() != iTeam )
+			if ( nTempValue > nHighestValue )
 			{
-				continue;
+				nHighestValue = nTempValue;
+				pHighestPoint = pPoint;
 			}
 
-			// If it's the first or the last point, it's their base
-			if ( iPointIndex == 0 || iPointIndex == (((int)m_ControlPoints.Count())-1) )
+			if ( nTempValue < nLowestValue )
 			{
-				iRetVal = iPointIndex;
-				break;
+				nLowestValue = nTempValue;
+				pLowestPoint = pPoint;
 			}
 		}
 	}
 
-	if ( PlayingMiniRounds() && iTeam > LAST_SHARED_TEAM )
+	if ( pLowestPoint && pHighestPoint )
 	{
-		if ( nLowestValue != 999 && nHighestValue != -1 )
+		// which point is owned by this team?
+		if ( ( pLowestPoint->GetDefaultOwner() == iTeam && pHighestPoint->GetDefaultOwner() == iTeam ) || // if the same team owns both, take the highest value to be the last point
+				( pHighestPoint->GetDefaultOwner() == iTeam ) )
 		{
-			CTeamControlPoint *pLowestPoint = m_ControlPoints[iLowestIndex];
-			CTeamControlPoint *pHighestPoint = m_ControlPoints[iHighestIndex];
-
-			// which point is owned by this team?
-			if ( ( pLowestPoint->GetDefaultOwner() == iTeam && pHighestPoint->GetDefaultOwner() == iTeam ) || // if the same team owns both, take the highest value to be the last point
-				 ( pHighestPoint->GetDefaultOwner() == iTeam ) )
-			{
-				iRetVal = nHighestValue;
-			}
-			else if ( pLowestPoint->GetDefaultOwner() == iTeam )
-			{
-				iRetVal = nLowestValue;
-			}
+			iRetVal = nHighestValue;
+		}
+		else if ( pLowestPoint->GetDefaultOwner() == iTeam )
+		{
+			iRetVal = nLowestValue;
 		}
 	}
 	
@@ -1267,7 +1268,7 @@ float CTeamControlPointMaster::GetPartialCapturePointRate( void )
 	return m_flPartialCapturePointsRate;
 }
 
-/*
+#ifdef STAGING_ONLY
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1344,4 +1345,4 @@ void cc_PlayRound( const CCommand& args )
 }
 
 static ConCommand playround( "playround", cc_PlayRound, "Play the selected round\n\tArgument: {round name given by \"listrounds\" command}", FCVAR_CHEAT );
-*/
+#endif

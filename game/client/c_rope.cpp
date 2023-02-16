@@ -12,6 +12,7 @@
 #include "input.h"
 #ifdef TF_CLIENT_DLL
 #include "cdll_util.h"
+#include "tf_gamerules.h"
 #endif
 #include "rope_helpers.h"
 #include "engine/ivmodelinfo.h"
@@ -639,6 +640,15 @@ bool CRopeManager::IsHolidayLightMode( void )
 	{
 		return false;
 	}
+
+#ifdef TF_CLIENT_DLL
+	if ( TFGameRules() && TFGameRules()->IsPowerupMode() )
+	{
+		// We don't want to draw the lights for the grapple.
+		// They get left behind for a while and look bad.
+		return false;
+	}
+#endif
 
 	bool bDrawHolidayLights = false;
 

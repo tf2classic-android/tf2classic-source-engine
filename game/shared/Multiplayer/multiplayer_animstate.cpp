@@ -22,7 +22,7 @@ ConVar anim_showmainactivity( "anim_showmainactivity", "0", FCVAR_CHEAT, "Show t
 #include "player.h"
 #endif
 
-#if defined(TF_CLIENT_DLL) || defined(TF_DLL)
+#if defined(TF_CLIENT_DLL) || defined(TF_DLL) || defined(TF_CLASSIC_CLIENT) || defined(TF_CLASSIC)
 #include "tf_gamerules.h"
 #endif
 
@@ -91,6 +91,10 @@ CMultiPlayerAnimState::CMultiPlayerAnimState( CBasePlayer *pPlayer, MultiPlayerM
 
 	m_flMaxGroundSpeed = 0.0f;
 
+	// If you are forcing aim yaw, your code is almost definitely broken if you don't include a delay between 
+	// teleporting and forcing yaw. This is due to an unfortunate interaction between the command lookback window,
+	// and the fact that m_flEyeYaw is never propogated from the server to the client.
+	// TODO: Fix this after Halloween 2014.
 	m_bForceAimYaw = false;
 
 	Init( pPlayer, movementData );
@@ -186,7 +190,7 @@ void CMultiPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t event, int nData
 
 			// Set the modified reload playback rate
 			float flPlaybackRate = 1.0f;
-			#if defined(TF_CLIENT_DLL) || defined(TF_DLL)
+			#if defined(TF_CLIENT_DLL) || defined(TF_DLL) || defined (TF_CLASSIC_CLIENT) || defined (TF_CLASSIC)
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, mult_reload_time );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, mult_reload_time_hidden );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, fast_reload );
@@ -213,7 +217,7 @@ void CMultiPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t event, int nData
 
 			// Set the modified reload playback rate
 			float flPlaybackRate = 1.0f;
-			#if defined(TF_CLIENT_DLL) || defined(TF_DLL)
+			#if defined(TF_CLIENT_DLL) || defined(TF_DLL) || defined (TF_CLASSIC_CLIENT) || defined (TF_CLASSIC)
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, mult_reload_time );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, mult_reload_time_hidden );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, fast_reload );
@@ -240,7 +244,7 @@ void CMultiPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t event, int nData
 
 			// Set the modified reload playback rate
 			float flPlaybackRate = 1.0f;
-			#if defined(TF_CLIENT_DLL) || defined(TF_DLL)
+			#if defined(TF_CLIENT_DLL) || defined(TF_DLL) || defined (TF_CLASSIC_CLIENT) || defined (TF_CLASSIC)
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, mult_reload_time );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, mult_reload_time_hidden );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBasePlayer(), flPlaybackRate, fast_reload );
@@ -1655,6 +1659,10 @@ void CMultiPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
 	bool bMoving = ( vecVelocity.Length() > 1.0f ) ? true : false;
 
 	// If we are moving or are prone and undeployed.
+	// If you are forcing aim yaw, your code is almost definitely broken if you don't include a delay between 
+	// teleporting and forcing yaw. This is due to an unfortunate interaction between the command lookback window,
+	// and the fact that m_flEyeYaw is never propogated from the server to the client.
+	// TODO: Fix this after Halloween 2014.
 	if ( bMoving || m_bForceAimYaw )
 	{
 		// The feet match the eye direction when moving - the move yaw takes care of the rest.
@@ -1688,6 +1696,10 @@ void CMultiPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
 	m_flGoalFeetYaw = AngleNormalize( m_flGoalFeetYaw );
 	if ( m_flGoalFeetYaw != m_flCurrentFeetYaw )
 	{
+		// If you are forcing aim yaw, your code is almost definitely broken if you don't include a delay between 
+		// teleporting and forcing yaw. This is due to an unfortunate interaction between the command lookback window,
+		// and the fact that m_flEyeYaw is never propogated from the server to the client.
+		// TODO: Fix this after Halloween 2014.
 		if ( m_bForceAimYaw )
 		{
 			m_flCurrentFeetYaw = m_flGoalFeetYaw;
