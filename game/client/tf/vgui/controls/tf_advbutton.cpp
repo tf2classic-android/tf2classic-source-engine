@@ -101,7 +101,7 @@ void CTFAdvButton::PerformLayout()
 	pButtonImage->SetDrawColor(GETSCHEME()->GetColor(pImageColorDefault, Color(255, 255, 255, 255)));
 	pButtonImage->SetZPos(2);
 	pButtonImage->SetShouldScaleImage(m_bScaleImage);
-
+	pButtonImage->SetScaleAmount( 0.0f );
 
 	CTFDialogPanelBase *pParent = dynamic_cast<CTFDialogPanelBase*>(GetParent());
 	if (pParent)

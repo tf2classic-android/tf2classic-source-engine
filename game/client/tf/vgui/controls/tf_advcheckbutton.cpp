@@ -114,6 +114,7 @@ void CTFAdvCheckButton::PerformLayout()
 	pButtonImage->SetWide(fWidth);
 	pButtonImage->SetTall(fWidth);
 	pButtonImage->SetShouldScaleImage(true);
+	pButtonImage->SetScaleAmount( 0.0f );
 	
 
 	pCheckImage->SetImage(pDefaultCheckImage);
@@ -124,7 +125,9 @@ void CTFAdvCheckButton::PerformLayout()
 	pCheckImage->SetWide(fWidth);
 	pCheckImage->SetTall(fWidth);
 	pCheckImage->SetShouldScaleImage(true);
+	pCheckImage->SetScaleAmount( 0.0f );
 	
+
 	pBGBorder->SetBorder(GETSCHEME()->GetBorder(pSelectedBG));
 	pBGBorder->SetVisible(true);
 	pBGBorder->SetPos(GetWide() - GetTall(), 0);
