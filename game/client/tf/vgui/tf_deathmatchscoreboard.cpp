@@ -90,7 +90,9 @@ CTFDeathMatchScoreBoardDialog::CTFDeathMatchScoreBoardDialog( IViewPort *pViewPo
 	m_pContextMenu = new Menu( this, "contextmenu" );
 	m_pContextMenu->AddMenuItem( "Mute", new KeyValues( "Command", "command", "mute" ), this );
 	m_pContextMenu->AddMenuItem( "Vote kick...", new KeyValues( "Command", "command", "kick" ), this );
+#if 0 // no steme
 	m_pContextMenu->AddMenuItem( "Show Steam profile", new KeyValues( "Command", "command", "showprofile" ), this );
+#endif
 
 	SetVisible( false );
 }
@@ -198,7 +200,10 @@ void CTFDeathMatchScoreBoardDialog::OnCommand( const char* command )
 		{
 			CSteamID pPlayerSteamID;
 			pPlayerOther->GetSteamID( &pPlayerSteamID );
-			steamapicontext->SteamFriends()->ActivateGameOverlayToUser( "steamid", pPlayerSteamID );
+			if( steamapicontext && steamapicontext->SteamFriends() )
+			{
+				steamapicontext->SteamFriends()->ActivateGameOverlayToUser( "steamid", pPlayerSteamID );
+			}
 		}
 	}
 	else
