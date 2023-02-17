@@ -88,8 +88,14 @@ void CTFMainMenuPanel::PerformLayout()
 	}
 
 	char szNickName[64];
+#if 0
 	Q_snprintf(szNickName, sizeof(szNickName),
 		(steamapicontext->SteamFriends() ? steamapicontext->SteamFriends()->GetPersonaName() : "Unknown"));
+#else
+	ConVarRef playername( "name" );
+	Q_snprintf(szNickName, sizeof(szNickName),
+		"%s", playername.GetString() ); // smells like semen in the air
+#endif
 	SetDialogVariable("nickname", szNickName);
 
 	ShowBlogPanel(tf2c_mainmenu_showblog.GetBool() || GetNotificationManager()->IsOutdated());
