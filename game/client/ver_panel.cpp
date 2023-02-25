@@ -36,15 +36,15 @@ CVerNumLabel::CVerNumLabel(vgui::VPANEL parent)
 	SetParent(pParent);
 
 	char verString[30];
-	if (g_pFullFileSystem->FileExists("version.txt"))
+	if( g_pFullFileSystem->FileExists( "version.txt" ) )
 	{
-		FileHandle_t fh = filesystem->Open("version.txt", "r", "MOD");
+		FileHandle_t fh = filesystem->Open( "version.txt", "r", "MOD" );
 		int file_len = filesystem->Size(fh);
 		char* GameInfo = new char[file_len + 1];
 
 		filesystem->Read((void*)GameInfo, file_len, fh);
 		GameInfo[file_len] = 0; // null terminator
-
+		
 		filesystem->Close(fh);
 
 		Q_snprintf(verString, sizeof(verString), "Version: %s", GameInfo + 8);

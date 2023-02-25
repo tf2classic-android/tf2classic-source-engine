@@ -40,7 +40,7 @@ public:
 	void OnCommand(const char* command);
 	void DefaultLayout();
 	void GameLayout();
-	void SetVersionLabel();
+	void SetVersionLabel( const char *version );
 	void PlayMusic();
 	void OnNotificationUpdate();
 	void ShowBlogPanel(bool show);

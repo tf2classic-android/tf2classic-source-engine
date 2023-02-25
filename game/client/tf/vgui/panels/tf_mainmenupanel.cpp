@@ -74,14 +74,31 @@ void CTFMainMenuPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
 	m_pProfileAvatar = dynamic_cast<CAvatarImagePanel *>(FindChildByName("AvatarImage"));
 	m_pFakeBGImage = dynamic_cast<vgui::ImagePanel *>(FindChildByName("FakeBGImage"));
 
-	SetVersionLabel();
+	char verString[30];
+	if( g_pFullFileSystem->FileExists( "version.txt" ) )
+	{
+		FileHandle_t fh = filesystem->Open( "version.txt", "r", "MOD" );
+		int file_len = filesystem->Size(fh);
+		char* GameInfo = new char[file_len + 1];
+
+		filesystem->Read((void*)GameInfo, file_len, fh);
+		GameInfo[file_len] = 0; // null terminator
+		
+		filesystem->Close(fh);
+
+		Q_snprintf( verString, sizeof(verString), "%s", GameInfo + 8 );
+
+		delete[] GameInfo;
+	}
+
+	SetVersionLabel( verString );
 }	
 
 void CTFMainMenuPanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	if (m_pProfileAvatar)
+	if( m_pProfileAvatar )
 	{
 		m_pProfileAvatar->SetPlayer(m_SteamID, k_EAvatarSize64x64);
 		m_pProfileAvatar->SetShouldDrawFriendIcon(false);
@@ -183,14 +200,14 @@ void CTFMainMenuPanel::OnTick()
 {
 	BaseClass::OnTick();
 
-	if (tf2c_mainmenu_music.GetBool() && !bInGameLayout)
+	if( tf2c_mainmenu_music.GetBool() && !bInGameLayout )
 	{
 		if ((m_psMusicStatus == MUSIC_FIND || m_psMusicStatus == MUSIC_STOP_FIND) && !enginesound->IsSoundStillPlaying(m_nSongGuid))
 		{
 			GetRandomMusic(m_pzMusicLink, sizeof(m_pzMusicLink));
 			m_psMusicStatus = MUSIC_PLAY;
 		}
-		else if ((m_psMusicStatus == MUSIC_PLAY || m_psMusicStatus == MUSIC_STOP_PLAY)&& m_pzMusicLink[0] != '\0')
+		else if( ( m_psMusicStatus == MUSIC_PLAY || m_psMusicStatus == MUSIC_STOP_PLAY ) && m_pzMusicLink[0] != '\0' )
 		{
 			enginesound->StopSoundByGuid(m_nSongGuid);
 			ConVar *snd_musicvolume = cvar->FindVar("snd_musicvolume");
@@ -200,7 +217,7 @@ void CTFMainMenuPanel::OnTick()
 			m_psMusicStatus = MUSIC_FIND;
 		}
 	}
-	else if (m_psMusicStatus == MUSIC_FIND)
+	else if( m_psMusicStatus == MUSIC_FIND )
 	{
 		enginesound->StopSoundByGuid(m_nSongGuid);
 		m_psMusicStatus = (m_nSongGuid == 0 ? MUSIC_STOP_FIND : MUSIC_STOP_PLAY);
@@ -218,7 +235,8 @@ void CTFMainMenuPanel::OnThink()
 		{
 			vgui::GetAnimationController()->RunAnimationCommand(m_pFakeBGImage, "Alpha", 0, 1.0f, 0.5f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE);
 		}
-	}	
+	}
+
 	if (m_pFakeBGImage->IsVisible() && m_pFakeBGImage->GetAlpha() == 0)
 	{
 		m_pFakeBGImage->SetVisible(false);
@@ -276,6 +294,7 @@ void CTFMainMenuPanel::OnNotificationUpdate()
 			m_pNotificationButton->SetGlowing(false);
 		}
 	}
+
 	if (GetNotificationManager()->IsOutdated())
 	{
 		if (m_pVersionLabel)
@@ -285,13 +304,13 @@ void CTFMainMenuPanel::OnNotificationUpdate()
 	}
 };
 
-void CTFMainMenuPanel::SetVersionLabel()  //GetVersionString
+void CTFMainMenuPanel::SetVersionLabel( const char *version )  //GetVersionString
 {
 	if (m_pVersionLabel)
 	{
 		char verString[64];
-		Q_snprintf(verString, sizeof(verString), "Version: %s", GetNotificationManager()->GetVersionName());
-		m_pVersionLabel->SetText(verString);
+		Q_snprintf( verString, sizeof( verString ), "Version: %s", version );
+		m_pVersionLabel->SetText( verString );
 	}
 };
 
@@ -507,11 +526,11 @@ void CTFServerlistPanel::UpdateServerInfo()
 	for (int i = 0; i < m_iSize; i++)
 	{
 		gameserveritem_t m_Server = GetNotificationManager()->GetServerInfo(i);		
-		if (m_Server.m_steamID.GetAccountID() == 0)
+		if( m_Server.m_steamID.GetAccountID() == 0 )
 			continue;
 
 		bool bOfficial = GetNotificationManager()->IsOfficialServer(i);
-		if (!bOfficial)
+		if( !bOfficial )
 			continue;
 
 		char szServerName[128];
