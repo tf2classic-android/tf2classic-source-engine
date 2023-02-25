@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. =======
 //
 //
 //=============================================================================
@@ -31,6 +31,6 @@ void CTFTranq::Precache()
 	PrecacheTeamParticles( "tranq_tracer_teamcolor_%s", true );
 	PrecacheTeamParticles( "tranq_tracer_teamcolor_%s_crit", true );
 	PrecacheParticleSystem( "tranq_distortion_trail" );
-	PrecacheParticleSystem( "tranq_tracer_red" );
+	PrecacheParticleSystem( "tranq_tracer_red" );
 #endif
 }

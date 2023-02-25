@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -37,7 +37,11 @@ void CHudChatLine::ApplySchemeSettings(vgui::IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	m_hFont = pScheme->GetFont( "ChatFont" );
+	if( IsAndroid() )
+		m_hFont = pScheme->GetFont( "ChatFont", true );
+	else
+		m_hFont = pScheme->GetFont( "ChatFont" );
+
 	SetBorder( NULL );
 	SetBgColor( Color( 0, 0, 0, 0 ) );
 	SetFgColor( Color( 0, 0, 0, 0 ) );

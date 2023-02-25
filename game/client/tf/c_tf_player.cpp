@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2003, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2003, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -936,7 +936,7 @@ public:
 		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
 		if ( !pEntity )
 		{
-			m_pResult->SetFloatValue( 0.0 );
+			m_pResult->SetFloatValue( 0.0f );
 			return;
 		}
 
@@ -968,11 +968,11 @@ public:
 				!pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_WEARINGOFF ) &&
 				( !pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_SPAWN_PROTECT ) || pPlayer->m_Shared.GetConditionDuration( TF_COND_INVULNERABLE_SPAWN_PROTECT ) > 1.0f ) )
 			{
-				m_pResult->SetFloatValue( 1.0 );
+				m_pResult->SetFloatValue( 1.0f );
 			}
 			else
 			{
-				m_pResult->SetFloatValue( 0.0 );
+				m_pResult->SetFloatValue( 0.0f );
 			}
 		}
 

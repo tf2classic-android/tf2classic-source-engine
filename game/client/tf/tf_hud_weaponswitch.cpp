@@ -69,25 +69,30 @@ void CItemModelPanel::PerformLayout( void )
 	{
 		C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
 		IBorder *border;
-		if ( !pPlayer )
-			return;
-		int iTeam = pPlayer->GetTeamNumber();
-		if ( iTeam == TF_TEAM_RED )
+
+		if( !pPlayer ) return;
+
+		switch( pPlayer->GetTeamNumber() )
 		{
-			border = m_pSelectedRedBorder;
-		}
-		else
-		{
-			border = m_pSelectedBlueBorder;
-		}
+			case TF_TEAM_RED:
+				border = m_pSelectedRedBorder;
+				break;
+			case TF_TEAM_BLUE:
+				border = m_pSelectedBlueBorder;
+				break;
+		};
+
 		SetBorder( border );
 	}
+
 	m_pWeaponImage->SetShouldScaleImage( true );
 	m_pWeaponImage->SetZPos( -1 );
+
 	m_pWeaponName->SetBounds( XRES( 5 ), GetTall() - YRES( 20 ), GetWide() - XRES( 10 ), YRES( 20 ) );
 	m_pWeaponName->SetFont( m_iBorderStyle ? m_pSelectedFont : m_pDefaultFont );
 	m_pWeaponName->SetContentAlignment( CTFAdvButtonBase::GetAlignment( "center" ) );
 	m_pWeaponName->SetCenterWrap( true );
+
 	if ( m_pWeapon && !m_pWeapon->CanBeSelected() )
 	{
 		wchar_t *pText = g_pVGuiLocalize->Find( "#TF_OUT_OF_AMMO" );
@@ -98,6 +103,7 @@ void CItemModelPanel::PerformLayout( void )
 	{
 		m_pWeaponName->SetFgColor( GETSCHEME()->GetColor( "TanLight", Color( 255, 255, 255, 255 ) ) );
 	}
+
 	m_pSlotID->SetBounds( 0, YRES( 5 ), GetWide() - XRES( 5 ), YRES( 10 ) );
 	m_pSlotID->SetFont( m_iBorderStyle ? m_pNumberSelectedFont : m_pNumberDefaultFont );
 	m_pSlotID->SetContentAlignment( CTFAdvButtonBase::GetAlignment( "east" ) );
@@ -179,8 +185,6 @@ void CItemModelPanel::SetWeapon( CEconItemDefinition *pItemDefinition, int iBord
 
 	InvalidateLayout( true );
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 

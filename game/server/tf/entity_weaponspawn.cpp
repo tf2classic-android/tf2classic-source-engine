@@ -259,12 +259,13 @@ bool CWeaponSpawner::MyTouch( CBasePlayer *pPlayer )
 			}
 		}
 #else
-		CTFWeaponBase *pWeapon = pTFPlayer->Weapon_OwnsThisID( m_nWeaponID );
+		int iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
+		CTFWeaponBase *pWeapon = (CTFWeaponBase *)pTFPlayer->GetEntityForLoadoutSlot( iSlot );
 		const char *pszWeaponName = WeaponIdToClassname( m_nWeaponID );
 
 		if ( pWeapon )
 		{
-			if ( pPlayer->GiveAmmo(999, m_pWeaponInfo->iAmmoType) )
+			if ( pPlayer->GiveAmmo(999, GetTFWeaponInfo( pWeapon->GetWeaponID() )->iAmmoType) )
 				bSuccess = true;
 		}
 #endif

@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======//
+//====== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: Dropped DM weapon
 //
@@ -133,10 +133,11 @@ bool CTFDroppedWeapon::MyTouch( CBasePlayer *pPlayer )
 			}
 		}
 #else
-		CTFWeaponBase *pWeapon = pTFPlayer->Weapon_OwnsThisID( m_nWeaponID );
+		int iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
+		CTFWeaponBase *pWeapon = (CTFWeaponBase *)pTFPlayer->GetEntityForLoadoutSlot( iSlot );
 		if ( pWeapon )
 		{
-			if ( pTFPlayer->GiveAmmo( 999, GetTFWeaponInfo( m_nWeaponID )->iAmmoType ) );
+			if ( pTFPlayer->GiveAmmo( 999, GetTFWeaponInfo( pWeapon->GetWeaponID() )->iAmmoType ) );
 			bSuccess = true;
 		}
 #endif
