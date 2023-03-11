@@ -27,6 +27,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+ConVar tf_hud_winpanel_show_avatars( "tf_hud_winpanel_show_avatars", "0", FCVAR_ARCHIVE, "Show avatars on win panel" );
+
 vgui::IImage* GetDefaultAvatarImage( C_BasePlayer *pPlayer );
 
 DECLARE_HUDELEMENT_DEPTH( CTFWinPanel, 1 );
@@ -339,7 +341,7 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 #if !defined( _X360 )
 			CAvatarImagePanel *pPlayerAvatar = dynamic_cast<CAvatarImagePanel *>( FindChildByName( CFmtStr( "Player%dAvatar", i ) ) );
 
-			if ( pPlayerAvatar )
+			if ( tf_hud_winpanel_show_avatars.GetBool() && pPlayerAvatar )
 			{
 				pPlayerAvatar->ClearAvatar();
 				pPlayerAvatar->SetShouldScaleImage( true );
