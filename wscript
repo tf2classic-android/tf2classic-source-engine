@@ -393,8 +393,6 @@ def check_deps(conf):
 def configure(conf):
 	conf.load('fwgslib reconfigure compiler_optimizations')
 
-	conf.env.BUILD_TYPE = conf.options.BUILD_TYPE
-
 	# Force XP compability, all build targets should add
 	# subsystem=bld.env.MSVC_SUBSYSTEM
 	# TODO: wrapper around bld.stlib, bld.shlib and so on?
@@ -582,7 +580,7 @@ def configure(conf):
 		conf.add_subproject(projects['game'])
 
 def build(bld):
-	os.environ["CCACHE_DIR"] = os.path.abspath('.ccache/'+bld.env.COMPILER_CC+'/'+bld.env.DEST_OS+'/'+bld.env.BUILD_TYPE+'_'+bld.env.DEST_CPU)
+	os.environ["CCACHE_DIR"] = os.path.abspath('.ccache/'+bld.env.COMPILER_CC+'/'+bld.env.DEST_OS+'/'+bld.env.DEST_CPU)
 
 	if bld.env.DEST_OS == 'win32':
 		projects['game'] += ['utils/bzip2']
