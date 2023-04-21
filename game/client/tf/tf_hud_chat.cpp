@@ -1,4 +1,4 @@
-//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -64,15 +64,16 @@ void CHudChatInputLine::ApplySchemeSettings(vgui::IScheme *pScheme)
 	BaseClass::ApplySchemeSettings(pScheme);
 }
 
+
+//=====================
+//CHudChat
+//=====================
+
 static CHudChat *g_pTFChatHud = NULL;
 CHudChat *GetTFChatHud( void )
 {
 	return g_pTFChatHud;
 }
-
-//=====================
-//CHudChat
-//=====================
 
 CHudChat::CHudChat( const char *pElementName ) : BaseClass( pElementName )
 {
@@ -156,6 +157,8 @@ int CHudChat::GetFilterForString( const char *pString )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 Color CHudChat::GetClientColor( int clientIndex )
 {
 	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
@@ -167,17 +170,26 @@ Color CHudChat::GetClientColor( int clientIndex )
 	{
 		return g_ColorGreen;
 	}
-	else if( g_PR )
+	else if ( g_PR )
 	{
 		int iTeam = g_PR->GetTeam( clientIndex );
 
 		C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( clientIndex ) );
 		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 
-		if (pPlayer && TFGameRules()->IsDeathmatch())
+		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 		{
-			C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
-			return tf_PR->GetPlayerColor(pPlayer->entindex());
+			// Show their chosen player color in DM unless they're in spec.
+			C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
+
+			if ( tf_PR && iTeam >= FIRST_GAME_TEAM )
+			{
+				return tf_PR->GetPlayerColor( clientIndex );
+			}
+			else
+			{
+				return g_ColorGrey;
+			}
 		}
 
 		if ( IsVoiceSubtitle() == true )
@@ -190,18 +202,37 @@ Color CHudChat::GetClientColor( int clientIndex )
 			}
 		}
 
-		switch ( iTeam )
-		{
-		case TF_TEAM_RED	: return pScheme->GetColor( "TFColors.ChatTextTeamRed", g_ColorRed );
-		case TF_TEAM_BLUE	: return pScheme->GetColor( "TFColors.ChatTextTeamBlue", g_ColorBlue );
-		case TF_TEAM_GREEN	: return pScheme->GetColor( "TFColors.ChatTextTeamGreen", g_ColorGreen );
-		case TF_TEAM_YELLOW	: return pScheme->GetColor( "TFColors.ChatTextTeamYellow", g_ColorYellow );
-		default	: return g_ColorGrey;
-		}
+		return GetTeamColor( iTeam );
 	}
 
 	return g_ColorYellow;
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+Color CHudChat::GetTeamColor( int iTeam )
+{
+	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
+
+	if ( pScheme == NULL )
+		return Color( 255, 255, 255, 255 );
+
+	switch ( iTeam )
+	{
+	case TF_TEAM_RED:
+		return pScheme->GetColor( "TFColors.ChatTextTeamRed", g_ColorRed );
+	case TF_TEAM_BLUE:
+		return pScheme->GetColor( "TFColors.ChatTextTeamBlue", g_ColorBlue );
+	case TF_TEAM_GREEN:
+		return pScheme->GetColor( "TFColors.ChatTextTeamGreen", g_ColorGreen );
+	case TF_TEAM_YELLOW:
+		return pScheme->GetColor( "TFColors.ChatTextTeamYellow", g_ColorYellow );
+	}
+
+	return g_ColorGrey;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -224,7 +255,7 @@ const char *CHudChat::GetDisplayedSubtitlePlayerName( int clientIndex )
 	// If they are disguised as the enemy, and not on our team
 	if ( pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) &&
 		pPlayer->m_Shared.GetDisguiseTeam() != pPlayer->GetTeamNumber() && 
-		!pLocalPlayer->InSameTeam( pPlayer ) )
+		pPlayer->IsEnemyPlayer() )
 	{
 		C_TFPlayer *pDisguiseTarget = ToTFPlayer( pPlayer->m_Shared.GetDisguiseTarget() );
 
@@ -254,6 +285,10 @@ Color CHudChat::GetTextColorForClient( TextColor colorNum, int clientIndex )
 	Color c;
 	switch ( colorNum )
 	{
+	case COLOR_CUSTOM:
+		c = m_ColorCustom;
+		break;
+
 	case COLOR_PLAYERNAME:
 		c = GetClientColor( clientIndex );
 		break;

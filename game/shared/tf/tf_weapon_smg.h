@@ -38,12 +38,4 @@ private:
 	CTFSMG( const CTFSMG & ) {}
 };
 
-class CTFSMG_Primary : public CTFSMG
-{
-public:
-	DECLARE_CLASS( CTFSMG_Primary, CTFSMG );
-	DECLARE_NETWORKCLASS();
-	DECLARE_PREDICTABLE();
-};
-
 #endif // TF_WEAPON_SMG_H

@@ -10,7 +10,6 @@
 // Weapon SMG tables.
 //
 CREATE_SIMPLE_WEAPON_TABLE( TFSMG, tf_weapon_smg )
-CREATE_SIMPLE_WEAPON_TABLE( TFSMG_Primary, tf_weapon_smg_primary )
 
 //=============================================================================
 //

@@ -11,17 +11,20 @@
 #pragma once
 #endif
 
+#include "c_playerattachedmodel.h"
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-class C_TFSpyMask : public C_BaseAnimating
+class C_TFSpyMask : public C_PlayerAttachedModel
 {
 public:
-	DECLARE_CLASS( C_TFSpyMask, C_BaseAnimating );
+	DECLARE_CLASS( C_TFSpyMask, C_PlayerAttachedModel );
 
 	C_TFSpyMask();
 
-	bool	InitializeAsClientEntity( const char *pszModelName, RenderGroup_t renderGroup );
+	static C_TFSpyMask *Create( C_BaseEntity *pOwner );
+
 	bool	ShouldDraw( void );
 	int		GetSkin( void );
 };

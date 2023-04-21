@@ -26,9 +26,6 @@ CTFAdvCheckButton::CTFAdvCheckButton(vgui::Panel *parent, const char *panelName,
 	pButton = new CTFCheckButton(this, "SubButton", text);
 	pCheckImage = new ImagePanel(this, "SubCheckImage");
 	pBGBorder = new EditablePanel(this, "BackgroundPanel");
-	pButton->SetParent(this);
-	pCheckImage->SetParent(this);
-	pBGBorder->SetParent(this);
 	Init();
 }
 
@@ -69,14 +66,8 @@ void CTFAdvCheckButton::ApplySettings(KeyValues *inResourceData)
 	Q_strncpy(m_szValueFalse, inResourceData->GetString("valuefalse", "0"), sizeof(m_szValueFalse));
 	Q_strncpy(m_szValueTrue, inResourceData->GetString("valuetrue", "1"), sizeof(m_szValueTrue));
 
-
-
 	for (KeyValues *pData = inResourceData->GetFirstSubKey(); pData != NULL; pData = pData->GetNextKey())
 	{
-		if (!Q_stricmp(pData->GetName(), "SubButton"))
-		{
-			pButton->ApplySettings(pData);
-		}
 		if (!Q_stricmp(pData->GetName(), "SubImage"))
 		{
 			Q_strncpy(pDefaultCheckImage, pData->GetString("imagecheck", DEFAULT_CHECKIMAGE), sizeof(pDefaultCheckImage));
@@ -106,6 +97,11 @@ void CTFAdvCheckButton::PerformLayout()
 	float fWidth = (m_fImageWidth == 0.0 ? GetTall() : YRES(m_fImageWidth));
 	int iShift = (GetTall() - fWidth) / 2.0;
 
+	pButton->SetTextInset( 5, 0 );
+	pButton->SetZPos( 3 );
+	pButton->SetWide( GetWide() );
+	pButton->SetTall( GetTall() );
+
 	pButtonImage->SetImage(pDefaultButtonImage);
 	pButtonImage->SetDrawColor(GETSCHEME()->GetColor(pImageColorDefault, Color(255, 255, 255, 255)));
 	pButtonImage->SetVisible(true);
@@ -121,13 +117,12 @@ void CTFAdvCheckButton::PerformLayout()
 	pCheckImage->SetDrawColor(GETSCHEME()->GetColor(pImageColorDefault, Color(255, 255, 255, 255)));
 	pCheckImage->SetVisible(m_bBorderVisible);
 	pCheckImage->SetPos(GetWide() - GetTall() + iShift, iShift);
-	pCheckImage->SetZPos(3);
+	pCheckImage->SetZPos(2);
 	pCheckImage->SetWide(fWidth);
 	pCheckImage->SetTall(fWidth);
 	pCheckImage->SetShouldScaleImage(true);
 	pCheckImage->SetScaleAmount( 0.0f );
 	
-
 	pBGBorder->SetBorder(GETSCHEME()->GetBorder(pSelectedBG));
 	pBGBorder->SetVisible(true);
 	pBGBorder->SetPos(GetWide() - GetTall(), 0);
@@ -225,6 +220,7 @@ void CTFAdvCheckButton::SendAnimation(MouseState flag)
 //-----------------------------------------------------------------------------
 CTFCheckButton::CTFCheckButton(vgui::Panel *parent, const char *panelName, const char *text) : CTFButtonBase(parent, panelName, text)
 {
+	m_pParent = dynamic_cast<CTFAdvCheckButton *>( parent );
 	iState = MOUSE_DEFAULT;
 	vgui::ivgui()->AddTickSignal(GetVPanel());
 }
@@ -249,24 +245,15 @@ void CTFCheckButton::ApplySchemeSettings(vgui::IScheme *pScheme)
 	SetArmedBorder(pScheme->GetBorder(EMPTY_STRING));
 	SetDepressedBorder(pScheme->GetBorder(EMPTY_STRING));
 	SetSelectedBorder(pScheme->GetBorder(EMPTY_STRING));
+
+	SetArmedSound( "ui/buttonrollover.wav" );
+	SetDepressedSound( "ui/buttonclick.wav" );
+	SetReleasedSound( "ui/buttonclickrelease.wav" );
 }
 
 void CTFCheckButton::PerformLayout()
 {
 	BaseClass::PerformLayout();
-
-	if (!m_pParent)
-		return;
-
-	SetTextInset(5, 0);
-	SetZPos(4);
-	SetZPos(3);
-	SetWide(m_pParent->GetWide());
-	SetTall(m_pParent->GetTall());
-	SetArmedSound("ui/buttonrollover.wav");
-	SetDepressedSound("ui/buttonclick.wav");
-	SetReleasedSound("ui/buttonclickrelease.wav");
-
 }
 
 //-----------------------------------------------------------------------------
@@ -313,7 +300,7 @@ void CTFCheckButton::OnMousePressed(vgui::MouseCode code)
 void CTFCheckButton::OnMouseReleased(vgui::MouseCode code)
 {
 	BaseClass::BaseClass::OnMouseReleased(code);
-	if (code == KEY_COUNT && (iState == MOUSE_ENTERED || iState == MOUSE_PRESSED) && m_pParent->IsEnabled() && m_pParent->IsEnabled())
+	if (code == KEY_COUNT && (iState == MOUSE_ENTERED || iState == MOUSE_PRESSED) && m_pParent->IsEnabled())
 	{
 		m_pParent->m_bState = !m_pParent->m_bState;
 		m_pParent->PostActionSignal(new KeyValues("CheckButtonChecked"));
@@ -342,6 +329,6 @@ void CTFCheckButton::OnMouseReleased(vgui::MouseCode code)
 void CTFCheckButton::SetMouseEnteredState(MouseState flag)
 {
 	BaseClass::SetMouseEnteredState(flag);
-	if (m_pParent->IsEnabled() && m_pParent->IsEnabled())
+	if (m_pParent->IsEnabled())
 		m_pParent->SendAnimation(flag);
 }

@@ -547,30 +547,6 @@ const char *CTFWeaponBase::GetWorldModel( void ) const
 	return BaseClass::GetWorldModel();
 }
 
-#ifdef DM_WEAPON_BUCKET
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-int CTFWeaponBase::GetSlot( void ) const
-{
-	if ( TFGameRules()->IsDeathmatch() )
-		return GetTFWpnData().m_iSlotDM;
-
-	return GetWpnData().iSlot;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-int CTFWeaponBase::GetPosition( void ) const
-{
-	if ( TFGameRules()->IsDeathmatch() )
-		return GetTFWpnData().m_iPositionDM;
-
-	return GetWpnData().iPosition;
-}
-#endif
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1066,10 +1042,7 @@ void CTFWeaponBase::AbortReload( void )
 {
 	BaseClass::AbortReload();
 
-#ifdef CLIENT_DLL
-	if ( !UsingViewModel() )
-#endif
-		StopWeaponSound( RELOAD );
+	StopWeaponSound( RELOAD );
 
 	m_iReloadMode.Set( TF_RELOAD_START );
 }
@@ -1147,10 +1120,7 @@ bool CTFWeaponBase::ReloadSingly( void )
 			UpdateReloadTimers( false );
 		}
 
-#ifdef CLIENT_DLL
-		if ( !UsingViewModel() )
-#endif
-			WeaponSound( RELOAD );
+		PlayReloadSound();
 
 		// Next continue to reload shells?
 		m_iReloadMode.Set( TF_RELOADING_CONTINUE );
@@ -1262,10 +1232,7 @@ bool CTFWeaponBase::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
 		return false;
 
 	// Play reload
-#ifdef CLIENT_DLL
-	if ( !UsingViewModel() )
-#endif
-		WeaponSound( RELOAD );
+	PlayReloadSound();
 
 	// Play the player's reload animation
 	pPlayer->DoAnimationEvent( PLAYERANIMEVENT_RELOAD );
@@ -1359,6 +1326,20 @@ bool CTFWeaponBase::PlayEmptySound()
 	//	EmitSound( filter, entindex(), "Default.ClipEmpty_Rifle" );
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Purpose:
+// -----------------------------------------------------------------------------
+void CTFWeaponBase::PlayReloadSound( void )
+{
+#ifdef CLIENT_DLL
+	// Don't play world reload sound in first person, viewmodel will take care of this.
+	if ( UsingViewModel() )
+		return;
+#endif
+
+	WeaponSound( RELOAD );
 }
 
 // -----------------------------------------------------------------------------
@@ -1863,6 +1844,15 @@ float CTFWeaponBase::GetEffectBarProgress( void )
 	return 1.0f;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFWeaponBase::OnControlStunned( void )
+{
+	AbortReload();
+	SetWeaponVisible( false );
+}
+
 //=============================================================================
 //
 // TFWeaponBase functions (Server specific).
@@ -2156,6 +2146,9 @@ bool CTFWeaponBase::ShouldDraw( void )
 	{
 		if ( pOwner->m_Shared.IsLoser() )
 			return false;
+
+		if  ( pOwner->m_Shared.InCond( TF_COND_STUNNED ) )
+			return false;
 	}
 
 	return BaseClass::ShouldDraw();
@@ -2267,7 +2260,8 @@ void CTFWeaponBase::OnDataChanged( DataUpdateType_t type )
 	{
 		//And he is NOT taunting
 		if ( pOwner->m_Shared.InCond( TF_COND_TAUNTING ) == false &&
-			pOwner->m_Shared.IsLoser() == false )
+			pOwner->m_Shared.IsLoser() == false &&
+			pOwner->m_Shared.InCond( TF_COND_STUNNED ) == false )
 		{
 			//Then why the hell am I NODRAW?
 			if ( pOwner->GetActiveWeapon() == this && IsEffectActive( EF_NODRAW ) )

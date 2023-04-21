@@ -117,6 +117,8 @@ public:
 protected:
 	void					DrawRadius( float flRadius );
 
+	CNetworkVar( bool, m_bCritical );
+
 	bool					m_bUseImpactNormal;
 	Vector					m_vecImpactNormal;
 
@@ -129,8 +131,6 @@ private:
 	float					m_flDetonateTime;
 
 	bool					m_bInSolid;
-
-	CNetworkVar( bool,		m_bCritical );
 
 	float					m_flCollideWithTeammatesTime;
 	bool					m_bCollideWithTeammates;

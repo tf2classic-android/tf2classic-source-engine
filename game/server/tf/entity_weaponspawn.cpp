@@ -232,7 +232,6 @@ bool CWeaponSpawner::MyTouch( CBasePlayer *pPlayer )
 
 	if ( ValidTouch( pTFPlayer ) && pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
 	{
-#ifndef DM_WEAPON_BUCKET
 		int iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
 		CTFWeaponBase *pWeapon = (CTFWeaponBase *)pTFPlayer->GetEntityForLoadoutSlot( iSlot );
 
@@ -258,17 +257,6 @@ bool CWeaponSpawner::MyTouch( CBasePlayer *pPlayer )
 				pTFPlayer->m_Shared.SetDesiredWeaponIndex( m_nItemID );
 			}
 		}
-#else
-		int iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
-		CTFWeaponBase *pWeapon = (CTFWeaponBase *)pTFPlayer->GetEntityForLoadoutSlot( iSlot );
-		const char *pszWeaponName = WeaponIdToClassname( m_nWeaponID );
-
-		if ( pWeapon )
-		{
-			if ( pPlayer->GiveAmmo(999, GetTFWeaponInfo( pWeapon->GetWeaponID() )->iAmmoType) )
-				bSuccess = true;
-		}
-#endif
 
 		if ( !pWeapon )
 		{

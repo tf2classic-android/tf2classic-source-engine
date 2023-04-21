@@ -22,7 +22,6 @@
 #include "buymenu.h"
 #include "filesystem.h"
 #include "vgui/IVGui.h"
-#include "hud_chat.h"
 #include "view_shared.h"
 #include "view.h"
 #include "ivrenderview.h"
@@ -46,6 +45,10 @@
 #include "clienteffectprecachesystem.h"
 #include "glow_outline_effect.h"
 #include "cam_thirdperson.h"
+#include "tf_gamerules.h"
+#include "tf_hud_chat.h"
+#include "c_tf_team.h"
+#include "c_tf_playerresource.h"
 
 #if defined( _X360 )
 #include "tf_clientscoreboard.h"
@@ -325,6 +328,13 @@ int ClientModeTFNormal::GetDeathMessageStartHeight( void )
 	return m_pViewport->GetDeathMessageStartHeight();
 }
 
+
+bool IsInCommentaryMode( void );
+bool PlayerNameNotSetYet( const char *pszName );
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 {
 	const char *eventname = event->GetName();
@@ -332,9 +342,98 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 	if ( !eventname || !eventname[0] )
 		return;
 
-	if ( Q_strcmp( "player_changename", eventname ) == 0 )
+	if ( V_strcmp( "player_changename", eventname ) == 0 )
 	{
 		return; // server sends a colorized text string for this
+	}
+
+	if ( V_strcmp( "player_team", eventname ) == 0 )
+	{
+		// Using our own strings here.
+		int iPlayerIndex = engine->GetPlayerForUserID( event->GetInt( "userid" ) );
+
+		CHudChat *pChat = GetTFChatHud();
+		if ( !pChat )
+			return;
+
+		bool bDisconnected = event->GetBool( "disconnect" );
+
+		if ( bDisconnected )
+			return;
+
+		int iTeam = event->GetInt( "team" );
+		bool bAutoTeamed = event->GetBool( "autoteam" );
+		bool bSilent = event->GetBool( "silent" );
+
+		const char *pszName = event->GetString( "name" );
+		if ( PlayerNameNotSetYet( pszName ) )
+			return;
+
+		if ( !bSilent )
+		{
+			wchar_t wszPlayerName[MAX_PLAYER_NAME_LENGTH];
+			g_pVGuiLocalize->ConvertANSIToUnicode( pszName, wszPlayerName, sizeof( wszPlayerName ) );
+
+			wchar_t wszTeam[64];
+			C_Team *pTeam = GetGlobalTeam( iTeam );
+			if ( pTeam )
+			{
+				g_pVGuiLocalize->ConvertANSIToUnicode( pTeam->Get_Name(), wszTeam, sizeof( wszTeam ) );
+			}
+			else
+			{
+				_snwprintf( wszTeam, sizeof( wszTeam ) / sizeof( wchar_t ), L"%d", iTeam );
+			}
+
+			if ( !IsInCommentaryMode() )
+			{
+				// Client isn't going to catch up on team change so we have to set the color manually here.
+				Color col = pChat->GetTeamColor( iTeam );
+
+				wchar_t wszLocalized[100];
+				if ( bAutoTeamed )
+				{
+					g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#TF_Joined_AutoTeam" ), 2, wszPlayerName, wszTeam );
+				}
+				else if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
+				{
+					if ( iTeam >= FIRST_GAME_TEAM )
+					{
+						g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#TF_Joined_Deathmatch" ), 1, wszPlayerName );
+					}
+					else
+					{
+						g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#TF_Joined_Deathmatch_Spectator" ), 1, wszPlayerName );
+					}
+
+					C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
+					if ( tf_PR )
+					{
+						col = tf_PR->GetPlayerColor( iPlayerIndex );
+					}
+				}
+				else
+				{
+					g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#TF_Joined_Team" ), 2, wszPlayerName, wszTeam );
+				}
+
+				char szLocalized[100];
+				g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof( szLocalized ) );
+
+				pChat->SetCustomColor( col );
+				pChat->ChatPrintf( iPlayerIndex, CHAT_FILTER_TEAMCHANGE, "%s", szLocalized );
+			}
+		}
+
+		C_BasePlayer *pPlayer = UTIL_PlayerByIndex( iPlayerIndex );
+
+		if ( pPlayer && pPlayer->IsLocalPlayer() )
+		{
+			// that's me
+			pPlayer->TeamChange( iTeam );
+		}
+
+		return;
 	}
 
 	BaseClass::FireGameEvent( event );

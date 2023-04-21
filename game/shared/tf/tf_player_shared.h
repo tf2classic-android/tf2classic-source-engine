@@ -60,6 +60,13 @@ public:
 	bool bKill;
 };
 
+enum
+{
+	STUN_PHASE_NONE,
+	STUN_PHASE_LOOP,
+	STUN_PHASE_END,
+};
+
 //=============================================================================
 //
 // Shared player class.
@@ -175,6 +182,7 @@ public:
 	int		GetNumHealers( void ) { return m_nNumHealers; }
 
 	void	Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon = NULL, float flFlameDuration = -1.0f );
+	void	StunPlayer( float flDuration, CTFPlayer *pStunner );
 
 	void	RecalculatePlayerBodygroups( void );
 
@@ -232,9 +240,14 @@ public:
 	CBaseObject*		GetCarriedObject( void );
 #endif
 
-	int		GetKillstreak( void ) { return m_nStreaks.Get(0); }
-	void	SetKillstreak(int iKillstreak) { m_nStreaks.Set(0, iKillstreak); }
-	void	IncKillstreak() { m_nStreaks.Set(0, m_nStreaks.Get(0) + 1); }
+	int		GetKillstreak( void ) { return m_nStreaks.Get( 0 ); }
+	void	SetKillstreak( int iKillstreak ) { m_nStreaks.Set( 0, iKillstreak ); }
+	void	IncKillstreak() { m_nStreaks.Set( 0, m_nStreaks.Get( 0 ) + 1 ); }
+
+	int		GetStunPhase( void ) { return m_iStunPhase; }
+	void	SetStunPhase( int iPhase ) { m_iStunPhase = iPhase; }
+	float	GetStunExpireTime( void ) { return m_flStunExpireTime; }
+	void	SetStunExpireTime( float flTime ) { m_flStunExpireTime = flTime; }
 
 	int		GetTeleporterEffectColor( void ) { return m_nTeamTeleporterUsed; }
 	void	SetTeleporterEffectColor( int iTeam ) { m_nTeamTeleporterUsed = iTeam; }
@@ -257,6 +270,7 @@ private:
 	void OnAddTaunting( void );
 	void OnAddSlowed( void );
 	void OnAddCritboosted( void );
+	void OnAddStunned( void );
 	void OnAddHalloweenGiant( void );
 	void OnAddHalloweenTiny( void );
 	void OnAddRagemode( void );
@@ -273,6 +287,7 @@ private:
 	void OnRemoveTaunting( void );
 	void OnRemoveSlowed( void );
 	void OnRemoveCritboosted( void );
+	void OnRemoveStunned( void );
 	void OnRemoveHalloweenGiant( void );
 	void OnRemoveHalloweenTiny( void );
 	void OnRemoveRagemode( void );
@@ -380,6 +395,10 @@ private:
 
 	CNetworkArray( bool, m_bPlayerDominated, MAX_PLAYERS+1 );		// array of state per other player whether player is dominating other players
 	CNetworkArray( bool, m_bPlayerDominatingMe, MAX_PLAYERS+1 );	// array of state per other player whether other players are dominating this player
+
+	CNetworkHandle( CTFPlayer, m_hStunner );
+	CNetworkVar( float, m_flStunExpireTime );
+	int m_iStunPhase;
 	
 	CNetworkHandle( CBaseObject, m_hCarriedObject );
 	CNetworkVar( bool, m_bCarryingObject );
@@ -396,11 +415,9 @@ private:
 
 	WEAPON_FILE_INFO_HANDLE	m_hDisguiseWeaponInfo;
 
-	CNewParticleEffect *m_pCritEffects[2];
+	CNewParticleEffect *m_pCritEffect;
 	EHANDLE m_hCritEffectHost;
 	CSoundPatch *m_pCritSound;
-
-	CHandle<C_BaseAnimating> m_hPowerupShield;
 
 	int	m_nOldDisguiseClass;
 	int m_nOldDisguiseTeam;

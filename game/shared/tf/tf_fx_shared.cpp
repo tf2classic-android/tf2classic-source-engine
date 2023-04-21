@@ -11,10 +11,12 @@
 // Client specific.
 #ifdef CLIENT_DLL
 #include "fx_impact.h"
+#include "c_te_effect_dispatch.h"
 // Server specific.
 #else
 #include "tf_fx.h"
 #include "ilagcompensationmanager.h"
+#include "te_effect_dispatch.h"
 #endif
 
 ConVar tf_use_fixed_weaponspreads( "tf_use_fixed_weaponspreads", "0", FCVAR_NOTIFY|FCVAR_REPLICATED, "If set to 1, weapons that fire multiple pellets per shot will use a non-random pellet distribution." );
@@ -105,6 +107,28 @@ void StartGroupingSounds() {}
 void EndGroupingSounds() {}
 
 #endif
+
+void FX_TFTracer( const char *pszTracerEffectName, const Vector &vecStart, const Vector &vecEnd, int iEntIndex, bool bWhiz )
+{
+	int iParticleIndex = GetParticleSystemIndex( pszTracerEffectName );
+
+	CEffectData data;
+	data.m_vStart = vecStart;
+	data.m_vOrigin = vecEnd;
+#ifdef CLIENT_DLL
+	data.m_hEntity = ClientEntityList().EntIndexToHandle( iEntIndex );
+#else
+	data.m_nEntIndex = iEntIndex;
+#endif
+	data.m_nHitBox = iParticleIndex;
+
+	if ( bWhiz )
+	{
+		data.m_fFlags |= TRACER_FLAG_WHIZ;
+	}
+
+	DispatchEffect( "TFParticleTracer", data );
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: This runs on both the client and the server.  On the server, it 

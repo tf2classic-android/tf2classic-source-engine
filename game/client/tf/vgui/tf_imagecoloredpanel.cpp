@@ -42,17 +42,17 @@ CTFImageColoredPanel::CTFImageColoredPanel(Panel *parent, const char *name) : Sc
 //-----------------------------------------------------------------------------
 void CTFImageColoredPanel::PaintBackground()
 {
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
+	C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
 
 	//disable for deathmatch for now
-	if (!tf_PR || !tf2c_coloredhud.GetBool() || !TFGameRules() || !TFGameRules()->IsDeathmatch())
+	if ( !tf_PR || !tf2c_coloredhud.GetBool() || !TFGameRules() || !TFGameRules()->IsDeathmatch() )
 	{
-		SetDrawColor(Color(0, 0, 0, 0));
+		SetDrawColor( Color( 0, 0, 0, 0 ) );
 	}
 	else
 	{
 		int iIndex = GetLocalPlayerIndex();
-		SetDrawColor(tf_PR->GetPlayerColor(iIndex));
+		SetDrawColor( tf_PR->GetPlayerColor( iIndex ) );
 	}
 	BaseClass::PaintBackground();
 }

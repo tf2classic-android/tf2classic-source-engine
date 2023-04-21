@@ -119,8 +119,6 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 	CScriptListItem *pItem;
 
 	char szValue[256];
-	char strValue[256];
-	float flValue;
 
 	pList = m_pList;
 	while (pList)
@@ -138,28 +136,25 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 		{
 		case O_BOOL:
 			pBox = (CTFAdvCheckButton *)pList->pControl;
-			sprintf(szValue, "%s", pBox->IsSelected() ? "1" : "0");
+			sprintf(szValue, "%d", pBox->IsSelected() ? 1 : 0);
 			break;
 		case O_NUMBER:
 			pEdit = (TextEntry *)pList->pControl;
-			pEdit->GetText(strValue, sizeof(strValue));
-			sprintf(szValue, "%s", strValue);
+			pEdit->GetText( szValue, sizeof( szValue ) );
 			break;
 		case O_SLIDER:
 			pScroll = (CTFAdvSlider *)pList->pControl;
-			flValue = pScroll->GetValue();
-			sprintf(szValue, "%f", flValue);
+			V_strncpy( szValue, pScroll->GetFinalValue(), sizeof( szValue ) );
 			break;
 		case O_STRING:
 			pEdit = (TextEntry *)pList->pControl;
-			pEdit->GetText(strValue, sizeof(strValue));
-			sprintf(szValue, "%s", strValue);
+			pEdit->GetText(szValue, sizeof(szValue));
 			break;
 		case O_CATEGORY:
 			break;
 		case O_LIST:
 			pCombo = (ComboBox *)pList->pControl;
-			pCombo->GetText( strValue, sizeof( strValue ) );
+			pCombo->GetText( szValue, sizeof( szValue ) );
 			int activeItem = pCombo->GetActiveItem();
 
 			pItem = pObj->pListItems;
@@ -188,9 +183,7 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 		// Remove double quotes and % characters
 		UTIL_StripInvalidCharacters(szValue, sizeof(szValue));
 
-		strcpy(strValue, szValue);
-
-		pObj->SetCurValue(strValue);
+		pObj->SetCurValue( szValue );
 
 		pList = pList->next;
 	}
@@ -212,9 +205,10 @@ void CTFOptionsAdvancedPanel::CreateControls()
 	TextEntry *pEdit;
 	ComboBox *pCombo;
 	CTFAdvSlider *pScroll;
-	CTFAdvButton *pTitle;
+	Label *pTitle;
 	CScriptListItem *pListItem;
 	
+	HFont hFont = GETSCHEME()->GetFont( m_pListPanel->GetFontString(), true );
 
 	Panel *objParent = m_pListPanel;
 	while (pObj)
@@ -229,48 +223,46 @@ void CTFOptionsAdvancedPanel::CreateControls()
 
 		pCtrl = new mpcontrol_t(objParent, "mpcontrol_t");
 		pCtrl->type = pObj->type;
-
 	
 		switch (pCtrl->type)
 		{
 		case O_BOOL:
 			pBox = new CTFAdvCheckButton(pCtrl, "DescCheckButton", pObj->prompt);
+			pBox->MakeReadyForUse();
+
 			pBox->SetSelected(pObj->fcurValue != 0.0f ? true : false);
 			pBox->SetCommandString(pObj->cvarname);
-			pBox->GetButton()->SetFontByString(m_pListPanel->GetFontString());
-			if (pObj->tooltip[0] != '\0')
-			{
-				wchar_t *pText = g_pVGuiLocalize->Find(pObj->tooltip);
-				if (pText != NULL)
-				{
-					char pszToolTipLocal[256];
-					wcstombs(pszToolTipLocal, pText, sizeof(pszToolTipLocal));
-					pBox->SetToolTip(pszToolTipLocal);
-				}
-				else
-				{
-					pBox->SetToolTip(pObj->tooltip);
-				}
-			}
-			pCtrl->pControl = (Panel *)pBox;
+			pBox->GetButton()->SetFont( hFont );
+
+			pBox->SetToolTip( pObj->tooltip );
+
+			pCtrl->pControl = pBox;
 			break;
 		case O_STRING:
 		case O_NUMBER:
 			pEdit = new TextEntry(pCtrl, "DescTextEntry");
+			pEdit->MakeReadyForUse();
+
 			pEdit->InsertString(pObj->curValue);
-			pCtrl->pControl = (Panel *)pEdit;
+
+			pCtrl->pControl = pEdit;
 			break;
 		case O_SLIDER:
 			pScroll = new CTFAdvSlider(pCtrl, "DescScrollEntry", pObj->prompt);
-			pScroll->ShowInt( false );
-			pScroll->SetValue(pObj->fcurValue);
-			pScroll->SetCommandString(pObj->cvarname);
-			pScroll->SetMinMax(pObj->fMin, pObj->fMax);
-			pScroll->GetButton()->SetFontByString(m_pListPanel->GetFontString());
-			pCtrl->pControl = (Panel *)pScroll;
+			pScroll->MakeReadyForUse();
+
+			pScroll->SetCommandString( pObj->cvarname );
+			pScroll->SetValue( pObj->fcurValue );
+			pScroll->SetMinMax( pObj->fMin, pObj->fMax );
+			pScroll->SetFont( hFont );
+			pScroll->SetToolTip( pObj->tooltip );
+
+			pCtrl->pControl = pScroll;
 			break;
 		case O_LIST:
 			pCombo = new ComboBox(pCtrl, "DescComboBox", 5, false);
+			pCombo->MakeReadyForUse();
+			pCombo->SetFont( hFont );
 
 			pListItem = pObj->pListItems;
 			while (pListItem)
@@ -281,15 +273,17 @@ void CTFOptionsAdvancedPanel::CreateControls()
 
 			pCombo->ActivateItemByRow((int)pObj->fcurValue);
 
-			pCtrl->pControl = (Panel *)pCombo;
+			pCtrl->pControl = pCombo;
 			break;
 		case O_CATEGORY:
-			pTitle = new CTFAdvButton(pCtrl, "DescTextTitle", pObj->prompt);
-			pTitle->SetEnabled(false);
-			pTitle->SetBorderByString("AdvSettingsTitleBorder");
-			pTitle->SetBorderVisible(true);
-			pTitle->GetButton()->SetFontByString("MenuSmallFont");
-			pCtrl->pControl = (Panel *)pTitle;
+			pTitle = new Label( pCtrl, "DescTextTitle", pObj->prompt );
+			pTitle->MakeReadyForUse();
+
+			pTitle->SetBorder( GETSCHEME()->GetBorder( "AdvSettingsTitleBorder" ) );
+			pTitle->SetFont( GETSCHEME()->GetFont( "MenuSmallFont", true ) );
+			pTitle->SetFgColor( GETSCHEME()->GetColor( DEFAULT_COLOR, COLOR_WHITE ) );
+
+			pCtrl->pControl = pTitle;
 			break;
 		default:
 			break;
@@ -297,8 +291,10 @@ void CTFOptionsAdvancedPanel::CreateControls()
 
 		if (pCtrl->type != O_BOOL && pCtrl->type != O_SLIDER && pCtrl->type != O_CATEGORY)
 		{
-			pCtrl->pPrompt = new vgui::Label(pCtrl, "DescLabel", "");
-			pCtrl->pPrompt->SetFont(m_pListPanel->GetFont());
+			pCtrl->pPrompt = new Label(pCtrl, "DescLabel", "");
+			pCtrl->pPrompt->MakeReadyForUse();
+
+			pCtrl->pPrompt->SetFont( hFont );
 			pCtrl->pPrompt->SetContentAlignment(vgui::Label::a_west);
 			pCtrl->pPrompt->SetTextInset(5, 0);
 			pCtrl->pPrompt->SetText(pObj->prompt);

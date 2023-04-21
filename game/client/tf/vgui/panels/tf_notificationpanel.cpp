@@ -2,6 +2,7 @@
 #include "tf_notificationpanel.h"
 #include "tf_mainmenupanel.h"
 #include "tf_mainmenu.h"
+#include <vgui_controls/TextImage.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -18,6 +19,9 @@ CTFNotificationPanel::CTFNotificationPanel( vgui::Panel* parent, const char *pan
 	m_pPrevButton = NULL;
 	m_pNextButton = NULL;
 	m_pMessageLabel = NULL;
+
+	m_iOrgPrevPos = 0;
+	m_iOrgNextPos = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -49,6 +53,8 @@ void CTFNotificationPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 	m_pMessageLabel = dynamic_cast<CExLabel *>( FindChildByName( "MessageLabel" ) );
 
 	m_iMinHeight = GetTall();
+	m_iOrgPrevPos = m_pPrevButton ? m_pPrevButton->GetYPos() : 0;
+	m_iOrgNextPos = m_pNextButton ? m_pNextButton->GetYPos() : 0;
 
 	UpdateLabels();
 }
@@ -56,6 +62,32 @@ void CTFNotificationPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 void CTFNotificationPanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
+
+	// Adjust message box size based on text height.
+	int iWindowHeight = m_iMinHeight;
+
+	if ( m_pMessageLabel )
+	{
+		int x, y, wide, tall;
+		m_pMessageLabel->GetPos( x, y );
+		m_pMessageLabel->GetTextImage()->GetContentSize( wide, tall );
+
+		// A bit of space for arrows.
+		iWindowHeight = MAX( iWindowHeight, ( y + tall + YRES( 30 ) ) );
+
+		m_pMessageLabel->SetSize( m_pMessageLabel->GetWide(), tall );
+	}
+
+	SetSize( GetWide(), iWindowHeight );
+
+	if ( m_pPrevButton )
+	{
+		m_pPrevButton->SetPos( m_pPrevButton->GetXPos(), m_iOrgPrevPos + ( iWindowHeight - m_iMinHeight ) );
+	}
+	if ( m_pNextButton )
+	{
+		m_pNextButton->SetPos( m_pNextButton->GetXPos(), m_iOrgNextPos + ( iWindowHeight - m_iMinHeight ) );
+	}
 };
 
 
@@ -92,9 +124,8 @@ void CTFNotificationPanel::UpdateLabels()
 	m_pNextButton->SetVisible( ( m_iCurrent < m_iCount - 1 ) );
 	m_pPrevButton->SetVisible( ( m_iCurrent > 0 ) );
 
-	char sCount[32];
-	Q_snprintf( sCount, sizeof( sCount ), "(%d/%d)", m_iCurrent + 1, m_iCount );
-	SetDialogVariable( "count", sCount );
+	SetDialogVariable( "current", m_iCurrent + 1 );
+	SetDialogVariable( "count", m_iCount );
 
 	MessageNotification *pNotification = GetNotificationManager()->GetNotification( m_iCurrent );
 
@@ -106,6 +137,8 @@ void CTFNotificationPanel::UpdateLabels()
 	{
 		pNotification->bUnread = false;
 	}
+
+	InvalidateLayout( true );
 }
 
 void CTFNotificationPanel::RemoveCurrent()

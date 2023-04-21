@@ -161,6 +161,7 @@ void CTFGrenadeMirvProjectile::Explode( trace_t *pTrace, int bitsDamageType )
 		CTFGrenadeMirvBomb *pBomb = CTFGrenadeMirvBomb::Create( vecSrc, GetAbsAngles(), vecVelocity, vecZero, pPlayer, flTime );
 		pBomb->SetDamage( GetDamage() * 0.5f );
 		pBomb->SetDamageRadius( GetDamageRadius() );
+		pBomb->SetCritical( m_bCritical );
 	}
 }
 
@@ -201,7 +202,8 @@ void CTFGrenadeMirvProjectile::OnDataChanged( DataUpdateType_t updateType )
 
 void CTFGrenadeMirvProjectile::CreateTrails( void )
 {
-	const char *pszParticle = ConstructTeamParticle( "MIRV_trail_%s", GetTeamNumber(), false );
+	const char *pszFormat = m_bCritical ? "MIRV_trail_%s_crit" : "MIRV_trail_%s";
+	const char *pszParticle = ConstructTeamParticle( pszFormat, GetTeamNumber(), false );
 	ParticleProp()->Create( pszParticle, PATTACH_ABSORIGIN_FOLLOW );
 }
 

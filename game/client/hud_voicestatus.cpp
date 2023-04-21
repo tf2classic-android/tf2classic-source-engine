@@ -363,14 +363,14 @@ void CHudVoiceStatus::Paint()
 #if defined(TF_CLASSIC_CLIENT)
 		Color c;
 
-		if (TFGameRules() && TFGameRules()->IsDeathmatch())
+		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 		{
-			C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
-			c = tf_PR->GetPlayerColor(playerId);
+			C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
+			c = tf_PR ? tf_PR->GetPlayerColor( playerId ) : COLOR_GREY;
 		}
 		else
 		{
-			c = g_PR->GetTeamColor(g_PR ? g_PR->GetTeam(playerId) : TEAM_UNASSIGNED);
+			c = g_PR->GetTeamColor( g_PR ? g_PR->GetTeam( playerId ) : TEAM_UNASSIGNED );
 		}
 #else
 		Color c = g_PR->GetTeamColor( g_PR ? g_PR->GetTeam(playerId) : TEAM_UNASSIGNED );

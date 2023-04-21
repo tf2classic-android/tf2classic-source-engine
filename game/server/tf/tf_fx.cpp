@@ -111,7 +111,7 @@ public:
 	int m_iWeaponID;
 	int m_iItemID;
 	int m_nEntIndex;
-	int m_iUserID;
+	int m_iPlayerIndex;
 	int m_iTeamNum;
 	bool m_bCritical;
 };
@@ -130,7 +130,7 @@ CTETFExplosion::CTETFExplosion( const char *name ) : CBaseTempEntity( name )
 	m_iWeaponID = TF_WEAPON_NONE;
 	m_iItemID = -1;
 	m_nEntIndex = 0;
-	m_iUserID = 0;
+	m_iPlayerIndex = 0;
 	m_iTeamNum = TEAM_UNASSIGNED;
 	m_bCritical = false;
 }
@@ -142,7 +142,7 @@ IMPLEMENT_SERVERCLASS_ST( CTETFExplosion, DT_TETFExplosion )
 	SendPropVector( SENDINFO_NOCHECK( m_vecNormal ), 6, 0, -1.0f, 1.0f ),
 	SendPropInt( SENDINFO_NOCHECK( m_iWeaponID ), Q_log2( TF_WEAPON_COUNT )+1, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO_NOCHECK( m_iItemID ) ),
-	SendPropInt( SENDINFO_NOCHECK( m_iUserID ), -1, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO_NOCHECK( m_iPlayerIndex ), 7, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO_NOCHECK( m_iTeamNum ), 3, SPROP_UNSIGNED ),
 	SendPropBool( SENDINFO_NOCHECK( m_bCritical ) ),
 	SendPropInt( SENDINFO_NAME( m_nEntIndex, entindex ), MAX_EDICT_BITS ),
@@ -154,7 +154,7 @@ void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecO
 	VectorCopy( vecNormal, g_TETFExplosion.m_vecNormal );
 	g_TETFExplosion.m_iWeaponID	= iWeaponID;	
 	g_TETFExplosion.m_nEntIndex	= nEntIndex;
-	g_TETFExplosion.m_iUserID = pPlayer ? pPlayer->GetUserID() : 0;
+	g_TETFExplosion.m_iPlayerIndex = pPlayer ? pPlayer->entindex() : 0;
 	g_TETFExplosion.m_iTeamNum = iTeam;
 	g_TETFExplosion.m_bCritical = bCrit;
 

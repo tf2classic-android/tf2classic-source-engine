@@ -710,13 +710,13 @@ CTFHudObjectiveStatus::CTFHudObjectiveStatus( const char *pElementName ) : CHudE
 
 	m_pFlagPanel = new CTFHudFlagObjectives( this, "ObjectiveStatusFlagPanel" );
 	m_pTimePanel = new CTFHudTimeStatus( this, "ObjectiveStatusTimePanel" );
-	m_pDMPanel = new CTFHudDeathMatchObjectives( this, "ObjectiveStatusDeathMatchPanel" );
 	m_pControlPointIconsPanel = NULL;
 	m_pControlPointProgressBar = new CControlPointProgressBar( this );
-	//m_pEscortPanel = new CTFHudEscort( this, "ObjectiveStatusEscort" );
-	//m_pEscortRacePanel = new CTFHudMultipleEscort( this, "ObjectiveStatusMultipleEscort" );
+	m_pEscortPanel = new CTFHudEscort( this, "ObjectiveStatusEscort", TF_TEAM_BLUE, false );
+	m_pEscortRacePanel = new CTFHudMultipleEscort( this, "ObjectiveStatusMultipleEscort" );
 	//m_pTrainingPanel = new CTFHudTraining( this, "ObjectiveStatusTraining" );
 	//m_pRobotDestructionPanel = new CTFHUDRobotDestruction( this, "ObjectiveStatusRobotDestruction" );
+	m_pDMPanel = new CTFHudDeathMatchObjectives( this, "ObjectiveStatusDeathMatchPanel" );
 
 	SetHiddenBits( 0 );
 
@@ -764,6 +764,11 @@ void CTFHudObjectiveStatus::Reset()
 	{
 		m_pDMPanel->Reset();
 	}
+
+	if ( m_pEscortPanel )
+	{
+		m_pEscortPanel->Reset();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -802,18 +807,26 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 			// turn on the control point icons
 			if ( m_pControlPointIconsPanel && !m_pControlPointIconsPanel->IsVisible() )
 			{
-				m_pControlPointIconsPanel->SetVisible(true);
+				m_pControlPointIconsPanel->SetVisible( true );
 			}
 			return;
 			break;
 
 		case TF_GAMETYPE_ESCORT:
 			// turn on the payload panel
-
-			// turn on the control point icons because we don't have a payload hud yet
-			if (m_pControlPointIconsPanel && !m_pControlPointIconsPanel->IsVisible())
+			if ( TFGameRules()->HasMultipleTrains() )
 			{
-				m_pControlPointIconsPanel->SetVisible(true);
+				if ( m_pEscortRacePanel && !m_pEscortRacePanel->IsVisible() )
+				{
+					m_pEscortRacePanel->SetVisible( true );
+				}
+			}
+			else
+			{
+				if ( m_pEscortPanel && !m_pEscortPanel->IsVisible() )
+				{
+					m_pEscortPanel->SetVisible( true );
+				}
 			}
 			return;
 			break;
@@ -822,7 +835,7 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 			// turn on the DM specific HUD
 			if ( m_pDMPanel && !m_pDMPanel->IsVisible() )
 			{
-				m_pDMPanel->SetVisible(true);
+				m_pDMPanel->SetVisible( true );
 			}
 			return;
 			break;
@@ -838,7 +851,7 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 			// turn on the flag panel
 			if ( m_pFlagPanel && !m_pFlagPanel->IsVisible() )
 			{
-				m_pFlagPanel->SetVisible(true);
+				m_pFlagPanel->SetVisible( true );
 			}
 			break;
 
@@ -858,22 +871,29 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 					m_pFlagPanel->SetVisible( true );
 				}
 			}
-
 			break;
 
 		case TF_GAMETYPE_ESCORT:
 			// turn on the payload panel
-			
-			// turn on the control point icons because we don't have a payload hud yet
-			if (m_pControlPointIconsPanel && !m_pControlPointIconsPanel->IsVisible())
+			if ( TFGameRules()->HasMultipleTrains() )
 			{
-				m_pControlPointIconsPanel->SetVisible(true);
+				if ( m_pEscortRacePanel && !m_pEscortRacePanel->IsVisible() )
+				{
+					m_pEscortRacePanel->SetVisible( true );
+				}
+			}
+			else
+			{
+				if ( m_pEscortPanel && !m_pEscortPanel->IsVisible() )
+				{
+					m_pEscortPanel->SetVisible( true );
+				}
 			}
 			break;
 
 		case TF_GAMETYPE_DM:
 			// turn on the DM specific HUD
-			if ( m_pDMPanel && GetLocalPlayerTeam() >= FIRST_GAME_TEAM && !m_pDMPanel->IsVisible() )
+			if ( m_pDMPanel && !m_pDMPanel->IsVisible() )
 			{
 				m_pDMPanel->SetVisible( true );
 			}
@@ -885,6 +905,9 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFHudObjectiveStatus::TurnOffPanels()
 {
 	// turn off the flag panel
@@ -903,6 +926,16 @@ void CTFHudObjectiveStatus::TurnOffPanels()
 	if ( m_pDMPanel && m_pDMPanel->IsVisible() )
 	{
 		m_pDMPanel->SetVisible( false );
+	}
+
+	if ( m_pEscortPanel && m_pEscortPanel->IsVisible() )
+	{
+		m_pEscortPanel->SetVisible( false );
+	}
+
+	if ( m_pEscortRacePanel && m_pEscortRacePanel->IsVisible() )
+	{
+		m_pEscortRacePanel->SetVisible( false );
 	}
 }
 

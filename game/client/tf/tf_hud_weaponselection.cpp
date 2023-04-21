@@ -51,6 +51,7 @@ public:
 
 	virtual void CycleToNextWeapon( void );
 	virtual void CycleToPrevWeapon( void );
+	virtual void SwitchToLastWeapon( void );
 
 	virtual C_BaseCombatWeapon *GetWeaponInSlot( int iSlot, int iSlotPos );
 	virtual void SelectWeaponSlot( int iSlot );
@@ -234,10 +235,6 @@ void CHudWeaponSelection::OnThink()
 bool CHudWeaponSelection::ShouldDraw()
 {
 	bool bShouldDraw = ShouldDrawInternal();
-
-	// Don't draw the weapon selection HUD while the ragemode powerup is active.
-	if ( CTFPlayer::GetLocalTFPlayer() && CTFPlayer::GetLocalTFPlayer()->m_Shared.InCond( TF_COND_POWERUP_RAGEMODE ) )
-		return false;
 
 	return bShouldDraw;
 }
@@ -797,6 +794,9 @@ void CHudWeaponSelection::CycleToNextWeapon( void )
 	if ( pPlayer->IsAlive() == false )
 		return;
 
+	if ( pPlayer->IsAllowedToSwitchWeapons() == false )
+		return;
+
 	C_BaseCombatWeapon *pNextWeapon = NULL;
 	if ( IsInSelectionMode() )
 	{
@@ -855,6 +855,9 @@ void CHudWeaponSelection::CycleToPrevWeapon( void )
 	if ( pPlayer->IsAlive() == false )
 		return;
 
+	if ( pPlayer->IsAllowedToSwitchWeapons() == false )
+		return;
+
 	C_BaseCombatWeapon *pNextWeapon = NULL;
 	if ( IsInSelectionMode() )
 	{
@@ -898,6 +901,18 @@ void CHudWeaponSelection::CycleToPrevWeapon( void )
 		if( m_bPlaySelectionSounds )
 			pPlayer->EmitSound( "Player.WeaponSelectionMoveSlot" );
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Moves the selection to the previous item in the menu
+//-----------------------------------------------------------------------------
+void CHudWeaponSelection::SwitchToLastWeapon( void )
+{
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( !pPlayer || !pPlayer->IsAllowedToSwitchWeapons() )
+		return;
+
+	CBaseHudWeaponSelection::SwitchToLastWeapon();
 }
 
 //-----------------------------------------------------------------------------

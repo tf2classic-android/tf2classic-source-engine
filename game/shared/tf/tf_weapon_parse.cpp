@@ -53,6 +53,7 @@ CTFWeaponInfo::CTFWeaponInfo()
 	m_szExplosionEffect_Crit[0] = '\0';
 	m_szExplosionPlayerEffect_Crit[0] = '\0';
 	m_szExplosionWaterEffect_Crit[0] = '\0';
+	m_bHasTeamColoredExplosions = false;
 
 	m_iWeaponType = TF_WPN_TYPE_PRIMARY;
 
@@ -105,11 +106,6 @@ void CTFWeaponInfo::Parse( KeyValues *pKeyValuesData, const char *szWeaponName )
 
 	m_WeaponData[TF_WEAPON_PRIMARY_MODE].m_flSmackDelay			= pKeyValuesData->GetFloat( "SmackDelay", 0.2f );
 	m_WeaponData[TF_WEAPON_SECONDARY_MODE].m_flSmackDelay		= pKeyValuesData->GetFloat( "Secondary_SmackDelay", 0.2f );
-
-#ifdef DM_WEAPON_BUCKET
-	m_iSlotDM = pKeyValuesData->GetInt( "bucket_DM", 0 );
-	m_iPositionDM = pKeyValuesData->GetInt( "bucket_position_DM", 0 );
-#endif
 
 	m_bDoInstantEjectBrass = ( pKeyValuesData->GetInt( "DoInstantEjectBrass", 1 ) != 0 );
 	const char *pszBrassModel = pKeyValuesData->GetString( "BrassModel", NULL );
@@ -236,6 +232,8 @@ void CTFWeaponInfo::Parse( KeyValues *pKeyValuesData, const char *szWeaponName )
 	{
 		Q_strncpy( m_szExplosionWaterEffect_Crit, pszEffect, sizeof( m_szExplosionWaterEffect_Crit ) );
 	}
+
+	m_bHasTeamColoredExplosions = pKeyValuesData->GetBool( "HasTeamColoredExplosions" );
 
 	m_bDontDrop = ( pKeyValuesData->GetInt( "DontDrop", 0 ) > 0 );
 

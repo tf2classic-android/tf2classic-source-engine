@@ -44,19 +44,19 @@ void CTFAdvItemButton::Init()
 	BaseClass::Init();
 	m_pItemDefinition = NULL;
 	m_iLoadoutSlot = TF_LOADOUT_SLOT_PRIMARY;
-	pButton->SetContentAlignment(CTFAdvButtonBase::GetAlignment("south"));
-	pButton->SetTextInset(0, -10);
+	m_pButton->SetContentAlignment( Label::a_south );
+	m_pButton->SetTextInset( 0, -10 );
 }
 
 void CTFAdvItemButton::PerformLayout()
 {
+	BaseClass::PerformLayout();
+
 	int inset = YRES(45);
 	int wide = GetWide() - inset;
 	SetImageSize(wide, wide);
 	SetImageInset(inset / 2, -1 * wide / 5);
 	SetShouldScaleImage(true);
-
-	BaseClass::PerformLayout();
 };
 
 //-----------------------------------------------------------------------------
@@ -94,10 +94,10 @@ void CTFAdvItemButton::SetItemDefinition(CEconItemDefinition *pItemData)
 	Q_snprintf( szIcon, sizeof( szIcon ), "../%s_large", pItemData->image_inventory );
 	SetImage( szIcon );
 
-	SetText( pItemData->item_name );
+	m_pButton->SetText( pItemData->GenerateLocalizedFullItemName() );
 
-	pButton->SetDepressedSound( pItemData->mouse_pressed_sound );
-	pButton->SetReleasedSound( NULL );
+	m_pButton->SetDepressedSound( pItemData->mouse_pressed_sound );
+	m_pButton->SetReleasedSound( NULL );
 }
 
 void CTFAdvItemButton::SetLoadoutSlot( int iSlot, int iPreset )

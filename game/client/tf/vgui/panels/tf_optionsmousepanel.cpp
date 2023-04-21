@@ -63,7 +63,7 @@ void CTFOptionsMousePanel::CreateControls()
 {
 	BaseClass::CreateControls();
 
-	pTitleMouse = new CTFAdvButton(this, "DescTextTitle", "Mouse options");
+	pTitleMouse = new Label( this, "DescTextTitle", "Mouse options" );
 
 	m_pReverseMouseCheckBox = new CCvarToggleCheckButton(this, "ReverseMouse", "#GameUI_ReverseMouse", "m_pitch");
 	m_pRawInputCheckBox = new CCvarToggleCheckButton(this, "RawInput", "#GameUI_MouseRaw", "m_rawinput");
@@ -74,7 +74,7 @@ void CTFOptionsMousePanel::CreateControls()
 	m_pMouseAccelSlider = new CCvarSlider(this, "MouseAccelSlider", "#GameUI_MouseAcceleration", 1.0f, 2.0f, "m_customaccel_exponent", true);
 
 	///
-	pTitleJoystick = new CTFAdvButton(this, "DescTextTitle", "Joystick options");
+	pTitleJoystick = new Label( this, "DescTextTitle", "Joystick options" );
 
 	m_pJoystickCheckBox = new CCvarToggleCheckButton(this, "Joystick", "#GameUI_Joystick", "joystick");
 	m_pJoystickSouthpawCheckBox = new CCvarToggleCheckButton(this, "JoystickSouthpaw", "#GameUI_JoystickSouthpaw", "joy_movement_stick");
@@ -167,14 +167,14 @@ void CTFOptionsMousePanel::OnControlModified(Panel *panel)
 void CTFOptionsMousePanel::UpdatePanels()
 {
 	bool bEnabled = m_pMouseAccelCheckBox->IsSelected();
-	m_pMouseAccelSlider->SetEnabled(bEnabled);
+	m_pMouseAccelSlider->SetVisible(bEnabled);
 
 
 	bEnabled = m_pJoystickCheckBox->IsSelected();
-	m_pReverseJoystickCheckBox->SetEnabled(bEnabled);
-	m_pJoystickSouthpawCheckBox->SetEnabled(bEnabled);
-	m_pJoyYawSensitivitySlider->SetEnabled(bEnabled);
-	m_pJoyPitchSensitivitySlider->SetEnabled(bEnabled);
+	m_pReverseJoystickCheckBox->SetVisible( bEnabled );
+	m_pJoystickSouthpawCheckBox->SetVisible( bEnabled );
+	m_pJoyYawSensitivitySlider->SetVisible( bEnabled );
+	m_pJoyPitchSensitivitySlider->SetVisible( bEnabled );
 }
 
 //-----------------------------------------------------------------------------

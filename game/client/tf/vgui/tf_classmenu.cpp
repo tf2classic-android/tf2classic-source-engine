@@ -621,7 +621,7 @@ void CTFClassMenu::UpdateNumClassLabels( int iTeam )
 	int nTotalCount = 0;
 
 	// count how many of each class there are
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
+	C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
 
 	if ( !tf_PR )
 		return;

@@ -37,7 +37,7 @@ const char *szLocalizedObjectNames[OBJ_LAST] =
 	"#TF_Object_Dispenser",
 	"#TF_Object_Tele",
 	"#TF_Object_Sentry",
-	"#TF_object_sapper"			
+	"#TF_object_sapper"
 };
 
 class CTFHudDeathNotice : public CHudBaseDeathNotice
@@ -49,10 +49,10 @@ public:
 	virtual bool IsVisible( void );
 	virtual void Paint( void );
 
-	void PlayRivalrySounds( int iKillerIndex, int iVictimIndex, int iType  );
-	virtual Color GetInfoTextColor(int iDeathNoticeMsg, bool bLocalPlayerInvolved){ return bLocalPlayerInvolved ? Color(0, 0, 0, 255) : Color(255, 255, 255, 255); }
+	void PlayRivalrySounds( int iKillerIndex, int iVictimIndex, int iType );
+	virtual Color GetInfoTextColor( int iDeathNoticeMsg, bool bLocalPlayerInvolved ) { return bLocalPlayerInvolved ? Color( 0, 0, 0, 255 ) : Color( 255, 255, 255, 255 ); }
 
-protected:	
+protected:
 	virtual void OnGameEvent( IGameEvent *event, int iDeathNoticeMsg );
 	virtual Color GetTeamColor( int iTeamNumber, bool bLocalPlayerInvolved /* = false */ );
 
@@ -126,7 +126,7 @@ void CTFHudDeathNotice::PlayRivalrySounds( int iKillerIndex, int iVictimIndex, i
 //			displayed.  This method can examine the event and death notice and
 //			make game-specific tweaks to it before it is displayed
 //-----------------------------------------------------------------------------
-void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
+void CTFHudDeathNotice::OnGameEvent( IGameEvent *event, int iDeathNoticeMsg )
 {
 	const char *pszEventName = event->GetName();
 
@@ -136,8 +136,8 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 		int iCustomDamage = event->GetInt( "customkill" );
 		int iLocalPlayerIndex = GetLocalPlayerIndex();
 
-		m_DeathNotices[iDeathNoticeMsg].Killer.iPlayerID = engine->GetPlayerForUserID(event->GetInt("attacker"));
-		m_DeathNotices[iDeathNoticeMsg].Victim.iPlayerID = engine->GetPlayerForUserID(event->GetInt("userid"));
+		m_DeathNotices[iDeathNoticeMsg].Killer.iPlayerID = engine->GetPlayerForUserID( event->GetInt( "attacker" ) );
+		m_DeathNotices[iDeathNoticeMsg].Victim.iPlayerID = engine->GetPlayerForUserID( event->GetInt( "userid" ) );
 
 		// if there was an assister, put both the killer's and assister's names in the death message
 		int iAssisterID = engine->GetPlayerForUserID( event->GetInt( "assister" ) );
@@ -148,11 +148,11 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 			// Base TF2 assumes that the assister and killer are the same team, thus it 
 			// writes both of the same string, which in turn gives them both the killers team color
 			// whether or not the assister is on the killers team or not. -danielmm8888
-			m_DeathNotices[iDeathNoticeMsg].Assister.iTeam = (iAssisterID > 0) ? g_PR->GetTeam(iAssisterID) : 0;
+			m_DeathNotices[iDeathNoticeMsg].Assister.iTeam = ( iAssisterID > 0 ) ? g_PR->GetTeam( iAssisterID ) : 0;
 			char szKillerBuf[MAX_PLAYER_NAME_LENGTH];
-			Q_snprintf(szKillerBuf, ARRAYSIZE(szKillerBuf), "%s", assister_name);
-			Q_strncpy(m_DeathNotices[iDeathNoticeMsg].Assister.szName, szKillerBuf, ARRAYSIZE(m_DeathNotices[iDeathNoticeMsg].Assister.szName));
-			if (iLocalPlayerIndex == iAssisterID)
+			Q_snprintf( szKillerBuf, ARRAYSIZE( szKillerBuf ), "%s", assister_name );
+			Q_strncpy( m_DeathNotices[iDeathNoticeMsg].Assister.szName, szKillerBuf, ARRAYSIZE( m_DeathNotices[iDeathNoticeMsg].Assister.szName ) );
+			if ( iLocalPlayerIndex == iAssisterID )
 			{
 				m_DeathNotices[iDeathNoticeMsg].bLocalPlayerInvolved = true;
 			}
@@ -164,7 +164,7 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 			Q_strncpy(m_DeathNotices[iDeathNoticeMsg].Killer.szName, szKillerBuf, ARRAYSIZE(m_DeathNotices[iDeathNoticeMsg].Killer.szName));
 			if ( iLocalPlayerIndex == iAssisterID )
 			{
-				m_DeathNotices[iDeathNoticeMsg].bLocalPlayerInvolved = true;
+			m_DeathNotices[iDeathNoticeMsg].bLocalPlayerInvolved = true;
 			}*/
 		}
 
@@ -175,7 +175,7 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 			int iKillerID = engine->GetPlayerForUserID( event->GetInt( "attacker" ) );
 			int iVictimID = engine->GetPlayerForUserID( event->GetInt( "userid" ) );
 			int nDeathFlags = event->GetInt( "death_flags" );
-		
+
 			if ( nDeathFlags & TF_DEATH_DOMINATION )
 			{
 				AddAdditionalMsg( iKillerID, iVictimID, "#Msg_Dominating" );
@@ -205,7 +205,7 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 			{
 				// get the localized name for the object
 				char szLocalizedObjectName[MAX_PLAYER_NAME_LENGTH];
-				szLocalizedObjectName[ 0 ] = 0;
+				szLocalizedObjectName[0] = 0;
 				const wchar_t *wszLocalizedObjectName = g_pVGuiLocalize->Find( szLocalizedObjectNames[iObjectType] );
 				if ( wszLocalizedObjectName )
 				{
@@ -218,17 +218,17 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 				}
 
 				// compose the string
-				if (m_DeathNotices[iDeathNoticeMsg].Victim.szName[0])
+				if ( m_DeathNotices[iDeathNoticeMsg].Victim.szName[0] )
 				{
-					char szVictimBuf[MAX_PLAYER_NAME_LENGTH*2];
-					Q_snprintf(szVictimBuf, ARRAYSIZE(szVictimBuf), "%s (%s)", szLocalizedObjectName, m_DeathNotices[iDeathNoticeMsg].Victim.szName);
-					Q_strncpy(m_DeathNotices[iDeathNoticeMsg].Victim.szName, szVictimBuf, ARRAYSIZE(m_DeathNotices[iDeathNoticeMsg].Victim.szName));
+					char szVictimBuf[MAX_PLAYER_NAME_LENGTH * 2];
+					Q_snprintf( szVictimBuf, ARRAYSIZE( szVictimBuf ), "%s (%s)", szLocalizedObjectName, m_DeathNotices[iDeathNoticeMsg].Victim.szName );
+					Q_strncpy( m_DeathNotices[iDeathNoticeMsg].Victim.szName, szVictimBuf, ARRAYSIZE( m_DeathNotices[iDeathNoticeMsg].Victim.szName ) );
 				}
 				else
 				{
-					Q_strncpy(m_DeathNotices[iDeathNoticeMsg].Victim.szName, szLocalizedObjectName, ARRAYSIZE(m_DeathNotices[iDeathNoticeMsg].Victim.szName));
+					Q_strncpy( m_DeathNotices[iDeathNoticeMsg].Victim.szName, szLocalizedObjectName, ARRAYSIZE( m_DeathNotices[iDeathNoticeMsg].Victim.szName ) );
 				}
-				
+
 			}
 			else
 			{
@@ -240,27 +240,27 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 		switch ( iCustomDamage )
 		{
 		case TF_DMG_CUSTOM_BACKSTAB:
-			Q_strncpy(m_DeathNotices[iDeathNoticeMsg].szIcon, "d_backstab", ARRAYSIZE(m_DeathNotices[iDeathNoticeMsg].szIcon));
+			Q_strncpy( m_DeathNotices[iDeathNoticeMsg].szIcon, "d_backstab", ARRAYSIZE( m_DeathNotices[iDeathNoticeMsg].szIcon ) );
 			break;
 		case TF_DMG_CUSTOM_HEADSHOT:
-			Q_strncpy(m_DeathNotices[iDeathNoticeMsg].szIcon, "d_headshot", ARRAYSIZE(m_DeathNotices[iDeathNoticeMsg].szIcon));
+			Q_strncpy( m_DeathNotices[iDeathNoticeMsg].szIcon, "d_headshot", ARRAYSIZE( m_DeathNotices[iDeathNoticeMsg].szIcon ) );
 			break;
 		case TF_DMG_CUSTOM_SUICIDE:
+		{
+			// display a different message if this was suicide, or assisted suicide (suicide w/recent damage, kill awarded to damager)
+			bool bAssistedSuicide = event->GetInt( "userid" ) != event->GetInt( "attacker" );
+			pMsg = g_pVGuiLocalize->Find( bAssistedSuicide ? "#DeathMsg_AssistedSuicide" : "#DeathMsg_Suicide" );
+			if ( pMsg )
 			{
-				// display a different message if this was suicide, or assisted suicide (suicide w/recent damage, kill awarded to damager)
-				bool bAssistedSuicide = event->GetInt( "userid" ) != event->GetInt( "attacker" );
-				pMsg = g_pVGuiLocalize->Find( bAssistedSuicide ? "#DeathMsg_AssistedSuicide" : "#DeathMsg_Suicide" );
-				if ( pMsg )
-				{
-					V_wcsncpy(m_DeathNotices[iDeathNoticeMsg].wzInfoText, pMsg, sizeof(m_DeathNotices[iDeathNoticeMsg].wzInfoText));
-				}			
-				break;
+				V_wcsncpy( m_DeathNotices[iDeathNoticeMsg].wzInfoText, pMsg, sizeof( m_DeathNotices[iDeathNoticeMsg].wzInfoText ) );
 			}
+			break;
+		}
 		default:
 			break;
 		}
-	} 
-	else if ( FStrEq( "teamplay_point_captured", pszEventName ) || FStrEq( "teamplay_capture_blocked", pszEventName ) || 
+	}
+	else if ( FStrEq( "teamplay_point_captured", pszEventName ) || FStrEq( "teamplay_capture_blocked", pszEventName ) ||
 		FStrEq( "teamplay_flag_event", pszEventName ) )
 	{
 		bool bDefense = ( FStrEq( "teamplay_capture_blocked", pszEventName ) || ( FStrEq( "teamplay_flag_event", pszEventName ) &&
@@ -268,7 +268,7 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 
 		const char *szCaptureIcons[] = { "d_redcapture", "d_bluecapture", "d_greencapture", "d_yellowcapture" };
 		const char *szDefenseIcons[] = { "d_reddefend", "d_bluedefend", "d_greendefend", "d_yellowdefend" };
-		
+
 		int iTeam = m_DeathNotices[iDeathNoticeMsg].Killer.iTeam;
 		Assert( iTeam >= FIRST_GAME_TEAM );
 		Assert( iTeam < FIRST_GAME_TEAM + TF_TEAM_COUNT );
@@ -278,7 +278,7 @@ void CTFHudDeathNotice::OnGameEvent(IGameEvent *event, int iDeathNoticeMsg)
 		int iIndex = m_DeathNotices[iDeathNoticeMsg].Killer.iTeam - FIRST_GAME_TEAM;
 		Assert( iIndex < ARRAYSIZE( szCaptureIcons ) );
 
-		Q_strncpy(m_DeathNotices[iDeathNoticeMsg].szIcon, bDefense ? szDefenseIcons[iIndex] : szCaptureIcons[iIndex], ARRAYSIZE(m_DeathNotices[iDeathNoticeMsg].szIcon));
+		Q_strncpy( m_DeathNotices[iDeathNoticeMsg].szIcon, bDefense ? szDefenseIcons[iIndex] : szCaptureIcons[iIndex], ARRAYSIZE( m_DeathNotices[iDeathNoticeMsg].szIcon ) );
 	}
 }
 
@@ -290,14 +290,14 @@ void CTFHudDeathNotice::AddAdditionalMsg( int iKillerID, int iVictimID, const ch
 	DeathNoticeItem &msg2 = m_DeathNotices[AddDeathNoticeItem()];
 	Q_strncpy( msg2.Killer.szName, g_PR->GetPlayerName( iKillerID ), ARRAYSIZE( msg2.Killer.szName ) );
 	Q_strncpy( msg2.Victim.szName, g_PR->GetPlayerName( iVictimID ), ARRAYSIZE( msg2.Victim.szName ) );
-	
-	msg2.Killer.iTeam = g_PR->GetTeam(iKillerID);
-	msg2.Victim.iTeam = g_PR->GetTeam(iVictimID);
+
+	msg2.Killer.iTeam = g_PR->GetTeam( iKillerID );
+	msg2.Victim.iTeam = g_PR->GetTeam( iVictimID );
 
 	msg2.Killer.iPlayerID = iKillerID;
 	msg2.Victim.iPlayerID = iVictimID;
 
-	const wchar_t *wzMsg =  g_pVGuiLocalize->Find( pMsgKey );
+	const wchar_t *wzMsg = g_pVGuiLocalize->Find( pMsgKey );
 	if ( wzMsg )
 	{
 		V_wcsncpy( msg2.wzInfoText, wzMsg, sizeof( msg2.wzInfoText ) );
@@ -330,7 +330,7 @@ void CTFHudDeathNotice::Paint()
 	for ( int i = 0; i < iCount; i++ )
 	{
 		DeathNoticeItem &msg = m_DeathNotices[i];
-		
+
 		CHudTexture *icon = msg.iconDeath;
 		CHudTexture *iconPostKillerName = msg.iconPostKillerName;
 		CHudTexture *iconPreKillerName = msg.iconPreKillerName;
@@ -344,11 +344,11 @@ void CTFHudDeathNotice::Paint()
 
 		g_pVGuiLocalize->ConvertANSIToUnicode( msg.Victim.szName, victim, sizeof( victim ) );
 		g_pVGuiLocalize->ConvertANSIToUnicode( msg.Killer.szName, killer, sizeof( killer ) );
-		g_pVGuiLocalize->ConvertANSIToUnicode( msg.Assister.szName, assister, sizeof(assister) );
+		g_pVGuiLocalize->ConvertANSIToUnicode( msg.Assister.szName, assister, sizeof( assister ) );
 
 		int iVictimTextWide = UTIL_ComputeStringWidth( m_hTextFont, victim ) + xSpacing;
-		int iDeathInfoTextWide= msg.wzInfoText[0] ? UTIL_ComputeStringWidth( m_hTextFont, msg.wzInfoText ) + xSpacing : 0;
-		int iDeathInfoEndTextWide= msg.wzInfoTextEnd[0] ? UTIL_ComputeStringWidth( m_hTextFont, msg.wzInfoTextEnd ) + xSpacing : 0;
+		int iDeathInfoTextWide = msg.wzInfoText[0] ? UTIL_ComputeStringWidth( m_hTextFont, msg.wzInfoText ) + xSpacing : 0;
+		int iDeathInfoEndTextWide = msg.wzInfoTextEnd[0] ? UTIL_ComputeStringWidth( m_hTextFont, msg.wzInfoTextEnd ) + xSpacing : 0;
 
 		int iKillerTextWide = killer[0] ? UTIL_ComputeStringWidth( m_hTextFont, killer ) + xSpacing : 0;
 		int iLineTall = m_flLineHeight;
@@ -356,26 +356,26 @@ void CTFHudDeathNotice::Paint()
 		int iconWide = 0, iconTall = 0, iDeathInfoOffset = 0, iVictimTextOffset = 0, iconActualWide = 0;
 
 		int iPreKillerTextWide = msg.wzPreKillerText[0] ? UTIL_ComputeStringWidth( m_hTextFont, msg.wzPreKillerText ) - xSpacing : 0;
-		
+
 		int iconPrekillerWide = 0, iconPrekillerActualWide = 0, iconPrekillerTall = 0;
 		int iconPostkillerWide = 0, iconPostkillerActualWide = 0, iconPostkillerTall = 0;
 
 		int iconPostVictimWide = 0, iconPostVictimActualWide = 0, iconPostVictimTall = 0;
 
-		int iAssisterTextWide = assister[0] ? UTIL_ComputeStringWidth(m_hTextFont, assister) + xSpacing : 0;
+		int iAssisterTextWide = assister[0] ? UTIL_ComputeStringWidth( m_hTextFont, assister ) + xSpacing : 0;
 
-		int iPlusIconWide = assister[0] ? UTIL_ComputeStringWidth(m_hTextFont, "+") + xSpacing : 0;
+		int iPlusIconWide = assister[0] ? UTIL_ComputeStringWidth( m_hTextFont, "+" ) + xSpacing : 0;
 
 		// Get the local position for this notice
 		if ( icon )
-		{			
+		{
 			iconActualWide = icon->EffectiveWidth( 1.0f );
 			iconWide = iconActualWide + xSpacing;
 			iconTall = icon->EffectiveHeight( 1.0f );
-			
-			int iconTallDesired = iLineTall-YRES(2);
+
+			int iconTallDesired = iLineTall - YRES( 2 );
 			Assert( 0 != iconTallDesired );
-			float flScale = (float) iconTallDesired / (float) iconTall;
+			float flScale = (float)iconTallDesired / (float)iconTall;
 
 			iconActualWide *= flScale;
 			iconTall *= flScale;
@@ -403,15 +403,15 @@ void CTFHudDeathNotice::Paint()
 			iconPostkillerWide = iconPostkillerActualWide;
 			iconPostkillerTall = iconPostKillerName->EffectiveHeight( 1.0f );
 
-			int iconTallDesired = iLineTall-YRES(2);
+			int iconTallDesired = iLineTall - YRES( 2 );
 			Assert( 0 != iconTallDesired );
-			float flScale = (float) iconTallDesired / (float) iconPostkillerTall;
+			float flScale = (float)iconTallDesired / (float)iconPostkillerTall;
 
 			iconPostkillerActualWide *= flScale;
 			iconPostkillerTall *= flScale;
 			iconPostkillerWide *= flScale;
 		}
-		
+
 		if ( iconPostVictimName )
 		{
 			iconPostVictimActualWide = iconPostVictimName->EffectiveWidth( 1.0f );
@@ -430,39 +430,39 @@ void CTFHudDeathNotice::Paint()
 		int iTotalWide = iKillerTextWide + iPlusIconWide + iAssisterTextWide + iconWide + iVictimTextWide + iDeathInfoTextWide + iDeathInfoEndTextWide + ( xMargin * 2 );
 		iTotalWide += iconPrekillerWide + iconPostkillerWide + iPreKillerTextWide + iconPostVictimWide;
 
-		int y = yStart + ( ( iLineTall + m_flLineSpacing ) * i );				
+		int y = yStart + ( ( iLineTall + m_flLineSpacing ) * i );
 		int yText = y + ( ( iLineTall - iTextTall ) / 2 );
 		int yIcon = y + ( ( iLineTall - iconTall ) / 2 );
 
-		int x=0;
+		int x = 0;
 		if ( m_bRightJustify )
 		{
-			x =	GetWide() - iTotalWide;
+			x = GetWide() - iTotalWide;
 		}
 
 		// draw a background panel for the message
 		Vertex_t vert[NUM_BACKGROUND_COORD];
-		GetBackgroundPolygonVerts( x, y+1, x+iTotalWide, y+iLineTall-1, ARRAYSIZE( vert ), vert );		
+		GetBackgroundPolygonVerts( x, y + 1, x + iTotalWide, y + iLineTall - 1, ARRAYSIZE( vert ), vert );
 		surface()->DrawSetTexture( -1 );
-		surface()->DrawSetColor( GetBackgroundColor ( i ) );
+		surface()->DrawSetColor( GetBackgroundColor( i ) );
 		surface()->DrawTexturedPolygon( ARRAYSIZE( vert ), vert );
 
 		x += xMargin;
 
-		C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
+		C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
 
 		// prekiller icon
 		if ( iconPreKillerName )
 		{
 			int yPreIconTall = y + ( ( iLineTall - iconPrekillerTall ) / 2 );
-			iconPreKillerName->DrawSelf( x, yPreIconTall, iconPrekillerActualWide, iconPrekillerTall, m_clrIcon);
+			iconPreKillerName->DrawSelf( x, yPreIconTall, iconPrekillerActualWide, iconPrekillerTall, m_clrIcon );
 			x += iconPrekillerWide + xSpacing;
 		}
 
 		if ( killer[0] )
 		{
 			// Draw killer's name
-			Color clr = TFGameRules()->IsDeathmatch() ? tf_PR->GetPlayerColor(msg.Killer.iPlayerID) : GetTeamColor(msg.Killer.iTeam, msg.bLocalPlayerInvolved);
+			Color clr = TFGameRules()->IsDeathmatch() && tf_PR ? tf_PR->GetPlayerColor( msg.Killer.iPlayerID ) : GetTeamColor( msg.Killer.iTeam, msg.bLocalPlayerInvolved );
 			DrawText( x, yText, m_hTextFont, clr, killer );
 			x += iKillerTextWide;
 		}
@@ -474,8 +474,8 @@ void CTFHudDeathNotice::Paint()
 			x += iPlusIconWide;
 
 			// Draw assister's name
-			Color clr = TFGameRules()->IsDeathmatch() ? tf_PR->GetPlayerColor(msg.Assister.iPlayerID) : GetTeamColor(msg.Assister.iTeam, msg.bLocalPlayerInvolved);
-			DrawText(x, yText, m_hTextFont, clr, assister);
+			Color clr = TFGameRules()->IsDeathmatch() && tf_PR ? tf_PR->GetPlayerColor( msg.Assister.iPlayerID ) : GetTeamColor( msg.Assister.iTeam, msg.bLocalPlayerInvolved );
+			DrawText( x, yText, m_hTextFont, clr, assister );
 			x += iAssisterTextWide;
 		}
 
@@ -496,9 +496,9 @@ void CTFHudDeathNotice::Paint()
 		}
 
 		// Draw glow behind weapon icon to show it was a crit death
-		if (msg.bCrit && msg.iconCritDeath)
+		if ( msg.bCrit && msg.iconCritDeath )
 		{
-			msg.iconCritDeath->DrawSelf(x, yIcon, iconActualWide, iconTall, m_clrIcon);
+			msg.iconCritDeath->DrawSelf( x, yIcon, iconActualWide, iconTall, m_clrIcon );
 		}
 
 		// Draw death icon
@@ -522,8 +522,8 @@ void CTFHudDeathNotice::Paint()
 		}
 
 		// Draw victims name
-		Color clr = TFGameRules()->IsDeathmatch() ? tf_PR->GetPlayerColor(msg.Victim.iPlayerID) : GetTeamColor(msg.Victim.iTeam, msg.bLocalPlayerInvolved);
-		DrawText(x + iVictimTextOffset, yText, m_hTextFont, clr, victim);
+		Color clr = TFGameRules()->IsDeathmatch() ? tf_PR->GetPlayerColor( msg.Victim.iPlayerID ) : GetTeamColor( msg.Victim.iTeam, msg.bLocalPlayerInvolved );
+		DrawText( x + iVictimTextOffset, yText, m_hTextFont, clr, victim );
 		x += iVictimTextWide;
 
 		// postkiller icon
@@ -537,7 +537,7 @@ void CTFHudDeathNotice::Paint()
 		// Draw Additional Text on the end of the victims name
 		if ( msg.wzInfoTextEnd[0] )
 		{
-			DrawText( x , yText, m_hTextFont, GetInfoTextColor( i, msg.bLocalPlayerInvolved ), msg.wzInfoTextEnd );
+			DrawText( x, yText, m_hTextFont, GetInfoTextColor( i, msg.bLocalPlayerInvolved ), msg.wzInfoTextEnd );
 		}
 	}
 }
@@ -561,12 +561,12 @@ Color CTFHudDeathNotice::GetTeamColor( int iTeamNumber, bool bLocalPlayerInvolve
 	case TF_TEAM_YELLOW:
 		return m_clrYellowText;
 		break;
-	case TEAM_UNASSIGNED:		
-		return bLocalPlayerInvolved ? Color(0, 0, 0, 255) : Color(255, 255, 255, 255);
+	case TEAM_UNASSIGNED:
+		return bLocalPlayerInvolved ? Color( 0, 0, 0, 255 ) : Color( 255, 255, 255, 255 );
 		break;
 	default:
 		AssertOnce( false );	// invalid team
-		return bLocalPlayerInvolved ? Color(0, 0, 0, 255) : Color(255, 255, 255, 255);
+		return bLocalPlayerInvolved ? Color( 0, 0, 0, 255 ) : Color( 255, 255, 255, 255 );
 		break;
 	}
 }

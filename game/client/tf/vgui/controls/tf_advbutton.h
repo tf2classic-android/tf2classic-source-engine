@@ -37,13 +37,14 @@ public:
 	void SetShouldScaleImage(bool state) { m_bScaleImage = state; };
 	bool GetShouldScaleImage() { return m_bScaleImage; };
 	void SetSelected(bool bState);
+	void SetEnabled(bool bState);
 
 	void OnThink();
-	CTFButton *GetButton(){ return pButton; };
+	CTFButton *GetButton() { return m_pButton; };
 
 protected:
-	CTFButton		*pButton;
-	bool			bGlowing;
+	CTFButton		*m_pButton;
+	bool			m_bGlowing;
 	bool			m_bAnimationIn;
 	bool			m_bScaleImage;
 

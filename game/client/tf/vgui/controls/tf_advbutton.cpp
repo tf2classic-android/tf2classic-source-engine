@@ -25,8 +25,7 @@ DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CTFAdvButton, CTFAdvButtonBase);
 //-----------------------------------------------------------------------------
 CTFAdvButton::CTFAdvButton(vgui::Panel *parent, const char *panelName, const char *text) : CTFAdvButtonBase(parent, panelName, text)
 {
-	pButton = new CTFButton(this, "SubButton", text);
-	pButton->SetParent(this);
+	m_pButton = new CTFButton( this, "SubButton", text );
 	Init();
 }
 
@@ -35,7 +34,7 @@ CTFAdvButton::CTFAdvButton(vgui::Panel *parent, const char *panelName, const cha
 //-----------------------------------------------------------------------------
 CTFAdvButton::~CTFAdvButton()
 {
-	delete pButton;
+	delete m_pButton;
 }
 
 
@@ -45,7 +44,7 @@ CTFAdvButton::~CTFAdvButton()
 void CTFAdvButton::Init()
 {
 	BaseClass::Init();
-	bGlowing = false;
+	m_bGlowing = false;
 	m_flActionThink = -1;
 	m_flAnimationThink = -1;
 	m_bAnimationIn = true;
@@ -56,14 +55,6 @@ void CTFAdvButton::ApplySettings(KeyValues *inResourceData)
 	BaseClass::ApplySettings(inResourceData);
 
 	m_bScaleImage = inResourceData->GetBool("scaleImage", true);
-
-	for (KeyValues *pData = inResourceData->GetFirstSubKey(); pData != NULL; pData = pData->GetNextKey())
-	{
-		if (!Q_stricmp(pData->GetName(), "SubButton"))
-		{
-			pButton->ApplySettings(pData);
-		}
-	}
 
 	InvalidateLayout(false, true); // force ApplySchemeSettings to run
 }
@@ -91,7 +82,7 @@ void CTFAdvButton::PerformLayout()
 		float fHeight = fWidth;
 		int iShift = (GetTall() - fWidth) / 2.0;
 		float fXOrigin = iShift * 2 + fWidth;
-		pButton->SetTextInset(fXOrigin, 0);
+		m_pButton->SetTextInset( fXOrigin, 0 );
 		pButtonImage->SetPos(iShift, iShift);
 		pButtonImage->SetWide(fWidth);
 		pButtonImage->SetTall(fHeight);
@@ -107,7 +98,7 @@ void CTFAdvButton::PerformLayout()
 	if (pParent)
 	{
 		char sText[64];
-		pButton->GetText(sText, sizeof(sText));
+		m_pButton->GetText( sText, sizeof( sText ) );
 		if (Q_strcmp(sText, ""))
 		{
 			char * pch;
@@ -126,7 +117,7 @@ void CTFAdvButton::PerformLayout()
 
 void CTFAdvButton::SetText(const char *tokenName)
 {
-	pButton->SetText(tokenName);
+	m_pButton->SetText( tokenName );
 }
 
 //-----------------------------------------------------------------------------
@@ -136,7 +127,7 @@ void CTFAdvButton::OnThink()
 {
 	BaseClass::OnThink();
 
-	if (bGlowing && m_flAnimationThink < gpGlobals->curtime)
+	if ( m_bGlowing && m_flAnimationThink < gpGlobals->curtime )
 	{
 		float m_fAlpha = (m_bAnimationIn ? 50.0f : 255.0f);
 		float m_fDelay = (m_bAnimationIn ? 0.75f : 0.0f);
@@ -149,9 +140,9 @@ void CTFAdvButton::OnThink()
 
 void CTFAdvButton::SetGlowing(bool Glowing)
 { 
-	bGlowing = Glowing; 
+	m_bGlowing = Glowing;
 
-	if (!bGlowing)
+	if ( !m_bGlowing )
 	{
 		float m_fAlpha = 255.0f;
 		float m_fDelay = 0.0f;
@@ -164,8 +155,14 @@ void CTFAdvButton::SetSelected(bool bState)
 {
 	m_bSelected = bState;
 	SendAnimation(MOUSE_DEFAULT);
-	pButton->SetSelected(bState);
+	m_pButton->SetSelected( bState );
 };
+
+void CTFAdvButton::SetEnabled(bool bState)
+{
+	m_pButton->SetEnabled( bState );
+	BaseClass::SetEnabled(bState);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -182,12 +179,12 @@ void CTFAdvButton::SendAnimation(MouseState flag)
 {
 	BaseClass::SendAnimation(flag);
 
-	if (pButton->IsSelected() && m_bSelected)
+	if ( m_pButton->IsSelected() && m_bSelected )
 		return;
 
-	bool bAnimation = ((pButton->m_fXShift == 0 && pButton->m_fYShift == 0) ? false : true);
+	bool bAnimation = ( ( m_pButton->m_fXShift == 0 && m_pButton->m_fYShift == 0 ) ? false : true );
 	AnimationController::PublicValue_t p_AnimLeave(0, 0);
-	AnimationController::PublicValue_t p_AnimHover(pButton->m_fXShift, pButton->m_fYShift);
+	AnimationController::PublicValue_t p_AnimHover( m_pButton->m_fXShift, m_pButton->m_fYShift );
 	switch (flag)
 	{
 	//We can add additional stuff like animation here
@@ -197,12 +194,12 @@ void CTFAdvButton::SendAnimation(MouseState flag)
 	case MOUSE_ENTERED:
 		pButtonImage->SetDrawColor(GETSCHEME()->GetColor(pImageColorArmed, Color(255, 255, 255, 255)));
 		if (bAnimation)
-			vgui::GetAnimationController()->RunAnimationCommand(pButton, "Position", p_AnimHover, 0.0f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL);
+			vgui::GetAnimationController()->RunAnimationCommand( m_pButton, "Position", p_AnimHover, 0.0f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL );
 		break;
 	case MOUSE_EXITED:
 		pButtonImage->SetDrawColor(GETSCHEME()->GetColor(pImageColorSelected, Color(255, 255, 255, 255)));
 		if (bAnimation)
-			vgui::GetAnimationController()->RunAnimationCommand(pButton, "Position", p_AnimLeave, 0.0f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL);
+			vgui::GetAnimationController()->RunAnimationCommand( m_pButton, "Position", p_AnimLeave, 0.0f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL );
 		break;
 	case MOUSE_PRESSED:
 		pButtonImage->SetDrawColor(GETSCHEME()->GetColor(pImageColorDepressed, Color(255, 255, 255, 255)));
@@ -217,7 +214,7 @@ void CTFAdvButton::SendAnimation(MouseState flag)
 //-----------------------------------------------------------------------------
 CTFButton::CTFButton(vgui::Panel *parent, const char *panelName, const char *text) : CTFButtonBase(parent, panelName, text)
 {
-	m_pParent = NULL;
+	m_pParent = dynamic_cast<CTFAdvButton *>( parent );
 	iState = MOUSE_DEFAULT;
 	m_fXShift = 0.0;
 	m_fYShift = 0.0;

@@ -48,13 +48,17 @@ public:
 };
 
 
-class CTFProjectile_PlasmaBomblet : public CTFBaseRocket
+#ifdef CLIENT_DLL
+#define CTFProjectile_PlasmaBomb C_TFProjectile_PlasmaBomb
+#endif
+
+class CTFProjectile_PlasmaBomb : public CTFBaseRocket
 {
-	DECLARE_CLASS( CTFProjectile_PlasmaBomblet, CTFBaseRocket );
+	DECLARE_CLASS( CTFProjectile_PlasmaBomb, CTFBaseRocket );
 	DECLARE_NETWORKCLASS();
 
 #ifdef GAME_DLL
-	static CTFProjectile_PlasmaBomblet *Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL, CBaseEntity *pScorer = NULL );
+	static CTFProjectile_PlasmaBomb *Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL, CBaseEntity *pScorer = NULL );
 
 	virtual int		GetWeaponID( void ) const { return TF_WEAPON_DISPLACER; }
 

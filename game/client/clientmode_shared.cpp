@@ -65,11 +65,6 @@ extern ConVar replay_rendersetting_renderglow;
 #include "econ_item_description.h"
 #endif
 
-#if defined ( TF_CLASSIC_CLIENT )
-#include "c_tf_player.h"
-#include "tf_gamerules.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -153,18 +148,6 @@ CON_COMMAND( hud_reloadscheme, "Reloads hud layout and animation scripts." )
 		return;
 
 	mode->ReloadScheme(true);
-}
-
-CON_COMMAND( messagemode, "Opens chat dialog" )
-{
-	ClientModeShared *mode = ( ClientModeShared * )GetClientModeNormal();
-	mode->StartMessageMode( MM_SAY );
-}
-
-CON_COMMAND( messagemode2, "Opens chat dialog" )
-{
-	ClientModeShared *mode = ( ClientModeShared * )GetClientModeNormal();
-	mode->StartMessageMode( MM_SAY_TEAM );
 }
 
 #ifdef _DEBUG
@@ -670,6 +653,28 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 	if ( engine->Con_IsVisible() )
 		return 1;
 	
+	// Should we start typing a message?
+	if ( pszCurrentBinding &&
+		( Q_strcmp( pszCurrentBinding, "messagemode" ) == 0 ||
+		  Q_strcmp( pszCurrentBinding, "say" ) == 0 ) )
+	{
+		if ( down )
+		{
+			StartMessageMode( MM_SAY );
+		}
+		return 0;
+	}
+	else if ( pszCurrentBinding &&
+				( Q_strcmp( pszCurrentBinding, "messagemode2" ) == 0 ||
+				  Q_strcmp( pszCurrentBinding, "say_team" ) == 0 ) )
+	{
+		if ( down )
+		{
+			StartMessageMode( MM_SAY_TEAM );
+		}
+		return 0;
+	}
+	
 	// If we're voting...
 #ifdef VOTING_ENABLED
 	CHudVote *pHudVote = GET_HUDELEMENT( CHudVote );
@@ -1067,18 +1072,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 				}
 				else
 				{
-#ifdef TF_CLASSIC_CLIENT
-					if ( TFGameRules() && TFGameRules()->IsDeathmatch() && team > LAST_SHARED_TEAM )
-					{
-						g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#TF_DM_Joined" ), 1, wszPlayerName );
-					}
-					else
-					{
-						g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#game_player_joined_team" ), 2, wszPlayerName, wszTeam );
-					}
-#else
 					g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#game_player_joined_team" ), 2, wszPlayerName, wszTeam );
-#endif
 				}
 
 				char szLocalized[100];

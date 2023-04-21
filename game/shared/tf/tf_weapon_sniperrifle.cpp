@@ -908,21 +908,21 @@ int CSniperDot::DrawModel( int flags )
 	color32 outercolor = { 255, 255, 255, 128 };
 
 	// PistonMiner: DM sniper point coloring
-	if (TFGameRules()->IsDeathmatch())
+	if ( TFGameRules()->IsDeathmatch() )
 	{
 		// Get the color of the mercenary we are drawing the dot of.
-		C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
-		Color ownercolor = tf_PR->GetPlayerColor(pPlayer->index);
+		C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
+		Color ownercolor = tf_PR ? tf_PR->GetPlayerColor( pPlayer->index ) : COLOR_WHITE ;
 
 		// Convert to HSV so we can edit the color better.
 		Vector hsv, rgb;
-		RGBtoHSV(Vector(ownercolor.r() / 255.f, ownercolor.g() / 255.f, ownercolor.b() / 255.f), hsv);
+		RGBtoHSV( Vector( ownercolor.r() / 255.f, ownercolor.g() / 255.f, ownercolor.b() / 255.f ), hsv );
 
 		// Set the Value to max for constant brightness.
 		hsv.z = 1.0;
 
 		// Convert back to RGB
-		HSVtoRGB(hsv, rgb);
+		HSVtoRGB( hsv, rgb );
 
 		// Apply the color to our sprite.
 		m_hSpriteMaterial->ColorModulate( rgb.x, rgb.y, rgb.z );

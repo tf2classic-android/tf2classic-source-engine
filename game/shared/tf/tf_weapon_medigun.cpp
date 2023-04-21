@@ -253,7 +253,7 @@ bool CWeaponMedigun::Deploy( void )
 		m_bHolstered = false;
 
 #ifdef GAME_DLL
-		CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+		CTFPlayer *pOwner = GetTFPlayerOwner();
 		if ( m_bChargeRelease && pOwner )
 		{
 			pOwner->m_Shared.RecalculateChargeEffects();
@@ -284,7 +284,7 @@ bool CWeaponMedigun::Holster( CBaseCombatWeapon *pSwitchingTo )
 
 
 #ifdef GAME_DLL
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( pOwner )
 	{
 		pOwner->m_Shared.RecalculateChargeEffects( true );
@@ -409,7 +409,7 @@ bool CWeaponMedigun::HealingTarget( CBaseEntity *pTarget )
 //-----------------------------------------------------------------------------
 bool CWeaponMedigun::AllowedToHealTarget( CBaseEntity *pTarget )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return false;
 
@@ -436,7 +436,7 @@ bool CWeaponMedigun::AllowedToHealTarget( CBaseEntity *pTarget )
 //-----------------------------------------------------------------------------
 bool CWeaponMedigun::CouldHealTarget( CBaseEntity *pTarget )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return false;
 
@@ -451,7 +451,7 @@ bool CWeaponMedigun::CouldHealTarget( CBaseEntity *pTarget )
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::MaintainTargetInSlot()
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
 
@@ -512,7 +512,7 @@ void CWeaponMedigun::MaintainTargetInSlot()
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::FindNewTargetForSlot()
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
 
@@ -567,14 +567,14 @@ void CWeaponMedigun::HealTargetThink( void )
 		return;
 	}
 
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
 
 	float flTime = gpGlobals->curtime - pOwner->GetTimeBase();
 	if ( flTime > 5.0f || !AllowedToHealTarget(pTarget) )
 	{
-		RemoveHealingTarget( true );
+		RemoveHealingTarget( false );
 	}
 
 	SetNextThink( gpGlobals->curtime + 0.2f, s_pszMedigunHealTargetThink );
@@ -586,7 +586,7 @@ void CWeaponMedigun::HealTargetThink( void )
 //-----------------------------------------------------------------------------
 bool CWeaponMedigun::FindAndHealTargets( void )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return false;
 
@@ -732,7 +732,7 @@ void CWeaponMedigun::DrainCharge( void )
 	// If we're in charge release mode, drain our charge
 	if ( m_bChargeRelease )
 	{
-		CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+		CTFPlayer *pOwner = GetTFPlayerOwner();
 		if ( !pOwner )
 			return;
 
@@ -763,7 +763,7 @@ void CWeaponMedigun::DrainCharge( void )
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::ItemPostFrame( void )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
 
@@ -853,9 +853,9 @@ bool CWeaponMedigun::Lower( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponMedigun::RemoveHealingTarget( bool bStopHealingSelf )
+void CWeaponMedigun::RemoveHealingTarget( bool bSilent )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
 
@@ -865,13 +865,15 @@ void CWeaponMedigun::RemoveHealingTarget( bool bStopHealingSelf )
 		// HACK: For now, just deal with players
 		if ( m_hHealingTarget->IsPlayer() )
 		{
-			CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
 			CTFPlayer *pTFPlayer = ToTFPlayer( m_hHealingTarget );
 			pTFPlayer->m_Shared.StopHealing( pOwner );
 			pTFPlayer->m_Shared.RecalculateChargeEffects( false );
 
-			pOwner->SpeakConceptIfAllowed( MP_CONCEPT_MEDIC_STOPPEDHEALING, pTFPlayer->IsAlive() ? "healtarget:alive" : "healtarget:dead" );
-			pTFPlayer->SpeakConceptIfAllowed( MP_CONCEPT_HEALTARGET_STOPPEDHEALING );
+			if ( !bSilent )
+			{
+				pOwner->SpeakConceptIfAllowed( MP_CONCEPT_MEDIC_STOPPEDHEALING, pTFPlayer->IsAlive() ? "healtarget:alive" : "healtarget:dead" );
+				pTFPlayer->SpeakConceptIfAllowed( MP_CONCEPT_HEALTARGET_STOPPEDHEALING );
+			}
 		}
 	}
 
@@ -882,7 +884,7 @@ void CWeaponMedigun::RemoveHealingTarget( bool bStopHealingSelf )
 	m_hHealingTarget.Set( NULL );
 
 	// Stop the welding animation
-	if ( m_bHealing )
+	if ( m_bHealing && !bSilent )
 	{
 		SendWeaponAnim( ACT_MP_ATTACK_STAND_POSTFIRE );
 		pOwner->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_POST );
@@ -901,10 +903,9 @@ void CWeaponMedigun::RemoveHealingTarget( bool bStopHealingSelf )
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::PrimaryAttack( void )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
-
 
 	if ( !CanAttack() )
 		return;
@@ -956,7 +957,7 @@ void CWeaponMedigun::PrimaryAttack( void )
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::SecondaryAttack( void )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
 
@@ -1163,7 +1164,7 @@ void CWeaponMedigun::ClientThink()
 
 	// Don't show it while the player is dead. Ideally, we'd respond to m_bHealing in OnDataChanged,
 	// but it stops sending the weapon when it's holstered, and it gets holstered when the player dies.
-	CTFPlayer *pFiringPlayer = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pFiringPlayer = GetTFPlayerOwner();
 	if ( !pFiringPlayer || pFiringPlayer->IsPlayerDead() || pFiringPlayer->IsDormant() )
 	{
 		ClientThinkList()->SetNextClientThink( GetClientHandle(), CLIENT_THINK_NEVER );
@@ -1201,7 +1202,7 @@ void CWeaponMedigun::ClientThink()
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::UpdateEffects( void )
 {
-	CTFPlayer *pFiringPlayer = ToTFPlayer( GetOwnerEntity() );
+	CTFPlayer *pFiringPlayer = GetTFPlayerOwner();
 	if ( !pFiringPlayer )
 		return;
 

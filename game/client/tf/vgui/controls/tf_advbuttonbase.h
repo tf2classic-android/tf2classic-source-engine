@@ -70,14 +70,14 @@ public:
 	virtual void SetImageSize(int iWide, int iTall);
 	virtual void SetToolTip(const char *sText);
 
-	virtual void ShowInt( bool bShow ) { m_bShowInt = bShow; }
+	virtual void ShowFrac( bool bShow ) { m_bShowFrac = bShow; }
 
 	virtual void OnThink();
 	static	vgui::Label::Alignment GetAlignment(char* m_szAlignment);
 
 protected:
 	bool			m_bBorderVisible;
-	bool			m_bShowInt;
+	bool			m_bShowFrac;
 	bool			m_bAutoChange;
 	bool			m_bSelected;
 	
@@ -98,7 +98,6 @@ protected:
 	char			pImageColorDepressed[64];
 	char			pToolTip[256];
 
-	CTFButtonBase	*pButton;
 	ImagePanel		*pButtonImage;
 	float			m_fImageWidth;
 };

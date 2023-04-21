@@ -175,10 +175,10 @@ void CObjectTeleporter::TeleporterSend( CTFPlayer *pPlayer )
 	}
 
 	const char *pszTeleportedEffect = ConstructTeamParticle( "teleported_%s", iTeam );
-	const char *pszSparklesEffect = ConstructTeamParticle( "player_sparkles_%s", iTeam );
-
 	TE_TFParticleEffect( filter, 0.0, pszTeleportedEffect, origin, vec3_angle );
-	TE_TFParticleEffect( filter, 0.0, pszSparklesEffect, origin, vec3_angle, pPlayer, PATTACH_POINT );
+
+	const char *pszSparklesEffect = ConstructTeamParticle( "player_sparkles_%s", iTeam );
+	TE_TFParticleEffect( filter, 0.0, pszSparklesEffect, PATTACH_ABSORIGIN, pPlayer );
 
 	EmitSound( "Building_Teleporter.Send" );
 

@@ -1112,6 +1112,16 @@ void CKothLogic::InputSetYellowTimer( inputdata_t &inputdata )
 	}
 }
 
+
+class CMultipleEscort : public CBaseEntity
+{
+public:
+	DECLARE_CLASS( CMultipleEscort, CBaseEntity );
+};
+
+LINK_ENTITY_TO_CLASS( tf_logic_multiple_escort, CMultipleEscort );
+
+
 class CHybridMap_CTF_CP : public CBaseEntity
 {
 public:
@@ -1407,7 +1417,9 @@ void CTFGameRules::Activate()
 	tf_gamemode_passtime.SetValue( 0 );
 	tf_gamemode_dm.SetValue( 0 );
 
-	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_deathmatch" ) || !Q_strncmp(STRING(gpGlobals->mapname), "dm_", 3) )
+	SetMultipleTrains( false );
+
+	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_deathmatch" ) || !Q_strncmp( STRING( gpGlobals->mapname ), "dm_", 3 ) )
 	{
 		m_nGameType.Set( TF_GAMETYPE_DM );
 		tf_gamemode_dm.SetValue( 1 );
@@ -1417,7 +1429,7 @@ void CTFGameRules::Activate()
 		return;
 	}
 
-	CArenaLogic *pArena = dynamic_cast<CArenaLogic*>( gEntList.FindEntityByClassname( NULL, "tf_logic_arena") );
+	CArenaLogic *pArena = dynamic_cast<CArenaLogic*>( gEntList.FindEntityByClassname( NULL, "tf_logic_arena" ) );
 	if ( pArena )
 	{
 		m_nGameType.Set( TF_GAMETYPE_ARENA );
@@ -1428,7 +1440,7 @@ void CTFGameRules::Activate()
 		return;
 	}
 
-	CKothLogic *pKoth = dynamic_cast< CKothLogic* > ( gEntList.FindEntityByClassname( NULL, "tf_logic_koth" ) );
+	CKothLogic *pKoth = dynamic_cast<CKothLogic*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_koth" ) );
 	if ( pKoth )
 	{
 		m_nGameType.Set( TF_GAMETYPE_CP );
@@ -1443,7 +1455,7 @@ void CTFGameRules::Activate()
 		return;
 	}
 
-	CHybridMap_CTF_CP *pHybridEnt = dynamic_cast< CHybridMap_CTF_CP* > ( gEntList.FindEntityByClassname( NULL, "tf_logic_hybrid_ctf_cp" ) );
+	CHybridMap_CTF_CP *pHybridEnt = dynamic_cast<CHybridMap_CTF_CP*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_hybrid_ctf_cp" ) );
 	if ( pHybridEnt )
 	{
 		m_nGameType.Set( TF_GAMETYPE_CP );
@@ -1451,7 +1463,7 @@ void CTFGameRules::Activate()
 		return;
 	}
 
-	CCaptureFlag *pFlag = dynamic_cast< CCaptureFlag* > (gEntList.FindEntityByClassname(NULL, "item_teamflag"));
+	CCaptureFlag *pFlag = dynamic_cast<CCaptureFlag*> ( gEntList.FindEntityByClassname( NULL, "item_teamflag" ) );
 	if ( pFlag )
 	{
 		m_nGameType.Set( TF_GAMETYPE_CTF );
@@ -1459,11 +1471,15 @@ void CTFGameRules::Activate()
 		return;
 	}
 
-	CTeamTrainWatcher *pTrain = dynamic_cast< CTeamTrainWatcher* > (gEntList.FindEntityByClassname(NULL, "team_train_watcher"));
+	CTeamTrainWatcher *pTrain = dynamic_cast<CTeamTrainWatcher*> ( gEntList.FindEntityByClassname( NULL, "team_train_watcher" ) );
 	if ( pTrain )
 	{
 		m_nGameType.Set( TF_GAMETYPE_ESCORT );
-		//if ( gEntList.FindEntityByClassname( NULL, "tf_logic_multiple_escort" ) )
+
+		if ( gEntList.FindEntityByClassname( NULL, "tf_logic_multiple_escort" ) )
+		{
+			SetMultipleTrains( true );
+		}
 
 		tf_gamemode_payload.SetValue( 1 );
 		return;
@@ -2631,6 +2647,12 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 			return GR_NOTTEAMMATE;
 
 		return BaseClass::PlayerRelationship(pPlayer, pTarget);
+	}
+
+	void CTFGameRules::PlayTrainCaptureAlert( CTeamControlPoint *pPoint, bool bFinalPointInMap )
+	{
+		const char *pszSound = bFinalPointInMap ? TEAM_TRAIN_FINAL_ALERT : TEAM_TRAIN_ALERT;
+		BroadcastSound( 255, pszSound );
 	}
 
 	bool CTFGameRules::ClientConnected(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
@@ -3821,7 +3843,7 @@ void CTFGameRules::SendWinPanelInfo( void )
 		winEvent->SetInt( "red_score_prev", iRedScorePrev );
 		winEvent->SetInt( "round_complete", bRoundComplete );
 
-		CTFPlayerResource *pResource = dynamic_cast< CTFPlayerResource * >( g_pPlayerResource );
+		CTFPlayerResource *pResource = GetTFPlayerResource();
 		if ( !pResource )
 			return;
  
@@ -4100,7 +4122,7 @@ bool CTFGameRules::TimerMayExpire( void )
 			return false;
 	}
 
-	return true;
+	return BaseClass::TimerMayExpire();
 }
 
 //-----------------------------------------------------------------------------
@@ -4349,7 +4371,7 @@ void CTFGameRules::InternalHandleTeamWin( int iWinningTeam )
 // sort function for the list of players that we're going to use to scramble the teams
 int ScramblePlayersSort( CTFPlayer* const *p1, CTFPlayer* const *p2 )
 {
-	CTFPlayerResource *pResource = dynamic_cast< CTFPlayerResource * >( g_pPlayerResource );
+	CTFPlayerResource *pResource = GetTFPlayerResource();
 
 	if ( pResource )
 	{

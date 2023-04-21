@@ -17,7 +17,7 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayerResource, DT_TFPlayerResource )
 	SendPropArray3( SENDINFO_ARRAY3( m_iTotalScore ), SendPropInt( SENDINFO_ARRAY( m_iTotalScore ), 13 ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iMaxHealth ), SendPropInt( SENDINFO_ARRAY( m_iMaxHealth ), 10, SPROP_UNSIGNED ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iPlayerClass ), SendPropInt( SENDINFO_ARRAY( m_iPlayerClass ), 5, SPROP_UNSIGNED ) ),
-	SendPropArray3(SENDINFO_ARRAY3(m_iColors), SendPropVector(SENDINFO_ARRAY3(m_iColors), 12, SPROP_COORD)),
+	SendPropArray3( SENDINFO_ARRAY3( m_vecColors ), SendPropVector( SENDINFO_ARRAY3( m_vecColors ), 12, SPROP_COORD ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iKillstreak ), SendPropInt( SENDINFO_ARRAY( m_iKillstreak ), 10, SPROP_UNSIGNED ) ),
 END_SEND_TABLE()
 
@@ -25,7 +25,7 @@ LINK_ENTITY_TO_CLASS( tf_player_manager, CTFPlayerResource );
 
 CTFPlayerResource::CTFPlayerResource( void )
 {
-	
+
 }
 
 //-----------------------------------------------------------------------------
@@ -33,28 +33,26 @@ CTFPlayerResource::CTFPlayerResource( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerResource::UpdatePlayerData( void )
 {
-	int i;
-
 	BaseClass::UpdatePlayerData();
 
-	for ( i = 1 ; i <= gpGlobals->maxClients; i++ )
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CTFPlayer *pPlayer = (CTFPlayer*)UTIL_PlayerByIndex( i );
-		
+
 		if ( pPlayer && pPlayer->IsConnected() )
-		{			
+		{
 			PlayerStats_t *pPlayerStats = CTF_GameStats.FindPlayerStats( pPlayer );
-			if ( pPlayerStats ) 
+			if ( pPlayerStats )
 			{
-			m_iMaxHealth.Set( i, pPlayer->GetPlayerClass()->GetMaxHealth() );
-			m_iPlayerClass.Set( i, pPlayer->GetPlayerClass()->GetClassIndex() );
-			int iTotalScore = CTFGameRules::CalcPlayerScore( &pPlayerStats->statsAccumulated );
-			m_iTotalScore.Set( i, iTotalScore );
+				m_iMaxHealth.Set( i, pPlayer->GetPlayerClass()->GetMaxHealth() );
+				m_iPlayerClass.Set( i, pPlayer->GetPlayerClass()->GetClassIndex() );
+				int iTotalScore = CTFGameRules::CalcPlayerScore( &pPlayerStats->statsAccumulated );
+				m_iTotalScore.Set( i, iTotalScore );
 
-			m_iColors.Set( i, pPlayer->m_vecPlayerColor );
+				m_vecColors.Set( i, pPlayer->m_vecPlayerColor );
 
-			m_iKillstreak.Set( i, pPlayer->m_Shared.GetKillstreak() );
-			}					
+				m_iKillstreak.Set( i, pPlayer->m_Shared.GetKillstreak() );
+			}
 		}
 	}
 }
@@ -68,8 +66,8 @@ void CTFPlayerResource::Spawn( void )
 		m_iTotalScore.Set( i, 0 );
 		m_iMaxHealth.Set( i, TF_HEALTH_UNDEFINED );
 		m_iPlayerClass.Set( i, TF_CLASS_UNDEFINED );
-		m_iColors.Set(i, Vector(0.0, 0.0, 0.0));
-		m_iKillstreak.Set(i, 0);
+		m_vecColors.Set( i, Vector( 0.0, 0.0, 0.0 ) );
+		m_iKillstreak.Set( i, 0 );
 	}
 
 	BaseClass::Spawn();
@@ -83,7 +81,7 @@ int CTFPlayerResource::GetTotalScore( int iIndex )
 	CTFPlayer *pPlayer = (CTFPlayer*)UTIL_PlayerByIndex( iIndex );
 
 	if ( pPlayer && pPlayer->IsConnected() )
-	{	
+	{
 		return m_iTotalScore[iIndex];
 	}
 
@@ -95,5 +93,5 @@ int CTFPlayerResource::GetTotalScore( int iIndex )
 //-----------------------------------------------------------------------------
 Color CTFPlayerResource::GetPlayerColor( int iIndex )
 {
-	return Color( m_iColors[iIndex].x * 255.0, m_iColors[iIndex].y * 255.0, m_iColors[iIndex].z * 255.0, 255 );
+	return Color( m_vecColors[iIndex].x * 255.0, m_vecColors[iIndex].y * 255.0, m_vecColors[iIndex].z * 255.0, 255 );
 }

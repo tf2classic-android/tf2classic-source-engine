@@ -15,16 +15,16 @@ C_TFSpyMask::C_TFSpyMask()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool C_TFSpyMask::InitializeAsClientEntity( const char *pszModelName, RenderGroup_t renderGroup )
+C_TFSpyMask *C_TFSpyMask::Create( C_BaseEntity *pOwner )
 {
-	if ( BaseClass::InitializeAsClientEntity( pszModelName, renderGroup ) )
+	C_TFSpyMask *pMask = new C_TFSpyMask();
+
+	if ( pMask->Initialize( TF_SPY_MASK_MODEL, pOwner ) )
 	{
-		AddEffects( EF_BONEMERGE | EF_NOSHADOW | EF_BONEMERGE_FASTCULL );
-		
-		return true;
+		return pMask;
 	}
 
-	return false;
+	return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -34,14 +34,11 @@ bool C_TFSpyMask::ShouldDraw( void )
 {
 	C_TFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
 
-	if ( !pOwner )
-		return false;
-
-	if ( pOwner->IsEnemyPlayer() && pOwner->m_Shared.GetDisguiseClass() != TF_CLASS_SPY )
-		return false;
-
-	if ( !pOwner->ShouldDrawThisPlayer() )
-		return false;
+	if ( pOwner )
+	{
+		if ( pOwner->IsEnemyPlayer() && pOwner->m_Shared.GetDisguiseClass() != TF_CLASS_SPY )
+			return false;
+	}
 
 	return BaseClass::ShouldDraw();
 }

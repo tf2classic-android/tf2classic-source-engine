@@ -18,7 +18,7 @@ IMPLEMENT_CLIENTCLASS_DT( C_TF_PlayerResource, DT_TFPlayerResource, CTFPlayerRes
 	RecvPropArray3( RECVINFO_ARRAY( m_iTotalScore ), RecvPropInt( RECVINFO( m_iTotalScore[0] ) ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_iMaxHealth ), RecvPropInt( RECVINFO( m_iMaxHealth[0] ) ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_iPlayerClass ), RecvPropInt( RECVINFO( m_iPlayerClass[0] ) ) ),
-	RecvPropArray3( RECVINFO_ARRAY( m_iColors ), RecvPropVector( RECVINFO( m_iColors[0] ) ) ),
+	RecvPropArray3( RECVINFO_ARRAY( m_vecColors ), RecvPropVector( RECVINFO( m_vecColors[0] ) ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_iKillstreak ), RecvPropInt( RECVINFO( m_iKillstreak[0] ) ) ),
 END_RECV_TABLE()
 
@@ -58,10 +58,26 @@ int C_TF_PlayerResource::GetArrayValue( int iIndex, int *pArray, int iDefaultVal
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-Color C_TF_PlayerResource::GetPlayerColor(int iIndex) 
-{ 
-	//Msg("Client %f %f %f\n", m_iColors[iIndex].x, m_iColors[iIndex].y, m_iColors[iIndex].z);
-	return Color(m_iColors[iIndex].x * 255.0, m_iColors[iIndex].y * 255.0, m_iColors[iIndex].z * 255.0, 255);
+const Vector &C_TF_PlayerResource::GetPlayerColorVector( int iIndex )
+{
+	if ( !IsConnected( iIndex ) )
+	{
+		// White color.
+		static Vector vecWhite( 1, 1, 1 );
+		return vecWhite;
+	}
+
+	return m_vecColors[iIndex];
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+Color C_TF_PlayerResource::GetPlayerColor( int iIndex )
+{
+	const Vector &vecColor = GetPlayerColorVector( iIndex );
+
+	return Color( vecColor.x * 255.0f, vecColor.y * 255.0f, vecColor.z * 255.0f, 255 );
 }
 
 //-----------------------------------------------------------------------------
@@ -72,7 +88,7 @@ int C_TF_PlayerResource::GetCountForPlayerClass( int iTeam, int iClass, bool bEx
 	int count = 0;
 	int iLocalPlayerIndex = GetLocalPlayerIndex();
 
-	for ( int i = 1 ; i <= MAX_PLAYERS ; i++ )
+	for ( int i = 1; i <= MAX_PLAYERS; i++ )
 	{
 		if ( bExcludeLocalPlayer && ( i == iLocalPlayerIndex ) )
 		{

@@ -187,7 +187,7 @@ void CTFFreezePanel::FireGameEvent( IGameEvent * event )
 	}
 	else if ( Q_strcmp( "show_freezepanel", pEventName ) == 0 )
 	{
-		C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
+		C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
 		if ( !tf_PR )
 		{
 			m_pNemesisSubPanel->SetDialogVariable( "nemesisname", NULL_STRING );

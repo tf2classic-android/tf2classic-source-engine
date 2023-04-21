@@ -184,7 +184,7 @@ void CTFPipebombLauncher::PrimaryAttack( void )
 //-----------------------------------------------------------------------------
 void CTFPipebombLauncher::WeaponIdle( void )
 {
-	if ( m_flChargeBeginTime > 0 && m_iClip1 > 0 )
+	if ( m_flChargeBeginTime > 0 )
 	{
 		LaunchGrenade();
 	}
@@ -199,41 +199,11 @@ void CTFPipebombLauncher::WeaponIdle( void )
 //-----------------------------------------------------------------------------
 void CTFPipebombLauncher::LaunchGrenade( void )
 {
-	// Get the player owning the weapon.
-	CTFPlayer *pPlayer = ToTFPlayer( GetPlayerOwner() );
-	if ( !pPlayer )
-		return;
-
-	CalcIsAttackCritical();
-
-	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
-
-	pPlayer->SetAnimation( PLAYER_ATTACK1 );
-	pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
-
-	FireProjectile( pPlayer );
-
-#if !defined( CLIENT_DLL ) 
-	pPlayer->SpeakWeaponFire();
-	CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() );
-#endif
-
-	// Set next attack times.
-	float flDelay = m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeFireDelay;
-	CALL_ATTRIB_HOOK_FLOAT( flDelay, mult_postfiredelay );
-	m_flNextPrimaryAttack = gpGlobals->curtime + flDelay;
+	// Deliberately skipping to base class since our function starts charging the shot.
+	BaseClass::PrimaryAttack();
 
 	m_flLastDenySoundTime = gpGlobals->curtime;
-
-	SetWeaponIdleTime( gpGlobals->curtime + SequenceDuration() );
-
-	// Check the reload mode and behave appropriately.
-	if ( m_bReloadsSingly )
-	{
-		m_iReloadMode.Set( TF_RELOAD_START );
-	}
-
-	m_flChargeBeginTime = 0;
+	m_flChargeBeginTime = 0.0f;
 }
 
 float CTFPipebombLauncher::GetProjectileSpeed( void )
@@ -302,7 +272,7 @@ void CTFPipebombLauncher::ItemPostFrame( void )
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 	if ( pOwner && !( pOwner->m_nButtons & IN_ATTACK ) )
 	{
-		if ( m_flChargeBeginTime > 0 && m_iClip1 > 0 )
+		if ( m_flChargeBeginTime > 0 )
 		{
 			LaunchGrenade();
 		}
@@ -356,10 +326,7 @@ void CTFPipebombLauncher::SecondaryAttack( void )
 		else
 		{
 			// Play a detonate sound.
-#ifdef CLIENT_DLL
-			if ( prediction->IsFirstTimePredicted() )
-#endif
-				WeaponSound( SPECIAL3 );
+			WeaponSound( SPECIAL3 );
 		}
 	}
 }

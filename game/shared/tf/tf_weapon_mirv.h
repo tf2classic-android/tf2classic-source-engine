@@ -41,6 +41,7 @@ public:
 	virtual bool	Deploy( void );
 	virtual void	ItemPostFrame( void );
 	virtual void	PrimaryAttack( void );
+	virtual CBaseEntity *FireProjectile( CTFPlayer *pPlayer );
 	virtual void	WeaponIdle( void );
 	virtual float	GetProjectileSpeed( void );
 	virtual void	WeaponReset( void );

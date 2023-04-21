@@ -34,7 +34,7 @@ ConVar bot_forceattackon( "bot_forceattackon", "1", 0, "When firing, don't tap f
 ConVar bot_flipout( "bot_flipout", "0", 0, "When on, all bots fire their guns." );
 ConVar bot_defend( "bot_defend", "0", 0, "Set to a team number, and that team will all keep their combat shields raised." );
 ConVar bot_changeclass( "bot_changeclass", "0", 0, "Force all bots to change to the specified class." );
-ConVar bot_dontmove( "bot_dontmove", "0" );
+ConVar bot_dontmove( "bot_dontmove", "1" );
 ConVar bot_saveme( "bot_saveme", "0", FCVAR_CHEAT );
 static ConVar bot_mimic( "bot_mimic", "0", 0, "Bot uses usercmd of player by index." );
 static ConVar bot_mimic_yaw_offset( "bot_mimic_yaw_offset", "180", 0, "Offsets the bot yaw." );
@@ -220,15 +220,7 @@ CON_COMMAND_F( bot, "Add a bot.", FCVAR_CHEAT )
 
 			vecColor /= 255.0f;
 
-			pVal = args.FindArg( "-respawn" );
-			if ( pVal )
-			{
-				iRespawnParticle = atoi( pVal );
-			}
-			else
-			{
-				iRespawnParticle = RandomInt( 1, 42 );
-			}
+			iRespawnParticle = args.FindArgInt( "-respawn", RandomInt( 1, 42 ) );
 		}
 
 		BotPutInServer( bFrozen, iTeam, iClass, pName, vecColor, iRespawnParticle );

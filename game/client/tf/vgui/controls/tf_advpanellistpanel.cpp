@@ -314,7 +314,7 @@ void CPanelListPanel::ApplySettings(KeyValues *inResourceData)
 
 	Q_strncpy(m_szFont, inResourceData->GetString("font", DEFAULT_FONT), sizeof(m_szFont));
 	//Q_strncpy(m_szBorder, inResourceData->GetString("border", "TFFatLineBorder"), sizeof(m_szBorder));
-	InvalidateLayout(false, true); // force ApplySchemeSettings to run
+	//InvalidateLayout(false); // force ApplySchemeSettings to run
 }
 
 //-----------------------------------------------------------------------------

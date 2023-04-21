@@ -11,9 +11,7 @@
 #pragma once
 #endif
 
-#include "entity_capture_flag.h"
-#include "tf_controls.h"
-#include "tf_imagepanel.h"
+
 #include "GameEventListener.h"
 
 

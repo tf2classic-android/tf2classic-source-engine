@@ -140,7 +140,7 @@ void CTFOptionsVideoPanel::CreateControls()
 
 	m_bRequireRestart = false;
 
-	CTFAdvButton *pTitleVideo = new CTFAdvButton(this, "DescTextTitle", "Video");
+	Label *pTitleVideo = new Label( this, "DescTextTitle", "Video" );
 	m_pMode = new ComboBox(this, "Resolution", 8, false);
 	m_pAspectRatio = new ComboBox(this, "AspectRatio", 6, false);
 
@@ -177,7 +177,8 @@ void CTFOptionsVideoPanel::CreateControls()
 	m_pWindowed->AddItem("#GameUI_Fullscreen", NULL);
 	m_pWindowed->AddItem("#GameUI_Windowed", NULL);
 
-	m_pGammaSlider = new CCvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma");
+	m_pGammaSlider = new CCvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma", true);
+
 
 	// Moved down here so we can set the Drop down's 
 	// menu state after the default (disabled) value is loaded
@@ -196,7 +197,7 @@ void CTFOptionsVideoPanel::CreateControls()
 
 
 	//VIDEOADV
-	CTFAdvButton *pTitleVideoAdv = new CTFAdvButton(this, "DescTextTitle", "#GameUI_VideoAdvanced_Title");
+	Label *pTitleVideoAdv = new Label( this, "DescTextTitle", "#GameUI_VideoAdvanced_Title" );
 
 	m_pDXLevel = new ComboBox(this, "dxlabel", 6, false);
 	KeyValues *pKeyValues = new KeyValues("config");
@@ -344,7 +345,7 @@ void CTFOptionsVideoPanel::CreateControls()
 	}
 #endif
 
-	m_pHDR->SetEnabled(mat_dxlevel.GetInt() >= 80);
+	m_pHDR->SetVisible(mat_dxlevel.GetInt() >= 80);
 
 	m_pWaterDetail = new ComboBox(this, "WaterDetail", 6, false);
 	m_pWaterDetail->AddItem("#gameui_noreflections", NULL);
@@ -522,7 +523,7 @@ void CTFOptionsVideoPanel::OnResetData()
 	//Msg("WINDOWED %i\n", config.Windowed());
 
 	// reset gamma control
-	m_pGammaSlider->SetEnabled(!config.Windowed());
+	m_pGammaSlider->SetVisible(!config.Windowed());
 	m_pGammaSlider->Reset();
 
     SetCurrentResolutionComboItem();
@@ -664,7 +665,7 @@ void CTFOptionsVideoPanel::ResetDXLevelCombo()
 	}
 
 	// Reset HDR too
-	if (m_pHDR->IsEnabled())
+	if (m_pHDR->IsVisible())
 	{
 		ConVarRef mat_hdr_level("mat_hdr_level");
 		Assert(mat_hdr_level.IsValid());
@@ -809,7 +810,7 @@ void CTFOptionsVideoPanel::OnApplyChanges()
 	ApplyChangesToConVar("mat_antialias", m_nAAModes[nActiveAAItem].m_nNumSamples);
 	ApplyChangesToConVar("mat_aaquality", m_nAAModes[nActiveAAItem].m_nQualityLevel);
 
-	if (m_pHDR->IsEnabled())
+	if (m_pHDR->IsVisible())
 	{
 		ConVarRef mat_hdr_level("mat_hdr_level");
 		Assert(mat_hdr_level.IsValid());

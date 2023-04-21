@@ -13,6 +13,8 @@
 #include "collisionutils.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "engine/IEngineSound.h"
+#include "c_tf_player.h"
+#include "tf_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -125,3 +127,82 @@ void BrightTracerCallback( const CEffectData &data )
 }
 
 DECLARE_CLIENT_EFFECT( "BrightTracer", BrightTracerCallback );
+
+extern ConVar r_drawtracers;
+extern ConVar r_drawtracers_firstperson;
+
+//-----------------------------------------------------------------------------
+// Purpose: This is largely a copy of ParticleTracer except it colors tracers in DM.
+//-----------------------------------------------------------------------------
+void TFParticleTracerCallback( const CEffectData &data )
+{
+	C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( !pLocalPlayer )
+		return;
+
+	if ( !r_drawtracers.GetBool() )
+		return;
+
+	C_TFPlayer *pPlayer = ToTFPlayer( data.GetEntity() );
+
+	if ( !r_drawtracers_firstperson.GetBool() )
+	{
+		if ( pPlayer && !pPlayer->ShouldDrawThisPlayer() )
+			return;
+	}
+
+	// Grab the data
+	Vector vecStart = data.m_vStart;
+	Vector vecEnd = data.m_vOrigin;
+
+	// Adjust view model tracers
+	C_BaseEntity *pEntity = data.GetEntity();
+	if ( data.entindex() && data.entindex() == pLocalPlayer->entindex() )
+	{
+		QAngle	vangles;
+		Vector	vforward, vright, vup;
+
+		engine->GetViewAngles( vangles );
+		AngleVectors( vangles, &vforward, &vright, &vup );
+
+		VectorMA( data.m_vStart, 4, vright, vecStart );
+		vecStart[2] -= 0.5f;
+	}
+
+	// Create the particle effect
+	QAngle vecAngles;
+	Vector vecToEnd = vecEnd - vecStart;
+	VectorNormalize( vecToEnd );
+	VectorAngles( vecToEnd, vecAngles );
+
+	if ( TFGameRules() && TFGameRules()->IsDeathmatch() && pPlayer )
+	{
+		// Paint tracers with player's color in Deathmatch.
+		CEffectData	newData;
+
+		newData.m_nHitBox = data.m_nHitBox;
+		newData.m_vOrigin = vecStart;
+		newData.m_vStart = vecEnd;
+		newData.m_vAngles = vecAngles;
+
+		newData.m_hEntity = pEntity;
+		newData.m_fFlags |= PARTICLE_DISPATCH_FROM_ENTITY;
+		newData.m_nDamageType = PATTACH_CUSTOMORIGIN;
+
+		newData.m_bCustomColors = true;
+		newData.m_CustomColors.m_vecColor1 = pPlayer->m_vecPlayerColor;
+
+		DispatchEffect( "ParticleEffect", newData );
+	}
+	else
+	{
+		DispatchParticleEffect( data.m_nHitBox, vecStart, vecEnd, vecAngles, pEntity );
+	}
+
+	if ( data.m_fFlags & TRACER_FLAG_WHIZ )
+	{
+		FX_TracerSound( vecStart, vecEnd, TRACER_TYPE_DEFAULT );
+	}
+}
+
+DECLARE_CLIENT_EFFECT( "TFParticleTracer", TFParticleTracerCallback );

@@ -625,10 +625,10 @@ void CTFWeaponBaseGrenadeProj::Deflected( CBaseEntity *pDeflectedBy, Vector &vec
 
 		pPhysicsObject->GetVelocity( &vecOldVelocity, NULL );
 
-		float flVel = vecOldVelocity.Length();
+		float flSpeed = vecOldVelocity.Length();
 
 		vecVelocity = vecDir;
-		vecVelocity *= flVel;
+		vecVelocity *= flSpeed;
 		AngularImpulse angVelocity( ( 600, random->RandomInt( -1200, 1200 ), 0 ) );
 
 		// Now change grenade's direction.

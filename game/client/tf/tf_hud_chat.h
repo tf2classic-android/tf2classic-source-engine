@@ -58,6 +58,7 @@ public:
 
 	virtual Color	GetTextColorForClient( TextColor colorNum, int clientIndex );
 	virtual Color	GetClientColor( int clientIndex );
+	virtual Color	GetTeamColor( int iTeam );
 
 	virtual int		GetFilterForString( const char *pString );
 

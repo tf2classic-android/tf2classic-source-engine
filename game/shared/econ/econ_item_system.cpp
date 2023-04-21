@@ -42,6 +42,65 @@ const char *g_EffectTypes[] =
 	"negative"
 };
 
+const char *g_szQualityStrings[] =
+{
+	"normal",
+	"rarity1",
+	"rarity2",
+	"vintage",
+	"rarity3",
+	"rarity4",
+	"unique",
+	"community",
+	"developer",
+	"selfmade",
+	"customized",
+	"strange",
+	"completed",
+	"haunted",
+	"collectors",
+	"paintkitWeapon",
+};
+
+const char *g_szQualityColorStrings[] =
+{
+	"QualityColorNormal",
+	"QualityColorrarity1",
+	"QualityColorrarity2",
+	"QualityColorVintage",
+	"QualityColorrarity3",
+	"QualityColorrarity4",
+	"QualityColorUnique",
+	"QualityColorCommunity",
+	"QualityColorDeveloper",
+	"QualityColorSelfMade",
+	"QualityColorSelfMadeCustomized",
+	"QualityColorStrange",
+	"QualityColorCompleted",
+	"QualityColorHaunted",
+	"QualityColorCollectors",
+	"QualityColorPaintkitWeapon",
+};
+
+const char *g_szQualityLocalizationStrings[] =
+{
+	"#Normal",
+	"#rarity1",
+	"#rarity2",
+	"#vintage",
+	"#rarity3",
+	"#rarity4",
+	"#unique",
+	"#community",
+	"#developer",
+	"#selfmade",
+	"#customized",
+	"#strange",
+	"#completed",
+	"#haunted",
+	"#collectors",
+	"#paintkitWeapon",
+};
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -358,9 +417,20 @@ public:
 		GET_STRING( pItem, pData, item_name );
 		GET_STRING( pItem, pData, item_description );
 		GET_STRING( pItem, pData, item_type_name );
-		GET_STRING( pItem, pData, item_quality );
+
+		const char *pszQuality = pData->GetString( "item_quality" );
+		if ( pszQuality[0] )
+		{
+			int iQuality = UTIL_StringFieldToInt( pszQuality, g_szQualityStrings, ARRAYSIZE( g_szQualityStrings ) );
+			if ( iQuality != -1 )
+			{
+				pItem->item_quality = (EEconItemQuality)iQuality;
+			}
+		}
+
 		GET_STRING( pItem, pData, item_logname );
 		GET_STRING( pItem, pData, item_iconname );
+		GET_BOOL( pItem, pData, propername );
 
 		const char *pszLoadoutSlot = pData->GetString( "item_slot" );
 

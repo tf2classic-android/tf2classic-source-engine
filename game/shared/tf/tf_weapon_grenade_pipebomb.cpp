@@ -3,13 +3,6 @@
 // Purpose: TF Pipebomb Grenade.
 //
 //=============================================================================//
-// Warning to all who enter trying to figure out grenade code:
-// This file contains both Sticky Bombs and Grenade Launcher grenades. Valve seemed to not be able to decide what the hell
-// they should call them, and so half of the file refers to stickies as pipebombs, and grenades as grenades,
-// and the other half refers to stickies as grenades and grenades as pipebombs.
-// I've tried to mark which ones are which with comments at the start of functions so that future coders know what's up.
-// - Iamgoofball
-//=============================================================================//
 #include "cbase.h"
 #include "tf_weaponbase.h"
 #include "tf_gamerules.h"

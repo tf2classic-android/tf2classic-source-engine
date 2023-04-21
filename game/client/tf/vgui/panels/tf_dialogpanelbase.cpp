@@ -139,50 +139,68 @@ void CTFDialogPanelBase::OnKeyCodePressed(vgui::KeyCode code)
 	
 }
 
-void CTFDialogPanelBase::AddControl(vgui::Panel* panel, int iType, const char* text)
+void CTFDialogPanelBase::AddControl( vgui::Panel* panel, int iType, const char* text )
 {
-	if (!m_pListPanel)
+	if ( !m_pListPanel )
 		return;
 
-	mpcontrol_t	*pCtrl = new mpcontrol_t(m_pListPanel, "mpcontrol_t");
-	CTFAdvButton *pTitle = dynamic_cast<CTFAdvButton*>(panel);
-	CTFAdvCheckButton *pBox = dynamic_cast<CTFAdvCheckButton*>(panel);
-	CTFAdvSlider *pScroll = dynamic_cast<CTFAdvSlider*>(panel);
-	ComboBox *pCombo = dynamic_cast<ComboBox*>(panel);
+	mpcontrol_t	*pCtrl = new mpcontrol_t( m_pListPanel, "mpcontrol_t" );
+	HFont hFont = GETSCHEME()->GetFont( m_pListPanel->GetFontString(), true );
 
-	switch (iType)
+	switch ( iType )
 	{
 	case O_CATEGORY:
-		pTitle->SetEnabled(false);
-		pTitle->GetButton()->SetFontByString("MenuSmallFont");
-		pTitle->SetBorderByString("AdvSettingsTitleBorder");
-		pTitle->SetBorderVisible(true);
-		//pTitle->SetToolTip(dynamic_cast<CTFAdvButton*>(panel)->GetName());
+	{
+		Label *pTitle = assert_cast<Label*>( panel );
+		pTitle->MakeReadyForUse();
+
+		pTitle->SetFont( GETSCHEME()->GetFont( DEFAULT_FONT, true ) );
+		pTitle->SetBorder( GETSCHEME()->GetBorder( "AdvSettingsTitleBorder" ) );
+		pTitle->SetFgColor( GETSCHEME()->GetColor( DEFAULT_COLOR, COLOR_WHITE ) );
 		break;
+	}
 	case O_BOOL:
-		pBox->GetButton()->SetFontByString(m_pListPanel->GetFontString());
+	{
+		CTFAdvCheckButton *pBox = assert_cast<CTFAdvCheckButton*>( panel );
+		pBox->MakeReadyForUse();
+
+		pBox->GetButton()->SetFont( hFont );
 		//pBox->SetToolTip(dynamic_cast<CTFAdvCheckButton*>(panel)->GetName());
 		break;
+	}
 	case O_SLIDER:
-		pScroll->GetButton()->SetFontByString(m_pListPanel->GetFontString());
+	{
+		CTFAdvSlider *pScroll = assert_cast<CTFAdvSlider*>( panel );
+		pScroll->MakeReadyForUse();
+
+		pScroll->SetFont( hFont );
 		//pScroll->SetToolTip(dynamic_cast<CTFAdvSlider*>(panel)->GetName());
 		break;
+	}
 	case O_LIST:
-		pCombo->SetFont(m_pListPanel->GetFont());
-		pCtrl->pPrompt = new vgui::Label(pCtrl, "DescLabel", "");
-		pCtrl->pPrompt->SetFont(m_pListPanel->GetFont());
-		pCtrl->pPrompt->SetContentAlignment(vgui::Label::a_west);
-		pCtrl->pPrompt->SetTextInset(5, 0);
-		pCtrl->pPrompt->SetText(text);
+	{
+		ComboBox *pCombo = assert_cast<ComboBox*>( panel );
+		pCombo->MakeReadyForUse();
+		pCombo->SetFont( hFont );
+
+		pCtrl->pPrompt = new vgui::Label( pCtrl, "DescLabel", "" );
+		pCtrl->pPrompt->MakeReadyForUse();
+
+		pCtrl->pPrompt->SetFont( hFont );
+		pCtrl->pPrompt->SetContentAlignment( vgui::Label::a_west );
+		pCtrl->pPrompt->SetTextInset( 5, 0 );
+		pCtrl->pPrompt->SetText( text );
 		break;
+	}
 	default:
 		break;
 	}
-	panel->SetParent(pCtrl);
+
+	panel->SetParent( pCtrl );
 	pCtrl->pControl = panel;
 	int h = m_pListPanel->GetTall() / 13.0; //(float)GetParent()->GetTall() / 15.0;
-	pCtrl->SetSize(800, h);
-	m_pListPanel->AddItem(pCtrl);
+	pCtrl->SetSize( 800, h );
+	m_pListPanel->AddItem( pCtrl );
 }
 
 void CTFDialogPanelBase::CreateControls()

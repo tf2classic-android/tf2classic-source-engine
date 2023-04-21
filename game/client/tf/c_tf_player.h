@@ -264,9 +264,13 @@ public:
 
 	virtual	IMaterial *GetHeadLabelMaterial( void );
 
+	virtual void FireGameEvent( IGameEvent *event );
+
 	void UpdateSpyMask( void );
+	void UpdateShieldEffect( void );
 
 	void UpdateTypingBubble( void );
+	void UpdateOverhealEffect( void );
 
 	virtual const Vector &GetItemTintColor( void ) { return m_vecPlayerColor; }
 
@@ -335,7 +339,6 @@ private:
 
 	// Medic callout particle effect
 	CNewParticleEffect	*m_pSaveMeEffect;
-	CNewParticleEffect	*m_pTypingEffect;
 
 	bool m_bUpdateObjectHudState;
 
@@ -403,9 +406,13 @@ public:
 	int				m_nForceTauntCam;
 	float			m_flLastDamageTime;
 
-	bool			m_bTyping;
-
 	CHandle<C_TFSpyMask> m_hSpyMask;
+	CHandle<C_PlayerAttachedModel> m_hPowerupShield;
+
+	bool			m_bTyping;
+	CNewParticleEffect	*m_pTypingEffect;
+
+	CNewParticleEffect *m_pOverhealEffect;
 
 	CAttributeManager m_AttributeManager;
 

@@ -9,12 +9,12 @@
 #pragma once
 #endif
 
+#include "tf_weaponbase_grenadeproj.h"
+
 // Client specific.
 #ifdef CLIENT_DLL
 #define CTFGrenadeStickybombProjectile C_TFGrenadeStickybombProjectile
 #endif
-
-#include "tf_weaponbase_grenadeproj.h"
 
 //=============================================================================
 //

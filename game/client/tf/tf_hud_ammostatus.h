@@ -56,6 +56,8 @@ private:
 	CExLabel						*m_pNoClipShadow;
 	vgui::ImagePanel				*m_pWeaponBucket;
 
+	bool							m_bShowWeaponIcon;
+
 	CPanelAnimationVarAliasType(float, m_flLargeBoxWide, "LargeBoxWide", "108", "proportional_float");
 	CPanelAnimationVarAliasType(float, m_flLargeBoxTall, "LargeBoxTall", "72", "proportional_float");
 };

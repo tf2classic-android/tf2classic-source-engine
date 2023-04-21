@@ -132,7 +132,6 @@ CDamageAccountPanel::CDamageAccountPanel( const char *pElementName ) : CHudEleme
 //-----------------------------------------------------------------------------
 void CDamageAccountPanel::FireGameEvent( IGameEvent *event )
 {
-	// For future reference, live TF2 apparently uses player_healed for green medic numbers.
 	const char * type = event->GetName();
 
 	if ( V_strcmp( type, "player_hurt" ) == 0 || V_strcmp( type, "npc_hurt" ) == 0 )
@@ -171,6 +170,8 @@ void CDamageAccountPanel::LevelInit( void )
 	{
 		m_AccountDeltaItems[i].m_flDieTime = 0.0f;
 	}
+
+	m_flLastHitSound = 0.0f;
 
 	CHudElement::LevelInit();
 }

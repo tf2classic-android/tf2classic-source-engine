@@ -258,7 +258,16 @@ void CTFNotificationManager::OnVersionCheckCompleted( const char* pMessage )
 		m_bOutdated = true;
 
 		MessageNotification Notification;
-		V_wcsncpy( Notification.wszTitle, g_pVGuiLocalize->Find( "#TF_GameOutdatedTitle" ), sizeof( Notification.wszTitle ) );
+		const wchar_t *pszLocalizedTitle = g_pVGuiLocalize->Find( "#TF_GameOutdatedTitle" );
+		if ( pszLocalizedTitle )
+		{
+			V_wcsncpy( Notification.wszTitle, pszLocalizedTitle, sizeof( Notification.wszTitle ) );
+		}
+		else
+		{
+			V_wcsncpy( Notification.wszTitle, L"#TF_GameOutdatedTitle", sizeof( Notification.wszTitle ) );
+		}
+		
 
 		wchar_t wszVersion[16];
 		g_pVGuiLocalize->ConvertANSIToUnicode( pMessage, wszVersion, sizeof( wszVersion ) );

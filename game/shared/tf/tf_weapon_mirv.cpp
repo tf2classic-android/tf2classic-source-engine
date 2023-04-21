@@ -168,6 +168,14 @@ void CTFWeaponMirv::PrimaryAttack( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Add pipebombs to our list as they're fired
+//-----------------------------------------------------------------------------
+CBaseEntity *CTFWeaponMirv::FireProjectile( CTFPlayer *pPlayer )
+{
+	return BaseClass::FireProjectile( pPlayer );
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFWeaponMirv::WeaponIdle( void )
@@ -200,14 +208,7 @@ void CTFWeaponMirv::LaunchGrenade( void )
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
 	pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
 
-	CTFWeaponBaseGrenadeProj *pProjectile = static_cast<CTFWeaponBaseGrenadeProj*>( FireProjectile( pPlayer ) );
-
-	if ( pProjectile )
-	{
-#ifdef GAME_DLL
-		pProjectile->SetDetonateTimerLength( TF_MIRV_TIMER );
-#endif
-	}
+	FireProjectile( pPlayer );
 
 #if !defined( CLIENT_DLL ) 
 	pPlayer->SpeakWeaponFire();

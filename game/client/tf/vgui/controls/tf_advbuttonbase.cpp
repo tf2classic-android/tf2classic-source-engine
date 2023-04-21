@@ -26,7 +26,6 @@ DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CTFAdvButtonBase, CTFAdvButtonBase);
 CTFAdvButtonBase::CTFAdvButtonBase(vgui::Panel *parent, const char *panelName, const char *text) : vgui::EditablePanel(parent, panelName)
 {
 	pButtonImage = new ImagePanel(this, "SubImage");
-	pButtonImage->SetParent(this);
 
 	Init();
 	vgui::ivgui()->AddTickSignal(GetVPanel(), 100);
@@ -185,7 +184,7 @@ void CTFAdvButtonBase::SetImageSize(int iWide, int iTall)
 
 void CTFAdvButtonBase::SetToolTip(const char *sText)
 {
-	Q_strncpy(pToolTip, sText, sizeof(pToolTip));
+	V_strncpy( pToolTip, sText, sizeof( pToolTip ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -211,7 +210,6 @@ void CTFAdvButtonBase::SetDefaultAnimation()
 //-----------------------------------------------------------------------------
 void CTFAdvButtonBase::SendAnimation(MouseState flag)
 {
-
 	switch (flag)
 	{
 	case MOUSE_DEFAULT:

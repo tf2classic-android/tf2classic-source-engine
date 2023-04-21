@@ -66,7 +66,7 @@ bool CHealthKit::MyTouch( CBasePlayer *pPlayer )
 		CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
 		Assert( pTFPlayer );
 
-		int iHealthToAdd = ceil( pPlayer->GetMaxHealth() * PackRatios[GetPowerupSize()] );
+		int iHealthToAdd = pPlayer->GetMaxHealth() * PackRatios[GetPowerupSize()];
 		bool bTiny = GetPowerupSize() == POWERUP_TINY;
 		bool bMega = GetPowerupSize() == POWERUP_MEGA;
 		int iHealthRestored = 0;
@@ -91,7 +91,7 @@ bool CHealthKit::MyTouch( CBasePlayer *pPlayer )
 			// Restore disguise health.
 			if ( pTFPlayer->m_Shared.InCond( TF_COND_DISGUISED ) )
 			{
-				int iFakeHealthToAdd = ceil( pTFPlayer->m_Shared.GetDisguiseMaxHealth() * PackRatios[GetPowerupSize()] );
+				int iFakeHealthToAdd = pTFPlayer->m_Shared.GetDisguiseMaxHealth() * PackRatios[GetPowerupSize()];
 				if ( pTFPlayer->m_Shared.AddDisguiseHealth( iFakeHealthToAdd, ( bTiny || bMega ) ) )
 					bSuccess = true;
 			}

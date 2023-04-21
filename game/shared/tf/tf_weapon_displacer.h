@@ -38,6 +38,12 @@ public:
 	bool			IsChargingAnyShot( void ) const;
 	void			FinishTeleport( void );
 
+#ifdef CLIENT_DLL
+	virtual void	PreDataUpdate( DataUpdateType_t updateType );
+	virtual void	OnDataChanged( DataUpdateType_t updateType );
+	void			CreateWarmupEffect( bool bSecondary );
+#endif
+
 private:
 	CNetworkVar( float, m_flBlastTime );
 	CNetworkVar( float, m_flTeleportTime );
@@ -45,6 +51,9 @@ private:
 
 #ifdef GAME_DLL
 	EHANDLE m_hTeleportSpot;
+#else
+	bool m_bWasChargingBlast;
+	bool m_bWasChargingTeleport;
 #endif
 
 	bool m_bPlayedTeleportEffect;

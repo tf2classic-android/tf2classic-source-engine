@@ -144,10 +144,6 @@ class CTFWeaponBase : public CBaseCombatWeapon
 	virtual void UpdateViewModel( void );
 #endif
 
-#ifdef DM_WEAPON_BUCKET
-	virtual int	 GetSlot( void ) const;
-	virtual int	 GetPosition( void ) const;
-#endif
 	virtual void Drop( const Vector &vecVelocity );
 	virtual bool CanHolster( void ) const;
 	virtual bool Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
@@ -187,6 +183,7 @@ class CTFWeaponBase : public CBaseCombatWeapon
 
 	// Sound.
 	bool PlayEmptySound();
+	void PlayReloadSound( void );
 	virtual const char *GetShootSound( int iIndex ) const;
 
 	// Activities.
@@ -258,6 +255,8 @@ class CTFWeaponBase : public CBaseCombatWeapon
 	void				CheckEffectBarRegen( void );
 	virtual float		GetEffectBarProgress( void );
 	virtual const char	*GetEffectLabelText( void ) { return ""; }
+
+	void				OnControlStunned( void );
 
 // Server specific.
 #if !defined( CLIENT_DLL )

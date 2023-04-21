@@ -60,10 +60,14 @@ CTFWeaponDisplacer::CTFWeaponDisplacer()
 //-----------------------------------------------------------------------------
 void CTFWeaponDisplacer::Precache( void )
 {
+#ifdef GAME_DLL
+	PrecacheParticleSystem( "mlg_chargeup" );
+	PrecacheParticleSystem( "mlg_teleported_away" );
+
 	// TEMP!!!
-	PrecacheTeamParticles( "teleported_%s" );
-	PrecacheTeamParticles( "teleportedin_%s" );
-	PrecacheTeamParticles( "player_sparkles_%s" );
+	PrecacheTeamParticles( "teleported_%s", true );
+	PrecacheTeamParticles( "teleportedin_%s", true );
+#endif
 
 	BaseClass::Precache();
 }
@@ -132,19 +136,6 @@ void CTFWeaponDisplacer::ItemPostFrame( void )
 		{
 			FinishTeleport();
 		}
-		else if ( !m_bPlayedTeleportEffect && m_flTeleportTime - gpGlobals->curtime <= 0.1f )
-		{
-			m_bPlayedTeleportEffect = true;
-
-			// Create an effect right before the teleport.
-			// TODO: Will need a new particle that will follow player from pressing alt-fire to teleporting.
-			CTFPlayer *pPlayer = GetTFPlayerOwner();
-			if ( pPlayer )
-			{
-				const char *pszSparklesEffect = ConstructTeamParticle( "player_sparkles_%s", pPlayer->GetTeamNumber() );
-				DispatchParticleEffect( pszSparklesEffect, PATTACH_ABSORIGIN, pPlayer );
-			}
-		}
 	}
 
 	BaseClass::ItemPostFrame();
@@ -203,12 +194,12 @@ void CTFWeaponDisplacer::SecondaryAttack( void )
 
 	if ( pPlayer->SelectFurthestSpawnSpot( "info_player_deathmatch", pSpot, false ) )
 	{
-		// Need to remove prediction filtering since this code only runs on server side.
+		// Gotta remove prediction filtering since this code runs on server side only.
 		CDisablePredictionFiltering disabler;
 
 		// Create a warning effect for other players at the chosen destination.
-		const char *pszTeleportedEffect = ConstructTeamParticle( "teleported_%s", pPlayer->GetTeamNumber() );
-		DispatchParticleEffect( pszTeleportedEffect, pSpot->GetAbsOrigin(), vec3_angle );
+		const char *pszTeleportedEffect = ConstructTeamParticle( "teleported_%s", pPlayer->GetTeamNumber(), true );
+		DispatchParticleEffect( pszTeleportedEffect, pSpot->GetAbsOrigin(), vec3_angle, pPlayer->m_vecPlayerColor, vec3_origin, true );
 
 		g_pLastSpawnPoints[pPlayer->GetTeamNumber()] = pSpot;
 		m_hTeleportSpot = pSpot;
@@ -247,24 +238,33 @@ void CTFWeaponDisplacer::FinishTeleport( void )
 #endif
 		{
 #ifdef GAME_DLL
-			// Need to remove prediction filtering since this code only runs on server side.
+			// Gotta remove prediction filtering since this code runs on server side only.
 			CDisablePredictionFiltering *pDisabler = new CDisablePredictionFiltering();
 
-			CBaseEntity *ent = NULL;
-			for ( CEntitySphereQuery sphere( m_hTeleportSpot->GetAbsOrigin(), 128 ); ( ent = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+			// Telelefrag anyone in the way.
+			CBaseEntity *pList[MAX_PLAYERS];
+			Vector vecMins = m_hTeleportSpot->GetAbsOrigin() + VEC_HULL_MIN_SCALED( pPlayer );
+			Vector vecMaxs = m_hTeleportSpot->GetAbsOrigin() + VEC_HULL_MAX_SCALED( pPlayer );
+			int count = UTIL_EntitiesInBox( pList, MAX_PLAYERS, vecMins, vecMaxs, FL_CLIENT );
+
+			for ( int i = 0; i < count; i++ )
 			{
-				// if ent is a client, telefrag 'em (unless they are ourselves)
-				if ( ent->IsPlayer() && ent != pPlayer && ( !ent->InSameTeam( pPlayer ) || TFGameRules()->IsDeathmatch() ) )
+				CBaseEntity *pEntity = pList[i];
+				if ( pEntity != this && ( !InSameTeam( pEntity ) || TFGameRules()->IsDeathmatch() ) )
 				{
-					CTakeDamageInfo info( pPlayer, pPlayer, 1000, DMG_CRUSH, TF_DMG_TELEFRAG );
-					ent->TakeDamage( info );
+					CTakeDamageInfo info( this, this, 1000, DMG_CRUSH, TF_DMG_TELEFRAG );
+					pEntity->TakeDamage( info );
 				}
 			}
 
+			// Play departure effect.
+			DispatchParticleEffect( "mlg_teleported_away", pPlayer->GetAbsOrigin(), vec3_angle, pPlayer->m_vecPlayerColor, vec3_origin, true );
+
 			pPlayer->Teleport( &m_hTeleportSpot->GetAbsOrigin(), &m_hTeleportSpot->GetAbsAngles(), &vec3_origin );
 
-			const char *pszTeleportedEffect = ConstructTeamParticle( "teleportedin_%s", pPlayer->GetTeamNumber() );
-			DispatchParticleEffect( pszTeleportedEffect, m_hTeleportSpot->GetAbsOrigin(), vec3_angle );
+			// Play arrival effect.
+			const char *pszTeleportedEffect = ConstructTeamParticle( "teleportedin_%s", pPlayer->GetTeamNumber(), true );
+			DispatchParticleEffect( pszTeleportedEffect, m_hTeleportSpot->GetAbsOrigin(), vec3_angle, pPlayer->m_vecPlayerColor, vec3_origin, true );
 
 			delete pDisabler;
 #endif
@@ -282,3 +282,36 @@ void CTFWeaponDisplacer::FinishTeleport( void )
 	m_bLockedOn = false;
 	m_flNextSecondaryAttack = gpGlobals->curtime + m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeFireDelay;
 }
+
+#ifdef CLIENT_DLL
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFWeaponDisplacer::PreDataUpdate( DataUpdateType_t updateType )
+{
+	BaseClass::PreDataUpdate( updateType );
+
+	m_bWasChargingBlast = ( m_flBlastTime != 0.0f );
+	m_bWasChargingTeleport = ( m_flTeleportTime != 0.0f );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFWeaponDisplacer::OnDataChanged( DataUpdateType_t updateType )
+{
+	BaseClass::OnDataChanged( updateType );
+
+	if ( !m_bWasChargingBlast && m_flBlastTime != 0.0f )
+	{
+		CreateWarmupEffect( false );
+	}
+}
+
+void CTFWeaponDisplacer::CreateWarmupEffect( bool bSecondary )
+{
+	C_BaseEntity *pEntity = GetWeaponForEffect();
+	pEntity->ParticleProp()->Create( "mlg_chargeup", PATTACH_POINT_FOLLOW, "muzzle" );
+}
+
+#endif

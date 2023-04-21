@@ -53,8 +53,8 @@ private:
 		OnControlModified( NULL );
 	}
 
-	CTFAdvButton				*pTitleMouse;
-	CTFAdvButton				*pTitleJoystick;
+	vgui::Label					*pTitleMouse;
+	vgui::Label					*pTitleJoystick;
 	CCvarToggleCheckButton		*m_pReverseMouseCheckBox;
 	CCvarToggleCheckButton		*m_pRawInputCheckBox;
 	CCvarToggleCheckButton		*m_pMouseFilterCheckBox;

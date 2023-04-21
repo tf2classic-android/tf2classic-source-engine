@@ -210,29 +210,10 @@ void CTFCompoundBow::FireArrow( void )
 	if ( !pPlayer )
 		return;
 
-	CalcIsAttackCritical();
-
-	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
-
-	pPlayer->SetAnimation( PLAYER_ATTACK1 );
-	pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
+	BaseClass::PrimaryAttack();
 
 	pPlayer->m_Shared.RemoveCond( TF_COND_AIMING );
 	pPlayer->TeamFortress_SetSpeed();
-
-	FireProjectile( pPlayer );
-
-#if !defined( CLIENT_DLL ) 
-	pPlayer->SpeakWeaponFire();
-	CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() );
-#endif
-
-	// Set next attack times.
-	float flDelay = m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeFireDelay;
-	CALL_ATTRIB_HOOK_FLOAT( flDelay, mult_postfiredelay );
-	m_flNextPrimaryAttack = gpGlobals->curtime + flDelay;
-
-	SetWeaponIdleTime( gpGlobals->curtime + SequenceDuration() );
 
 	m_flChargeBeginTime = 0.0f;
 }

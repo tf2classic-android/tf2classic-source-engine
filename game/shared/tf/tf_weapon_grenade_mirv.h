@@ -75,7 +75,7 @@ public:
 	DECLARE_CLASS( CTFGrenadeMirvBomb, CTFWeaponBaseGrenadeProj );
 	DECLARE_NETWORKCLASS();
 
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_MIRV; }
+	virtual int			GetWeaponID( void ) const { return TF_WEAPON_GRENADE_MIRVBOMB; }
 
 #ifdef GAME_DLL
 	// Creation.

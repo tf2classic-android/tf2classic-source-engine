@@ -7,12 +7,13 @@
 #include "cbase.h"
 #include "clientmode_tf.h"
 #include "c_tf_objective_resource.h"
+#include "engine/IEngineSound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 
-IMPLEMENT_CLIENTCLASS_DT( C_TFObjectiveResource, DT_TFObjectiveResource, CTFObjectiveResource)
+IMPLEMENT_CLIENTCLASS_DT( C_TFObjectiveResource, DT_TFObjectiveResource, CTFObjectiveResource )
 
 END_RECV_TABLE()
 
@@ -42,25 +43,25 @@ const char *C_TFObjectiveResource::GetGameSpecificCPCappingSwipe( int index, int
 	Assert( index < m_iNumControlPoints );
 	Assert( iCappingTeam != TEAM_UNASSIGNED );
 
-	switch (iCappingTeam)
+	switch ( iCappingTeam )
 	{
-		case TF_TEAM_RED:
-			return "sprites/obj_icons/icon_obj_cap_red";
-			break;
-		case TF_TEAM_BLUE:
-			return "sprites/obj_icons/icon_obj_cap_blu";
-			break;
-		case TF_TEAM_GREEN:
-			return "sprites/obj_icons/icon_obj_cap_grn";
-			break;
-		case TF_TEAM_YELLOW:
-			return "sprites/obj_icons/icon_obj_cap_ylw";
-			break;
-		default:
-			return "sprites/obj_icons/icon_obj_cap_blu";
-			break;
+	case TF_TEAM_RED:
+		return "sprites/obj_icons/icon_obj_cap_red";
+		break;
+	case TF_TEAM_BLUE:
+		return "sprites/obj_icons/icon_obj_cap_blu";
+		break;
+	case TF_TEAM_GREEN:
+		return "sprites/obj_icons/icon_obj_cap_grn";
+		break;
+	case TF_TEAM_YELLOW:
+		return "sprites/obj_icons/icon_obj_cap_ylw";
+		break;
+	default:
+		return "sprites/obj_icons/icon_obj_cap_blu";
+		break;
 	}
-		
+
 
 	return "sprites/obj_icons/icon_obj_cap_blu";
 }
@@ -72,23 +73,23 @@ const char *C_TFObjectiveResource::GetGameSpecificCPBarFG( int index, int iOwnin
 {
 	Assert( index < m_iNumControlPoints );
 
-	switch (iOwningTeam)
+	switch ( iOwningTeam )
 	{
-		case TF_TEAM_RED:
-			return "progress_bar_red";
-			break;
-		case TF_TEAM_BLUE:
-			return "progress_bar_blu";
-			break;
-		case TF_TEAM_GREEN:
-			return "progress_bar_grn";
-			break;
-		case TF_TEAM_YELLOW:
-			return "progress_bar_ylw";
-			break;
-		default:
-			return "progress_bar";
-			break;
+	case TF_TEAM_RED:
+		return "progress_bar_red";
+		break;
+	case TF_TEAM_BLUE:
+		return "progress_bar_blu";
+		break;
+	case TF_TEAM_GREEN:
+		return "progress_bar_grn";
+		break;
+	case TF_TEAM_YELLOW:
+		return "progress_bar_ylw";
+		break;
+	default:
+		return "progress_bar";
+		break;
 	}
 	return "progress_bar";
 }
@@ -101,23 +102,23 @@ const char *C_TFObjectiveResource::GetGameSpecificCPBarBG( int index, int iCappi
 	Assert( index < m_iNumControlPoints );
 	Assert( iCappingTeam != TEAM_UNASSIGNED );
 
-	switch (iCappingTeam)
+	switch ( iCappingTeam )
 	{
-		case TF_TEAM_RED:
-			return "progress_bar_red";
-			break;
-		case TF_TEAM_BLUE:
-			return "progress_bar_blu";
-			break;
-		case TF_TEAM_GREEN:
-			return "progress_bar_grn";
-			break;
-		case TF_TEAM_YELLOW:
-			return "progress_bar_ylw";
-			break;
-		default:
-			return "progress_bar";
-			break;
+	case TF_TEAM_RED:
+		return "progress_bar_red";
+		break;
+	case TF_TEAM_BLUE:
+		return "progress_bar_blu";
+		break;
+	case TF_TEAM_GREEN:
+		return "progress_bar_grn";
+		break;
+	case TF_TEAM_YELLOW:
+		return "progress_bar_ylw";
+		break;
+	default:
+		return "progress_bar";
+		break;
 	}
 
 	return "progress_bar_blu";
@@ -128,7 +129,7 @@ void C_TFObjectiveResource::SetCappingTeam( int index, int team )
 	//Display warning that someone is capping our point.
 	//Only do this at the start of a cap and if WE own the point.
 	//Also don't warn on a point that will do a "Last Point cap" warning.
-	if (GetNumControlPoints() > 0 && GetCapWarningLevel(index) != index && GetCPCapPercentage(index) == 0.0f && team != TEAM_UNASSIGNED && GetOwningTeam(index) != TEAM_UNASSIGNED)
+	if ( GetNumControlPoints() > 0 && GetCapWarningLevel( index ) == CP_WARN_NORMAL && GetCPCapPercentage( index ) == 0.0f && team != TEAM_UNASSIGNED && GetOwningTeam( index ) != TEAM_UNASSIGNED )
 	{
 		C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
 		if ( pLocalPlayer )
@@ -138,7 +139,7 @@ void C_TFObjectiveResource::SetCappingTeam( int index, int team )
 			if ( iLocalTeam != team )
 			{
 				CLocalPlayerFilter filter;
-				C_BaseEntity::EmitSound( filter, -1, "Announcer.ControlPointContested" );
+				C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Announcer.ControlPointContested" );
 			}
 		}
 	}

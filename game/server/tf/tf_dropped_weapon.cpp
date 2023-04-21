@@ -1,4 +1,4 @@
-//====== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. =======//
+//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: Dropped DM weapon
 //
@@ -107,13 +107,12 @@ bool CTFDroppedWeapon::MyTouch( CBasePlayer *pPlayer )
 		// Don't remove weapon while a player is standing over it.
 		SetThink( NULL );
 
-#ifndef DM_WEAPON_BUCKET
 		int iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
 		CTFWeaponBase *pWeapon = (CTFWeaponBase *)pTFPlayer->GetEntityForLoadoutSlot( iSlot );
 
 		if ( pWeapon )
 		{
-			if ( pWeapon->GetItemID() == m_Item.GetItemDefIndex() )
+			if ( pTFPlayer->ItemsMatch( pWeapon->GetItem(), &m_Item, pWeapon ) )
 			{
 				// Give however many ammo we have.
 				if ( pTFPlayer->GiveAmmo( m_iAmmo, pWeapon->GetPrimaryAmmoType(), true, TF_AMMO_SOURCE_AMMOPACK ) )
@@ -132,15 +131,6 @@ bool CTFDroppedWeapon::MyTouch( CBasePlayer *pPlayer )
 				pTFPlayer->m_Shared.SetDesiredWeaponIndex( m_Item.GetItemDefIndex() );
 			}
 		}
-#else
-		int iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
-		CTFWeaponBase *pWeapon = (CTFWeaponBase *)pTFPlayer->GetEntityForLoadoutSlot( iSlot );
-		if ( pWeapon )
-		{
-			if ( pTFPlayer->GiveAmmo( 999, GetTFWeaponInfo( pWeapon->GetWeaponID() )->iAmmoType ) );
-			bSuccess = true;
-		}
-#endif
 
 		if ( !pWeapon )
 		{

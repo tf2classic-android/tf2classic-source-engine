@@ -18,35 +18,57 @@
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-C_PlayerAttachedModel *C_PlayerAttachedModel::Create( const char *pszModelName, C_BaseEntity *pParent, int iAttachment, Vector vecOffset, float flLifetime, int iFlags )
+C_PlayerAttachedModel *C_PlayerAttachedModel::Create( const char *pszModelName, C_BaseEntity *pParent, int iAttachment, const Vector &vecOffset, float flLifetime, int iFlags )
 {
-	C_PlayerAttachedModel *pFlash = new C_PlayerAttachedModel;
-	if ( !pFlash )
+	C_PlayerAttachedModel *pModel = new C_PlayerAttachedModel();
+	if ( !pModel )
 		return NULL;
 
-	if ( !pFlash->Initialize( pszModelName, pParent, iAttachment, vecOffset, flLifetime, iFlags ) )
+	if ( !pModel->Initialize( pszModelName, pParent, iAttachment, false, vecOffset, flLifetime, iFlags ) )
 		return NULL;
 
-	return pFlash;
+	return pModel;
+}
+
+C_PlayerAttachedModel *C_PlayerAttachedModel::Create( const char *pszModelName, C_BaseEntity *pParent, float flLifetime, int iFlags )
+{
+	C_PlayerAttachedModel *pModel = new C_PlayerAttachedModel();
+	if ( !pModel )
+		return NULL;
+
+	if ( !pModel->Initialize( pszModelName, pParent, -1, true, vec3_origin, flLifetime, iFlags ) )
+		return NULL;
+
+	return pModel;
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool C_PlayerAttachedModel::Initialize( const char *pszModelName, C_BaseEntity *pParent, int iAttachment, Vector vecOffset, float flLifetime, int iFlags )
+bool C_PlayerAttachedModel::Initialize( const char *pszModelName, C_BaseEntity *pParent, int iAttachment, bool bBoneMerge, const Vector &vecOffset, float flLifetime, int iFlags )
 {
-	AddEffects( EF_NORECEIVESHADOW | EF_NOSHADOW );
+	AddEffects( EF_NOSHADOW );
 	if ( InitializeAsClientEntity( pszModelName, RENDER_GROUP_OPAQUE_ENTITY ) == false )
 	{
 		Release();
 		return false;
 	}
 
-	SetParent( pParent, iAttachment ); 
-	SetLocalOrigin( vecOffset );
-	SetLocalAngles( vec3_angle );
+	if ( bBoneMerge )
+	{
+		FollowEntity( pParent );
+		AddEffects( EF_BONEMERGE_FASTCULL );
+	}
+	else
+	{
+		SetParent( pParent, iAttachment );
+		SetLocalOrigin( vecOffset );
+		SetLocalAngles( vec3_angle );
 
-	AddSolidFlags( FSOLID_NOT_SOLID );
+		AddSolidFlags( FSOLID_NOT_SOLID );
+	}
+
+	SetOwnerEntity( pParent );
 
 	SetLifetime( flLifetime );
 	SetNextClientThink( CLIENT_THINK_ALWAYS );
@@ -134,4 +156,21 @@ void C_PlayerAttachedModel::ApplyBoneMatrixTransform( matrix3x4_t& transform )
 	VectorScale( transform[0], m_flScale, transform[0] );
 	VectorScale( transform[1], m_flScale, transform[1] );
 	VectorScale( transform[2], m_flScale, transform[2] );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool C_PlayerAttachedModel::ShouldDraw( void )
+{
+	C_BasePlayer *pOwner = ToBasePlayer( GetOwnerEntity() );
+
+	if ( !pOwner )
+		return false;
+
+	// Don't want them to obstruct the view.
+	if ( pOwner->InFirstPersonView() )
+		return false;
+
+	return BaseClass::ShouldDraw();
 }

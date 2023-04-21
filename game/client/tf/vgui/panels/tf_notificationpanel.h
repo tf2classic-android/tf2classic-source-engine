@@ -35,6 +35,8 @@ private:
 	CExLabel		*m_pMessageLabel;
 
 	int				m_iMinHeight;
+	int				m_iOrgPrevPos;
+	int				m_iOrgNextPos;
 	int				m_iCurrent;
 	int				m_iCount;
 };

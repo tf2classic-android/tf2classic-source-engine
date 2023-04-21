@@ -25,12 +25,17 @@ class C_PlayerAttachedModel : public C_BaseAnimating
 {
 	DECLARE_CLASS( C_PlayerAttachedModel, C_BaseAnimating );
 public:
-	static C_PlayerAttachedModel *Create( const char *pszModelName, C_BaseEntity *pParent, int iAttachment, Vector vecOffset, float flLifetime = 0.2, int iFlags = 0 );
+	static C_PlayerAttachedModel *Create( const char *pszModelName, C_BaseEntity *pParent, int iAttachment, const Vector &vecOffset, float flLifetime = 0.2, int iFlags = 0 );
+	static C_PlayerAttachedModel *Create( const char *pszModelName, C_BaseEntity *pParent, float flLifetime = PAM_PERMANENT, int iFlags = 0 );
 
-	bool	Initialize( const char *pszModelName, C_BaseEntity *pParent, int iAttachment, Vector vecOffset, float flLifetime, int iFlags );
+	bool	Initialize( const char *pszModelName, C_BaseEntity *pParent,
+		int iAttachment = -1, bool bBoneMerge = true, const Vector &vecOffset = vec3_origin, float flLifetime = PAM_PERMANENT, int iFlags = 0 );
+
 	void	SetLifetime( float flLifetime );
 	void	ClientThink( void );
 	void	ApplyBoneMatrixTransform( matrix3x4_t& transform );
+
+	virtual bool ShouldDraw( void );
 
 private:
 	float	m_flExpiresAt;
