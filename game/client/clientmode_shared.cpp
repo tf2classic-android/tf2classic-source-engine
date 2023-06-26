@@ -150,6 +150,18 @@ CON_COMMAND( hud_reloadscheme, "Reloads hud layout and animation scripts." )
 	mode->ReloadScheme(true);
 }
 
+CON_COMMAND( messagemode, "Opens chat dialog" )
+{
+	ClientModeShared *mode = ( ClientModeShared * )GetClientModeNormal();
+	mode->StartMessageMode( MM_SAY );
+}
+
+CON_COMMAND( messagemode2, "Opens chat dialog" )
+{
+	ClientModeShared *mode = ( ClientModeShared * )GetClientModeNormal();
+	mode->StartMessageMode( MM_SAY_TEAM );
+}
+
 #ifdef _DEBUG
 CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 0: read from NULL\n 1: write to NULL\n 2: DmCrashDump() (xbox360 only)", FCVAR_CHEAT )
 {
@@ -654,9 +666,7 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 		return 1;
 	
 	// Should we start typing a message?
-	if ( pszCurrentBinding &&
-		( Q_strcmp( pszCurrentBinding, "messagemode" ) == 0 ||
-		  Q_strcmp( pszCurrentBinding, "say" ) == 0 ) )
+	if ( pszCurrentBinding && Q_strcmp( pszCurrentBinding, "say" ) == 0 )
 	{
 		if ( down )
 		{
@@ -664,9 +674,7 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 		}
 		return 0;
 	}
-	else if ( pszCurrentBinding &&
-				( Q_strcmp( pszCurrentBinding, "messagemode2" ) == 0 ||
-				  Q_strcmp( pszCurrentBinding, "say_team" ) == 0 ) )
+	else if ( pszCurrentBinding && Q_strcmp( pszCurrentBinding, "say_team" ) == 0 )
 	{
 		if ( down )
 		{
