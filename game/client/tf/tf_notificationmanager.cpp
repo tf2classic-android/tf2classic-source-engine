@@ -18,9 +18,13 @@
 
 const char *g_aRequestURLs[REQUEST_COUNT] =
 {
+#if 0
 	"http://services.0x13.io/tf2c/version/?latest=1",
 	"http://services.0x13.io/tf2c/motd/",
 	"http://services.0x13.io/tf2c/servers/official/"
+#else
+	""
+#endif
 };
 
 MessageNotification::MessageNotification()
