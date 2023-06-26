@@ -7,71 +7,52 @@
 #include "tf_advbuttonbase.h"
 #include "tf_imagepanel.h"
 
-using namespace vgui;
-
 class CTFScrollButton;
-#undef	DEFAULT_BG
-#undef	ARMED_BG
-#undef	DEPRESSED_BG
-#undef	DEFAULT_BORDER
-#undef	ARMED_BORDER
-#undef	DEPRESSED_BORDER
-#define DEFAULT_BG					"AdvSlider"
-#define ARMED_BG					"AdvSlider"
-#define DEPRESSED_BG				"AdvSlider"
-#define DEFAULT_BORDER				"TFFatLineBorder"
-#define ARMED_BORDER				"TFFatLineBorderOpaque"
-#define DEPRESSED_BORDER			"TFFatLineBorderRedBGOpaque"
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CTFAdvSlider : public CTFAdvButtonBase
+class CTFSlider : public vgui::EditablePanel
 {
-	friend class CTFScrollButton;
 public:
-	DECLARE_CLASS_SIMPLE( CTFAdvSlider, CTFAdvButtonBase );
+	DECLARE_CLASS_SIMPLE( CTFSlider, vgui::EditablePanel );
 
-	CTFAdvSlider( vgui::Panel *parent, const char *panelName, const char *text );
-	~CTFAdvSlider();
-	void Init();
-	void ApplySettings( KeyValues *inResourceData );
-	void ApplySchemeSettings( vgui::IScheme *pScheme );
-	void PerformLayout();
-	void SetFont( HFont font );
+	CTFSlider( vgui::Panel *parent, const char *panelName, const char *text );
+	~CTFSlider();
 
-	void SendAnimation( MouseState flag );
-	void SetDefaultAnimation();
+	virtual void Init();
+	virtual void ApplySettings( KeyValues *inResourceData );
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void PerformLayout();
+	virtual void OnThink( void );
 
-	void OnThink();
-	float GetPercentage();
+	void SetFont( vgui::HFont font );
 	float GetValue();
 	const char *GetFinalValue();
-	int GetScrollValue();
-	void SetPercentage();
-	void SetPercentage( float fPerc );
-	void SetValue( float fVal );
-	void SetMinMax( float fMin, float fMax ) { m_flMinValue = fMin; m_flMaxValue = fMax; };
-	void SetRange( float fMin, float fMax ) { SetMinMax( fMin, fMax ); };
-	void RunCommand();
-	void GetGlobalPosition( Panel *pPanel );
-	void UpdateValue();
-	bool IsVertical() { return m_bVertical; };
-	int GetPanelWide() { return m_pBGBorder->GetWide(); };
+	void SetPercentage( float fPerc, bool bInstant = false );
+	void SetValue( float flValue );
+	void SetRange( float flMin, float flMax );
+	bool IsVertical() { return m_bVertical; }
+
+	virtual void SendSliderMovedMessage();
+	virtual void SendSliderDragStartMessage();
+	virtual void SendSliderDragEndMessage();
 
 	CTFScrollButton *GetButton() { return m_pButton; };
 
 protected:
 	CTFScrollButton	*m_pButton;
-	CExLabel		*m_pTitleLabel;
-	CExLabel		*m_pValueLabel;
+	vgui::Label			*m_pTitleLabel;
+	vgui::Label			*m_pValueLabel;
 	vgui::EditablePanel *m_pBGBorder;
+
 	float			m_flMinValue;
 	float			m_flMaxValue;
-	float			m_flLabelWidth;
+	int			m_iLabelWidth;
 	float			m_flValue;
 	bool			m_bValueVisible;
 	bool			m_bVertical;
+	bool			m_bShowFrac;
 };
 
 
@@ -80,7 +61,6 @@ protected:
 //-----------------------------------------------------------------------------
 class CTFScrollButton : public CTFButtonBase
 {
-	friend class CTFAdvSlider;
 public:
 	DECLARE_CLASS_SIMPLE( CTFScrollButton, CTFButtonBase );
 
@@ -94,10 +74,10 @@ public:
 	void OnMousePressed( vgui::MouseCode code );
 	void OnMouseReleased( vgui::MouseCode code );
 	void SetMouseEnteredState( MouseState flag );
-	void SetParent( CTFAdvSlider *m_pButton ) { m_pParent = m_pButton; };
+	void SetSliderPanel( CTFSlider *m_pButton ) { m_pSliderPanel = m_pButton; };
 
 private:
-	CTFAdvSlider *m_pParent;
+	CTFSlider *m_pSliderPanel;
 };
 
 

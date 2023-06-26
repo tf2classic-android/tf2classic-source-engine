@@ -35,15 +35,16 @@ private:
 	vgui::Label			*m_pWeaponName;
 	vgui::Label			*m_pSlotID;
 	vgui::ImagePanel	*m_pWeaponImage;
-	vgui::HFont			 m_pDefaultFont;
-	vgui::HFont			 m_pSelectedFont;
-	vgui::HFont			 m_pNumberDefaultFont;
-	vgui::HFont			 m_pNumberSelectedFont;
+	vgui::HFont			m_pDefaultFont;
+	vgui::HFont			m_pSelectedFont;
+	vgui::HFont			m_pNumberDefaultFont;
+	vgui::HFont			m_pNumberSelectedFont;
 	vgui::IBorder		*m_pDefaultBorder;
 	vgui::IBorder		*m_pSelectedRedBorder;
 	vgui::IBorder		*m_pSelectedBlueBorder;
-	int					 m_iBorderStyle;
-	int					 m_ID;
+	int					m_iBorderStyle;
+	int					m_ID;
+	bool				m_bOldStyleIcon;
 };
 
 //-----------------------------------------------------------------------------

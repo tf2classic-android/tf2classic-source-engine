@@ -16,7 +16,7 @@
 
 #include "tf_dialogpanelbase.h"
 class vcontrolslistpanel;
-class CTFAdvButton;
+class CTFButton;
 
 //-----------------------------------------------------------------------------
 // Purpose: Keyboard Details, Part of OptionsDialog
@@ -92,8 +92,8 @@ private:
 
 	vcontrolslistpanel	*m_pKeyBindList;
 
-	CTFAdvButton *m_pSetBindingButton;
-	CTFAdvButton *m_pClearBindingButton;
+	CTFButton *m_pSetBindingButton;
+	CTFButton *m_pClearBindingButton;
 
 	// List of saved bindings for the keys
 	KeyBinding m_Bindings[ BUTTON_CODE_LAST ];

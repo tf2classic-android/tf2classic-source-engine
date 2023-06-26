@@ -13,29 +13,32 @@
 
 #include "tf_advcheckbutton.h"
 
-class CCvarToggleCheckButton : public CTFAdvCheckButton
+class CTFCvarToggleCheckButton : public CTFCheckButton
 {
-	DECLARE_CLASS_SIMPLE(CCvarToggleCheckButton, CTFAdvCheckButton);
+	DECLARE_CLASS_SIMPLE( CTFCvarToggleCheckButton, CTFCheckButton );
 
 public:
-	CCvarToggleCheckButton( vgui::Panel *parent, const char *panelName, const char *text, 
-		char const *cvarname );
-	~CCvarToggleCheckButton();
+	CTFCvarToggleCheckButton( vgui::Panel *parent, const char *panelName, const char *text = "",
+		char const *cvarname = NULL, bool ignoreMissingCvar = false );
+	~CTFCvarToggleCheckButton();
 
-	virtual void	SetSelected( bool state );
-
-	virtual void	Paint();
+	virtual void	OnTick();
 
 	void			Reset();
 	void			ApplyChanges();
 	bool			HasBeenModified();
 	virtual void	ApplySettings( KeyValues *inResourceData );
 
+	const char		*GetCvarName( void ) { return m_cvar.GetName(); }
+
 private:
 	MESSAGE_FUNC( OnButtonChecked, "CheckButtonChecked" );
+	MESSAGE_FUNC( OnApplyChanges, "ApplyChanges" );
 
-	char			*m_pszCvarName;
+	ConVarRef		m_cvar;
 	bool			m_bStartValue;
+	bool			m_bIgnoreMissingCvar;
+	bool			m_bAutoChange;
 };
 
 #endif // tf_cvartogglecheckbutton_H

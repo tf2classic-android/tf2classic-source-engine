@@ -177,7 +177,7 @@ void CTFOptionsVideoPanel::CreateControls()
 	m_pWindowed->AddItem("#GameUI_Fullscreen", NULL);
 	m_pWindowed->AddItem("#GameUI_Windowed", NULL);
 
-	m_pGammaSlider = new CCvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma", true);
+	m_pGammaSlider = new CTFCvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma", true);
 
 
 	// Moved down here so we can set the Drop down's 
@@ -372,7 +372,7 @@ void CTFOptionsVideoPanel::CreateControls()
 	m_pQueuedMode->AddItem("#gameui_disabled", NULL);
 	m_pQueuedMode->AddItem("#gameui_enabled", NULL);
 
-	m_pFOVSlider = new CCvarSlider(this, "FOV", "#GameUI_FOV", 75.0f, 100.0f, "fov_desired");
+	m_pFOVSlider = new CTFCvarSlider(this, "FOV", "#GameUI_FOV", 75.0f, 100.0f, "fov_desired");
 
 	m_pDXLevel->SetVisible(false);
 
@@ -1043,7 +1043,7 @@ void CTFOptionsVideoPanel::OnTextChanged(Panel *pPanel, const char *pszText)
 //-----------------------------------------------------------------------------
 // Purpose: enables apply button
 //-----------------------------------------------------------------------------
-void CTFOptionsVideoPanel::OnDataChanged()
+void CTFOptionsVideoPanel::OnControlModified()
 {
 	PostActionSignal(new KeyValues("ApplyButtonEnable"));
 }

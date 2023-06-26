@@ -46,9 +46,9 @@ void CTFRGBPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
 
 	LoadControlSettings("resource/UI/main_menu/RGBPanel.res");
 
-	m_pRedScrollBar = dynamic_cast<CCvarSlider *>(FindChildByName("RedScrollBar"));
-	m_pGrnScrollBar = dynamic_cast<CCvarSlider *>(FindChildByName("GrnScrollBar"));
-	m_pBluScrollBar = dynamic_cast<CCvarSlider *>(FindChildByName("BluScrollBar"));
+	m_pRedScrollBar = dynamic_cast<CTFCvarSlider *>(FindChildByName("RedScrollBar"));
+	m_pGrnScrollBar = dynamic_cast<CTFCvarSlider *>(FindChildByName("GrnScrollBar"));
+	m_pBluScrollBar = dynamic_cast<CTFCvarSlider *>(FindChildByName("BluScrollBar"));
 	m_pColorBG = dynamic_cast<ImagePanel *>(FindChildByName("ColorBG"));
 	m_pCombo = dynamic_cast<CCvarComboBox*>(FindChildByName("ParticleComboBox"));
 

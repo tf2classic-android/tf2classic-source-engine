@@ -48,8 +48,8 @@ void CTFNotificationPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 
 	LoadControlSettings( "resource/UI/main_menu/NotificationPanel.res" );
 
-	m_pPrevButton = dynamic_cast<CTFAdvButton *>( FindChildByName( "PrevButton" ) );
-	m_pNextButton = dynamic_cast<CTFAdvButton *>( FindChildByName( "NextButton" ) );
+	m_pPrevButton = dynamic_cast<CTFButton *>( FindChildByName( "PrevButton" ) );
+	m_pNextButton = dynamic_cast<CTFButton *>( FindChildByName( "NextButton" ) );
 	m_pMessageLabel = dynamic_cast<CExLabel *>( FindChildByName( "MessageLabel" ) );
 
 	m_iMinHeight = GetTall();

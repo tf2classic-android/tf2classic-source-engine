@@ -17,6 +17,7 @@
 #include "tf_hud_statpanel.h"
 #include "tf_notificationmanager.h"
 #include "tier0/icommandline.h"
+#include "tf_hud_statpanel.h"
 
 using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!

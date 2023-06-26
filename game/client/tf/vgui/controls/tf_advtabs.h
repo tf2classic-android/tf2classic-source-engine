@@ -6,7 +6,7 @@
 
 using namespace vgui;
 
-class CTFAdvButton;
+class CTFButton;
 
 class CAdvTabs : public vgui::EditablePanel
 {
@@ -28,8 +28,8 @@ public:
 
 protected:
 	int	iOffset;
-	CUtlVector<CTFAdvButton*>	m_pButtons;
-	CTFAdvButton*	m_pCurrentButton;
+	CUtlVector<CTFButton*>	m_pButtons;
+	CTFButton*	m_pCurrentButton;
 	MESSAGE_FUNC_PTR(OnButtonPressed, "ButtonPressed", panel);
 };
 

@@ -13,7 +13,7 @@
 
 #include "tf_dialogpanelbase.h"
 
-class CCvarSlider;
+class CTFCvarSlider;
 class CPanelListPanel;
 
 struct AAMode_t
@@ -44,7 +44,7 @@ protected:
 
 private:
     void  SetCurrentResolutionComboItem();
-    MESSAGE_FUNC( OnDataChanged, "ControlModified" );
+    MESSAGE_FUNC( OnControlModified, "ControlModified" );
 	MESSAGE_FUNC_PTR_CHARPTR( OnTextChanged, "TextChanged", panel, text );
    
 	void		PrepareResolutionList();
@@ -54,7 +54,7 @@ private:
 	vgui::ComboBox		*m_pMode;
 	vgui::ComboBox		*m_pWindowed;
 	vgui::ComboBox		*m_pAspectRatio;
-	CCvarSlider			*m_pGammaSlider;
+	CTFCvarSlider			*m_pGammaSlider;
 
 	bool m_bRequireRestart;
 
@@ -65,7 +65,7 @@ private:
    vgui::ComboBox *m_pColorCorrection;
    vgui::ComboBox *m_pMotionBlur;
    vgui::ComboBox *m_pDXLevel;
-   CCvarSlider	  *m_pFOVSlider;
+   CTFCvarSlider	  *m_pFOVSlider;
    vgui::ComboBox *m_pQueuedMode;
 
    void MarkDefaultSettingsAsRecommended();

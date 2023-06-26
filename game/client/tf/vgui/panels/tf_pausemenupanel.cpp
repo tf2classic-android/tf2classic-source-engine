@@ -39,7 +39,7 @@ void CTFPauseMenuPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
 	BaseClass::ApplySchemeSettings(pScheme);
 
 	LoadControlSettings("resource/UI/main_menu/PauseMenuPanel.res");
-	m_pNotificationButton = dynamic_cast<CTFAdvButton*>(FindChildByName("NotificationButton"));
+	m_pNotificationButton = dynamic_cast<CTFButton*>(FindChildByName("NotificationButton"));
 }
 
 void CTFPauseMenuPanel::PerformLayout()

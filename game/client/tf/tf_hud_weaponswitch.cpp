@@ -37,13 +37,13 @@ CItemModelPanel::CItemModelPanel( Panel *parent, const char* name ) : EditablePa
 	m_pWeaponImage = new vgui::ImagePanel( this, "WeaponImage" );
 	m_iBorderStyle = -1;
 	m_ID = -1;
+	m_bOldStyleIcon = false;
 }
 
 void CItemModelPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	m_pSlotID->SetFgColor( pScheme->GetColor( "TanLight", Color( 255, 255, 255, 255 ) ) );
 	m_pDefaultFont = pScheme->GetFont( "ItemFontNameSmallest", true );
 	m_pSelectedFont = pScheme->GetFont( "ItemFontNameSmall", true );
 	m_pNumberDefaultFont = pScheme->GetFont( "FontStorePromotion", true );
@@ -51,10 +51,24 @@ void CItemModelPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 	m_pDefaultBorder = pScheme->GetBorder( "TFFatLineBorder" );
 	m_pSelectedRedBorder = pScheme->GetBorder( "TFFatLineBorderRedBG" );
 	m_pSelectedBlueBorder = pScheme->GetBorder( "TFFatLineBorderBlueBG" );
+
+	SetPaintBorderEnabled( false );
+
+	m_pWeaponImage->SetShouldScaleImage( true );
+	m_pWeaponImage->SetZPos( -1 );
+
+	m_pWeaponName->SetFont( m_pDefaultFont );
+	m_pWeaponName->SetContentAlignment( Label::a_south );
+	m_pWeaponName->SetCenterWrap( true );
+
+	m_pSlotID->SetFont( m_pNumberDefaultFont );
+	m_pSlotID->SetContentAlignment( Label::a_northeast );
+	m_pSlotID->SetFgColor( pScheme->GetColor( "TanLight", Color( 255, 255, 255, 255 ) ) );
 }
 
 void CItemModelPanel::PerformLayout( void )
 {
+	// Set border.
 	if ( m_iBorderStyle == -1 )
 	{
 		SetPaintBorderEnabled( false );
@@ -62,41 +76,39 @@ void CItemModelPanel::PerformLayout( void )
 	else if ( m_iBorderStyle == 0 )
 	{
 		SetPaintBorderEnabled( true );
-		IBorder *border = m_pDefaultBorder;
-		SetBorder( border );
+		SetBorder( m_pDefaultBorder );
 	}
 	else if ( m_iBorderStyle == 1 )
 	{
-		C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-		IBorder *border;
+		int iTeam = GetLocalPlayerTeam();
 
-		if( !pPlayer ) return;
-
-		switch( pPlayer->GetTeamNumber() )
+		if ( iTeam == TF_TEAM_RED )
 		{
-			case TF_TEAM_RED:
-				border = m_pSelectedRedBorder;
-				break;
-			case TF_TEAM_BLUE:
-				border = m_pSelectedBlueBorder;
-				break;
-		};
-
-		SetBorder( border );
+			SetBorder( m_pSelectedRedBorder );
+		}
+		else
+		{
+			SetBorder( m_pSelectedBlueBorder );
+		}
 	}
 
-	m_pWeaponImage->SetShouldScaleImage( true );
-	m_pWeaponImage->SetZPos( -1 );
-
-	m_pWeaponName->SetBounds( XRES( 5 ), GetTall() - YRES( 20 ), GetWide() - XRES( 10 ), YRES( 20 ) );
-	m_pWeaponName->SetFont( m_iBorderStyle ? m_pSelectedFont : m_pDefaultFont );
-	m_pWeaponName->SetContentAlignment( CTFAdvButtonBase::GetAlignment( "center" ) );
-	m_pWeaponName->SetCenterWrap( true );
-
-	if ( m_pWeapon && !m_pWeapon->CanBeSelected() )
+	// Position image.
+	if ( m_bOldStyleIcon )
 	{
-		wchar_t *pText = g_pVGuiLocalize->Find( "#TF_OUT_OF_AMMO" );
-		m_pWeaponName->SetText( pText );
+		m_pWeaponImage->SetBounds( YRES( 5 ), -1 * ( GetTall() / 10.0 ) + YRES( 5 ), ( GetWide() * 1.5 ) - YRES( 10 ), ( GetWide() * 0.75 ) - YRES( 10 ) );
+	}
+	else
+	{
+		m_pWeaponImage->SetBounds( YRES( 5 ), -1 * ( GetTall() / 5.0 ) + YRES( 5 ), GetWide() - YRES( 10 ), GetWide() - YRES( 10 ) );
+	}
+
+	// Position weapon name.
+	m_pWeaponName->SetBounds( YRES( 5 ), GetTall() - YRES( 25 ), GetWide() - YRES( 5 ), YRES( 20 ) );
+	m_pWeaponName->SetFont( m_iBorderStyle ? m_pSelectedFont : m_pDefaultFont );
+
+	if ( m_pWeapon && !m_pWeapon->HasAnyAmmo() )
+	{
+		m_pWeaponName->SetText( "#TF_OUT_OF_AMMO" );
 		m_pWeaponName->SetFgColor( GETSCHEME()->GetColor( "RedSolid", Color( 255, 255, 255, 255 ) ) );
 	}
 	else
@@ -104,9 +116,9 @@ void CItemModelPanel::PerformLayout( void )
 		m_pWeaponName->SetFgColor( GETSCHEME()->GetColor( "TanLight", Color( 255, 255, 255, 255 ) ) );
 	}
 
-	m_pSlotID->SetBounds( 0, YRES( 5 ), GetWide() - XRES( 5 ), YRES( 10 ) );
+	// Position slot number.
+	m_pSlotID->SetBounds( 0, YRES( 5 ), GetWide() - YRES( 5 ), YRES( 10 ) );
 	m_pSlotID->SetFont( m_iBorderStyle ? m_pNumberSelectedFont : m_pNumberDefaultFont );
-	m_pSlotID->SetContentAlignment( CTFAdvButtonBase::GetAlignment( "east" ) );
 }
 
 void CItemModelPanel::SetWeapon( C_BaseCombatWeapon *pWeapon, int iBorderStyle, int ID )
@@ -117,34 +129,35 @@ void CItemModelPanel::SetWeapon( C_BaseCombatWeapon *pWeapon, int iBorderStyle, 
 
 	int iItemID = m_pWeapon->GetItemID();
 	CEconItemDefinition *pItemDefinition = GetItemSchema()->GetItemDefinition( iItemID );
-	wchar_t *pText = NULL;
+	const char *pszName = "";
+	char szImage[128] = { '\0' };
+
 	if ( pItemDefinition )
 	{
-		pText = g_pVGuiLocalize->Find( pItemDefinition->item_name );
-		char szImage[128];
-		Q_snprintf( szImage, sizeof( szImage ), "../%s_large", pItemDefinition->image_inventory );
-		m_pWeaponImage->SetImage( szImage );
-		m_pWeaponImage->SetBounds( XRES( 4 ), -1 * ( GetTall() / 5.0 ) + XRES( 4 ), GetWide() - XRES( 8 ), GetWide() - XRES( 8 ) );
+		pszName = pItemDefinition->item_name;
+		V_snprintf( szImage, sizeof( szImage ), "../%s_large", pItemDefinition->image_inventory );
+		
+		m_bOldStyleIcon = false;
 	}
 	else
 	{
-		pText = g_pVGuiLocalize->Find( m_pWeapon->GetWpnData().szPrintName );
-		const CHudTexture *pTexture = pWeapon->GetSpriteInactive(); // red team
+		pszName = m_pWeapon->GetWpnData().szPrintName;
+		const CHudTexture *pTexture = m_pWeapon->GetSpriteInactive(); // red team
 		if ( pTexture )
 		{
-			char szImage[64];
-			Q_snprintf( szImage, sizeof( szImage ), "../%s", pTexture->szTextureFile );
-			m_pWeaponImage->SetImage( szImage );
+			V_snprintf( szImage, sizeof( szImage ), "../%s", pTexture->szTextureFile );
 		}
-		m_pWeaponImage->SetBounds( XRES( 4 ), -1 * ( GetTall() / 10.0 ) + XRES( 4 ), ( GetWide() * 1.5 ) - XRES( 8 ), ( GetWide() * 0.75 ) - XRES( 8 ) );
+
+		m_bOldStyleIcon = true;
 	}
 
-	m_pWeaponName->SetText( pText );
+	m_pWeaponName->SetText( pszName );
+	m_pWeaponImage->SetImage( szImage );
 
 	if ( ID != -1 )
 	{
 		char szSlotID[8];
-		Q_snprintf( szSlotID, sizeof( szSlotID ), "%d", m_ID + 1 );
+		V_snprintf( szSlotID, sizeof( szSlotID ), "%d", m_ID + 1 );
 		m_pSlotID->SetText( szSlotID );
 	}
 	else
@@ -168,7 +181,7 @@ void CItemModelPanel::SetWeapon( CEconItemDefinition *pItemDefinition, int iBord
 		char szImage[128];
 		Q_snprintf( szImage, sizeof( szImage ), "../%s_large", pItemDefinition->image_inventory );
 		m_pWeaponImage->SetImage( szImage );
-		m_pWeaponImage->SetBounds( XRES( 4 ), -1 * ( GetTall() / 5.0 ) + XRES( 4 ), GetWide() - XRES( 8 ), GetWide() - XRES( 8 ) );
+		m_bOldStyleIcon = false;
 	}
 
 	m_pWeaponName->SetText( pText );
@@ -185,6 +198,8 @@ void CItemModelPanel::SetWeapon( CEconItemDefinition *pItemDefinition, int iBord
 
 	InvalidateLayout( true );
 }
+
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -274,12 +289,14 @@ void CTFHudWeaponSwitch::OnTick()
 		m_pWeaponTo->SetWeapon( m_pItemDefTo );
 	}
 
-	int iSlot = pItemTo->GetLoadoutSlot( TF_CLASS_MERCENARY );
+	int iSlot = pItemTo->GetLoadoutSlot( pPlayer->GetPlayerClass()->GetClassIndex() );
 	C_EconEntity *pWeaponFrom = pPlayer->GetEntityForLoadoutSlot( iSlot );
 	if ( !pWeaponFrom )
 		return;
 
 	CEconItemDefinition *pItemFrom = pWeaponFrom->GetItem()->GetStaticData();
+	if ( !pItemFrom )
+		return;
 
 	if ( pItemFrom != m_pItemDefFrom )
 	{

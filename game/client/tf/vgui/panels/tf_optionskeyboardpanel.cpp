@@ -66,8 +66,8 @@ bool CTFOptionsKeyboardPanel::Init()
 	// Store all current key bindings
 	SaveCurrentBindings();
 
-	m_pSetBindingButton = new CTFAdvButton(this, "ChangeKeyButton", "");
-	m_pClearBindingButton = new CTFAdvButton(this, "ClearKeyButton", "");
+	m_pSetBindingButton = new CTFButton(this, "ChangeKeyButton", "");
+	m_pClearBindingButton = new CTFButton(this, "ClearKeyButton", "");
 	return true;
 }
 

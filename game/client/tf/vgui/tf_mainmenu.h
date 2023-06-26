@@ -2,9 +2,14 @@
 #define TFMAINMENU_H
 
 #include "GameUI/IGameUI.h"
-#include "vgui_controls/Panel.h"
 #include "steam/steam_api.h"
-#include "tf_hud_statpanel.h"
+#include <vgui_controls/EditablePanel.h>
+#include <game/client/iviewport.h>
+#include <vgui/IScheme.h>
+#include "hud.h"
+#include "hudelement.h"
+
+struct ClassStats_t;
 
 enum MenuPanel //position in this enum = zpos on the screen
 {

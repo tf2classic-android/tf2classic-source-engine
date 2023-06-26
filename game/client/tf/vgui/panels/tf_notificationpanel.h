@@ -30,8 +30,8 @@ public:
 	void RemoveCurrent();
 
 private:
-	CTFAdvButton	*m_pPrevButton;
-	CTFAdvButton	*m_pNextButton;
+	CTFButton	*m_pPrevButton;
+	CTFButton	*m_pNextButton;
 	CExLabel		*m_pMessageLabel;
 
 	int				m_iMinHeight;

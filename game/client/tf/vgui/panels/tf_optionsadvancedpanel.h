@@ -39,6 +39,8 @@ protected:
 	void GatherCurrentValues();
 	void SaveValues();
 
+	MESSAGE_FUNC( OnControlModified, "ControlModified" );
+
 	CInfoDescription *m_pDescription;
 
 	mpcontrol_t *m_pList;

@@ -14,123 +14,155 @@
 #include <vgui/IVGui.h>
 #include <vgui_controls/PropertyPage.h>
 
-#define tf_cvarslider_SCALE_FACTOR 1.0f
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
 
-//DECLARE_BUILD_FACTORY( CCvarSlider );
-vgui::Panel *CCvarSlider_Factory()
-{
-	return new CCvarSlider(NULL, NULL, "CCvarSlider");
-}
-DECLARE_BUILD_FACTORY_CUSTOM(CCvarSlider, CCvarSlider_Factory);
+
+DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CTFCvarSlider, CTFCvarSlider );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CCvarSlider::CCvarSlider(Panel *parent, const char *panelName, const char *name) : CTFAdvSlider(parent, panelName, name)
+CTFCvarSlider::CTFCvarSlider( Panel *parent, const char *panelName, const char *caption )
+	: CTFSlider( parent, panelName, caption ),
+	m_cvar( "", true )
 {
-	SetupSlider( 0, 1, "" );
+	SetupSlider( 0, 1, false, false );
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CCvarSlider::CCvarSlider( Panel *parent, const char *panelName, char const *caption,
-	float minValue, float maxValue, char const *cvarname, bool bShowFrac )
-		: CTFAdvSlider(parent, panelName, caption)
+CTFCvarSlider::CTFCvarSlider( Panel *parent, const char *panelName, char const *caption,
+	float minValue, float maxValue, char const *cvarname, bool bShowFrac, bool bAutoChange )
+	: CTFSlider( parent, panelName, caption ),
+	m_cvar( cvarname, false )
 {
+	SetupSlider( minValue, maxValue, bShowFrac, bAutoChange );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CTFCvarSlider::~CTFCvarSlider()
+{
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFCvarSlider::SetupSlider( float minValue, float maxValue, bool bShowFrac, bool bAutoChange )
+{
+	m_flStartValue = 0.0f;
 	m_bShowFrac = bShowFrac;
-	SetupSlider( minValue, maxValue, cvarname );
-}
+	m_bAutoChange = bAutoChange;
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CCvarSlider::~CCvarSlider()
-{
-}
+	SetRange( minValue, maxValue );
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CCvarSlider::SetupSlider( float minValue, float maxValue, const char *cvarname )
-{
+	ivgui()->AddTickSignal( GetVPanel() );
 	AddActionSignalTarget( this );
 
-	m_flMinValue = minValue;
-	m_flMaxValue = maxValue;
-
-	SetMinMax(minValue, maxValue);
-
-	SetCommandString( cvarname );
+	Reset();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CCvarSlider::ApplySettings( KeyValues *inResourceData )
+void CTFCvarSlider::ApplySettings( KeyValues *inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
-}
 
-//-----------------------------------------------------------------------------
-// Purpose: Get control settings for editing
-//-----------------------------------------------------------------------------
-void CCvarSlider::GetSettings( KeyValues *outResourceData )
-{
-	BaseClass::GetSettings(outResourceData);
-}
+	float minValue = inResourceData->GetFloat( "minvalue", 0 );
+	float maxValue = inResourceData->GetFloat( "maxvalue", 1 );
+	bool bAutoChange = inResourceData->GetBool( "autochange" );
+	const char *cvarname = inResourceData->GetString( "cvar_name", "" );
 
-void CCvarSlider::SetMinMaxValues( float minValue, float maxValue )
-{
-	SetMinMax(minValue, maxValue);
-}
+	if ( cvarname[0] != '\0' )
+	{
+		m_cvar.Init( cvarname, false );
+	}
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CCvarSlider::Paint()
-{
-	BaseClass::Paint();
+	SetupSlider( minValue, maxValue, m_bShowFrac, bAutoChange );
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CCvarSlider::Reset()
+void CTFCvarSlider::OnTick( void )
+{
+	// Check if cvar value was changed from under this.
+	if ( !m_cvar.IsValid() )
+		return;
+
+	float flValue = m_cvar.GetFloat();
+
+	if ( flValue != m_flStartValue )
+	{
+		SetValue( m_flValue );
+		m_flStartValue = flValue;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFCvarSlider::Reset( void )
 {
 	// Set slider to current value
-//	m_fStartValue = engine->pfnGetCvarFloat( m_szCvarName );
-	ConVarRef var( GetCommandString() );
-	if ( !var.IsValid() )
+	if ( !m_cvar.IsValid() )
 	{
-		SetValue( 0 );
+		m_flStartValue = 0.0f;
 		return;
 	}
 
-	SetValue( var.GetFloat() );
+	m_flStartValue = m_cvar.GetFloat();
+	SetValue( m_cvar.GetFloat() );
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CCvarSlider::OnApplyChanges( void )
+bool CTFCvarSlider::HasBeenModified( void )
 {
-	ConVarRef var( GetCommandString() );
-	if ( var.IsValid() )
+	return ( GetValue() != m_flStartValue );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFCvarSlider::ApplyChanges( void )
+{
+	if ( !m_cvar.IsValid() )
+		return;
+
+	m_cvar.SetValue( GetFinalValue() );
+	m_flStartValue = m_cvar.GetFloat();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFCvarSlider::OnSliderMoved( void )
+{
+	if ( HasBeenModified() )
 	{
-		var.SetValue( GetFinalValue() );
+		// Tell parent that we've been modified
+		PostActionSignal( new KeyValues( "ControlModified" ) );
+
+		// If set to auto-change cvar, apply changes now.
+		if ( m_bAutoChange )
+		{
+			ApplyChanges();
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CCvarSlider::ApplyChanges( void )
+void CTFCvarSlider::OnApplyChanges( void )
 {
-	OnApplyChanges();
+	ApplyChanges();
 }

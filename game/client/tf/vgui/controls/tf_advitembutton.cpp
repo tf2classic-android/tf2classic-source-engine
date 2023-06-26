@@ -1,30 +1,22 @@
 #include "cbase.h"
 #include "tf_advitembutton.h"
-#include "vgui_controls/Frame.h"
-#include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
-#include <vgui/IInput.h>
-#include "vgui_controls/Button.h"
-#include "vgui_controls/ImagePanel.h"
-#include "tf_controls.h"
-#include <filesystem.h>
-#include <vgui_controls/AnimationController.h>
-#include "basemodelpanel.h"
-#include "panels/tf_dialogpanelbase.h"
-#include "inputsystem/iinputsystem.h"
-#include "tf_inventory.h"
-
-using namespace vgui;
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CTFAdvItemButton, CTFAdvItemButtonBase);
+using namespace vgui;
+
+
+#define ADVITEMBUTTON_DEFAULT_BG "AdvRoundedButtonDisabled"
+#define ADVITEMBUTTON_ARMED_BG "AdvRoundedButtonArmed"
+#define ADVITEMBUTTON_DEPRESSED_BG "AdvRoundedButtonDepressed"
+
+DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CTFItemButton, CTFItemButton );
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFAdvItemButton::CTFAdvItemButton(vgui::Panel *parent, const char *panelName, const char *text) : CTFAdvButton(parent, panelName, text)
+CTFItemButton::CTFItemButton( Panel *parent, const char *panelName, const char *text ) : CTFButton( parent, panelName, text )
 {
 	Init();
 }
@@ -32,61 +24,67 @@ CTFAdvItemButton::CTFAdvItemButton(vgui::Panel *parent, const char *panelName, c
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
 //-----------------------------------------------------------------------------
-CTFAdvItemButton::~CTFAdvItemButton()
+CTFItemButton::~CTFItemButton()
 {
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFAdvItemButton::Init()
+void CTFItemButton::Init()
 {
-	BaseClass::Init();
 	m_pItemDefinition = NULL;
 	m_iLoadoutSlot = TF_LOADOUT_SLOT_PRIMARY;
-	m_pButton->SetContentAlignment( Label::a_south );
-	m_pButton->SetTextInset( 0, -10 );
+
+	// Set the borders.
+	V_strncpy( m_szDefaultBG, ADVITEMBUTTON_DEFAULT_BG, sizeof( m_szDefaultBG ) );
+	V_strncpy( m_szArmedBG, ADVITEMBUTTON_ARMED_BG, sizeof( m_szArmedBG ) );
+	V_strncpy( m_szDepressedBG, ADVITEMBUTTON_DEPRESSED_BG, sizeof( m_szDepressedBG ) );
 }
 
-void CTFAdvItemButton::PerformLayout()
+void CTFItemButton::ApplySchemeSettings( IScheme *pScheme )
+{
+	BaseClass::ApplySchemeSettings( pScheme );
+
+	// Don't want to darken weapon images.
+	m_colorImageDefault = COLOR_WHITE;
+	m_colorImageArmed = COLOR_WHITE;
+
+	SetContentAlignment( Label::a_south );
+	SetTextInset( 0, -10 );
+}
+
+void CTFItemButton::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	int inset = YRES(45);
+	int inset = YRES( 45 );
 	int wide = GetWide() - inset;
-	SetImageSize(wide, wide);
-	SetImageInset(inset / 2, -1 * wide / 5);
-	SetShouldScaleImage(true);
-};
 
-//-----------------------------------------------------------------------------
+	SetImageSize( wide, wide );
+	SetImageInset( inset / 2, -1 * wide / 5 );
+}
+
+// ---------------------------------------------------------------------------- -
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFAdvItemButton::SendAnimation(MouseState flag)
+void CTFItemButton::ShowToolTip( bool bShow )
 {
-	BaseClass::SendAnimation(flag);
-	switch (flag)
+	// Using a custom tooltip.
+	if ( m_pItemDefinition )
 	{
-	case MOUSE_DEFAULT:
-		if ( m_pItemDefinition )
+		if ( bShow )
+		{
 			MAINMENU_ROOT->ShowItemToolTip( m_pItemDefinition );
-		break;
-	case MOUSE_ENTERED:
-		if ( m_pItemDefinition )
-			MAINMENU_ROOT->ShowItemToolTip( m_pItemDefinition );
-		break;
-	case MOUSE_EXITED:
-		if ( m_pItemDefinition )
+		}
+		else
+		{
 			MAINMENU_ROOT->HideItemToolTip();
-		break;
-	case MOUSE_PRESSED:
-		break;
-	default:
-		break;
+		}
 	}
 }
 
-void CTFAdvItemButton::SetItemDefinition(CEconItemDefinition *pItemData)
+void CTFItemButton::SetItemDefinition( CEconItemDefinition *pItemData )
 {
 	m_pItemDefinition = pItemData;
 
@@ -94,17 +92,26 @@ void CTFAdvItemButton::SetItemDefinition(CEconItemDefinition *pItemData)
 	Q_snprintf( szIcon, sizeof( szIcon ), "../%s_large", pItemData->image_inventory );
 	SetImage( szIcon );
 
-	m_pButton->SetText( pItemData->GenerateLocalizedFullItemName() );
+	SetText( pItemData->GenerateLocalizedFullItemName() );
 
-	m_pButton->SetDepressedSound( pItemData->mouse_pressed_sound );
-	m_pButton->SetReleasedSound( NULL );
+	// Set the weapon sound from schema.
+	if ( pItemData->mouse_pressed_sound[0] != '\0' )
+	{
+		SetDepressedSound( pItemData->mouse_pressed_sound );
+	}
+	else
+	{
+		SetDepressedSound( NULL );
+	}
+
+	SetReleasedSound( NULL );
 }
 
-void CTFAdvItemButton::SetLoadoutSlot( int iSlot, int iPreset )
+void CTFItemButton::SetLoadoutSlot( int iSlot, int iPreset )
 {
 	m_iLoadoutSlot = iSlot;
 
 	char szCommand[64];
 	Q_snprintf( szCommand, sizeof( szCommand ), "loadout %d %d", iSlot, iPreset );
-	SetCommandString( szCommand );
+	SetCommand( szCommand );
 }

@@ -11,10 +11,10 @@
 #include "tf_optionsadvancedpanel.h"
 #include "tf_mainmenu.h"
 #include "tf_menupanelbase.h"
-#include "controls/tf_advslider.h"
+#include "controls/tf_cvarslider.h"
 #include "controls/tf_advbutton.h"
 #include "controls/tf_advpanellistpanel.h"
-#include "controls/tf_advcheckbutton.h"
+#include "controls/tf_cvartogglecheckbutton.h"
 #include "controls/tf_advbutton.h"
 #include "controls/tf_scriptobject.h"
 #include "filesystem.h"
@@ -108,10 +108,10 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 		return;
 
 	// OK
-	CTFAdvCheckButton *pBox;
+	CTFCheckButton *pBox;
 	TextEntry *pEdit;
 	ComboBox *pCombo;
-	CTFAdvSlider *pScroll;
+	CTFSlider *pScroll;
 
 	mpcontrol_t *pList;
 
@@ -135,15 +135,15 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 		switch (pObj->type)
 		{
 		case O_BOOL:
-			pBox = (CTFAdvCheckButton *)pList->pControl;
-			sprintf(szValue, "%d", pBox->IsSelected() ? 1 : 0);
+			pBox = (CTFCheckButton *)pList->pControl;
+			sprintf(szValue, "%d", pBox->IsChecked() ? 1 : 0);
 			break;
 		case O_NUMBER:
 			pEdit = (TextEntry *)pList->pControl;
 			pEdit->GetText( szValue, sizeof( szValue ) );
 			break;
 		case O_SLIDER:
-			pScroll = (CTFAdvSlider *)pList->pControl;
+			pScroll = (CTFSlider *)pList->pControl;
 			V_strncpy( szValue, pScroll->GetFinalValue(), sizeof( szValue ) );
 			break;
 		case O_STRING:
@@ -201,10 +201,10 @@ void CTFOptionsAdvancedPanel::CreateControls()
 	pObj = m_pDescription->pObjList;
 	
 	mpcontrol_t	*pCtrl;
-	CTFAdvCheckButton *pBox;
+	CTFCvarToggleCheckButton *pBox;
 	TextEntry *pEdit;
 	ComboBox *pCombo;
-	CTFAdvSlider *pScroll;
+	CTFCvarSlider *pScroll;
 	Label *pTitle;
 	CScriptListItem *pListItem;
 	
@@ -227,13 +227,10 @@ void CTFOptionsAdvancedPanel::CreateControls()
 		switch (pCtrl->type)
 		{
 		case O_BOOL:
-			pBox = new CTFAdvCheckButton(pCtrl, "DescCheckButton", pObj->prompt);
+			pBox = new CTFCvarToggleCheckButton( pCtrl, "DescCheckButton", pObj->prompt, pObj->cvarname );
 			pBox->MakeReadyForUse();
 
-			pBox->SetSelected(pObj->fcurValue != 0.0f ? true : false);
-			pBox->SetCommandString(pObj->cvarname);
-			pBox->GetButton()->SetFont( hFont );
-
+			pBox->SetFont( hFont );
 			pBox->SetToolTip( pObj->tooltip );
 
 			pCtrl->pControl = pBox;
@@ -248,14 +245,11 @@ void CTFOptionsAdvancedPanel::CreateControls()
 			pCtrl->pControl = pEdit;
 			break;
 		case O_SLIDER:
-			pScroll = new CTFAdvSlider(pCtrl, "DescScrollEntry", pObj->prompt);
+			pScroll = new CTFCvarSlider( pCtrl, "DescScrollEntry", pObj->prompt, pObj->fMin, pObj->fMax, pObj->cvarname );
 			pScroll->MakeReadyForUse();
 
-			pScroll->SetCommandString( pObj->cvarname );
-			pScroll->SetValue( pObj->fcurValue );
-			pScroll->SetMinMax( pObj->fMin, pObj->fMax );
 			pScroll->SetFont( hFont );
-			pScroll->SetToolTip( pObj->tooltip );
+			pScroll->GetButton()->SetToolTip( pObj->tooltip );
 
 			pCtrl->pControl = pScroll;
 			break;
@@ -281,7 +275,7 @@ void CTFOptionsAdvancedPanel::CreateControls()
 
 			pTitle->SetBorder( GETSCHEME()->GetBorder( "AdvSettingsTitleBorder" ) );
 			pTitle->SetFont( GETSCHEME()->GetFont( "MenuSmallFont", true ) );
-			pTitle->SetFgColor( GETSCHEME()->GetColor( DEFAULT_COLOR, COLOR_WHITE ) );
+			pTitle->SetFgColor( GETSCHEME()->GetColor( ADVBUTTON_DEFAULT_COLOR, COLOR_WHITE ) );
 
 			pCtrl->pControl = pTitle;
 			break;
@@ -373,6 +367,13 @@ void CTFOptionsAdvancedPanel::OnApplyChanges()
 	SaveValues();
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFOptionsAdvancedPanel::OnControlModified( void )
+{
+	PostActionSignal( new KeyValues( "ApplyButtonEnable" ) );
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor, load/save client settings object
@@ -448,5 +449,3 @@ void CInfoDescription::WriteFileHeader(FileHandle_t fp)
 	g_pFullFileSystem->FPrintf(fp, "// File generated:  %.19s %s\r\n", asctime(&newtime), am_pm);
 	g_pFullFileSystem->FPrintf(fp, "//\r\n//\r\n// Cvar\t-\tSetting\r\n\r\n");
 }
-
-//-----------------------------------------------------------------------------

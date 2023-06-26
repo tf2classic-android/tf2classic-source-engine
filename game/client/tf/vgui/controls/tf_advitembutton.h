@@ -4,30 +4,25 @@
 #pragma once
 #endif
 
-#include <vgui_controls/EditablePanel.h>
-#include "tf_imagepanel.h"
 #include "tf_advbutton.h"
-
-using namespace vgui;
-
-class CTFButton;
-#define pImageColorSelected		(!m_bSelected ? pImageColorDefault : pSelectedColor) 
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CTFAdvItemButton : public CTFAdvButton
+class CTFItemButton : public CTFButton
 {
-	friend class CTFButton;
 public:
-	DECLARE_CLASS_SIMPLE(CTFAdvItemButton, CTFAdvButton);
+	DECLARE_CLASS_SIMPLE( CTFItemButton, CTFButton );
 
-	CTFAdvItemButton(vgui::Panel *parent, const char *panelName, const char *text);
-	~CTFAdvItemButton();
-	void Init();
-	void PerformLayout();
-	void SendAnimation(MouseState flag);
-	void SetItemDefinition(CEconItemDefinition *pItemData);
+	CTFItemButton( vgui::Panel *parent, const char *panelName, const char *text );
+	~CTFItemButton();
+
+	virtual void Init();
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void PerformLayout();
+	virtual void ShowToolTip( bool bShow );
+
+	void SetItemDefinition( CEconItemDefinition *pItemData );
 	void SetLoadoutSlot( int iSlot, int iPreset );
 
 protected:

@@ -3,7 +3,7 @@
 
 #include "tf_menupanelbase.h"
 
-class CCvarSlider;
+class CTFCvarSlider;
 class CCvarComboBox;
 class CTFAdvModelPanel;
 
@@ -25,9 +25,9 @@ public:
 
 private:
 
-	CCvarSlider	*m_pRedScrollBar;
-	CCvarSlider	*m_pGrnScrollBar;
-	CCvarSlider	*m_pBluScrollBar;
+	CTFCvarSlider	*m_pRedScrollBar;
+	CTFCvarSlider	*m_pGrnScrollBar;
+	CTFCvarSlider	*m_pBluScrollBar;
 	vgui::ImagePanel *m_pColorBG;
 	CCvarComboBox *m_pCombo;
 	CTFAdvModelPanel *m_pParticlesPanel;

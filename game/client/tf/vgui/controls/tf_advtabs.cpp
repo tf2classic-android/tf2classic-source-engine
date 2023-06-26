@@ -61,7 +61,7 @@ void CAdvTabs::ApplySettings(KeyValues *inResourceData)
 	int iCount = GetChildCount();
 	for (int i = 0; i < iCount; i++)
 	{
-		CTFAdvButton *pButton = dynamic_cast<CTFAdvButton*>(GetChild(i));
+		CTFButton *pButton = dynamic_cast<CTFButton*>(GetChild(i));
 		if (pButton)
 		{
 			m_pButtons.AddToTail(pButton);
@@ -74,13 +74,12 @@ void CAdvTabs::ApplySettings(KeyValues *inResourceData)
 	iCount = m_pButtons.Count();
 	for (int i = 0; i < iCount; i++)
 	{
-		CTFAdvButton *pButton = m_pButtons[i];
+		CTFButton *pButton = m_pButtons[i];
 		if (pButton)
 		{
 			pButton->SetPos(i * (iWide + iOffset), 0);
 			pButton->SetZPos(i - 1);
 			pButton->SetSize(iWide, iTall);
-			pButton->SetShouldScaleImage(true);
 		}
 	}
 
@@ -97,7 +96,7 @@ void CAdvTabs::OnButtonPressed(Panel *pPanel)
 {
 	if (m_pCurrentButton)
 		m_pCurrentButton->SetSelected(false);
-	m_pCurrentButton = dynamic_cast<CTFAdvButton*>(pPanel);
+	m_pCurrentButton = dynamic_cast<CTFButton*>(pPanel);
 	m_pCurrentButton->SetSelected(true);
 }
 

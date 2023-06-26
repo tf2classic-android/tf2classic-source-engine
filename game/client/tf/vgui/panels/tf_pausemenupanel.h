@@ -3,7 +3,7 @@
 
 #include "tf_menupanelbase.h"
 
-class CTFAdvButton;
+class CTFButton;
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -29,7 +29,7 @@ public:
 	void OnNotificationUpdate();
 
 private:
-	CTFAdvButton	*m_pNotificationButton;
+	CTFButton	*m_pNotificationButton;
 };
 
 #endif // TFMAINMENUPAUSEPANEL_H

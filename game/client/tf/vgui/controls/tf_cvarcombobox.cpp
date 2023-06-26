@@ -27,7 +27,7 @@ CCvarComboBox::CCvarComboBox( vgui::Panel *parent, const char *panelName ) : vgu
 	AddActionSignalTarget(this);
 	m_iCurrentSelection = -1;
 	m_iStartSelection = -1;
-	Q_strncpy(m_szCvarName, EMPTY_STRING, sizeof(m_szCvarName));
+	m_szCvarName[0] = '\0';
 }
 
 CCvarComboBox::~CCvarComboBox( void )
@@ -38,10 +38,10 @@ void CCvarComboBox::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 
-	Q_strncpy(m_szCvarName, inResourceData->GetString("cvar_name", EMPTY_STRING), sizeof(m_szCvarName));
+	Q_strncpy(m_szCvarName, inResourceData->GetString("cvar_name", ""), sizeof(m_szCvarName));
 
 	char m_szFont[32];
-	Q_strncpy(m_szFont, inResourceData->GetString("font", EMPTY_STRING), sizeof(m_szFont));
+	Q_strncpy(m_szFont, inResourceData->GetString("font", ""), sizeof(m_szFont));
 	SetFont(GETSCHEME()->GetFont(m_szFont, IsProportional()));
 
 	ConVarRef var(m_szCvarName);

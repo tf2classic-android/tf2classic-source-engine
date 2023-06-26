@@ -70,28 +70,11 @@ void CTFMainMenuPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
 
 	LoadControlSettings("resource/UI/main_menu/MainMenuPanel.res");
 	m_pVersionLabel = dynamic_cast<CExLabel *>(FindChildByName("VersionLabel"));
-	m_pNotificationButton = dynamic_cast<CTFAdvButton *>(FindChildByName("NotificationButton"));
+	m_pNotificationButton = dynamic_cast<CTFButton *>(FindChildByName("NotificationButton"));
 	m_pProfileAvatar = dynamic_cast<CAvatarImagePanel *>(FindChildByName("AvatarImage"));
 	m_pFakeBGImage = dynamic_cast<vgui::ImagePanel *>(FindChildByName("FakeBGImage"));
 
-	char verString[30];
-	if( g_pFullFileSystem->FileExists( "version.txt" ) )
-	{
-		FileHandle_t fh = filesystem->Open( "version.txt", "r", "MOD" );
-		int file_len = filesystem->Size(fh);
-		char* GameInfo = new char[file_len + 1];
-
-		filesystem->Read((void*)GameInfo, file_len, fh);
-		GameInfo[file_len] = 0; // null terminator
-		
-		filesystem->Close(fh);
-
-		Q_snprintf( verString, sizeof(verString), "%s", GameInfo + 8 );
-
-		delete[] GameInfo;
-	}
-
-	SetVersionLabel( verString );
+	SetVersionLabel();
 }	
 
 void CTFMainMenuPanel::PerformLayout()
@@ -304,13 +287,13 @@ void CTFMainMenuPanel::OnNotificationUpdate()
 	}
 };
 
-void CTFMainMenuPanel::SetVersionLabel( const char *version )  //GetVersionString
+void CTFMainMenuPanel::SetVersionLabel()  //GetVersionString
 {
 	if (m_pVersionLabel)
 	{
 		char verString[64];
-		Q_snprintf( verString, sizeof( verString ), "Version: %s", version );
-		m_pVersionLabel->SetText( verString );
+		Q_snprintf(verString, sizeof(verString), "Version: %s", GetNotificationManager()->GetVersionName());
+		m_pVersionLabel->SetText(verString);
 	}
 };
 
@@ -394,8 +377,8 @@ CTFServerlistPanel::CTFServerlistPanel(vgui::Panel* parent, const char *panelNam
 {
 	m_iSize = 0;
 	m_pServerList = new vgui::SectionedListPanel(this, "ServerList");
-	m_pConnectButton = new CTFAdvButton(this, "ConnectButton", "Connect");
-	m_pListSlider = new CTFAdvSlider(this, "ListSlider", "");
+	m_pConnectButton = new CTFButton(this, "ConnectButton", "Connect");
+	m_pListSlider = new CTFSlider(this, "ListSlider", "");
 }
 
 //-----------------------------------------------------------------------------
@@ -464,7 +447,7 @@ void CTFServerlistPanel::OnThink()
 
 			char szCommand[128];
 			Q_snprintf(szCommand, sizeof(szCommand), "connect %s", m_pServerList->GetItemData(i)->GetString("ServerIP", ""));
-			m_pConnectButton->SetCommandString(szCommand);
+			m_pConnectButton->SetCommand( szCommand );
 		}
 	}
 }

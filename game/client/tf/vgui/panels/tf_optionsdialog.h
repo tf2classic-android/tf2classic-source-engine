@@ -13,6 +13,8 @@
 
 #include "tf_dialogpanelbase.h"
 
+class CTFButton;
+
 enum OptionPanel
 {
 	PANEL_ADV,
@@ -41,25 +43,23 @@ public:
 	virtual void OnCommand(const char *command);
 	virtual void Show();
 	virtual void Hide();
+
 	MESSAGE_FUNC(OnCancelPressed, "CancelPressed");
 	MESSAGE_FUNC(OnOkPressed, "OkPressed");
 	MESSAGE_FUNC(OnApplyPressed, "OnApplyPressed");	
 	MESSAGE_FUNC(OnDefaultPressed, "OnDefaultPressed");
 	MESSAGE_FUNC(OnGameUIHidden, "GameUIHidden");	// called when the GameUI is hidden
+	MESSAGE_FUNC(OnApplyButtonEnabled, "ApplyButtonEnable" );
 
 private:
 	void SetCurrentPanel(OptionPanel pCurrentPanel);
 	void AddPanel(CTFDialogPanelBase *m_pPanel, int iPanel);
-	CTFDialogPanelBase*				GetPanel(int iPanel);
+	CTFDialogPanelBase* GetPanel(int iPanel);
 	CUtlVector<CTFDialogPanelBase*>	m_pPanels;
-	OptionPanel							m_pOptionsCurrent;
-	/*
-	class CTFOptionsAdvancedPanel		*m_pOptionsSubMultiplayer;
-	class CTFOptionsMousePanel			*m_pOptionsSubMouse;
-	class CTFOptionsKeyboardPanel		*m_pOptionsSubKeyboard;
-	class CTFOptionsAudioPanel			*m_pOptionsSubAudio;
-	class CTFOptionsVideoPanel			*m_pOptionsSubVideo;
-	*/
+	OptionPanel	m_pOptionsCurrent;
+
+	CTFButton *m_pApplyButton;
+	CTFButton *m_pDefaultsButton;
 };
 
 

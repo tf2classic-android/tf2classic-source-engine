@@ -75,8 +75,8 @@ void CTFOptionsAudioPanel::CreateControls()
 	BaseClass::CreateControls();
 
 	Label *pTitleVolume = new Label( this, "DescTextTitle", "Volume" );
-	m_pSFXSlider = new CCvarSlider(this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume", true);
-	m_pMusicSlider = new CCvarSlider(this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "Snd_MusicVolume", true);
+	m_pSFXSlider = new CTFCvarSlider(this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume", true);
+	m_pMusicSlider = new CTFCvarSlider(this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "Snd_MusicVolume", true);
 
 	Label *pTitleSettings = new Label( this, "DescTextTitle", "Settings" );
 	m_pCloseCaptionCombo = new ComboBox(this, "CloseCaptionCheck", 6, false);
@@ -111,8 +111,8 @@ void CTFOptionsAudioPanel::CreateControls()
 	//Voice settings:
 	Label *pTitleVoice = new Label( this, "DescTextTitle", "Voice" );
 
-	m_pReceiveVolume = new CCvarSlider(this, "VoiceReceive", "#GameUI_ReceiveVolume", 0.0f, 1.0f, "voice_scale");
-	m_pVoiceEnableCheckButton = new CCvarToggleCheckButton(this, "voice_modenable", "#GameUI_EnableVoice", "voice_modenable");
+	m_pReceiveVolume = new CTFCvarSlider(this, "VoiceReceive", "#GameUI_ReceiveVolume", 0.0f, 1.0f, "voice_scale");
+	m_pVoiceEnableCheckButton = new CTFCvarToggleCheckButton(this, "voice_modenable", "#GameUI_EnableVoice", "voice_modenable");
 
 	AddControl(pTitleVoice, O_CATEGORY);
 	AddControl(m_pVoiceEnableCheckButton, O_BOOL);
@@ -342,7 +342,7 @@ void CTFOptionsAudioPanel::OnApplyChanges()
       }
    }
 
-   //Voice settings:
+   // Voice settings
    m_pReceiveVolume->ApplyChanges();
    m_pVoiceEnableCheckButton->ApplyChanges();
 }
@@ -353,6 +353,14 @@ void CTFOptionsAudioPanel::OnApplyChanges()
 void CTFOptionsAudioPanel::OnControlModified()
 {
 	PostActionSignal(new KeyValues("ApplyButtonEnable"));
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFOptionsAudioPanel::OnTextChanged()
+{
+
 }
 
 //-----------------------------------------------------------------------------

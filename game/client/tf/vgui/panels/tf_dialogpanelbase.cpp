@@ -96,7 +96,7 @@ void CTFDialogPanelBase::Show()
 	vgui::GetAnimationController()->RunAnimationCommand(this, "Alpha", 255, 0.05f, 0.3f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE);
 	int _x, _y;
 	GetPos(_x, _y);
-	SetPos(_x - XRES(15), _y);
+	SetPos(_x - YRES(20), _y);
 	AnimationController::PublicValue_t p_AnimHover(_x, _y);
 	vgui::GetAnimationController()->RunAnimationCommand(this, "Position", p_AnimHover, 0.0f, 0.3f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE, NULL);
 	MAINMENU_ROOT->ShowPanel(SHADEBACKGROUND_MENU);
@@ -154,23 +154,23 @@ void CTFDialogPanelBase::AddControl( vgui::Panel* panel, int iType, const char* 
 		Label *pTitle = assert_cast<Label*>( panel );
 		pTitle->MakeReadyForUse();
 
-		pTitle->SetFont( GETSCHEME()->GetFont( DEFAULT_FONT, true ) );
+		pTitle->SetFont( GETSCHEME()->GetFont( ADVBUTTON_DEFAULT_FONT, true ) );
 		pTitle->SetBorder( GETSCHEME()->GetBorder( "AdvSettingsTitleBorder" ) );
-		pTitle->SetFgColor( GETSCHEME()->GetColor( DEFAULT_COLOR, COLOR_WHITE ) );
+		pTitle->SetFgColor( GETSCHEME()->GetColor( ADVBUTTON_DEFAULT_COLOR, COLOR_WHITE ) );
 		break;
 	}
 	case O_BOOL:
 	{
-		CTFAdvCheckButton *pBox = assert_cast<CTFAdvCheckButton*>( panel );
+		CTFCheckButton *pBox = assert_cast<CTFCheckButton*>( panel );
 		pBox->MakeReadyForUse();
 
-		pBox->GetButton()->SetFont( hFont );
+		pBox->SetFont( hFont );
 		//pBox->SetToolTip(dynamic_cast<CTFAdvCheckButton*>(panel)->GetName());
 		break;
 	}
 	case O_SLIDER:
 	{
-		CTFAdvSlider *pScroll = assert_cast<CTFAdvSlider*>( panel );
+		CTFSlider *pScroll = assert_cast<CTFSlider*>( panel );
 		pScroll->MakeReadyForUse();
 
 		pScroll->SetFont( hFont );

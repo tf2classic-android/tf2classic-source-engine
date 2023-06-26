@@ -52,12 +52,18 @@ bool CTFOptionsDialog::Init()
 	BaseClass::Init();
 
 	m_pPanels.SetSize(PANEL_COUNT);
+
 	AddPanel(new CTFOptionsAdvancedPanel(this, "MultiplayerOptions"), PANEL_ADV);
 	AddPanel(new CTFOptionsMousePanel(this, "MouseOptions"), PANEL_MOUSE);
 	AddPanel(new CTFOptionsKeyboardPanel(this, "KeyboardOptions"), PANEL_KEYBOARD);
 	AddPanel(new CTFOptionsAudioPanel(this, "AudioOptions"), PANEL_AUDIO);
 	AddPanel(new CTFOptionsVideoPanel(this, "VideoOptions"), PANEL_VIDEO);
+
+	m_pApplyButton = new CTFButton( this, "Apply", "" );
+	m_pDefaultsButton = new CTFButton( this, "Defaults", "" );
+
 	m_pOptionsCurrent = PANEL_ADV;
+
 	return true;
 }
 
@@ -77,7 +83,7 @@ void CTFOptionsDialog::SetCurrentPanel(OptionPanel pCurrentPanel)
 	GetPanel(pCurrentPanel)->Show();
 	m_pOptionsCurrent = pCurrentPanel;
 
-	dynamic_cast<CTFAdvButton *>(FindChildByName("Defaults"))->SetVisible((pCurrentPanel == PANEL_KEYBOARD));
+	m_pDefaultsButton->SetVisible( ( pCurrentPanel == PANEL_KEYBOARD ) );
 }
 
 CTFDialogPanelBase*	CTFOptionsDialog::GetPanel(int iPanel)
@@ -90,7 +96,6 @@ void CTFOptionsDialog::ApplySchemeSettings(vgui::IScheme *pScheme)
 	BaseClass::ApplySchemeSettings(pScheme);
 
 	LoadControlSettings("resource/UI/main_menu/OptionsDialog.res");
-	dynamic_cast<CTFAdvButton *>(FindChildByName("Defaults"))->SetVisible(false);
 }
 
 void CTFOptionsDialog::Show()
@@ -100,7 +105,10 @@ void CTFOptionsDialog::Show()
 
 	for (int i = 0; i < PANEL_COUNT; i++)
 		GetPanel(i)->OnCreateControls();
-};
+
+	// Disable apply button, it'll get enabled once any controls change.
+	m_pApplyButton->SetEnabled( false );
+}
 
 void CTFOptionsDialog::Hide()
 {
@@ -169,6 +177,8 @@ void CTFOptionsDialog::OnOkPressed()
 //-----------------------------------------------------------------------------
 void CTFOptionsDialog::OnApplyPressed()
 {
+	m_pApplyButton->SetEnabled( false );
+
 	for (int i = 0; i < PANEL_COUNT; i++)
 		GetPanel(i)->OnApplyChanges();
 }
@@ -180,6 +190,7 @@ void CTFOptionsDialog::OnCancelPressed()
 {
 	for (int i = 0; i < PANEL_COUNT; i++)
 		GetPanel(i)->OnResetData();
+
 	Hide();
 }
 
@@ -224,5 +235,16 @@ void CTFOptionsDialog::OnGameUIHidden()
 		{
 			PostMessage(pChild, new KeyValues("GameUIHidden"));
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Enable apply button when something is changed.
+//-----------------------------------------------------------------------------
+void CTFOptionsDialog::OnApplyButtonEnabled( void )
+{
+	if ( !m_pApplyButton->IsEnabled() )
+	{
+		m_pApplyButton->SetEnabled( true );
 	}
 }

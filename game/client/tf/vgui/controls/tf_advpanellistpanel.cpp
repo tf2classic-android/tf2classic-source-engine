@@ -253,7 +253,7 @@ void CPanelListPanel::PerformLayout()
 
 	int vpixels = computeVPixelsNeeded();
 
-	int width = XRES(15); //36
+	int width = YRES(20); //36
 
 	//!! need to make it recalculate scroll positions
 	_vbar->SetVisible(true);
@@ -312,7 +312,7 @@ void CPanelListPanel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 
-	Q_strncpy(m_szFont, inResourceData->GetString("font", DEFAULT_FONT), sizeof(m_szFont));
+	Q_strncpy(m_szFont, inResourceData->GetString("font", ADVBUTTON_DEFAULT_FONT), sizeof(m_szFont));
 	//Q_strncpy(m_szBorder, inResourceData->GetString("border", "TFFatLineBorder"), sizeof(m_szBorder));
 	//InvalidateLayout(false); // force ApplySchemeSettings to run
 }

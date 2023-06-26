@@ -14,9 +14,9 @@
 #include "tf_dialogpanelbase.h"
 
 class CPanelListPanel;
-class CTFAdvButton;
-class CCvarToggleCheckButton;
-class CCvarSlider;
+class CTFButton;
+class CTFCvarToggleCheckButton;
+class CTFCvarSlider;
 
 namespace vgui
 {
@@ -46,33 +46,29 @@ protected:
 	void UpdatePanels();
 
 private:
-	MESSAGE_FUNC_PTR( OnControlModified, "ControlModified", panel );
-    MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel );
-	MESSAGE_FUNC_INT( OnCheckButtonChecked, "CheckButtonChecked", panel )
-	{
-		OnControlModified( NULL );
-	}
+	MESSAGE_FUNC( OnControlModified, "ControlModified" );
+	MESSAGE_FUNC_PTR( OnCheckButtonChecked, "CheckButtonChecked", panel );
 
 	vgui::Label					*pTitleMouse;
 	vgui::Label					*pTitleJoystick;
-	CCvarToggleCheckButton		*m_pReverseMouseCheckBox;
-	CCvarToggleCheckButton		*m_pRawInputCheckBox;
-	CCvarToggleCheckButton		*m_pMouseFilterCheckBox;
+	CTFCvarToggleCheckButton		*m_pReverseMouseCheckBox;
+	CTFCvarToggleCheckButton		*m_pRawInputCheckBox;
+	CTFCvarToggleCheckButton		*m_pMouseFilterCheckBox;
 
-	CCvarSlider					*m_pMouseSensitivitySlider;
+	CTFCvarSlider					*m_pMouseSensitivitySlider;
     vgui::TextEntry             *m_pMouseSensitivityLabel;
 
-	CCvarToggleCheckButton		*m_pMouseAccelCheckBox;
-	CCvarSlider					*m_pMouseAccelSlider;
+	CTFCvarToggleCheckButton		*m_pMouseAccelCheckBox;
+	CTFCvarSlider					*m_pMouseAccelSlider;
 
-	CCvarToggleCheckButton		*m_pJoystickCheckBox;
-	CCvarToggleCheckButton		*m_pJoystickSouthpawCheckBox;
-	CCvarToggleCheckButton		*m_pQuickInfoCheckBox;
-	CCvarToggleCheckButton		*m_pReverseJoystickCheckBox;
+	CTFCvarToggleCheckButton		*m_pJoystickCheckBox;
+	CTFCvarToggleCheckButton		*m_pJoystickSouthpawCheckBox;
+	CTFCvarToggleCheckButton		*m_pQuickInfoCheckBox;
+	CTFCvarToggleCheckButton		*m_pReverseJoystickCheckBox;
 
-	CCvarSlider					*m_pJoyYawSensitivitySlider;
+	CTFCvarSlider					*m_pJoyYawSensitivitySlider;
 	vgui::Label					*m_pJoyYawSensitivityPreLabel;
-	CCvarSlider					*m_pJoyPitchSensitivitySlider;
+	CTFCvarSlider					*m_pJoyPitchSensitivitySlider;
 	vgui::Label					*m_pJoyPitchSensitivityPreLabel;
 };
 
