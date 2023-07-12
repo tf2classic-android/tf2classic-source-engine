@@ -181,17 +181,9 @@ InitReturnVal_t CMatRenderContextBase::Init( )
 	{
 		int nSize = 2200 * 1024;
 		int nCommitSize = 32 * 1024;
-
 #ifdef SWDS
 		nSize = nCommitSize = 1024;
 #endif
-
-		const char *gamedir = CommandLine()->ParmValue("-game", CommandLine()->ParmValue( "-defaultgamedir", "hl2" ) );
-		if ( gamedir && !Q_stricmp( "garrysmod", gamedir ) )
-		{
-			nSize = 4400 * 1024;
-		}
-
 		sm_RenderData[0].Init( nSize, nCommitSize, 0, 32 );
 		sm_RenderData[1].Init( nSize, nCommitSize, 0, 32 );
 		sm_nRenderStack = 0;
