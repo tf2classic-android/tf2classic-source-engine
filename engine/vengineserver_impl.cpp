@@ -41,7 +41,6 @@
 #include "networkstringtableserver.h"
 #include "networkstringtable.h"
 #include "LocalNetworkBackdoor.h"
-#include "host_phonehome.h"
 #include "matchmaking.h"
 #include "sv_plugin.h"
 #include "sv_steamauth.h"
@@ -435,7 +434,11 @@ public:
 
 	virtual bool IsInternalBuild( void )
 	{
-		return !phonehome->IsExternalBuild();
+#if defined(_DEBUG)
+		return true;
+#else
+		return false;
+#endif
 	}
 
 	//-----------------------------------------------------------------------------

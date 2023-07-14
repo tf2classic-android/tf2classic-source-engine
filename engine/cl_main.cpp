@@ -37,7 +37,6 @@
 #include "GameEventManager.h"
 #include "host_saverestore.h"
 #include "ivideomode.h"
-#include "host_phonehome.h"
 #include "decal.h"
 #include "sv_rcon.h"
 #include "cl_rcon.h"
@@ -516,7 +515,6 @@ void CL_ClearState ( void )
 		{
 			char mapname[256];
 			CL_SetupMapName( modelloader->GetName( host_state.worldmodel ), mapname, sizeof( mapname ) );
-			phonehome->Message( IPhoneHome::PHONE_MSG_MAPEND, mapname );
 		}
 		audiosourcecache->LevelShutdown();
 		g_ClientDLL->LevelShutdown();

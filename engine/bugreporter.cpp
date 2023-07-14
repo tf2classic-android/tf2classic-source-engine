@@ -79,7 +79,6 @@
 #include "tier0/vcrmode.h"
 #include "tier0/platform.h"
 #include "net.h"
-#include "host_phonehome.h"
 #include "tier0/icommandline.h"
 #include "stdstring.h"
 #include "sv_main.h"
@@ -2945,7 +2944,12 @@ void CEngineBugReporter::InstallBugReportingUI( vgui::Panel *parent, IEngineBugR
 	case IEngineBugReporter::BR_AUTOSELECT:
 		{
 			// check
-			bIsPublic = phonehome->IsExternalBuild() ? true : false;
+			bIsPublic =
+#if defined(_DEBUG)
+				true;
+#else
+				false;
+#endif
 			if ( bCanUseInternal )
 			{
 				// if command line param specifies internal, use that

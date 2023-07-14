@@ -37,7 +37,6 @@ typedef unsigned char uuid_t[16];
 #include "quakedef.h"
 #include "sv_uploadgamestats.h"
 #include "host.h"
-#include "host_phonehome.h"
 #include "mathlib/IceKey.H"
 #include "bitbuf.h"
 #include "tier0/icommandline.h"
