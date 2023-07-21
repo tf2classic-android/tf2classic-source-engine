@@ -1104,7 +1104,7 @@ bool CNetChan::CreateFragmentsFromFile( const char *filename, int stream, unsign
 		return false;
 	}
 
-	int totalBytes = g_pFileSystem->Size( filename, pPathID );
+	unsigned int totalBytes = g_pFileSystem->Size( filename, pPathID );
 
 	if ( totalBytes >= (net_maxfilesize.GetInt()*1024*1024) )
 	{
