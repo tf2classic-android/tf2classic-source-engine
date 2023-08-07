@@ -96,6 +96,8 @@ ConVar tf_damage_range( "tf_damage_range", "0.5", FCVAR_DEVELOPMENTONLY );
 
 ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_NOTIFY, "Max time after a voice command until player can do another one" );
 
+ConVar tf_infinite_ammo( "tf_infinite_ammo", "0", FCVAR_CHEAT | FCVAR_NOTIFY );
+
 ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow players to execute + use while playing." );
 
 ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "0", 0, "Allow player to slide for a bit after taunting." );
@@ -1271,6 +1273,19 @@ void CTFPlayer::GiveDefaultItems()
 	// We may have swapped away our current weapon at resupply locker.
 	if ( GetActiveWeapon() == NULL )
 		SwitchToNextBestWeapon( NULL );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPlayer::RemoveAmmo( int iCount, int iAmmoIndex )
+{
+	if ( tf_infinite_ammo.GetBool() )
+	{
+		return;
+	}
+
+	CBaseCombatCharacter::RemoveAmmo( iCount, iAmmoIndex );
 }
 
 //-----------------------------------------------------------------------------

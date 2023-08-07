@@ -196,7 +196,8 @@ public:
 
 	virtual int			GiveAmmo( int iCount, int iAmmoIndex, bool bSuppressSound = false );
 	virtual int			GiveAmmo( int iCount, int iAmmoIndex, bool bSuppressSound, EAmmoSource ammosource );
-	int					GetMaxAmmo( int iAmmoIndex, int iClassNumber = -1 );
+	int				GetMaxAmmo( int iAmmoIndex, int iClassNumber = -1 );
+	virtual void			RemoveAmmo( int iCount, int iAmmoIndex );
 
 	bool				CanAttack( void );
 
