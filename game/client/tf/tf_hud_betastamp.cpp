@@ -71,7 +71,7 @@ void CTFHudBetaStamp::OnThink()
 //-----------------------------------------------------------------------------
 bool CTFHudBetaStamp::ShouldDraw( void )
 {
-	return false;
+	return true;
 }
 
 
