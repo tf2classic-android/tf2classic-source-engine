@@ -65,6 +65,10 @@ extern ConVar replay_rendersetting_renderglow;
 #include "econ_item_description.h"
 #endif
 
+#if defined( TF_CLASSIC_CLIENT )
+#include "tf_gamerules.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -676,6 +680,12 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 	}
 	else if ( pszCurrentBinding && Q_strcmp( pszCurrentBinding, "say_team" ) == 0 )
 	{
+#if defined( TF_CLASSIC_CLIENT )
+		// tyabus: No team chat for deathmatch
+		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
+			return 1;
+#endif
+
 		if ( down )
 		{
 			StartMessageMode( MM_SAY_TEAM );
@@ -817,6 +827,12 @@ vgui::Panel *ClientModeShared::GetMessagePanel()
 //-----------------------------------------------------------------------------
 void ClientModeShared::StartMessageMode( int iMessageModeType )
 {
+#if defined( TF_CLASSIC_CLIENT )
+	// tyabus: No team chat for deathmatch
+	if ( TFGameRules() && TFGameRules()->IsDeathmatch() && iMessageModeType == MM_SAY_TEAM )
+		return;
+#endif
+
 	// Can only show chat UI in multiplayer!!!
 	if ( gpGlobals->maxClients == 1 )
 	{

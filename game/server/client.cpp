@@ -842,6 +842,11 @@ CON_COMMAND( say, "Display player message" )
 //------------------------------------------------------------------------------
 CON_COMMAND( say_team, "Display player message to team" )
 {
+#if defined ( TF_CLASSIC )
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		return;
+#endif
+
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
 	if (pPlayer)
 	{
