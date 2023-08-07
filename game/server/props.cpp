@@ -1884,7 +1884,7 @@ void CDynamicProp::Spawn( )
 	// Check the classname so we don't mess with doors & other derived classes.
 	if ( GetSolid() == SOLID_NONE && FClassnameIs( this, "prop_dynamic" ) )
 	{
-		SetSolid( SOLID_OBB );
+		SetSolid( SOLID_VPHYSICS ); // tyabus: Use SOLID_VPHYSICS instead of SOLID_OBB
 		AddSolidFlags( FSOLID_NOT_SOLID );
 	}
 
