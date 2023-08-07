@@ -37,6 +37,7 @@ ConVar  tf_solidobjects( "tf_solidobjects", "1", FCVAR_REPLICATED | FCVAR_CHEAT 
 ConVar	tf_clamp_back_speed( "tf_clamp_back_speed", "0.9", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar  tf_clamp_back_speed_min( "tf_clamp_back_speed_min", "100", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar	tf_clamp_airducks( "tf_clamp_airducks", "1", FCVAR_REPLICATED );
+ConVar  tf_resolve_stuck_players( "tf_resolve_stuck_players", "1", FCVAR_REPLICATED );
 
 ConVar	tf2c_bunnyjump_max_speed_factor("tf2c_bunnyjump_max_speed_factor", "1.2", FCVAR_REPLICATED);
 ConVar  tf2c_autojump( "tf2c_autojump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Automatically jump while holding the jump button down" );
@@ -64,6 +65,7 @@ public:
 	virtual void ProcessMovement( CBasePlayer *pBasePlayer, CMoveData *pMove );
 	virtual bool CanAccelerate();
 	virtual bool CheckJumpButton();
+	virtual int CheckStuck( void );
 	virtual bool CheckWater( void );
 	virtual void WaterMove( void );
 	virtual void FullWalkMove();
@@ -98,6 +100,7 @@ private:
 
 	Vector		m_vecWaterPoint;
 	CTFPlayer  *m_pTFPlayer;
+	bool		m_isPassingThroughEnemies;
 };
 
 
@@ -115,6 +118,7 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CGameMovement, IGameMovement,INTERFACENAME_GAM
 CTFGameMovement::CTFGameMovement()
 {
 	m_pTFPlayer = NULL;
+	m_isPassingThroughEnemies = false;
 }
 
 //---------------------------------------------------------------------------------------- 
@@ -176,7 +180,7 @@ unsigned int CTFGameMovement::PlayerSolidMask( bool brushOnly )
 {
 	unsigned int uMask = 0;
 
-	if ( m_pTFPlayer )
+	if ( m_pTFPlayer && !m_isPassingThroughEnemies )
 	{
 		switch( m_pTFPlayer->GetTeamNumber() )
 		{
@@ -362,6 +366,69 @@ void CTFGameMovement::PreventBunnyJumping()
 
 
 	mv->m_vecVelocity *= fraction;
+}
+
+//--------------------------------------------------------
+int CTFGameMovement::CheckStuck( void )
+{
+	// assume we are not stuck in a player
+	m_isPassingThroughEnemies = false;
+
+	if ( tf_resolve_stuck_players.GetBool() )
+	{
+		const Vector &originalPos = mv->GetAbsOrigin();
+		trace_t traceresult;
+
+		TracePlayerBBox( originalPos, originalPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, traceresult );
+
+		if ( traceresult.startsolid && traceresult.DidHitNonWorldEntity() )
+		{
+			if ( traceresult.m_pEnt->IsPlayer() )
+			{
+				// We are stuck in an enemy player. Don't collide with enemies until we are no longer penetrating them.
+				m_isPassingThroughEnemies = true;
+
+				// verify position is now clear
+				TracePlayerBBox( originalPos, originalPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, traceresult );
+
+				if ( !traceresult.DidHit() )
+				{
+					// no longer stuck
+					DevMsg( "%3.2f: Resolved stuck player/player\n", gpGlobals->curtime );
+
+					return 0;
+				}
+			}
+			else if ( fabs( traceresult.m_pEnt->GetAbsVelocity().z ) > 0.7071f && FClassnameIs( traceresult.m_pEnt, "func_tracktrain" ) )
+			{
+				// we're stuck in a vertically moving tracktrain, assume flat surface normal and move us out
+				SetGroundEntity( &traceresult );
+
+				// we're stuck in a vertically moving tracktrain, snap on top of it
+				const float maxAdjust = 80.0f;
+				const float step = 10.0f;
+				Vector tryPos;
+				for( float shift = step; shift < maxAdjust; shift += step )
+				{
+					tryPos = mv->GetAbsOrigin();
+					tryPos.z += shift;
+
+					TracePlayerBBox( tryPos, tryPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, traceresult );
+					if ( !traceresult.DidHit() || ( traceresult.m_pEnt && traceresult.m_pEnt->IsPlayer() ) )
+					{
+						// no longer stuck
+						mv->SetAbsOrigin( tryPos );
+
+						DevMsg( "%3.2f: Forced stuck player to top of func_tracktrain\n", gpGlobals->curtime );
+
+						return 0;
+					}
+				}
+			}
+		}
+	}
+
+	return BaseClass::CheckStuck();
 }
 
 bool CTFGameMovement::CheckJumpButton()
