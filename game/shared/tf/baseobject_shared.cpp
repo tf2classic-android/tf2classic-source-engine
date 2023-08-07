@@ -620,6 +620,13 @@ bool CBaseObject::CalculatePlacementPos( void )
 		return false;
 	}
 
+	// Don't allow buildables on the train just yet.
+	if ( tr.m_pEnt && tr.m_pEnt->IsBSPModel() )
+	{
+		if ( FClassnameIs( tr.m_pEnt, "func_tracktrain" ) )
+			return false;
+	}
+
 	// Verify that it's not on too much of a slope by seeing how far the corners are from the ground.
 	Vector vBottomCenter( m_vecBuildOrigin.x, m_vecBuildOrigin.y, bottomZ );
 	if ( !VerifyCorner( vBottomCenter, -vHalfBuildDims.x, -vHalfBuildDims.y ) ||
