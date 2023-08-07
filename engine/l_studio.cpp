@@ -2039,7 +2039,6 @@ void CModelRender::DebugDrawLightingOrigin( const DrawModelState_t& state, const
 	CDebugOverlay::AddLineOverlay( pt0, pt1, 0, 255, 0, 255, true, 0.0f );
 
 	// draw lines from the light origin to the hull boundaries to identify model
-	Vector pt;
 	pt0.x = state.m_pStudioHdr->hull_min.x;
 	pt0.y = state.m_pStudioHdr->hull_min.y;
 	pt0.z = state.m_pStudioHdr->hull_min.z;
@@ -2785,16 +2784,15 @@ struct rbatch_t
 // ----------------------------------------
 */
 
-inline int FindModel( const CUtlVector<rmodel_t> &list, const model_t *pModel )
+inline int FindModel( const rmodel_t* pList, int listCount, const model_t* pModel )
 {
-	for ( int j = list.Count(); --j >= 0 ; )
+	for ( int j = listCount; --j >= 0 ; )
 	{
-		if ( list[j].pModel == pModel )
+		if ( pList[j].pModel == pModel )
 			return j;
 	}
 	return -1;
 }
-
 
 // NOTE: UNDONE: This is a work in progress of a new static prop rendering pipeline
 // UNDONE: Expose drawing commands from studiorender and draw here
@@ -2808,11 +2806,11 @@ int CModelRender::DrawStaticPropArrayFast( StaticPropRenderInfo_t *pProps, int c
 	CMatRenderContextPtr pRenderContext( materials );
 	const int MAX_OBJECTS = 1024;
 	CUtlSortVector<robject_t, CRobjectLess> objectList(0, MAX_OBJECTS);
-	CUtlVector<rmodel_t> modelList(0,256);
-	CUtlVector<short> lightObjects(0,256);
-	CUtlVector<short> shadowObjects(0,64);
-	CUtlVector<rdecalmodel_t> decalObjects(0,64);
-	CUtlVector<LightingState_t> lightStates(0,256);
+	CUtlVectorFixedGrowable<rmodel_t, 256> modelList;
+	CUtlVectorFixedGrowable<short, 256> lightObjects;
+	CUtlVectorFixedGrowable<short, 64> shadowObjects;
+	CUtlVectorFixedGrowable<rdecalmodel_t, 64> decalObjects;
+	CUtlVectorFixedGrowable<LightingState_t, 256> lightStates;
 	bool bForceCubemap = r_showenvcubemap.GetBool();
 	int drawnCount = 0;
 	int forcedLodSetting = r_lod.GetInt();
@@ -2826,7 +2824,7 @@ int CModelRender::DrawStaticPropArrayFast( StaticPropRenderInfo_t *pProps, int c
 	{
 		drawnCount++;
 		// UNDONE: This is a perf hit in some scenes!  Use a hash?
-		int modelIndex = FindModel( modelList, pProps[i].pModel );
+		int modelIndex = FindModel( modelList.Base(), modelList.Count(), pProps[i].pModel );
 		if ( modelIndex < 0 )
 		{
 			modelIndex = modelList.AddToTail();
