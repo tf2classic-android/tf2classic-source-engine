@@ -46,6 +46,7 @@ extern ConVar tf2c_muzzlelight;
 #endif
 
 ConVar tf_weapon_criticals( "tf_weapon_criticals", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Whether or not random crits are enabled." );
+ConVar tf2c_dm_weapon_criticals( "tf2c_dm_weapon_criticals", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Whether or not random crits are enabled in deathmatch." );
 ConVar tf2c_weapon_noreload( "tf2c_weapon_noreload", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Disables reloading for all weapons." );
 
 #ifdef GAME_DLL
@@ -842,8 +843,8 @@ bool CTFWeaponBase::CalcIsAttackCriticalHelper()
 	if ( !pPlayer )
 		return false;
 
-	// Random crits are disabled in DM due to balancing reasons
-	if ( TFGameRules()->IsDeathmatch() )
+	// Random crits are disabled in DM due to balancing reasons by default.
+	if ( TFGameRules() && TFGameRules()->IsDeathmatch() && !tf2c_dm_weapon_criticals.GetBool() )
 		return false;
 
 	// Don't bother checking if random crits are off.
