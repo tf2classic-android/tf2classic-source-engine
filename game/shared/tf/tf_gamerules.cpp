@@ -4292,6 +4292,9 @@ void CTFGameRules::RoundRespawn( void )
 
 		pTeam->SetFlagCaptures( 0 );
 	}
+	
+	// NickNine: Fixed per-round player stats not being reset
+	CTF_GameStats.ResetRoundStats();
 
 	BaseClass::RoundRespawn();
 
