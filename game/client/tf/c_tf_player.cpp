@@ -1892,6 +1892,9 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 		}
 	}
 
+	// Nicknine: Player would sometimes become invisible after being spectated in first person
+	UpdateVisibility();
+
 	// Check for full health and remove decals.
 	if ( ( m_iHealth > m_iOldHealth && m_iHealth >= GetMaxHealth() ) || m_Shared.IsInvulnerable() )
 	{
