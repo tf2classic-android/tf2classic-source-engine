@@ -1249,6 +1249,7 @@ CTFGameRules::CTFGameRules()
 	m_iPrevRoundState = -1;
 	m_iCurrentRoundState = -1;
 	m_iCurrentMiniRoundMask = 0;
+	m_flTimerMayExpireAt = -1.0f;
 
 	m_bFirstBlood = false;
 	m_iArenaTeamCount = 0;
@@ -4118,9 +4119,17 @@ bool CTFGameRules::TimerMayExpire( void )
 	int iNumControlPoints = ObjectiveResource()->GetNumControlPoints();
 	for ( int iPoint = 0; iPoint < iNumControlPoints; iPoint ++ )
 	{
-		if ( ObjectiveResource()->GetCappingTeam(iPoint) )
+		if ( ObjectiveResource()->GetCappingTeam( iPoint ) )
+		{
+			// HACK: Fix for some maps adding time to the clock 0.05s after CP is capped.
+			m_flTimerMayExpireAt = gpGlobals->curtime + 0.1f;
+
 			return false;
+		}
 	}
+
+	if ( m_flTimerMayExpireAt >= gpGlobals->curtime )
+		return false;
 
 	return BaseClass::TimerMayExpire();
 }
