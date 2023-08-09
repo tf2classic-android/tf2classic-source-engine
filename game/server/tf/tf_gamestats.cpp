@@ -273,7 +273,7 @@ void CTFGameStats::SendStatsToPlayer( CTFPlayer *pPlayer, int iMsgType )
 	stats.iStatsChangedBits = 0;
 	stats.m_flTimeLastSend = gpGlobals->curtime;
 
-	if ( iMsgType == STATMSG_PLAYERDEATH )
+	if ( iMsgType == STATMSG_PLAYERDEATH || iMsgType == STATMSG_PLAYERRESPAWN )
 	{
 		// max sentry kills is different from other stats, it is a max value and can span player lives.  Reset it to zero so 
 		// it doesn't get re-reported in the next life unless the sentry stays alive and gets more kills.
@@ -336,6 +336,11 @@ void CTFGameStats::Event_PlayerDisconnected( CBasePlayer *pPlayer )
 //-----------------------------------------------------------------------------
 void CTFGameStats::Event_PlayerChangedClass( CTFPlayer *pPlayer )
 {
+	if( pPlayer )
+	{
+		pPlayer->SetMaxSentryKills( 0 );
+		Event_MaxSentryKills( pPlayer, 0 );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -824,10 +829,10 @@ void CTFGameStats::Event_MaxSentryKills( CTFPlayer *pAttacker, int iMaxKills )
 	// any single sentry the player builds during his lifetime.  It does not increase monotonically
 	// so this is a little different than the other stat code.
 	PlayerStats_t &stats = m_aPlayerStats[pAttacker->entindex()];
-	int iCur = stats.statsCurrentRound.m_iStat[TFSTAT_MAXSENTRYKILLS];
+	int iCur = stats.statsAccumulated.m_iStat[TFSTAT_MAXSENTRYKILLS];
 	if ( iCur != iMaxKills )
 	{
-		stats.statsCurrentRound.m_iStat[TFSTAT_MAXSENTRYKILLS] = iMaxKills;
+		stats.statsAccumulated.m_iStat[TFSTAT_MAXSENTRYKILLS] = iMaxKills;
 		stats.iStatsChangedBits |= ( 1 << ( TFSTAT_MAXSENTRYKILLS - TFSTAT_FIRST ) );
 	}
 }
