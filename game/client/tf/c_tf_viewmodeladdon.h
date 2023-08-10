@@ -31,8 +31,10 @@ public:
 
 	virtual C_BaseEntity	*GetItemTintColorOwner( void ) { return GetOwner(); }
 
-private:
 	CHandle< C_TFViewModel > m_viewmodel;
+
+protected:
+	friend class C_TFViewModel;
 };
 
 #endif

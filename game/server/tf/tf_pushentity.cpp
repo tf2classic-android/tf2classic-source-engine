@@ -449,7 +449,7 @@ void CTFPhysicsPushEntities::MovePlayer( CBaseEntity *pBlocker, PhysicsPushedInf
 //-----------------------------------------------------------------------------
 // Causes all entities in the list to touch triggers from their prev position
 //-----------------------------------------------------------------------------
-void CTFPhysicsPushEntities::FinishRotPushedEntity( CBaseEntity *pPushedEntity, const RotatingPushMove_t &rotPushMove )q
+void CTFPhysicsPushEntities::FinishRotPushedEntity( CBaseEntity *pPushedEntity, const RotatingPushMove_t &rotPushMove )
 {
 	// Only do this for "payload" or "escort" maps.
 	if ( !( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT ) )
