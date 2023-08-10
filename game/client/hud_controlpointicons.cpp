@@ -331,7 +331,7 @@ void CControlPointIcon::UpdateImage( void )
 			}
 			m_pBaseImage->StartPulsing( FINISHCAPANIM_SWOOP_LENGTH, 0.5, false );
 		}
-		
+
 	}
 }
 //-----------------------------------------------------------------------------
@@ -480,7 +480,7 @@ bool CControlPointIcon::IsVisible( void )
 void CControlPointIcon::Paint( void )
 {
 	if ( m_bCachedLockedState != IsPointLocked() ||
-		 m_bCachedCountdownState != IsPointUnlockCountdownRunning() )
+		m_bCachedCountdownState != IsPointUnlockCountdownRunning() )
 	{
 		UpdateImage();
 	}
@@ -504,7 +504,7 @@ void CControlPointIcon::PerformLayout( void )
 
 	m_pBaseImage->SetBounds( 0, 0, GetWide(), GetTall() );
 	m_pCountdown->SetBounds( 0, 0, GetWide(), GetTall() );
-	
+
 	if ( m_pCapImage->IsVisible() )
 	{
 		m_pCapImage->SetBounds( 0, 0, GetWide(), GetTall() );
@@ -583,7 +583,7 @@ void CControlPointIcon::OnTick( void )
 	int nTime = 0;
 	if ( m_flCPTimerTime - gpGlobals->curtime > 0 )
 	{
-		nTime = ceil( m_flCPTimerTime - gpGlobals->curtime );
+		nTime = Ceil2Int( m_flCPTimerTime - gpGlobals->curtime );
 	}
 
 	if ( nTime <= 10 ) // start flashing with 10 seconds left
@@ -626,7 +626,7 @@ void CControlPointIcon::SetTimerTime( float flTime )
 
 			m_pCPTimerBG->SetPos( xPos, yPos );
 			m_pCPTimerBG->SetVisible( true );
-	
+
 			m_bRedText = false;
 			m_pCPTimerLabel->SetFgColor( m_cRegularColor ); // reset our color
 			m_pCPTimerLabel->SetPos( xPos + GetWide() - XRES(1), yPos + ( GetTall() / 2 ) - ( m_pCPTimerLabel->GetTall() / 2 ) );
@@ -715,7 +715,7 @@ void CHudControlPointIcons::Init( void )
 		{
 			m_iCPTextures[i] = vgui::surface()->CreateNewTextureID();
 		}
-		
+
 		if ( m_iCPCappingTextures[i] == -1 )
 		{
 			m_iCPCappingTextures[i] = vgui::surface()->CreateNewTextureID();
@@ -1040,7 +1040,7 @@ void CHudControlPointIcons::PerformLayout( void )
 			}
 		}
 	}
-	
+
 	if ( bUseDefaultLines )
 	{
 		// By default, put all the caps on a single line
@@ -1356,7 +1356,7 @@ void CHudControlPointIcons::Paint()
 	if ( num <= 0 )
 		return; // nothing to draw yet
 
-	//DrawBackgroundBox( 0, 0, GetWide(), GetTall(), false );
+				//DrawBackgroundBox( 0, 0, GetWide(), GetTall(), false );
 	BaseClass::Paint();
 }
 
@@ -1391,6 +1391,9 @@ void CControlPointProgressBar::ApplySchemeSettings( IScheme *pScheme )
 	m_pTeardropSide = dynamic_cast<CIconPanel *>( FindChildByName("TeardropSide") );
 	m_pBlocked = dynamic_cast<CIconPanel *>( FindChildByName("Blocked") );
 	m_iOrgHeight = GetTall();
+
+	m_pBar->SetProgressDirection( vgui::CircularProgressBar::PROGRESS_CW );
+	m_pBar->SetReverseProgress( true );
 
 	m_iMidGroupIndex = gHUD.LookupRenderGroupIndexByName( "mid" );
 }
@@ -1442,7 +1445,7 @@ void CControlPointProgressBar::PerformLayout( void )
 			iYPos = iIconY - GetTall();
 			break;
 		}
-		
+
 		SetPos( iXPos, iYPos );
 	}
 }
@@ -1521,7 +1524,7 @@ void CControlPointProgressBar::SetupForPoint( CControlPointIcon *pIcon )
 		{
 			m_pBar->SetVisible( false );
 			m_pBlocked->SetVisible( true );
-			
+
 			UpdateBarText();
 		}
 
