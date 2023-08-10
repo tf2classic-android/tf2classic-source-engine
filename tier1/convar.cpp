@@ -456,6 +456,13 @@ bool CCommand::Tokenize( const char *pCommand, characterset_t *pBreakSet )
 			Warning( "CCommand::Tokenize: Encountered command which overflows the argument buffer.. Clamped!\n" );
 		}
 
+		// Check for overflow condition
+		if ( (nArgvBufferSize + nSize) >= (COMMAND_MAX_LENGTH - 1) )
+		{
+			Reset();
+			return false;
+		}
+
 		nArgvBufferSize += nSize + 1;
 		Assert( nArgvBufferSize <= COMMAND_MAX_LENGTH );
 	}
