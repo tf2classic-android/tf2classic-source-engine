@@ -2609,6 +2609,8 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 			SendWinPanelInfo();
 		}
 
+		CTF_GameStats.Event_GameEnd();
+
 		BaseClass::GoToIntermission();
 	}
 
