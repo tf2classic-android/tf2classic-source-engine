@@ -33,6 +33,8 @@
 #include "teamplayroundbased_gamerules.h"
 #include "tf_gamerules.h"
 
+extern ConVar tf2c_coloredhud;
+
 using namespace vgui;
 
 DECLARE_BUILD_FACTORY( CTFProgressBar );
@@ -371,28 +373,39 @@ void CTFHudTimeStatus::SetTeamBackground( void )
 
 		const char *szImg = "../hud/objectives_timepanel_black_bg";
 
-		switch ( iTeamNumber )
+		if ( !TFGameRules()->IsDeathmatch() )
 		{
-			case TF_TEAM_RED:
-				szImg = "../hud/objectives_timepanel_red_bg";
-				break;
+			switch ( iTeamNumber )
+			{
+				case TF_TEAM_RED:
+					szImg = "../hud/objectives_timepanel_red_bg";
+					break;
 
-			case TF_TEAM_BLUE:
-				szImg = "../hud/objectives_timepanel_blue_bg";
-				break;
+				case TF_TEAM_BLUE:
+					szImg = "../hud/objectives_timepanel_blue_bg";
+					break;
 
-			case TF_TEAM_GREEN:
-				szImg = "../hud/objectives_timepanel_green_bg";
-				break;
+				case TF_TEAM_GREEN:
+					szImg = "../hud/objectives_timepanel_green_bg";
+					break;
 
-			case TF_TEAM_YELLOW:
-				szImg = "../hud/objectives_timepanel_yellow_bg";
-				break;
+				case TF_TEAM_YELLOW:
+					szImg = "../hud/objectives_timepanel_yellow_bg";
+					break;
 
-			default:
-				szImg = "../hud/objectives_timepanel_black_bg";
-				break;
+				default:
+					szImg = "../hud/objectives_timepanel_black_bg";
+					break;
+			}
 		}
+		else // Deathmatch
+		{
+			if ( tf2c_coloredhud.GetBool() )
+			{
+				szImg = "../hud/objectives_timepanel_null_bg";
+			}
+		}
+
 		m_pTimePanelBG->SetImage( szImg );
 	}
 }
