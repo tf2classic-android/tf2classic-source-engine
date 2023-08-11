@@ -456,13 +456,16 @@ void CTFStatsSummaryPanel::FireGameEvent( IGameEvent *event )
 
 					// set the map author name in the UI
 					const char *szMapAuthor = GetMapAuthor( pMapName );
-					if ( szMapAuthor[0] != '\0' )
+					if ( szMapAuthor ) // make sure that it exists
 					{
-						SetDialogVariable( "mapauthor", szMapAuthor );
+						if ( szMapAuthor[0] != '\0' )
+						{
+							SetDialogVariable( "mapauthor", szMapAuthor );
 
-						Label *pMapAuthorLabel = dynamic_cast<Label *>( FindChildByName( "MapAuthorLabel" ) );
-						if ( pMapAuthorLabel && !pMapAuthorLabel->IsVisible() )
-							pMapAuthorLabel->SetVisible( true );
+							Label* pMapAuthorLabel = dynamic_cast<Label*>( FindChildByName( "MapAuthorLabel" ) );
+							if ( pMapAuthorLabel && !pMapAuthorLabel->IsVisible() )
+								pMapAuthorLabel->SetVisible( true );
+						}
 					}
 				}
 			}
