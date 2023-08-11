@@ -26,6 +26,13 @@ C_TFObjectiveResource::C_TFObjectiveResource()
 	PrecacheMaterial( "sprites/obj_icons/icon_obj_cap_red" );
 	PrecacheMaterial( "sprites/obj_icons/icon_obj_cap_grn" );
 	PrecacheMaterial( "sprites/obj_icons/icon_obj_cap_ylw" );
+	PrecacheMaterial( "sprites/obj_icons/icon_obj_cap_blu_up" );
+	PrecacheMaterial( "sprites/obj_icons/icon_obj_cap_red_up" );
+	PrecacheMaterial( "sprites/obj_icons/icon_obj_cap_grn_up" );
+	PrecacheMaterial( "sprites/obj_icons/icon_obj_cap_ylw_up" );
+	PrecacheMaterial( "VGUI/flagtime_empty" );
+	PrecacheMaterial( "VGUI/flagtime_full" );
+
 }
 
 //-----------------------------------------------------------------------------
