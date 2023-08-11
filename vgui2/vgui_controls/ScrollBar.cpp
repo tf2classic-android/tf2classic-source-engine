@@ -401,7 +401,7 @@ void ScrollBar::SetButton(Button *button, int index)
 {
 	if(_button[index]!=null)
 	{
-		_button[index]->SetParent((Panel *)NULL);
+		_button[index]->DeletePanel(); // tyabus: Memory leak fix from VDC
 	}
 	_button[index]=button;
 	_button[index]->SetParent(this);
@@ -429,7 +429,7 @@ void ScrollBar::SetSlider(ScrollBarSlider *slider)
 {
 	if(_slider!=null)
 	{
-		_slider->SetParent((Panel *)NULL);
+		_slider->DeletePanel();
 	}
 	_slider=slider;
 	_slider->AddActionSignalTarget(this);

@@ -244,6 +244,7 @@ public:
 					pkvCamera = pkvCamera->GetNextKey();
 				}
 			}
+			pkvMapCameras->deleteThis(); // tyabus: Memory leak fix from VDC
 
 			if ( !g_iDevShotCameraCount )
 			{
