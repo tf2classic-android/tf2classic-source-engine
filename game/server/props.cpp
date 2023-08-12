@@ -3192,32 +3192,34 @@ int CPhysicsProp::DrawDebugTextOverlays(void)
 
 	if (m_debugOverlays & OVERLAY_TEXT_BIT) 
 	{
+		int r = 56, g = 243, b = 171;
+
 		if (VPhysicsGetObject())
 		{
 			char tempstr[512];
 			Q_snprintf(tempstr, sizeof(tempstr),"Mass: %.2f kg / %.2f lb (%s)", VPhysicsGetObject()->GetMass(), kg2lbs(VPhysicsGetObject()->GetMass()), GetMassEquivalent(VPhysicsGetObject()->GetMass()));
-			EntityText( text_offset, tempstr, 0);
+			EntityText( text_offset, tempstr, 0,r,g,b);
 			text_offset++;
 
 			{
 				vphysics_objectstress_t stressOut;
 				float stress = CalculateObjectStress( VPhysicsGetObject(), this, &stressOut );
 				Q_snprintf(tempstr, sizeof(tempstr),"Stress: %.2f (%.2f / %.2f)", stress, stressOut.exertedStress, stressOut.receivedStress );
-				EntityText( text_offset, tempstr, 0);
+				EntityText( text_offset, tempstr, 0,r,g,b);
 				text_offset++;
 			}
 
 			if ( !VPhysicsGetObject()->IsMoveable() )
 			{
 				Q_snprintf(tempstr, sizeof(tempstr),"Motion Disabled" );
-				EntityText( text_offset, tempstr, 0);
+				EntityText( text_offset, tempstr, 0,r,g,b);
 				text_offset++;
 			}
 
 			if ( m_iszBasePropData != NULL_STRING )
 			{
 				Q_snprintf(tempstr, sizeof(tempstr),"Base PropData: %s", STRING(m_iszBasePropData) );
-				EntityText( text_offset, tempstr, 0);
+				EntityText( text_offset, tempstr, 0,r,g,b);
 				text_offset++;
 			}
 
@@ -3225,16 +3227,16 @@ int CPhysicsProp::DrawDebugTextOverlays(void)
 			{
 				IBreakableWithPropData *pBreakableInterface = assert_cast<IBreakableWithPropData*>(this);
 				Q_snprintf(tempstr, sizeof(tempstr),"Breakable Chunks: %d (Max Size %d)", m_iNumBreakableChunks, pBreakableInterface->GetMaxBreakableSize() );
-				EntityText( text_offset, tempstr, 0);
+				EntityText( text_offset, tempstr, 0,r,g,b);
 				text_offset++;
 			}
 
 			Q_snprintf(tempstr, sizeof(tempstr),"Skin: %d", m_nSkin.Get() );
-			EntityText( text_offset, tempstr, 0);
+			EntityText( text_offset, tempstr, 0,r,g,b);
 			text_offset++;
 
 			Q_snprintf(tempstr, sizeof(tempstr),"Health: %d, collision group %d", GetHealth(), GetCollisionGroup() );
-			EntityText( text_offset, tempstr, 0);
+			EntityText( text_offset, tempstr, 0,r,g,b);
 			text_offset++;
 		}
 	}

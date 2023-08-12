@@ -95,8 +95,8 @@ int g_nInsideDispatchUpdateTransmitState = 0;
 // When this is false, throw an assert in debug when GetAbsAnything is called. Used when hierachy is incomplete/invalid.
 bool CBaseEntity::s_bAbsQueriesValid = true;
 
-
 ConVar sv_netvisdist( "sv_netvisdist", "10000", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Test networking visibility distance" );
+ConVar ent_show_contexts( "ent_show_contexts", "0", 0, "Show entity contexts in ent_text display" );
 
 // This table encodes edict data.
 void SendProxy_AnimTime( const SendProp *pProp, const void *pStruct, const void *pVarData, DVariant *pOut, int iElement, int objectID )
@@ -1002,9 +1002,11 @@ int CBaseEntity::DrawDebugTextOverlays(void)
 	int offset = 1;
 	if (m_debugOverlays & OVERLAY_TEXT_BIT) 
 	{
+		int r = 0, g = 255, b = 0;
+
 		char tempstr[512];
 		Q_snprintf( tempstr, sizeof(tempstr), "(%d) Name: %s (%s)", entindex(), GetDebugName(), GetClassname() );
-		EntityText(offset,tempstr, 0);
+		EntityText(offset,tempstr, 0, r,g,b);
 		offset++;
 
 		if( m_iGlobalname != NULL_STRING )
@@ -1022,16 +1024,38 @@ int CBaseEntity::DrawDebugTextOverlays(void)
 		if( GetModelName() != NULL_STRING || GetBaseAnimating() )
 		{
 			Q_snprintf(tempstr, sizeof(tempstr), "Model:%s", STRING(GetModelName()) );
-			EntityText(offset,tempstr,0);
+			EntityText(offset,tempstr,0,255,255,0);
 			offset++;
 		}
 
 		if( m_hDamageFilter.Get() != NULL )
 		{
 			Q_snprintf( tempstr, sizeof(tempstr), "DAMAGE FILTER:%s", m_hDamageFilter->GetDebugName() );
-			EntityText( offset,tempstr,0 );
+			EntityText( offset,tempstr,0,r,g,b );
 			offset++;
 		}
+
+		if ( ent_show_contexts.GetBool() )
+		{
+			int count = GetContextCount();
+			if ( count )
+			{
+				for ( int i = 0; i < count; ++i )
+				{
+					Q_snprintf(tempstr, sizeof(tempstr),"Context: %s:%s", GetContextName( i ), GetContextValue( i ) );
+					EntityText( offset, tempstr, 0,r,g,b);
+					offset++;
+				}
+			}
+		}
+
+		Q_snprintf(tempstr, sizeof(tempstr), "Flags :%d", GetFlags() );
+		EntityText(offset,tempstr,0);
+		offset++;
+
+		Q_snprintf(tempstr, sizeof(tempstr), "Effects :%d (EF_NODRAW=%d)", GetEffects(), GetEffects() & EF_NODRAW );
+		EntityText(offset,tempstr,0);
+		offset++;
 	}
 
 	if (m_debugOverlays & OVERLAY_VIEWOFFSET)

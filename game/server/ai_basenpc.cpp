@@ -644,7 +644,7 @@ void CAI_BaseNPC::Ignite( float flFlameLifetime, bool bNPCOnly, float flSize, bo
 
 #ifdef HL2_EPISODIC
 	CBasePlayer *pPlayer = AI_GetSinglePlayer();
-	if ( pPlayer->IRelationType( this ) != D_LI )
+	if ( pPlayer && pPlayer->IRelationType( this ) != D_LI )
 	{
 		CNPC_Alyx *alyx = CNPC_Alyx::GetAlyx();
 
@@ -710,6 +710,8 @@ int CAI_BaseNPC::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 {
 	Forget( bits_MEMORY_INCOVER );
 
+	bool bIsBelowHalfHealthBefore = ( m_iHealth <= ( m_iMaxHealth / 2 ) );
+
 	if ( !BaseClass::OnTakeDamage_Alive( info ) )
 		return 0;
 
@@ -766,7 +768,7 @@ int CAI_BaseNPC::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		// only fire once per frame
 		m_OnDamaged.FireOutput( info.GetAttacker(), this);
 
-		if( info.GetAttacker()->IsPlayer() )
+		if( info.GetAttacker() && info.GetAttacker()->IsPlayer() )
 		{
 			m_OnDamagedByPlayer.FireOutput( info.GetAttacker(), this );
 			
@@ -794,7 +796,7 @@ int CAI_BaseNPC::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		SetCondition( COND_PHYSICS_DAMAGE );
 	}
 
-	if ( m_iHealth <= ( m_iMaxHealth / 2 ) )
+	if ( !bIsBelowHalfHealthBefore && ( m_iHealth <= ( m_iMaxHealth / 2 ) ) )
 	{
 		m_OnHalfHealth.FireOutput( info.GetAttacker(), this );
 	}
@@ -1629,7 +1631,7 @@ void CAI_BaseNPC::SetCondition( int iCondition )
 		Assert(0);
 		return;
 	}
-	
+
 	m_Conditions.Set( interrupt );
 }
 
@@ -1679,7 +1681,7 @@ void CAI_BaseNPC::ClearCondition( int iCondition )
 		Assert(0);
 		return;
 	}
-	
+
 	m_Conditions.Clear(interrupt);
 }
 
@@ -4444,7 +4446,7 @@ void CAI_BaseNPC::Sleep()
 
 	if( GetState() == NPC_STATE_SCRIPT )
 	{
-		Warning( "%s put to sleep while in Scripted state!\n", GetClassname() );
+		Warning( "%s put to sleep while in Scripted state!\n", STRING( GetEntityName() ) );
 	}
 
 	VacateStrategySlot();
@@ -4719,6 +4721,7 @@ void CAI_BaseNPC::GatherConditions( void )
 			}
 			else
 			{
+				DevMsg(2, "Lost enemy because we're flagged efficient\n");
 				SetEnemy( NULL );
 			}
 		}
@@ -6066,7 +6069,7 @@ void CAI_BaseNPC::ResolveActivityToSequence(Activity NewActivity, int &iSequence
 
 	translatedActivity = TranslateActivity( NewActivity, &weaponActivity );
 
-	if ( NewActivity == ACT_SCRIPT_CUSTOM_MOVE )
+	if ( ( NewActivity == ACT_SCRIPT_CUSTOM_MOVE ) )
 	{
 		iSequence = GetScriptCustomMoveSequence();
 	}
@@ -6429,7 +6432,7 @@ void CAI_BaseNPC::SetSequenceByName( const char *szSequence )
 		SetSequenceById( iSequence );
 	else
 	{
-		DevWarning( 2, "%s has no sequence %s to match request\n", GetClassname(), szSequence );
+		DevWarning( 2, "%s has no sequence to match %s request\n", GetClassname(), szSequence );
 		SetSequence( 0 );	// Set to the reset anim (if it's there)
 	}
 }
@@ -6691,7 +6694,7 @@ void CAI_BaseNPC::SetHullSizeNormal( bool force )
 	if ( m_fIsUsingSmallHull || force )
 	{
 		// Find out what the height difference will be between the versions and adjust our bbox accordingly to keep us level
-		const float flScale = GetModelScale();
+		const float flScale = MIN( 1.0f, GetModelScale() );			// NOTE: Cannot scale NPC bounding box up, as pathfinding will fail (hull needs to match the traces used for the node network)
 		Vector vecMins = ( GetHullMins() * flScale );
 		Vector vecMaxs = ( GetHullMaxs() * flScale );
 		
@@ -8985,12 +8988,14 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 
 	if (m_debugOverlays & OVERLAY_TEXT_BIT)
 	{
+		int r = 0, g = 255, b = 255;
+
 		char tempstr[512];
 		// --------------
 		// Print Health
 		// --------------
 		Q_snprintf(tempstr,sizeof(tempstr),"Health: %i  (DACC:%1.2f)",m_iHealth.Get(), GetDamageAccumulator() );
-		EntityText(text_offset,tempstr,0);
+		EntityText(text_offset,tempstr,0,r,g,b);
 		text_offset++;
 
 		// --------------
@@ -9000,7 +9005,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		if ( (int)m_NPCState < ARRAYSIZE(pStateNames) )
 		{
 			Q_snprintf(tempstr,sizeof(tempstr),"Stat: %s, ", pStateNames[m_NPCState] );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 		}
 
@@ -9010,7 +9015,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		if( IsInAScript() )
 		{
 			Q_snprintf(tempstr,sizeof(tempstr),"STARTSCRIPTING" );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 		}
 
@@ -9020,7 +9025,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		if( GetHintGroup() != NULL_STRING )
 		{
 			Q_snprintf(tempstr,sizeof(tempstr),"Hint Group: %s", STRING(GetHintGroup()) );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 		}
 
@@ -9028,12 +9033,12 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		// Print MotionType
 		// -----------------
 		int navTypeIndex = (int)GetNavType() + 1;
-		static const char *pMoveNames[] = { "None", "Ground", "Jump", "Fly", "Climb" };
+		static const char *pMoveNames[] = { "None", "Ground", "Jump", "Fly", "Climb", "Crawl" };
 		Assert( navTypeIndex >= 0 && navTypeIndex < ARRAYSIZE(pMoveNames) );
 		if ( navTypeIndex < ARRAYSIZE(pMoveNames) )
 		{
 			Q_snprintf(tempstr,sizeof(tempstr),"Move: %s, ", pMoveNames[navTypeIndex] );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 		}
 
@@ -9046,7 +9051,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			if ( pBehavior )
 			{
 				Q_snprintf(tempstr,sizeof(tempstr),"Behv: %s, ", pBehavior->GetName() );
-				EntityText(text_offset,tempstr,0);
+				EntityText(text_offset,tempstr,0,r,g,b);
 				text_offset++;
 			}
 
@@ -9057,7 +9062,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 				pName = "Unknown";
 			}
 			Q_snprintf(tempstr,sizeof(tempstr),"Schd: %s, ", pName );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 
 			if (m_debugOverlays & OVERLAY_NPC_TASK_BIT)
@@ -9070,7 +9075,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 						TaskName(GetCurSchedule()->GetTaskList()[i].iTask),
 						((i==GetScheduleCurTaskIndex())	? "<-"   :""));
 
-					EntityText(text_offset,tempstr,0);
+					EntityText(text_offset,tempstr,0,r,g,b);
 					text_offset++;
 				}
 			}
@@ -9085,7 +9090,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 				{
 					Q_strncpy(tempstr,"Task: None",sizeof(tempstr));
 				}
-				EntityText(text_offset,tempstr,0);
+				EntityText(text_offset,tempstr,0,r,g,b);
 				text_offset++;
 			}
 		}
@@ -9114,7 +9119,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		{
 			Q_strncpy(tempstr,"Actv: INVALID", sizeof(tempstr) );
 		}
-		EntityText(text_offset,tempstr,0);
+		EntityText(text_offset,tempstr,0,r,g,b);
 		text_offset++;
 
 		//
@@ -9128,7 +9133,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 				if (m_Conditions.IsBitSet(i))
 				{
 					Q_snprintf(tempstr, sizeof(tempstr), "Cond: %s\n", ConditionName(AI_RemapToGlobal(i)));
-					EntityText(text_offset, tempstr, 0);
+					EntityText(text_offset, tempstr, 0,r,g,b);
 					text_offset++;
 					bHasConditions = true;
 				}
@@ -9136,7 +9141,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			if (!bHasConditions)
 			{
 				Q_snprintf(tempstr,sizeof(tempstr),"(no conditions)");
-				EntityText(text_offset,tempstr,0);
+				EntityText(text_offset,tempstr,0,r,g,b);
 				text_offset++;
 			}
 		}
@@ -9160,7 +9165,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			}
 
 			Q_snprintf(tempstr,sizeof(tempstr),"Intr: %s (%s)\n", pName, m_interruptText );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 		}
 
@@ -9176,7 +9181,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 				pName = "Unknown";
 			}
 			Q_snprintf(tempstr,sizeof(tempstr),"Fail: %s (%s)\n", pName,m_failText );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 		}
 
@@ -9186,7 +9191,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		// -------------------------------
 		if (HasCondition(COND_ENEMY_TOO_FAR))
 		{
-			EntityText(text_offset,"Enemy too far to attack",0);
+			EntityText(text_offset,"Enemy too far to attack",0,r,g,b);
 			text_offset++;
 		}
 		if ( GetAbsVelocity() != vec3_origin || GetLocalAngularVelocity() != vec3_angle )
@@ -9195,7 +9200,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			Q_snprintf( tmp, sizeof(tmp), "Vel %.1f %.1f %.1f   Ang: %.1f %.1f %.1f\n", 
 				GetAbsVelocity().x, GetAbsVelocity().y, GetAbsVelocity().z, 
 				GetLocalAngularVelocity().x, GetLocalAngularVelocity().y, GetLocalAngularVelocity().z );
-			EntityText(text_offset,tmp,0);
+			EntityText(text_offset,tmp,0,r,g,b);
 			text_offset++;
 		}
 
@@ -9209,7 +9214,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			text_offset++;
 			if ( m_TotalShots )
 			{
-				EntityText(text_offset,msg.sprintf("Act Accuracy: %.1f", ((float)m_TotalHits/(float)m_TotalShots)*100.0),0);
+				EntityText(text_offset,msg.sprintf("Act Accuracy: %.1f", ((float)m_TotalHits/(float)m_TotalShots)*100.0),0,r,g,b);
 				text_offset++;
 			}
 
@@ -9218,7 +9223,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 				Vector curSpread = GetAttackSpread(GetActiveWeapon(), GetEnemy());
 				float curCone = RAD2DEG(asin(curSpread.x)) * 2;
 				float bias = GetSpreadBias( GetActiveWeapon(), GetEnemy());
-				EntityText(text_offset,msg.sprintf("Cone %.1f, Bias %.2f", curCone, bias),0);
+				EntityText(text_offset,msg.sprintf("Cone %.1f, Bias %.2f", curCone, bias),0,r,g,b);
 				text_offset++;
 			}
 		}
@@ -9234,7 +9239,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			{
 				Q_strncat(tempstr,STRING(GetGoalEnt()->m_iClassname),sizeof(tempstr), COPY_ALL_CHARACTERS);
 			}
-			EntityText(text_offset, tempstr, 0);
+			EntityText(text_offset, tempstr, 0,r,g,b);
 			text_offset++;
 		}
 
@@ -9243,7 +9248,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			vphysics_objectstress_t stressOut;
 			CalculateObjectStress( VPhysicsGetObject(), this, &stressOut );
 			Q_snprintf(tempstr, sizeof(tempstr),"Stress: %.2f", stressOut.receivedStress );
-			EntityText(text_offset, tempstr, 0);
+			EntityText(text_offset, tempstr, 0,r,g,b);
 			text_offset++;
 		}
 		if ( m_pSquad )
@@ -9251,12 +9256,12 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 			if( m_pSquad->IsLeader(this) )
 			{
 				Q_snprintf(tempstr, sizeof(tempstr),"**Squad Leader**" );
-				EntityText(text_offset, tempstr, 0);
+				EntityText(text_offset, tempstr, 0,r,g,b);
 				text_offset++;
 			}
 
 			Q_snprintf(tempstr, sizeof(tempstr), "SquadSlot:%s", GetSquadSlotDebugName( GetMyStrategySlot() ) );
-			EntityText(text_offset, tempstr, 0);
+			EntityText(text_offset, tempstr, 0,r,g,b);
 			text_offset++;
 		}
 	}
@@ -9548,7 +9553,6 @@ void CAI_BaseNPC::CollectShotStats( const Vector &vecShootOrigin, const Vector &
 #endif
 }
 
-#ifdef HL2_DLL
 //-----------------------------------------------------------------------------
 // Purpose: Return the actual position the NPC wants to fire at when it's trying
 //			to hit it's current enemy.
@@ -9740,8 +9744,9 @@ Vector CAI_BaseNPC::GetActualShootTrajectory( const Vector &shootOrigin )
 	// construct a manipulator 
 	CShotManipulator manipulator( shotDir );
 
-	// Apply appropriate accuracy.
 	bool bUsePerfectAccuracy = false;
+#ifdef HL2_DLL
+	// Apply appropriate accuracy.
 	if ( GetEnemy() && GetEnemy()->Classify() == CLASS_BULLSEYE )
 	{
 		CNPC_Bullseye *pBullseye = dynamic_cast<CNPC_Bullseye*>(GetEnemy()); 
@@ -9750,6 +9755,7 @@ Vector CAI_BaseNPC::GetActualShootTrajectory( const Vector &shootOrigin )
 			bUsePerfectAccuracy = true;
 		}
 	}
+#endif // HL2_DLL
 
 	if ( !bUsePerfectAccuracy )
 	{
@@ -9787,7 +9793,6 @@ Vector CAI_BaseNPC::GetActualShootTrajectory( const Vector &shootOrigin )
 
 	return shotDir;
 }
-#endif // HL2_DLL
 
 //-----------------------------------------------------------------------------
 

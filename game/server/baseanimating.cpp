@@ -2839,23 +2839,25 @@ int CBaseAnimating::DrawDebugTextOverlays(void)
 
 	if (m_debugOverlays & OVERLAY_TEXT_BIT) 
 	{
+		int r = 255, g = 255, b = 0;
+
 		// ----------------
 		// Print Look time
 		// ----------------
 		char tempstr[1024];
 		Q_snprintf(tempstr, sizeof(tempstr), "Sequence: (%3d) %s",GetSequence(), GetSequenceName( GetSequence() ) );
-		EntityText(text_offset,tempstr,0);
+		EntityText(text_offset,tempstr,0,r,g,b);
 		text_offset++;
 		const char *pActname = GetSequenceActivityName(GetSequence());
 		if ( pActname && strlen(pActname) )
 		{
 			Q_snprintf(tempstr, sizeof(tempstr), "Activity %s", pActname );
-			EntityText(text_offset,tempstr,0);
+			EntityText(text_offset,tempstr,0,r,g,b);
 			text_offset++;
 		}
 
 		Q_snprintf(tempstr, sizeof(tempstr), "Cycle: %.5f (%.5f)", (float)GetCycle(), m_flAnimTime.Get() );
-		EntityText(text_offset,tempstr,0);
+		EntityText(text_offset,tempstr,0,r,g,b);
 		text_offset++;
 	}
 
