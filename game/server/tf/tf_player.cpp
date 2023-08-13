@@ -2397,6 +2397,10 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 	if ( GetTeamNumber() <= LAST_SHARED_TEAM )
 		return;
 
+	// Can't change class if game is over
+	if ( TFGameRules()->State_Get() == GR_STATE_GAME_OVER )
+		return;
+
 	if ( TFGameRules()->IsDeathmatch() )
 		return;
 
