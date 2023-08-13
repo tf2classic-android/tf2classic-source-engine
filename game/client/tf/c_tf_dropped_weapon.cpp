@@ -5,6 +5,7 @@
 //=============================================================================//
 
 #include "cbase.h"
+#include "tf_gamerules.h"
 #include "glow_outline_effect.h"
 
 
@@ -79,17 +80,21 @@ void C_TFDroppedWeapon::ClientThink()
 {
 	bool bShouldGlow = false;
 
-	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
 
 	if ( pPlayer )
 	{
 		// Temp crutch for Occluded\Unoccluded glow parameters not working.
 		trace_t tr;
 		UTIL_TraceLine( GetAbsOrigin(), pPlayer->EyePosition(), MASK_VISIBLE, this, COLLISION_GROUP_NONE, &tr );
-		
+
 		if ( tr.fraction == 1.0f )
 		{
-			bShouldGlow = true;
+			// draw glow outline if its deathmatch or we're a mercenary.
+			if( TFGameRules() && TFGameRules()->IsDeathmatch() || pPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
+			{
+				bShouldGlow = true;
+			}
 		}
 	}
 
