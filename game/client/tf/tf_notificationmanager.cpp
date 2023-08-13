@@ -13,6 +13,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define TF_CLASSIC_VERSION "2.0.0-b4+"
+
 #define TF_VERSION_TEST_TIME "1473033600"
 #define TF_NOTIFICATION_TEST_TIME "1456596000"
 
@@ -486,6 +488,7 @@ int CTFNotificationManager::GetUnreadNotificationsCount()
 
 const char *CTFNotificationManager::GetVersionName( void )
 {
+#if 0 // we're not using this anymore
 	if ( g_pFullFileSystem->FileExists( "version.txt" ) )
 	{
 		static char szVersion[32];
@@ -513,10 +516,14 @@ const char *CTFNotificationManager::GetVersionName( void )
 	}
 
 	return "";
+#endif
+
+	return TF_CLASSIC_VERSION;
 }
 
 time_t CTFNotificationManager::GetVersionTimeStamp( void )
 {
+#if 0
 	if ( g_pFullFileSystem->FileExists( "version.txt" ) )
 	{
 		static char szVersion[32];
@@ -541,6 +548,7 @@ time_t CTFNotificationManager::GetVersionTimeStamp( void )
 			pFile = engine->ParseFile( pFile, szToken, sizeof( szToken ) );
 		}
 	}
+#endif
 
 	return 0;
 }
