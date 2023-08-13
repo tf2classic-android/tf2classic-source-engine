@@ -4628,8 +4628,9 @@ void C_TFPlayer::UpdateOverhealEffect( void )
 	{
 		if ( !m_pOverhealEffect )
 		{
-			const char *pszEffect = ConstructTeamParticle( "overhealedplayer_%s_pluses", GetTeamNumber(), false );
+			const char *pszEffect = ConstructTeamParticle( "overhealedplayer_%s_pluses", GetTeamNumber(), true );
 			m_pOverhealEffect = ParticleProp()->Create( pszEffect, PATTACH_ABSORIGIN_FOLLOW );
+			m_Shared.SetParticleToMercColor( m_pOverhealEffect );
 		}
 	}
 	else
