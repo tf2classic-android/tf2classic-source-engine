@@ -637,7 +637,7 @@ bool CWeaponMedigun::FindAndHealTargets( void )
 			{
 				int iBoostMax = floor( pTFPlayer->m_Shared.GetMaxBuffedHealth() * 0.95);
 
-				if ( weapon_medigun_charge_rate.GetFloat() )
+				if ( weapon_medigun_charge_rate.GetFloat() && ( pOwner && pOwner->IsPlayerClass( TF_CLASS_MEDIC ) ) )
 				{
 					float flChargeAmount = gpGlobals->frametime / weapon_medigun_charge_rate.GetFloat();
 
@@ -697,6 +697,10 @@ void CWeaponMedigun::AddCharge( float flAmount )
 	CTFPlayer *pPlayer = GetTFPlayerOwner();
 	CTFPlayer *pHealingTarget = ToTFPlayer( m_hHealingTarget );
 
+	// we're not a medic, abort.
+	if ( pPlayer && !pPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+		return;
+
 	if ( !m_bChargeRelease && flNewLevel >= 1.0 && m_flChargeLevel < 1.0 )
 	{
 		if ( pPlayer )
@@ -734,6 +738,10 @@ void CWeaponMedigun::DrainCharge( void )
 	{
 		CTFPlayer *pOwner = GetTFPlayerOwner();
 		if ( !pOwner )
+			return;
+
+		// we're not a medic, abort
+		if ( !pOwner->IsPlayerClass( TF_CLASS_MEDIC ) )
 			return;
 
 		float flChargeAmount = gpGlobals->frametime / weapon_medigun_chargerelease_rate.GetFloat();
@@ -959,6 +967,10 @@ void CWeaponMedigun::SecondaryAttack( void )
 {
 	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
+		return;
+
+	// we're not a medic
+	if ( !pOwner->IsPlayerClass( TF_CLASS_MEDIC ) )
 		return;
 
 	if ( !CanAttack() )
