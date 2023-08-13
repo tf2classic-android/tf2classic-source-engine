@@ -818,6 +818,7 @@ void CTFPlayer::PrecachePlayerModels( void )
 		PrecacheModel( "models/effects/bday_hat.mdl" );
 	}
 
+	PrecacheModel( TF_DROPPED_AMMO_PACK_MODEL );
 	PrecacheModel( TF_SPY_MASK_MODEL );
 	PrecacheModel( TF_POWERUP_SHIELD_MODEL );
 
@@ -4476,15 +4477,11 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	RemoveTeleportEffect();
 
-	if ( TFGameRules()->IsDeathmatch() )
+	DropWeapon( GetActiveTFWeapon(), true ); // Drop our weapon just like in new TF2
+
+	if ( !TFGameRules()->IsDeathmatch() )
 	{
-		// Drop our weapon in DM
-		DropWeapon( GetActiveTFWeapon(), true );
-	}
-	else
-	{
-		// Drop a pack with their leftover ammo
-		DropAmmoPack();
+		DropAmmoPack(); // Drop a pack with their leftover ammo
 	}
 
 	m_Shared.SetDesiredWeaponIndex( -1 );
@@ -4921,11 +4918,6 @@ void CTFPlayer::DropAmmoPack( void )
 	if ( !pWeapon )
 		return;
 
-	// We need to find bones on the world model, so switch the weapon to it.
-	const char *pszWorldModel = pWeapon->GetWorldModel();
-	pWeapon->SetModel( pszWorldModel );
-
-
 	// Find the position and angle of the weapons so the "ammo box" matches.
 	Vector vecPackOrigin;
 	QAngle vecPackAngles;
@@ -4938,7 +4930,7 @@ void CTFPlayer::DropAmmoPack( void )
 	int iMetal = MAX( 5, GetAmmoCount( TF_AMMO_METAL ) );
 
 	// Create the ammo pack.
-	CTFAmmoPack *pAmmoPack = CTFAmmoPack::Create( vecPackOrigin, vecPackAngles, this, pszWorldModel );
+	CTFAmmoPack *pAmmoPack = CTFAmmoPack::Create( vecPackOrigin, vecPackAngles, this, TF_DROPPED_AMMO_PACK_MODEL /*pszWorldModel*/ );
 	Assert( pAmmoPack );
 	if ( pAmmoPack )
 	{
@@ -4977,22 +4969,6 @@ void CTFPlayer::DropAmmoPack( void )
 		}
 
 		pAmmoPack->SetInitialVelocity( vecImpulse );
-
-		switch ( GetTeamNumber() )
-		{
-			case TF_TEAM_RED:
-				pAmmoPack->m_nSkin = 0;
-				break;
-			case TF_TEAM_BLUE:
-				pAmmoPack->m_nSkin = 1;
-				break;
-			case TF_TEAM_GREEN:
-				pAmmoPack->m_nSkin = 2;
-				break;
-			case TF_TEAM_YELLOW:
-				pAmmoPack->m_nSkin = 3;
-				break;
-		}
 
 		// Give the ammo pack some health, so that trains can destroy it.
 		pAmmoPack->SetCollisionGroup( COLLISION_GROUP_DEBRIS );
@@ -5099,6 +5075,10 @@ void CTFPlayer::DropFakeWeapon( CTFWeaponBase *pWeapon )
 //-----------------------------------------------------------------------------
 void CTFPlayer::DropWeapon( CTFWeaponBase *pWeapon, bool bKilled /*= false*/ )
 {
+	// Since weapon is hidden in loser state don't drop ammo pack.
+	if ( m_Shared.IsLoser() )
+		return;
+
 	if ( !pWeapon ||
 		pWeapon->GetTFWpnData().m_bDontDrop ||
 		!pWeapon->HasItemDefinition() ||
@@ -5116,8 +5096,8 @@ void CTFPlayer::DropWeapon( CTFWeaponBase *pWeapon, bool bKilled /*= false*/ )
 	int iClip = pWeapon->UsesClipsForAmmo1() ? pWeapon->Clip1() : WEAPON_NOCLIP;
 	int iAmmo = GetAmmoCount( pWeapon->GetPrimaryAmmoType() );
 
-	// Don't drop empty weapons
-	if ( iAmmo == 0 )
+	// Don't drop empty weapons in deathmatch
+	if ( iAmmo == 0 && TFGameRules()->IsDeathmatch() )
 		return;
 
 	// We need to find bones on the world model, so switch the weapon to it.

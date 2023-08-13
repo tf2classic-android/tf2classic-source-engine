@@ -1277,6 +1277,8 @@ public:
 #define TF_SPY_MASK_MODEL "models/player/items/spy_mask.mdl"
 #define TF_POWERUP_SHIELD_MODEL "models/items/powerup_merc_shield.mdl"
 
+// Dropped ammo pack model after player dies
+#define TF_DROPPED_AMMO_PACK_MODEL "models/items/ammopack_medium.mdl"
 
 #define IN_TYPING ( 1 << 31 )
 
