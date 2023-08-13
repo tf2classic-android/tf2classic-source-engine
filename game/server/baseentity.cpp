@@ -1023,14 +1023,14 @@ int CBaseEntity::DrawDebugTextOverlays(void)
 
 		if( GetModelName() != NULL_STRING || GetBaseAnimating() )
 		{
-			Q_snprintf(tempstr, sizeof(tempstr), "Model:%s", STRING(GetModelName()) );
+			Q_snprintf(tempstr, sizeof(tempstr), "Model: %s", STRING(GetModelName()) );
 			EntityText(offset,tempstr,0,255,255,0);
 			offset++;
 		}
 
 		if( m_hDamageFilter.Get() != NULL )
 		{
-			Q_snprintf( tempstr, sizeof(tempstr), "DAMAGE FILTER:%s", m_hDamageFilter->GetDebugName() );
+			Q_snprintf( tempstr, sizeof(tempstr), "DAMAGE FILTER: %s", m_hDamageFilter->GetDebugName() );
 			EntityText( offset,tempstr,0,r,g,b );
 			offset++;
 		}
@@ -1049,11 +1049,15 @@ int CBaseEntity::DrawDebugTextOverlays(void)
 			}
 		}
 
-		Q_snprintf(tempstr, sizeof(tempstr), "Flags :%d", GetFlags() );
+		Q_snprintf(tempstr, sizeof(tempstr), "SpawnFlags: %d", GetSpawnFlags() );
 		EntityText(offset,tempstr,0);
 		offset++;
 
-		Q_snprintf(tempstr, sizeof(tempstr), "Effects :%d (EF_NODRAW=%d)", GetEffects(), GetEffects() & EF_NODRAW );
+		Q_snprintf(tempstr, sizeof(tempstr), "Flags: %d", GetFlags() );
+		EntityText(offset,tempstr,0);
+		offset++;
+
+		Q_snprintf(tempstr, sizeof(tempstr), "Effects: %d ( EF_NODRAW = %d )", GetEffects(), GetEffects() & EF_NODRAW );
 		EntityText(offset,tempstr,0);
 		offset++;
 	}
