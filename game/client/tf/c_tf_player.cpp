@@ -260,6 +260,7 @@ private:
 	bool  m_bFadingOut;
 	bool  m_bGib;
 	bool  m_bBurning;
+	bool  m_bElectrocuted;
 	bool  m_bOnGround;
 	float m_flInvisibilityLevel;
 	float m_flUncloakCompleteTime;
@@ -278,6 +279,7 @@ IMPLEMENT_CLIENTCLASS_DT_NOBASE( C_TFRagdoll, DT_TFRagdoll, CTFRagdoll )
 	RecvPropInt( RECVINFO( m_nForceBone ) ),
 	RecvPropBool( RECVINFO( m_bGib ) ),
 	RecvPropBool( RECVINFO( m_bBurning ) ),
+	RecvPropBool( RECVINFO( m_bElectrocuted ) ),
 	RecvPropBool( RECVINFO( m_bOnGround ) ),
 	RecvPropFloat( RECVINFO( m_flInvisibilityLevel ) ),
 	RecvPropInt( RECVINFO( m_iDamageCustom ) ),
@@ -295,6 +297,7 @@ C_TFRagdoll::C_TFRagdoll()
 	m_fDeathTime = -1;
 	m_bFadingOut = false;
 	m_bGib = false;
+	m_bElectrocuted = false;
 	m_bBurning = false;
 	m_bOnGround = false;
 	m_flInvisibilityLevel = 0.0f;
@@ -621,6 +624,14 @@ void C_TFRagdoll::CreateTFRagdoll(void)
 	{
 		m_flBurnEffectStartTime = gpGlobals->curtime;
 		ParticleProp()->Create( "burningplayer_corpse", PATTACH_ABSORIGIN_FOLLOW );
+	}
+
+	if ( m_bElectrocuted )
+	{
+		const char *pszEffectName = ConstructTeamParticle( "electrocuted_%s", m_iTeam );
+
+		ParticleProp()->Create( pszEffectName, PATTACH_ABSORIGIN_FOLLOW );
+		C_BaseEntity::EmitSound( "TFPlayer.MedicChargedDeath" );
 	}
 
 	if ( m_flInvisibilityLevel != 0.0f )

@@ -183,6 +183,7 @@ public:
 		m_iPlayerIndex.Set( TF_PLAYER_INDEX_NONE );
 		m_bGib = false;
 		m_bBurning = false;
+		m_bElectrocuted = false;
 		m_bOnGround = false;
 		m_flInvisibilityLevel = 0.0f;
 		m_iDamageCustom = 0;
@@ -202,6 +203,7 @@ public:
 	CNetworkVector( m_vecRagdollOrigin );
 	CNetworkVar( bool, m_bGib );
 	CNetworkVar( bool, m_bBurning );
+	CNetworkVar( bool, m_bElectrocuted );
 	CNetworkVar( bool, m_bOnGround );
 	CNetworkVar( float, m_flInvisibilityLevel );
 	CNetworkVar( int, m_iDamageCustom );
@@ -219,6 +221,7 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CTFRagdoll, DT_TFRagdoll )
 	SendPropInt( SENDINFO( m_nForceBone ) ),
 	SendPropBool( SENDINFO( m_bGib ) ),
 	SendPropBool( SENDINFO( m_bBurning ) ),
+	SendPropBool( SENDINFO( m_bElectrocuted ) ),
 	SendPropBool( SENDINFO( m_bOnGround ) ),
 	SendPropFloat( SENDINFO( m_flInvisibilityLevel ), 8, 0, 0.0f, 1.0f ),
 	SendPropInt( SENDINFO( m_iDamageCustom ) ),
@@ -4463,6 +4466,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	// we want the rag doll to burn if the player was burning and was not a pryo (who only burns momentarily)
 	bool bBurning = m_Shared.InCond( TF_COND_BURNING ) && ( TF_CLASS_PYRO != GetPlayerClass()->GetClassIndex() );
 	bool bOnGround = ( GetFlags() & FL_ONGROUND ) != 0;
+	bool bElectrocuted = false;
 	float flInvis = m_Shared.m_flInvisibility;
 
 	if( TFGameRules()->IsDeathmatch() )
@@ -4517,6 +4521,24 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 		CTakeDamageInfo newInfo( pInflictor, pAttacker, (float)pObject->GetHealth(), DMG_GENERIC, TF_DMG_BUILDING_CARRIED );
 		pObject->Killed( newInfo );
+	}
+
+	if ( IsPlayerClass( TF_CLASS_MEDIC ) )
+	{
+		CWeaponMedigun* pMedigun = assert_cast<CWeaponMedigun*>( Weapon_OwnsThisID( TF_WEAPON_MEDIGUN ) );
+		float flChargeLevel = pMedigun ? pMedigun->GetChargeLevel() : 0.0f;
+		bool bCharged = false;
+
+		if ( flChargeLevel >= 1.0f )
+			bCharged = true;
+
+		if ( bCharged )
+		{
+			bElectrocuted = true;
+
+			if( pAttacker && pAttacker != this && pAttacker->IsPlayer() )
+				CTF_GameStats.Event_PlayerAwardBonusPoints( ToTFPlayer(pAttacker), this, 3 );
+		}
 	}
 
 	// Remove all items...
@@ -4641,7 +4663,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	// Create the ragdoll entity.
 	if ( bGib || bRagdoll )
 	{
-		CreateRagdollEntity( bGib, bBurning, bOnGround, flInvis, info.GetDamageCustom() );
+		CreateRagdollEntity( bGib, bBurning, bElectrocuted, bOnGround, flInvis, info.GetDamageCustom() );
 	}
 
 	// Don't overflow the value for this.
@@ -6548,13 +6570,13 @@ void CTFPlayer::PlayerUse( void )
 //-----------------------------------------------------------------------------
 void CTFPlayer::CreateRagdollEntity( void )
 {
-	CreateRagdollEntity( false, false, false, 0.0f, 0 );
+	CreateRagdollEntity( false, false, false, false, 0.0f, 0 );
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Create a ragdoll entity to pass to the client.
 //-----------------------------------------------------------------------------
-void CTFPlayer::CreateRagdollEntity( bool bGib, bool bBurning, bool bOnGround, float flInvisLevel, int iDamageCustom )
+void CTFPlayer::CreateRagdollEntity( bool bGib, bool bBurning, bool bElectrocuted, bool bOnGround, float flInvisLevel, int iDamageCustom )
 {
 	// If we already have a ragdoll destroy it.
 	CTFRagdoll *pRagdoll = dynamic_cast<CTFRagdoll*>( m_hRagdoll.Get() );
@@ -6577,6 +6599,7 @@ void CTFPlayer::CreateRagdollEntity( bool bGib, bool bBurning, bool bOnGround, f
 		pRagdoll->m_iPlayerIndex.Set( entindex() );
 		pRagdoll->m_bGib = bGib;
 		pRagdoll->m_bBurning = bBurning;
+		pRagdoll->m_bElectrocuted = bElectrocuted;
 		pRagdoll->m_bOnGround = bOnGround;
 		pRagdoll->m_flInvisibilityLevel = flInvisLevel;
 		pRagdoll->m_iDamageCustom = iDamageCustom;
