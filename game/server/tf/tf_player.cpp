@@ -7288,6 +7288,14 @@ void CTFPlayer::Taunt( void )
 			m_flTauntAttackTime = gpGlobals->curtime + 2.2;
 			m_iTauntAttack = TF_TAUNT_MEDIC_STUN;
 		}
+		else if ( V_stricmp( szResponse, "scenes/player/medic/low/taunt06.vcd" ) == 0 )
+		{
+			m_flTauntAttackTime = gpGlobals->curtime + 0.80f;
+
+			const char *pszParticleEffect = ( GetTeamNumber() == TF_TEAM_RED ? "healhuff_red" : "healhuff_blu" );
+			DispatchParticleEffect( pszParticleEffect, PATTACH_POINT_FOLLOW, this, "eyes" );
+			m_iTauntAttack = TF_TAUNT_MEDIC_OKTOBERFEST;
+		}
 	}
 
 	pExpresser->DisallowMultipleScenes();
@@ -7504,6 +7512,19 @@ void CTFPlayer::DoTauntAttack( void )
 			}
 		}
 
+		break;
+	}
+	case TF_TAUNT_MEDIC_OKTOBERFEST:
+	{
+		int iHealed = TakeHealth( 1.0f, DMG_GENERIC );
+
+		if ( iHealed > 0 )
+		{
+			CTF_GameStats.Event_PlayerHealedOther( this, iHealed );
+		}
+
+		m_flTauntAttackTime = gpGlobals->curtime + 0.50f;
+		m_iTauntAttack = TF_TAUNT_MEDIC_OKTOBERFEST;
 		break;
 	}
 	}
