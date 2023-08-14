@@ -363,7 +363,7 @@ void ClientModeShared::Init()
  	Assert( m_pReplayReminderPanel );
 #endif
 
-	ListenForGameEvent( "player_connect_client" );
+	ListenForGameEvent( "player_connect" );
 	ListenForGameEvent( "player_disconnect" );
 	ListenForGameEvent( "player_team" );
 	ListenForGameEvent( "server_cvar" );
@@ -991,7 +991,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 
 	const char *eventname = event->GetName();
 
-	if ( Q_strcmp( "player_connect_client", eventname ) == 0 )
+	if ( Q_strcmp( "player_connect", eventname ) == 0 )
 	{
 		if ( !hudChat )
 			return;
