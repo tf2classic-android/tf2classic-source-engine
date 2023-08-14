@@ -154,6 +154,7 @@ protected:
 	virtual void ApplySchemeSettings(vgui::IScheme *scheme);
 	virtual void Paint( void );
 	virtual bool ShouldDraw( void );
+	virtual bool CanAnimate() const override { return false; };
 
 private:
 	int m_iScopeTexture[4];
