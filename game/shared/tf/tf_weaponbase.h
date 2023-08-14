@@ -154,6 +154,8 @@ class CTFWeaponBase : public CBaseCombatWeapon
 #endif
 	bool IsViewModelFlipped( void );
 
+	virtual void DepleteAmmo( void ) {} // accessor for consumables
+
 	virtual void ReapplyProvision( void );
 	virtual void OnActiveStateChanged( int iOldState );
 	virtual void UpdateOnRemove( void );
