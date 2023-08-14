@@ -328,9 +328,10 @@ void CHealthAccountPanel::FireGameEvent( IGameEvent *event )
 				pszFormat = iAmount < 100 ? "healthgained_%s" : "healthgained_%s_large";
 			}
 
-			const char *pszParticle = ConstructTeamParticle( pszFormat, iTeam, false, g_aTeamNamesShort );
+			const char *pszParticle = ConstructTeamParticle( pszFormat, iTeam, true, g_aTeamNamesShort );
 
-			pPlayer->ParticleProp()->Create( pszParticle, PATTACH_POINT, "head" );
+			CNewParticleEffect *pEffect = pPlayer->ParticleProp()->Create( pszParticle, PATTACH_POINT, "head" );
+			pPlayer->m_Shared.SetParticleToMercColor( pEffect );
 		}
 	}
 	else

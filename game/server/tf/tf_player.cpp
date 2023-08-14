@@ -762,8 +762,8 @@ void CTFPlayer::Precache()
 	PrecacheTeamParticles( "critgun_weaponmodel_%s", true, g_aTeamNamesShort );
 	PrecacheTeamParticles( "critgun_weaponmodel_%s_glow", true, g_aTeamNamesShort );
 	PrecacheTeamParticles( "healthlost_%s", false, g_aTeamNamesShort );
-	PrecacheTeamParticles( "healthgained_%s", false, g_aTeamNamesShort );
-	PrecacheTeamParticles( "healthgained_%s_large", false, g_aTeamNamesShort );
+	PrecacheTeamParticles( "healthgained_%s", true, g_aTeamNamesShort );
+	PrecacheTeamParticles( "healthgained_%s_large", true, g_aTeamNamesShort );
 	PrecacheParticleSystem( "blood_spray_red_01" );
 	PrecacheParticleSystem( "blood_spray_red_01_far" );
 	PrecacheParticleSystem( "water_blood_impact_red_01" );
