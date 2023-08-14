@@ -2762,8 +2762,8 @@ int CTFPlayerShared::GetSequenceForDeath( CBaseAnimating *pAnim, int iDamageCust
 		pszSequence = "primary_death_headshot";
 		break;
 	case TF_DMG_CUSTOM_BURNING:
-		// Disabled until we get shorter burning death animations.
-		//pszSequence = "primary_death_burning";
+		// We would like to get shorter burning death animations, but still enable them anyway.
+		pszSequence = "primary_death_burning";
 		break;
 	}
 
