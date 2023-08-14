@@ -146,7 +146,11 @@ void C_TFObjectiveResource::SetCappingTeam( int index, int team )
 			if ( iLocalTeam != team )
 			{
 				CLocalPlayerFilter filter;
-				C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Announcer.ControlPointContested" );
+
+				if( GetOwningTeam( index ) == iLocalTeam )
+					C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Announcer.ControlPointContested" );
+				else
+					C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Announcer.ControlPointContested_Neutral" );
 			}
 		}
 	}
