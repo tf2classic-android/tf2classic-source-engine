@@ -3970,12 +3970,12 @@ void CTFGameRules::SendWinPanelInfo( void )
 			case TF_TEAM_GREEN:
 				if ( !IsFourTeamGame() )
 					break;
-				iGreenScorePrev = ( iGreenScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? (iBlueScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
+				iGreenScorePrev = ( iGreenScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? (iGreenScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
 				break;
 			case TF_TEAM_YELLOW:
 				if ( !IsFourTeamGame() )
 					break;
-				iYellowScorePrev = ( iYellowScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? (iRedScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
+				iYellowScorePrev = ( iYellowScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? (iYellowScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
 				break;
 
 			case TEAM_UNASSIGNED:
