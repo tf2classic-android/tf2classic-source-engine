@@ -54,6 +54,7 @@ public:
 	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_MINIGUN; }
 	virtual void	PrimaryAttack();
 	virtual void	SecondaryAttack();
+	void			MinigunModelBrassEject();
 	void			SharedAttack();
 	virtual void	WeaponIdle();
 	virtual bool	SendWeaponAnim( int iActivity );
@@ -123,14 +124,6 @@ private:
 	int				m_iMinigunSoundCur;			// the enum value of the weapon sound currently being played
 
 #ifdef CLIENT_DLL
-	void StartBrassEffect();
-	void StopBrassEffect();
-	void HandleBrassEffect();
-
-	EHANDLE				m_hBrassEffectHost;
-	CNewParticleEffect *m_pEjectBrassEffect;
-	int					m_iEjectBrassAttachment;
-
 	void StartMuzzleEffect();
 	void StopMuzzleEffect();
 	void HandleMuzzleEffect();
