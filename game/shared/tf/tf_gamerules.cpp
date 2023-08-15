@@ -851,10 +851,10 @@ void CTFClassLimits::Spawn(void)
 	BaseClass::Spawn();
 }
 
-class CArenaLogic : public CBaseEntity
+class CArenaLogic : public CPointEntity
 {
 public:
-	DECLARE_CLASS( CArenaLogic, CBaseEntity );
+	DECLARE_CLASS( CArenaLogic, CPointEntity );
 	DECLARE_DATADESC();
 
 	CArenaLogic();
@@ -922,10 +922,10 @@ void CArenaLogic::ArenaLogicThink( void )
 }
 
 
-class CKothLogic : public CBaseEntity
+class CKothLogic : public CPointEntity
 {
 public:
-	DECLARE_CLASS( CKothLogic, CBaseEntity );
+	DECLARE_CLASS( CKothLogic, CPointEntity );
 	DECLARE_DATADESC();
 
 	CKothLogic();
@@ -1113,19 +1113,19 @@ void CKothLogic::InputSetYellowTimer( inputdata_t &inputdata )
 }
 
 
-class CMultipleEscort : public CBaseEntity
+class CMultipleEscort : public CPointEntity
 {
 public:
-	DECLARE_CLASS( CMultipleEscort, CBaseEntity );
+	DECLARE_CLASS( CMultipleEscort, CPointEntity );
 };
 
 LINK_ENTITY_TO_CLASS( tf_logic_multiple_escort, CMultipleEscort );
 
 
-class CHybridMap_CTF_CP : public CBaseEntity
+class CHybridMap_CTF_CP : public CPointEntity
 {
 public:
-	DECLARE_CLASS( CHybridMap_CTF_CP, CBaseEntity );
+	DECLARE_CLASS( CHybridMap_CTF_CP, CPointEntity );
 	void	Spawn( void );
 };
 
