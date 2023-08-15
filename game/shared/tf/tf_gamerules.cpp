@@ -693,10 +693,10 @@ void CTFGameRulesProxy::Activate()
 	BaseClass::Activate();
 }
 
-class CTFLogicDeathmatch : public CBaseEntity
+class CTFLogicDeathmatch : public CPointEntity
 {
 public:
-	DECLARE_CLASS(CTFLogicDeathmatch, CBaseEntity);
+	DECLARE_CLASS(CTFLogicDeathmatch, CPointEntity);
 	void	Spawn(void);
 };
 
@@ -707,10 +707,10 @@ void CTFLogicDeathmatch::Spawn(void)
 	BaseClass::Spawn();
 }
 
-class CTFLogicVIP : public CBaseEntity
+class CTFLogicVIP : public CPointEntity
 {
 public:
-	DECLARE_CLASS( CTFLogicVIP, CBaseEntity );
+	DECLARE_CLASS( CTFLogicVIP, CPointEntity );
 	DECLARE_DATADESC();
 
 	void	Spawn(void);
@@ -1135,6 +1135,155 @@ void CHybridMap_CTF_CP::Spawn( void )
 {
 	BaseClass::Spawn();
 }
+
+class CCPTimerLogic : public CPointEntity
+{
+public:
+	DECLARE_CLASS( CCPTimerLogic, CPointEntity );
+	DECLARE_DATADESC();
+
+	CCPTimerLogic::CCPTimerLogic();
+
+	void			Spawn(void);
+	void			Think( void );
+	virtual void	InputRoundSpawn( inputdata_t &inputdata );
+
+	COutputEvent m_onCountdownStart;
+	COutputEvent m_onCountdown15SecRemain;
+	COutputEvent m_onCountdown10SecRemain;
+	COutputEvent m_onCountdown5SecRemain;
+	COutputEvent m_onCountdownEnd;
+
+private:
+
+	string_t					m_iszControlPointName;
+	int							m_nTimerLength;
+	CHandle<CTeamControlPoint>	m_hPoint;
+
+	bool						m_bRestartTimer;
+	CountdownTimer				m_TimeRemaining;
+
+	bool						m_bOn15SecRemain;
+	bool						m_bOn10SecRemain;
+	bool						m_bOn5SecRemain;
+
+};
+
+BEGIN_DATADESC( CCPTimerLogic )
+
+DEFINE_KEYFIELD( m_iszControlPointName, FIELD_STRING, "controlpoint" ),
+DEFINE_KEYFIELD( m_nTimerLength, FIELD_INTEGER, "timer_length" ),
+
+// Inputs.
+DEFINE_INPUTFUNC( FIELD_VOID, "RoundSpawn", InputRoundSpawn ),
+
+// Outputs.
+DEFINE_OUTPUT( m_onCountdownStart, "OnCountdownStart" ),
+DEFINE_OUTPUT( m_onCountdown15SecRemain, "OnCountdown15SecRemain" ),
+DEFINE_OUTPUT( m_onCountdown10SecRemain, "OnCountdown10SecRemain" ),
+DEFINE_OUTPUT( m_onCountdown5SecRemain, "OnCountdown5SecRemain" ),
+DEFINE_OUTPUT( m_onCountdownEnd, "OnCountdownEnd" ),
+
+END_DATADESC()
+
+CCPTimerLogic::CCPTimerLogic( )
+{
+	m_bOn5SecRemain = true;
+	m_bOn10SecRemain = true;
+	m_bOn15SecRemain = true;
+	m_bRestartTimer = true;
+	SetContextThink( &CCPTimerLogic::Think, gpGlobals->curtime + 0.15, "CCPTimerLogicThink" );
+}
+
+void CCPTimerLogic::Spawn( void )
+{
+	BaseClass::Spawn();
+}
+
+void CCPTimerLogic::Think( void )
+{
+	if ( !TFGameRules() || !ObjectiveResource() )
+		return;
+
+	float flUnknown = 0.15f;
+	if ( TFGameRules()->State_Get() == GR_STATE_TEAM_WIN )
+	{
+		flUnknown = gpGlobals->curtime + 0.15f;
+		m_TimeRemaining.Invalidate();
+		SetNextThink( flUnknown );
+	}
+
+	if ( m_hPoint )
+	{
+		int index = m_hPoint->GetPointIndex();
+
+		if ( TFGameRules()->TeamMayCapturePoint( TF_TEAM_BLUE, index ) )
+		{
+			if ( m_TimeRemaining.GetRemainingTime() <= 0.0 && m_bRestartTimer )
+			{
+				m_TimeRemaining.Start( flUnknown + m_nTimerLength );
+				m_onCountdownStart.FireOutput( this, this );
+				ObjectiveResource()->SetCPTimerTime( index, gpGlobals->curtime + m_nTimerLength );
+				m_bRestartTimer = false;
+			}
+			else
+			{
+				if ( flUnknown <= m_TimeRemaining.GetRemainingTime() )
+				{
+					// I don't think is actually doing anything
+					float flTime = m_TimeRemaining.GetRemainingTime() - flUnknown;
+					if ( flTime <= 15.0 && m_bOn15SecRemain )
+					{
+						m_bOn15SecRemain = false;
+					}
+					else if ( flTime <= 10.0 && m_bOn10SecRemain )
+					{
+						m_bOn10SecRemain = false;
+					}
+					else if ( flTime <= 5.0 && m_bOn5SecRemain )
+					{
+						m_bOn5SecRemain = false;
+					}
+				}
+				else
+				{
+					if ( ObjectiveResource()->GetNumControlPoints() <= index || ObjectiveResource()->GetCappingTeam( index ) == TEAM_UNASSIGNED )
+					{
+						m_TimeRemaining.Invalidate();
+						m_onCountdownEnd.FireOutput( this, this );
+						m_bOn15SecRemain = true;
+						m_bOn10SecRemain = true;
+						m_bOn5SecRemain = true;
+						m_bRestartTimer = true;
+						ObjectiveResource()->SetCPTimerTime( index, -1.0f );
+						SetNextThink( TICK_NEVER_THINK );
+					}
+				}
+			}
+		}
+		else
+		{
+			m_TimeRemaining.Invalidate();
+			m_bRestartTimer = true;
+		}
+	}
+	SetNextThink( gpGlobals->curtime + 0.15f );
+}
+
+void CCPTimerLogic::InputRoundSpawn( inputdata_t &inputdata )
+{
+	if ( m_iszControlPointName != NULL_STRING )
+	{
+		// We need to re-find our control point, because they're recreated over round restarts
+		m_hPoint = dynamic_cast<CTeamControlPoint *>( gEntList.FindEntityByName( NULL, m_iszControlPointName ) );
+		if ( !m_hPoint )
+		{
+			Warning("%s failed to find control point named '%s'\n", GetClassname(), STRING(m_iszControlPointName) );
+		}
+	}
+}
+
+LINK_ENTITY_TO_CLASS( tf_logic_cp_timer, CCPTimerLogic );
 
 #endif
 
