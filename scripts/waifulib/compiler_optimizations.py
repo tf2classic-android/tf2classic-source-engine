@@ -48,7 +48,7 @@ LINKFLAGS = {
 CFLAGS = {
 	'common': {
 		# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-		'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-'],
+		'msvc':    ['/D_USING_V110_SDK71_', '/Z7', '/FS', '/Zc:threadSafeInit-'],
 		'clang':   ['-fno-strict-aliasing', '-fvisibility=hidden'],
 		'gcc':     ['-fno-strict-aliasing', '-fvisibility=hidden'],
 		'owcc':	   ['-fno-short-enum', '-ffloat-store', '-g0']
@@ -66,14 +66,14 @@ CFLAGS = {
 		'default': ['-O3']
 	},
 	'release': {
-		'msvc':    ['/O2', '/MT'],
+		'msvc':    ['/O2', '/MT', '/Gy', '/GF', '/fp:fast', '/Ot', '/Ob2', '/Z7', '/Zm200', '/Zo', '/Oy-', '/Gw', '/Zc:inline', '/WX-'],
 		'owcc':    ['-O3', '-fomit-leaf-frame-pointer', '-fomit-frame-pointer', '-finline-functions', '-finline-limit=512'],
-		'default': ['-O2', '-funsafe-math-optimizations', '-ftree-vectorize', '-ffast-math']
+		'default': ['-O2', '-funsafe-math-optimizations', '-ftree-vectorize', '-ffast-math', '-Wno-narrowing']
 	},
 	'debug': {
 		'msvc':    ['/Od', '/MTd'],
 		'owcc':    ['-g', '-O0', '-fno-omit-frame-pointer', '-funwind-tables', '-fno-omit-leaf-frame-pointer'],
-		'default': ['-g', '-O0'] #, '-ftree-vectorize', '-ffast-math']
+		'default': ['-g', '-O0', '-Wno-narrowing'] #, '-ftree-vectorize', '-ffast-math']
 	},
 	'sanitize': {
 		'msvc':    ['/Od', '/RTC1', '/MT'],
