@@ -3650,6 +3650,14 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			}
 		}
 
+		float flNonBurning = info.GetDamage();
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flNonBurning, mult_dmg_vs_nonburning );
+
+		if ( !m_Shared.InCond( TF_COND_BURNING ) )
+		{
+			info.SetDamage( flNonBurning );
+		}
+
 		int nCritWhileAirborne = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, nCritWhileAirborne, crit_while_airborne );
 
