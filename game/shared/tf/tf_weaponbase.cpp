@@ -489,6 +489,16 @@ void CTFWeaponBase::UpdateViewModel( void )
 		vm->RemoveViewmodelAddon();
 	}
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: Get the viewmodel offset for min-viewmodels
+//-----------------------------------------------------------------------------
+const char *C_TFWeaponBase::GetViewModelOffset( void )
+{
+	const char *pOffset = "\0";
+	CALL_ATTRIB_HOOK_STRING( pOffset, min_viewmodel_offset );
+	return pOffset;
+}
 #endif
 
 const char *CTFWeaponBase::DetermineViewModelType( const char *vModel ) const
@@ -628,6 +638,10 @@ bool CTFWeaponBase::Deploy( void )
 		CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
 		if ( !pPlayer )
 			return false;
+
+#ifdef CLIENT_DLL // calculate the min offsets here.
+		pPlayer->CalcMinViewmodelOffset();
+#endif
 
 		// Overrides the anim length for calculating ready time.
 		// Don't override primary attacks that are already further out than this. This prevents

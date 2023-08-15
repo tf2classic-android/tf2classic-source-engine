@@ -61,6 +61,8 @@ public:
 		return BaseClass::ShouldPredict();
 	}
 
+	void CalcMinViewmodelOffset( C_TFPlayer *owner );
+
 	virtual void StandardBlendingRules( CStudioHdr *hdr, Vector pos[], Quaternion q[], float currentTime, int boneMask );
 	virtual void ProcessMuzzleFlashEvent( void );
 
@@ -104,6 +106,8 @@ private:
 	CTFViewModel( const CTFViewModel & ); // not defined, not accessible
 
 	QAngle m_vLoweredWeaponOffset;
+
+	Vector m_vOffset;
 
 #endif
 

@@ -159,6 +159,8 @@ public:
 	virtual void CalcDeathCamView(Vector& eyeOrigin, QAngle& eyeAngles, float& fov);
 	virtual Vector GetChaseCamViewOffset( CBaseEntity *target );
 
+	void CalcMinViewmodelOffset( void ); // Minimal Viewmodels
+
 	void ClientPlayerRespawn( void );
 
 	void CreateSaveMeEffect( void );

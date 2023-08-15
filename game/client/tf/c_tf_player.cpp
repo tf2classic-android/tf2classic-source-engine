@@ -3872,6 +3872,21 @@ void C_TFPlayer::AddDecal( const Vector& rayStart, const Vector& rayEnd,
 }
 
 //-----------------------------------------------------------------------------
+// Minimal viewmodels
+//-----------------------------------------------------------------------------
+void C_TFPlayer::CalcMinViewmodelOffset( void )
+{
+	for ( int i = 0; i < MAX_VIEWMODELS; i++ )
+	{
+		C_TFViewModel *vm = dynamic_cast<C_TFViewModel *>( GetViewModel( i ) );
+		if ( !vm )
+			continue;
+
+		vm->CalcMinViewmodelOffset( this );
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Called every time the player respawns
 //-----------------------------------------------------------------------------
 void C_TFPlayer::ClientPlayerRespawn( void )
@@ -3906,6 +3921,8 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 	}
 
 	UpdateVisibility();
+
+	CalcMinViewmodelOffset();
 
 	m_hFirstGib = NULL;
 	m_hSpawnedGibs.Purge();

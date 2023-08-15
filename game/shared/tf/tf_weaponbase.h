@@ -142,6 +142,8 @@ class CTFWeaponBase : public CBaseCombatWeapon
 
 #ifdef CLIENT_DLL
 	virtual void UpdateViewModel( void );
+
+	const char *GetViewModelOffset( void );
 #endif
 
 	virtual void Drop( const Vector &vecVelocity );
