@@ -13,7 +13,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define TF_CLASSIC_VERSION "2.0.0-b4+"
+#define TF_CLASSIC_VERSION "2.0.0b4+"
 
 #define TF_VERSION_TEST_TIME "1473033600"
 #define TF_NOTIFICATION_TEST_TIME "1456596000"
