@@ -17,6 +17,9 @@
 #define CSniperDot C_SniperDot
 #endif
 
+extern float GetChargePerSecValue( void );
+extern float GetUnchargePerSecValue( void );
+
 //=============================================================================
 //
 // Sniper Rifle Laser Dot class.

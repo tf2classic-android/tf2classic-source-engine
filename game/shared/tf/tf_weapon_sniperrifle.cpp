@@ -21,8 +21,7 @@
 #include "toolframework_client.h"
 #include "input.h"
 
-// For TFGameRules() and Player resources
-#include "tf_gamerules.h"
+// For Player resources
 #include "c_tf_playerresource.h"
 
 // forward declarations
@@ -31,8 +30,15 @@ void ToolFramework_RecordMaterialParams( IMaterial *pMaterial );
 ConVar tf_sniper_fullcharge_bell( "tf_sniper_fullcharge_bell", "0", FCVAR_ARCHIVE );
 #endif
 
-#define TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC	50.0
-#define TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC	75.0
+// For TFGameRules()
+#include "tf_gamerules.h"
+
+#define TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC		50.0
+#define TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC		75.0
+
+#define TF_WEAPON_SNIPERRIFLE_CHARGE_DM_PER_SEC		100.0
+#define TF_WEAPON_SNIPERRIFLE_UNCHARGE_DM_PER_SEC	180.0
+
 #define	TF_WEAPON_SNIPERRIFLE_DAMAGE_MIN		50
 #define TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX		150
 #define TF_WEAPON_SNIPERRIFLE_RELOAD_TIME		1.5f
@@ -45,6 +51,28 @@ ConVar tf_sniper_fullcharge_bell( "tf_sniper_fullcharge_bell", "0", FCVAR_ARCHIV
 #define SNIPER_DOT_SPRITE_GREEN		"effects/sniperdot_green.vmt"
 #define SNIPER_DOT_SPRITE_YELLOW	"effects/sniperdot_yellow.vmt"
 #define SNIPER_DOT_SPRITE_CLEAR		"effects/sniperdot_clear.vmt"
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+float GetChargePerSecValue( void )
+{
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		return TF_WEAPON_SNIPERRIFLE_CHARGE_DM_PER_SEC;
+
+	return TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+float GetUnchargePerSecValue( void )
+{
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		return TF_WEAPON_SNIPERRIFLE_UNCHARGE_DM_PER_SEC;
+
+	return TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC;
+}
 
 //=============================================================================
 //
@@ -318,7 +346,7 @@ void CTFSniperRifle::ItemPostFrame( void )
 		// Don't start charging in the time just after a shot before we unzoom to play rack anim.
 		if ( pPlayer->m_Shared.InCond( TF_COND_AIMING ) && !m_bRezoomAfterShot )
 		{
-			m_flChargedDamage = MIN( m_flChargedDamage + gpGlobals->frametime * TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC, TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX );
+			m_flChargedDamage = MIN( m_flChargedDamage + gpGlobals->frametime * GetChargePerSecValue(), TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX );
 
 #ifdef CLIENT_DLL
 			if ( m_flChargedDamage >= TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX && !m_bDinged )
@@ -334,7 +362,7 @@ void CTFSniperRifle::ItemPostFrame( void )
 		}
 		else
 		{
-			m_flChargedDamage = MAX( 0, m_flChargedDamage - gpGlobals->frametime * TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC );
+			m_flChargedDamage = MAX( 0, m_flChargedDamage - gpGlobals->frametime * GetUnchargePerSecValue() );
 		}
 	}
 
@@ -902,7 +930,7 @@ int CSniperDot::DrawModel( int flags )
 	pRenderContext->Bind( m_hSpriteMaterial, this );
 
 	float flLifeTime = gpGlobals->curtime - m_flChargeStartTime;
-	float flStrength = RemapValClamped( flLifeTime, 0.0, TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX / TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC, 0.1, 1.0 );
+	float flStrength = RemapValClamped( flLifeTime, 0.0, TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX / GetChargePerSecValue(), 0.1, 1.0 );
 	
 	color32 innercolor = { 255, 255, 255, 255 };
 	color32 outercolor = { 255, 255, 255, 128 };
