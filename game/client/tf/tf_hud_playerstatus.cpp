@@ -17,6 +17,7 @@
 #include <vgui/IImage.h>
 #include <vgui_controls/Label.h>
 
+#include "tf_gamerules.h"
 #include "hud_numericdisplay.h"
 #include "c_team.h"
 #include "c_tf_player.h"
@@ -612,7 +613,7 @@ void CTFClassImage::SetClass( int iTeam, int iClass, int iCloakstate )
 	}
 
 	// Since DM mode doesn't use teams, we only need 1 team specific image
-	if (iClass == TF_CLASS_MERCENARY)
+	if (iClass == TF_CLASS_MERCENARY && (TFGameRules() && TFGameRules()->IsDeathmatch()) )
 	{
 		Q_strncpy(szImage, "../hud/class_merc", sizeof(szImage));
 	}
