@@ -10,6 +10,10 @@
 #include "KeyValues.h"
 #include "multiplay_gamerules.h"
 
+#if defined(TF_CLASSIC_CLIENT)
+#include "tf_gamerules.h"
+#endif	
+
 static int g_ActiveVoiceMenu = 0;
 
 void OpenVoiceMenu( int index )
@@ -21,6 +25,11 @@ void OpenVoiceMenu( int index )
 
 	if ( !pPlayer->IsAlive() || pPlayer->IsObserver() )
 		return;
+
+#if defined( TF_CLASSIC_CLIENT )
+	if ( TFGameRules() && TFGameRules()->IsDeathmatch() ) // abort if we're in deathmatch.
+		return;
+#endif
 
 	CHudMenu *pMenu = (CHudMenu *) gHUD.FindElement( "CHudMenu" );
 	if ( !pMenu )
