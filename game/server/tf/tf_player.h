@@ -474,7 +474,7 @@ private:
 
 	// Think.
 	void				TFPlayerThink();
-	void				MedicRegenThink();
+	void				RegenThink();
 	void				UpdateTimers( void );
 
 	// Taunt.
@@ -540,7 +540,9 @@ private:
 
 	float					m_flHealthBuffTime;
 
+	float					m_flLastHealthRegenAt;
 	float					m_flNextRegenerateTime;
+	float					m_flAccumulatedHealthRegen;
 	float					m_flNextChangeClassTime;
 	float					m_flNextChangeTeamTime;
 
