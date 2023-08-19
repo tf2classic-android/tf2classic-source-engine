@@ -3481,7 +3481,7 @@ bool CTFPlayer::Weapon_ShouldSetLast( CBaseCombatWeapon *pOldWeapon, CBaseCombat
 	// if the weapon doesn't want to be auto-switched to, don't!	
 	CTFWeaponBase *pTFWeapon = dynamic_cast<CTFWeaponBase *>( pOldWeapon );
 
-	if ( pTFWeapon->AllowsAutoSwitchTo() == false )
+	if ( pTFWeapon && pTFWeapon->AllowsAutoSwitchTo() == false )
 	{
 		return false;
 	}
