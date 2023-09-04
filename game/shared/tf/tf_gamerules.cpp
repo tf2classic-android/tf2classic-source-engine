@@ -1025,7 +1025,7 @@ void CKothLogic::InputRoundSpawn( inputdata_t &inputdata )
 				TFGameRules()->GetYellowKothRoundTimer()->SetShowInHud( false );
 				TFGameRules()->GetYellowKothRoundTimer()->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
 				TFGameRules()->GetYellowKothRoundTimer()->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
-				TFGameRules()->GetYellowKothRoundTimer()->ChangeTeam( TF_TEAM_RED );
+				TFGameRules()->GetYellowKothRoundTimer()->ChangeTeam( TF_TEAM_YELLOW );
 			}
 		}
 	}
