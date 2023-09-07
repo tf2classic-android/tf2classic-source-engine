@@ -3114,7 +3114,13 @@ bool C_BaseAnimating::ShouldDraw()
 	return !IsDynamicModelLoading() && BaseClass::ShouldDraw();
 }
 
-ConVar r_drawothermodels( "r_drawothermodels", "1", FCVAR_CHEAT, "0=Off, 1=Normal, 2=Wireframe" );
+ConVar r_drawothermodels( "r_drawothermodels", "1", FCVAR_CHEAT,
+#if defined( DEBUG )
+							"0=Off, 1=Normal, 2=Wireframe"
+#else
+							"0=Off, 1=Normal"
+#endif
+											);
 
 //-----------------------------------------------------------------------------
 // Purpose: Draws the object
@@ -3137,10 +3143,12 @@ int C_BaseAnimating::DrawModel( int flags )
 		MDLCACHE_CRITICAL_SECTION();
 
 		int extraFlags = 0;
+#if defined( DEBUG )
 		if ( r_drawothermodels.GetInt() == 2 )
 		{
 			extraFlags |= STUDIO_WIREFRAME;
 		}
+#endif
 
 		if ( flags & STUDIO_SHADOWDEPTHTEXTURE )
 		{

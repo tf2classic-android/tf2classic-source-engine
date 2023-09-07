@@ -64,10 +64,12 @@ int C_ViewmodelAttachmentModel::DrawOverriddenViewmodel( int flags )
 		MDLCACHE_CRITICAL_SECTION();
 
 		int extraFlags = 0;
+#if defined( DEBUG )
 		if ( r_drawothermodels.GetInt() == 2 )
 		{
 			extraFlags |= STUDIO_WIREFRAME;
 		}
+#endif
 
 		if ( flags & STUDIO_SHADOWDEPTHTEXTURE )
 		{
