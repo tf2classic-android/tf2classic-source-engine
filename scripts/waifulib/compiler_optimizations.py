@@ -35,9 +35,9 @@ VALID_BUILD_TYPES = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sa
 LINKFLAGS = {
 	'common': {
 		'msvc':  ['/DEBUG'], # always create PDB, doesn't affect result binaries
-		'clang': ['-fvisibility=default'],
+		'clang': ['-fvisibility=hidden'],
 		'gcc':   ['-Wl,--no-undefined'],
-		'owcc':  ['-Wl,option stack=512k', '-fvisibility=default']
+		'owcc':  ['-Wl,option stack=512k', '-fvisibility=hidden']
 	},
 	'sanitize': {
 		'clang': ['-fsanitize=undefined', '-fsanitize=address'],
@@ -49,8 +49,8 @@ CFLAGS = {
 	'common': {
 		# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
 		'msvc':    ['/D_USING_V110_SDK71_', '/Z7', '/FS', '/Zc:threadSafeInit-'],
-		'clang':   ['-fno-strict-aliasing', '-fvisibility=default'],
-		'gcc':     ['-fno-strict-aliasing', '-fvisibility=default'],
+		'clang':   ['-fno-strict-aliasing', '-fvisibility=hidden'],
+		'gcc':     ['-fno-strict-aliasing', '-fvisibility=hidden'],
 		'owcc':	   ['-fno-short-enum', '-ffloat-store', '-g0']
 	},
 	'fast': {
