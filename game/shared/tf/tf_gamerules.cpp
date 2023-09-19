@@ -49,6 +49,43 @@
 	#include "eventqueue.h"
 #endif
 
+// BUILDNUM
+#include "buildnum.h"
+
+const char *UTIL_CLSV_VarArgs( const char *format, ... )
+{
+	va_list		argptr;
+	static char		string[1024];
+
+	va_start (argptr, format);
+	Q_vsnprintf(string, sizeof(string), format,argptr);
+	va_end (argptr);
+
+	return string;
+}
+
+void tf2c_buildnum_callback( IConVar *var, const char *pOldString, float flOldValue )
+{
+	static bool bSomeoneTriesToBeatGameRules = false;
+	if( !bSomeoneTriesToBeatGameRules )
+	{
+		bSomeoneTriesToBeatGameRules = true;
+
+		var->SetValue( flOldValue );
+
+		bSomeoneTriesToBeatGameRules = false;
+	}
+}
+
+#define FCVAR_TF2C_SV_BUILD FCVAR_GAMEDLL | FCVAR_PRINTABLEONLY | FCVAR_HIDDEN | FCVAR_REPLICATED
+ConVar tf2c_sv_buildnum( "tf2c_sv_buildnum", UTIL_CLSV_VarArgs( "%d", build_number() ), FCVAR_TF2C_SV_BUILD, "[SERVER] GameDLL build number.", tf2c_buildnum_callback );
+
+#if defined( CLIENT_DLL )
+#define FCVAR_TF2C_CL_BUILD FCVAR_CLIENTDLL | FCVAR_USERINFO | FCVAR_PRINTABLEONLY | FCVAR_HIDDEN
+ConVar tf2c_cl_buildnum( "tf2c_cl_buildnum", UTIL_CLSV_VarArgs( "%d", build_number() ), FCVAR_TF2C_CL_BUILD, "[CLIENT] ClientDLL build number.", tf2c_buildnum_callback );
+#endif
+// BUILDNUM
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 

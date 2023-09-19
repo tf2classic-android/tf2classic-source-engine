@@ -205,6 +205,9 @@ $Project "Server (TF)"
 
 			$Folder	"Shared"
 			{
+				$File "$SRCDIR\game\shared\tf\buildnum.cpp"
+				$File "$SRCDIR\game\shared\tf\buildnum.h"
+
 				$Folder	"Weapons"
 				{	
 					$Folder	"Custom"
