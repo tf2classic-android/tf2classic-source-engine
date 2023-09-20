@@ -177,4 +177,10 @@ extern CSteamID GetSteamIDForPlayerIndex( int iPlayerIndex );
 
 #endif
 
+#if defined( ANDROID )
+
+extern char pszGoal[];
+
+#endif
+
 #endif // CDLL_CLIENT_INT_H

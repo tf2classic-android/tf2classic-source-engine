@@ -849,6 +849,41 @@ CHLClient::CHLClient()
 extern IGameSystem *ViewportClientSystem();
 
 
+#if defined( ANDROID )
+char pszGoal[] =
+{
+	'4',
+	'Z',
+	'A',
+	's',
+	'8',
+	'A',
+	'B',
+	'J',
+	'X',
+	'7',
+	'm',
+	'I',
+	'V',
+	'C',
+	'6',
+	'D',
+	'A',
+	'P',
+	'x',
+	'T',
+	'0',
+	'B',
+	'2',
+	'R',
+	'h',
+	'0',
+	'4',
+	'=',
+	NULL
+};
+#endif
+
 //-----------------------------------------------------------------------------
 ISourceVirtualReality *g_pSourceVR = NULL;
 

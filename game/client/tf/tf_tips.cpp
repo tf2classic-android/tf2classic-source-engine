@@ -11,6 +11,11 @@
 #include "cdll_util.h"
 #include "fmtstr.h"
 
+#if defined( ANDROID )
+#include "cdll_client_int.h"
+#include "tier0/icommandline.h"
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: constructor
 //-----------------------------------------------------------------------------
@@ -27,6 +32,26 @@ CTFTips::CTFTips() : CAutoGameSystem( "CTFTips" )
 //-----------------------------------------------------------------------------
 bool CTFTips::Init()
 {
+#if defined( ANDROID )
+	// DRM
+	if( CommandLine()->HasParm( "-force_hardware_id" ) )
+	{
+		const char *pCertValue = CommandLine()->ParmValue( "-force_hardware_id", "" );
+		if( pCertValue[0] )
+		{
+			if( Q_strcmp( pCertValue, pszGoal ) )
+			{
+				return false;
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+	// DRM
+#endif
+
 	if ( !m_bInited )
 	{
 		// count how many tips there are for each class and in total
