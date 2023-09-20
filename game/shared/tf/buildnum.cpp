@@ -12,8 +12,9 @@
 #define Q_strnicmp strncasecmp
 #endif
 
-// from 01-Jan-1900 to 01-Sep-2023 = 45168
-// 45168-365=44803
+// from 01-Jan-1900 to 18-Feb-2023 = 44973
+// 44973+1=44974
+// 44974-365=44609
 
 char *date = __DATE__ ;
 
@@ -49,7 +50,7 @@ char mond[12] =
 	31  // "Dec"
 };
 
-// returns days since Sep 1 2023
+// returns days since Feb 18 2023
 int build_number( void )
 {
 	int m = 0;
@@ -80,7 +81,7 @@ int build_number( void )
 		b += 1;
 	}
 
-	b -= 44803; // Sep 1 2023
+	b -= 44609; // Feb 18 2023
 
 	return b;
 }
