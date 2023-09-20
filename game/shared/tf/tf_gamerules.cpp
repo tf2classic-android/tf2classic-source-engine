@@ -71,7 +71,7 @@ void tf2c_buildnum_callback( IConVar *var, const char *pOldString, float flOldVa
 	{
 		bSomeoneTriesToBeatGameRules = true;
 
-		var->SetValue( flOldValue );
+		var->SetValue( Ceil2Int( flOldValue ) );
 
 		bSomeoneTriesToBeatGameRules = false;
 	}
