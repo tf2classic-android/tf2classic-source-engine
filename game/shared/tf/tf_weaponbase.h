@@ -249,6 +249,7 @@ class CTFWeaponBase : public CBaseCombatWeapon
 
 	virtual void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
+	virtual bool CanFireAccurateShot( int nBulletsPerShot );
 	virtual bool CanFireCriticalShot( bool bIsHeadshot = false ){ return true; }
 
 	float				GetLastFireTime( void ) { return m_flLastFireTime; }

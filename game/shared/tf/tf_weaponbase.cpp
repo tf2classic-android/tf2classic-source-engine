@@ -1210,6 +1210,26 @@ void CTFWeaponBase::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCh
 // -----------------------------------------------------------------------------
 // Purpose:
 // -----------------------------------------------------------------------------
+bool CTFWeaponBase::CanFireAccurateShot( int nBulletsPerShot )
+{
+	float v2 = ( gpGlobals->curtime - m_flLastFireTime );
+	bool v3;
+
+	if( nBulletsPerShot = 1 )
+	{
+		v3 = ( v2 <= 1.25f );
+	}
+	else
+	{
+		v3 = ( v2 <= 0.25f );
+	}
+
+	return !v3;
+}
+
+// -----------------------------------------------------------------------------
+// Purpose:
+// -----------------------------------------------------------------------------
 bool CTFWeaponBase::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 {
 	// The the owning local player.
