@@ -249,6 +249,8 @@ $Project "Server (TF)"
 
 						$File	"$SRCDIR\game\shared\tf\tf_weapon_tommygun.cpp"
 						$File	"$SRCDIR\game\shared\tf\tf_weapon_tommygun.h"
+						$File	"$SRCDIR\game\shared\tf\tf_weapon_cubemap.cpp"
+						$File	"$SRCDIR\game\shared\tf\tf_weapon_tommygun.h"
 					}
 					$File	"$SRCDIR\game\shared\tf\tf_weapon_bat.cpp"
 					$File	"$SRCDIR\game\shared\tf\tf_weapon_bat.h"
