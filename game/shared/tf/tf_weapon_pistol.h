@@ -14,6 +14,7 @@
 #ifdef CLIENT_DLL
 #define CTFPistol C_TFPistol
 #define CTFPistol_Scout C_TFPistol_Scout
+#define CTFPistol_Merc C_TFPistol_Merc
 #endif
 
 // The faster the player fires, the more inaccurate he becomes
@@ -54,6 +55,20 @@ public:
 	DECLARE_PREDICTABLE();
 
 	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_PISTOL_SCOUT; }
+};
+
+// Mercenary
+class CTFPistol_Merc : public CTFPistol
+{
+public:
+	DECLARE_CLASS( CTFPistol_Merc, CTFPistol );
+	DECLARE_NETWORKCLASS();
+	DECLARE_PREDICTABLE();
+
+	virtual int GetWeaponID( void ) const
+	{
+		return TF_WEAPON_PISTOL_MERC;
+	}
 };
 
 #endif // TF_WEAPON_PISTOL_H

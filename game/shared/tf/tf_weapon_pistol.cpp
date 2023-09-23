@@ -25,6 +25,10 @@ CREATE_SIMPLE_WEAPON_TABLE( TFPistol, tf_weapon_pistol )
 
 CREATE_SIMPLE_WEAPON_TABLE( TFPistol_Scout, tf_weapon_pistol_scout )
 
+//============================
+
+CREATE_SIMPLE_WEAPON_TABLE( TFPistol_Merc, tf_weapon_pistol_merc )
+
 //=============================================================================
 //
 // Weapon Pistol functions.

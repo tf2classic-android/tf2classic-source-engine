@@ -5181,9 +5181,8 @@ void CTFPlayer::DropWeapon( CTFWeaponBase *pWeapon, bool bKilled /*= false*/ )
 		return;
 	}
 
-	// Don't drop pistol and crowbar in DM since those are default weapons.
-	if ( TFGameRules()->IsDeathmatch() && 
-		( pWeapon->IsWeapon( TF_WEAPON_PISTOL ) || pWeapon->IsWeapon( TF_WEAPON_CROWBAR ) ) )
+	// Don't drop crowbar in DM since there are default weapon.
+	if ( TFGameRules()->IsDeathmatch() && pWeapon->IsWeapon( TF_WEAPON_CROWBAR ) )
 		return;
 
 	int iClip = pWeapon->UsesClipsForAmmo1() ? pWeapon->Clip1() : WEAPON_NOCLIP;
