@@ -12,16 +12,22 @@
 #include "viewpostprocess.h"
 #include <game/client/iviewport.h>
 
+#include "tf_hud_screenoverlays.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
-#if defined( _X360 )
 
 static CTFViewRender g_ViewRender;
 
 CTFViewRender::CTFViewRender()
 {
 	view = ( IViewRender * )this;
+}
+
+void CTFViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
+{
+	BaseClass::Render2DEffectsPreHUD( view );
+	g_ScreenOverlayManager.DrawOverlays( view );
 }
 
 //-----------------------------------------------------------------------------
@@ -37,5 +43,3 @@ void CTFViewRender::Render2DEffectsPostHUD( const CViewSetup &view )
 		DoEnginePostProcessing( view.x, view.y, view.width, view.height, false, true );
 	}
 }
-
-#endif //_X360

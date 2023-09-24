@@ -85,6 +85,8 @@ $Project "Client (TF)"
 
 		$Folder	"TF"
 		{
+			$File	"tf\tf_hud_screenoverlays.cpp"
+			$File	"tf\tf_hud_screenoverlays.h"
 			$File	"tf\c_baseobject.cpp"
 			$File	"tf\c_baseobject.h"
 			$File	"tf\c_func_capture_zone.cpp"

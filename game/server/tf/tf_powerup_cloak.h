@@ -23,7 +23,8 @@ public:
 
 	CTFPowerupCloak();
 
-	virtual const char *GetDefaultPickupSound( void ) { return NULL; }
+	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_invis.mdl"; }
+	virtual const char *GetDefaultPickupSound( void ) { return "PowerupCloak.Touch"; }
 
 	virtual int	GetCondition( void ) { return TF_COND_POWERUP_CLOAK; }
 };

@@ -672,7 +672,7 @@ void CTFPlayerShared::OnConditionAdded( int nCond )
 	case TF_COND_BURNING:
 		OnAddBurning();
 		break;
-		
+
 	case TF_COND_HEALTH_OVERHEALED:
 #ifdef CLIENT_DLL
 		m_pOuter->UpdateOverhealEffect();
@@ -706,7 +706,7 @@ void CTFPlayerShared::OnConditionAdded( int nCond )
 	case TF_COND_POWERUP_SHIELD:
 		OnAddShield();
 		break;
-		
+
 	case TF_COND_POWERUP_SPEEDBOOST:
 		OnAddSpeedBoost();
 		break;
@@ -1214,7 +1214,6 @@ void CTFPlayerShared::OnAddDisguising( void )
 	}
 
 	m_pOuter->EmitSound( "Player.Spy_Disguise" );
-
 #endif
 }
 
@@ -1378,7 +1377,6 @@ void CTFPlayerShared::OnRemoveTaunting( void )
 #endif
 }
 
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1506,15 +1504,6 @@ void CTFPlayerShared::OnAddRagemode( void )
 	}
 
 	m_pOuter->TeamFortress_SetSpeed();
-#else
-	if ( m_pOuter->IsLocalPlayer() )
-	{
-		IMaterial *pMaterial = materials->FindMaterial( "effects/invuln_overlay_red", TEXTURE_GROUP_CLIENT_EFFECTS, false );
-		if ( !IsErrorMaterial( pMaterial ) )
-		{
-			view->SetScreenOverlayMaterial( pMaterial );
-		}
-	}
 #endif
 }
 
@@ -1534,11 +1523,6 @@ void CTFPlayerShared::OnRemoveRagemode( void )
 	}
 
 	m_pOuter->TeamFortress_SetSpeed();
-#else
-	if ( m_pOuter->IsLocalPlayer() )
-	{
-		view->SetScreenOverlayMaterial( NULL );
-	}
 #endif
 }
 
@@ -1547,9 +1531,7 @@ void CTFPlayerShared::OnRemoveRagemode( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::OnAddShield( void )
 {
-#ifdef GAME_DLL
-
-#else
+#if defined( CLIENT_DLL )
 	m_pOuter->UpdateShieldEffect();
 #endif
 }
@@ -1559,9 +1541,7 @@ void CTFPlayerShared::OnAddShield( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::OnRemoveShield( void )
 {
-#ifdef GAME_DLL
-
-#else
+#if defined( CLIENT_DLL )
 	m_pOuter->UpdateShieldEffect();
 #endif
 }
@@ -1601,9 +1581,7 @@ void CTFPlayerShared::RecalculatePlayerBodygroups( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon /*= NULL*/, float flFlameDuration /*= -1.0f*/ )
 {
-#ifdef CLIENT_DLL
-
-#else
+#if defined( GAME_DLL )
 	// Don't bother igniting players who have just been killed by the fire damage.
 	if ( !m_pOuter->IsAlive() )
 		return;
@@ -1633,7 +1611,6 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon /*= NUL
 	m_flFlameRemoveTime = gpGlobals->curtime + flFlameLife;
 	m_hBurnAttacker = pAttacker;
 	m_hBurnWeapon = pWeapon;
-
 #endif
 }
 

@@ -24,6 +24,9 @@ public:
 
 	CTFPowerupRagemode();
 
+	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_berserk.mdl"; }
+	virtual const char *GetDefaultPickupSound( void ) { return "PowerupBerserk.Touch"; }
+
 	virtual int	GetCondition( void ) { return TF_COND_POWERUP_RAGEMODE; }
 };
 

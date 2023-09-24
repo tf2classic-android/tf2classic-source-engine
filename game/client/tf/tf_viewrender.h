@@ -11,8 +11,6 @@
 #pragma once
 #endif
 
-#if defined( _X360 )
-
 #include "iviewrender.h"
 #include "viewrender.h"
 
@@ -22,13 +20,12 @@
 class CTFViewRender : public CViewRender
 {
 public:
-	typedef CViewRender BaseClass;
+	DECLARE_CLASS_GAMEROOT( CTFViewRender, CViewRender );
 
 	CTFViewRender();
 
+	virtual void Render2DEffectsPreHUD( const CViewSetup &view );
 	virtual void Render2DEffectsPostHUD( const CViewSetup &view );
 };
-
-#endif
 
 #endif //TF_VIEWRENDER_H
