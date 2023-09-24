@@ -21,6 +21,7 @@
 #include "tf_imagepanel.h"
 #include "c_tf_player.h"
 #include "tf_gamerules.h"
+#include "functionproxy.h"
 
 using namespace vgui;
 
@@ -117,3 +118,26 @@ Color CTFImagePanel::GetDrawColor(void)
 
 	return tempColor;
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: Same as PlayerTintColor but gets color of the local player. Should be used on HUD panels.
+//-----------------------------------------------------------------------------
+class CLocalPlayerTintColor : public CResultProxy
+{
+public:
+	void OnBind( void *pC_BaseEntity )
+	{
+		C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+
+		if ( pPlayer )
+		{
+			m_pResult->SetVecValue( pPlayer->m_vecPlayerColor.Base(), 3 );
+		}
+		else
+		{
+			m_pResult->SetVecValue( 0, 0, 0 );
+		}
+	}
+};
+
+EXPOSE_INTERFACE( CLocalPlayerTintColor, IMaterialProxy, "LocalPlayerTintColor" IMATERIAL_PROXY_INTERFACE_VERSION );
