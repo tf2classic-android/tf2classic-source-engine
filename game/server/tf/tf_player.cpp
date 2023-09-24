@@ -116,6 +116,7 @@ ConVar tf2c_random_weapons( "tf2c_random_weapons", "0", FCVAR_NOTIFY, "Makes pla
 ConVar tf2c_allow_special_classes( "tf2c_allow_special_classes", "0", FCVAR_NOTIFY, "Enables gamemode specific classes (Civilian, Mercenary, ...) in normal gameplay." );
 ConVar tf2c_force_stock_weapons( "tf2c_force_stock_weapons", "0", FCVAR_NOTIFY, "Forces players to use the stock loadout." );
 ConVar tf2c_legacy_weapons( "tf2c_legacy_weapons", "0", FCVAR_DEVELOPMENTONLY, "Disables all new weapons as well as Econ Item System." );
+ConVar tf2c_dm_spawnprotect( "tf2c_dm_spawnprotect", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "DM spawn protection switcher" );
 ConVar tf2c_dm_spawnprotecttime( "tf2c_dm_spawnprotecttime", "5", FCVAR_REPLICATED | FCVAR_NOTIFY, "Time (in seconds) that the DM spawn protection lasts" );
 
 // -------------------------------------------------------------------------------- //
@@ -1033,7 +1034,7 @@ void CTFPlayer::Spawn()
 			m_Shared.AddCond( TF_COND_HEALTH_BUFF );
 		}
 
-		if ( TFGameRules()->IsDeathmatch() )
+		if ( TFGameRules()->IsDeathmatch() && tf2c_dm_spawnprotect.GetBool() )
 		{
 			m_Shared.AddCond( TF_COND_INVULNERABLE_SPAWN_PROTECT, tf2c_dm_spawnprotecttime.GetFloat() );
 		}
