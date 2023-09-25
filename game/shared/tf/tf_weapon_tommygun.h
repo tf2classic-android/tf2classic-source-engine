@@ -1,5 +1,5 @@
-#if !defined( TF_WEAPON_TOMMYGUN )
-#define TF_WEAPON_TOMMYGUN
+#if !defined( TF_WEAPON_TOMMYGUN_H )
+#define TF_WEAPON_TOMMYGUN_H
 
 #if defined( WIN32 )
 #pragma once
@@ -24,7 +24,7 @@ public:
 	CTFTommyGun();
 	virtual ~CTFTommyGun();
 
-	virtual int GetWeaponID()
+	virtual int GetWeaponID( void ) const
 	{
 		return TF_WEAPON_TOMMYGUN;
 	}
@@ -56,4 +56,4 @@ protected:
 
 };
 
-#endif // !TF_WEAPON_TOMMYGUN
+#endif // !TF_WEAPON_TOMMYGUN_H
