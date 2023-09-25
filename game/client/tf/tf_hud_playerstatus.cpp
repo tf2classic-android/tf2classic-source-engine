@@ -31,72 +31,20 @@ using namespace vgui;
 extern ConVar tf_max_health_boost;
 
 
-static char *g_szBlueClassImages[] = 
-{ 
-	"",
-	"../hud/class_scoutblue", 
-	"../hud/class_sniperblue",
-	"../hud/class_soldierblue",
-	"../hud/class_demoblue",
-	"../hud/class_medicblue",
-	"../hud/class_heavyblue",
-	"../hud/class_pyroblue",
-	"../hud/class_spyblue",
-	"../hud/class_engiblue",
-	"../hud/class_civblue",
-	"../hud/class_mercblue",
-	"",
-};
-
-static char *g_szRedClassImages[] = 
-{ 
-	"",
-	"../hud/class_scoutred", 
-	"../hud/class_sniperred",
-	"../hud/class_soldierred",
-	"../hud/class_demored",
-	"../hud/class_medicred",
-	"../hud/class_heavyred",
-	"../hud/class_pyrored",
-	"../hud/class_spyred",
-	"../hud/class_engired",
-	"../hud/class_civred",
-	"../hud/class_mercred",
-	"",
-};
-
-static char *g_szGreenClassImages[] =
+static char *g_szClassImages[] =
 {
 	"",
-	"../hud/class_scoutgreen",
-	"../hud/class_snipergreen",
-	"../hud/class_soldiergreen",
-	"../hud/class_demogreen",
-	"../hud/class_medicgreen",
-	"../hud/class_heavygreen",
-	"../hud/class_pyrogreen",
-	"../hud/class_spygreen",
-	"../hud/class_engigreen",
-	"../hud/class_civgreen",
-	"../hud/class_mercgreen",
-	"",
-};
-
-static char *g_szYellowClassImages[] =
-{
-	"",
-	"../hud/class_scoutyellow",
-	"../hud/class_sniperyellow",
-	"../hud/class_soldieryellow",
-	"../hud/class_demoyellow",
-	"../hud/class_medicyellow",
-	"../hud/class_heavyyellow",
-	"../hud/class_pyroyellow",
-	"../hud/class_spyyellow",
-	"../hud/class_engiyellow",
-	"../hud/class_civyellow",
-	"../hud/class_mercyellow",
-	"",
+	"../hud/class_scout",
+	"../hud/class_sniper",
+	"../hud/class_soldier",
+	"../hud/class_demo",
+	"../hud/class_medic",
+	"../hud/class_heavy",
+	"../hud/class_pyro",
+	"../hud/class_spy",
+	"../hud/class_engi",
+	"../hud/class_civ",
+	"../hud/class_merc"
 };
 
 //-----------------------------------------------------------------------------
@@ -588,6 +536,52 @@ void CTFHudPlayerStatus::Reset()
 	}
 }
 
+/*
+const char *g_szClassImages[13] =
+{
+  &prType,
+  "../hud/class_scout",
+  "../hud/class_sniper",
+  "../hud/class_soldier",
+  "../hud/class_demo",
+  "../hud/class_medic",
+  "../hud/class_heavy",
+  "../hud/class_pyro",
+  "../hud/class_spy",
+  "../hud/class_engi",
+  "../hud/class_civ",
+  "../hud/class_merc",
+  "../hud/class_zombie"
+}; // idb
+
+//----- (10293350) --------------------------------------------------------
+void __thiscall CTFClassImage::SetClass(CTFClassImage *this, int iTeam, int iClass, int iCloakstate)
+{
+  char *v5; // [esp-8h] [ebp-98h]
+  char szImage[128]; // [esp+Ch] [ebp-84h] BYREF
+
+  if ( iTeam >= 2 && iClass && iClass != 14 ) // NOTE(SanyaSho): 14 iClass ?
+  {
+    v5 = (char *)g_szClassImages[iClass];
+    szImage[0] = 0;
+    V_strncpy(szImage, v5, 128);
+    if ( iClass == 11 && g_pGameRules && C_TFGameRules::IsFreeForAll((C_TFGameRules *)g_pGameRules) )
+      V_strncat(szImage, "custom", 0x80u, -1);
+    else
+      V_strncat(szImage, g_aTeamLowerNames[iTeam], 0x80u, -1);
+    if ( iCloakstate == 1 )
+    {
+      V_strncat(szImage, "_halfcloak", 0x80u, -1);
+    }
+    else if ( iCloakstate == 2 )
+    {
+      V_strncat(szImage, "_cloak", 0x80u, -1);
+    }
+    this->SetImage(this, szImage);
+  }
+}
+*/
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -596,42 +590,36 @@ void CTFClassImage::SetClass( int iTeam, int iClass, int iCloakstate )
 	char szImage[128];
 	szImage[0] = '\0';
 
-	switch (iTeam)
+	if( iTeam >= TF_TEAM_RED )
 	{
-		case TF_TEAM_RED:
-			Q_strncpy(szImage, g_szRedClassImages[iClass], sizeof(szImage));
-			break;
-		case TF_TEAM_BLUE:
-			Q_strncpy(szImage, g_szBlueClassImages[iClass], sizeof(szImage));
-			break;
-		case TF_TEAM_GREEN:
-			Q_strncpy(szImage, g_szGreenClassImages[iClass], sizeof(szImage));
-			break;
-		case TF_TEAM_YELLOW:
-			Q_strncpy(szImage, g_szYellowClassImages[iClass], sizeof(szImage));
-			break;
-	}
+		// copy base image name
+		V_strncpy( szImage, g_szClassImages[iClass], sizeof( szImage ) );
 
-	// Since DM mode doesn't use teams, we only need 1 team specific image
-	if (iClass == TF_CLASS_MERCENARY && (TFGameRules() && TFGameRules()->IsDeathmatch()) )
-	{
-		Q_strncpy(szImage, "../hud/class_merc", sizeof(szImage));
-	}
+		// if dethmatch - add "custom" suffix
+		if( iClass == TF_CLASS_MERCENARY && (TFGameRules() && TFGameRules()->IsDeathmatch()) )
+		{
+			V_strncat( szImage, "custom", sizeof( szImage ), COPY_ALL_CHARACTERS );
+		}
+		else // if not deathmatch - add player team color
+		{
+			V_strncat( szImage, g_aTeamParticleNames[iTeam], sizeof( szImage ), COPY_ALL_CHARACTERS );
+		}
 
-	switch( iCloakstate )
-	{
-	case 2:
-		Q_strncat( szImage, "_cloak", sizeof(szImage), COPY_ALL_CHARACTERS );
-		break;
-	case 1:
-		Q_strncat( szImage, "_halfcloak", sizeof(szImage), COPY_ALL_CHARACTERS );
-		break;
-	default:
-		break;
-	}
+		switch( iCloakstate )
+		{
+		case 1:
+			V_strncat( szImage, "_halfcloak", sizeof(szImage), COPY_ALL_CHARACTERS );
+			break;
+		case 2:
+			V_strncat( szImage, "_cloak", sizeof(szImage), COPY_ALL_CHARACTERS );
+			break;
+		default:
+			break;
+		}
 
-	if ( Q_strlen( szImage ) > 0 )
-	{
-		SetImage( szImage );
+		if ( Q_strlen( szImage ) > 0 )
+		{
+			SetImage( szImage );
+		}
 	}
 }
