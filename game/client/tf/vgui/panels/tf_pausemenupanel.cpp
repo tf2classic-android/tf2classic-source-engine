@@ -63,6 +63,18 @@ void CTFPauseMenuPanel::OnCommand(const char* command)
 	{
 		MAINMENU_ROOT->ShowPanel(LOADOUT_MENU);
 	}
+	else if (!Q_strcmp(command, "newcreateserver"))
+	{
+		MAINMENU_ROOT->ShowPanel(CREATESERVER_MENU);
+	}
+	else if (!Q_strcmp(command, "newstats"))
+	{
+		MAINMENU_ROOT->ShowPanel(STATSUMMARY_MENU);
+	}
+	else if (!Q_strcmp(command, "checkversion"))
+	{
+		//MAINMENU_ROOT->CheckVersion();
+	}
 	else if (!Q_strcmp(command, "shownotification"))
 	{
 		if (m_pNotificationButton)
@@ -70,6 +82,17 @@ void CTFPauseMenuPanel::OnCommand(const char* command)
 			m_pNotificationButton->SetGlowing(false);
 		}
 		MAINMENU_ROOT->ShowPanel(NOTIFICATION_MENU);
+	}
+	else if (!Q_strcmp(command, "testnotification"))
+	{
+		wchar_t resultString[128];
+		V_snwprintf(resultString, sizeof(resultString), L"test %d", GetNotificationManager()->GetNotificationsCount());
+		MessageNotification Notification(L"Yoyo", resultString, time( NULL ) );
+		GetNotificationManager()->SendNotification(Notification);
+	}
+	else if (Q_strcmp(command, "gamemenucommand "))
+	{
+		engine->ClientCmd(command);
 	}
 	else
 	{

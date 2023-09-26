@@ -146,6 +146,10 @@ void CTFMainMenuPanel::OnCommand(const char* command)
 	{
 		MAINMENU_ROOT->ShowPanel(LOADOUT_MENU);
 	}
+	else if (!Q_strcmp(command, "newcreateserver"))
+	{
+		MAINMENU_ROOT->ShowPanel(CREATESERVER_MENU);
+	}
 	else if (!Q_strcmp(command, "newstats"))
 	{
 		MAINMENU_ROOT->ShowPanel(STATSUMMARY_MENU);
@@ -172,6 +176,10 @@ void CTFMainMenuPanel::OnCommand(const char* command)
 	else if (!Q_strcmp(command, "randommusic"))
 	{
 		enginesound->StopSoundByGuid(m_nSongGuid);
+	}
+	else if (Q_strcmp(command, "gamemenucommand "))
+	{
+		engine->ClientCmd(command);
 	}
 	else
 	{

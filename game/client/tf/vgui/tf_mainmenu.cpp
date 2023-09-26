@@ -12,6 +12,7 @@
 #include "panels/tf_quitdialogpanel.h"
 #include "panels/tf_statsummarydialog.h"
 #include "panels/tf_tooltippanel.h"
+#include "panels/tf_createserverdialog.h"
 #include "panels/tf_itemtooltippanel.h"
 #include "engine/IEngineSound.h"
 #include "tf_hud_statpanel.h"
@@ -87,6 +88,7 @@ CTFMainMenu::CTFMainMenu(VPANEL parent) : vgui::EditablePanel(NULL, "MainMenu")
 	AddMenuPanel(new CTFShadeBackgroundPanel(this, "CTFShadeBackgroundPanel"), SHADEBACKGROUND_MENU);
 	AddMenuPanel(new CTFQuitDialogPanel(this, "CTFQuitDialogPanel"), QUIT_MENU);
 	AddMenuPanel(new CTFOptionsDialog(this, "CTFOptionsDialog"), OPTIONSDIALOG_MENU);
+	AddMenuPanel(new CTFCreateServerDialog(this, "CTFCreateServerDialog"), CREATESERVER_MENU);
 	AddMenuPanel(new CTFStatsSummaryDialog(this, "CTFStatsSummaryDialog"), STATSUMMARY_MENU);
 	AddMenuPanel(new CTFToolTipPanel(this, "CTFToolTipPanel"), TOOLTIP_MENU);
 	AddMenuPanel(new CTFItemToolTipPanel(this, "CTFItemToolTipPanel"), ITEMTOOLTIP_MENU);
@@ -99,6 +101,7 @@ CTFMainMenu::CTFMainMenu(VPANEL parent) : vgui::EditablePanel(NULL, "MainMenu")
 	HidePanel(NOTIFICATION_MENU);
 	HidePanel(QUIT_MENU);
 	HidePanel(OPTIONSDIALOG_MENU);
+	HidePanel(CREATESERVER_MENU);
 	HidePanel(STATSUMMARY_MENU);
 	HidePanel(TOOLTIP_MENU);
 	HidePanel(ITEMTOOLTIP_MENU);
