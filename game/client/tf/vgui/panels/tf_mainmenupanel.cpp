@@ -12,14 +12,7 @@ using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define BLOG_URL "http://tf2classic.com/?nolinks=1&noheader=1&nofooter=1&fillwrapper=1"
-
-static void OnBlogToggle(IConVar *var, const char *pOldValue, float flOldValue)
-{
-	GET_MAINMENUPANEL(CTFMainMenuPanel)->ShowBlogPanel(((ConVar*)var)->GetBool());
-}
 ConVar tf2c_mainmenu_music("tf2c_mainmenu_music", "1", FCVAR_ARCHIVE, "Toggle music in the main menu");
-ConVar tf2c_mainmenu_showblog("tf2c_mainmenu_showblog", "0", FCVAR_ARCHIVE, "Toggle blog in the main menu", OnBlogToggle);
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -55,7 +48,6 @@ bool CTFMainMenuPanel::Init()
 	m_pNotificationButton = NULL;
 	m_pProfileAvatar = NULL;
 	m_pFakeBGImage = NULL;
-	m_pBlogPanel = new CTFBlogPanel(this, "BlogPanel");
 	m_pServerlistPanel = new CTFServerlistPanel(this, "ServerlistPanel");
 
 	bInMenu = true;
@@ -98,7 +90,6 @@ void CTFMainMenuPanel::PerformLayout()
 #endif
 	SetDialogVariable("nickname", szNickName);
 
-	ShowBlogPanel(tf2c_mainmenu_showblog.GetBool() || GetNotificationManager()->IsOutdated());
 	OnNotificationUpdate();
 	AutoLayout();
 
@@ -119,18 +110,6 @@ void CTFMainMenuPanel::PerformLayout()
 		m_pFakeBGImage->SetAlpha(255);
 	}
 };
-
-void CTFMainMenuPanel::ShowBlogPanel(bool show)
-{
-	if (m_pBlogPanel)
-	{
-		m_pBlogPanel->SetVisible(show);
-		if (show)
-		{
-			m_pBlogPanel->LoadBlogPost(BLOG_URL);
-		}
-	}
-}
 
 void CTFMainMenuPanel::OnCommand(const char* command)
 {
@@ -250,7 +229,6 @@ void CTFMainMenuPanel::Hide()
 void CTFMainMenuPanel::DefaultLayout()
 {
 	BaseClass::DefaultLayout();
-	ShowBlogPanel(tf2c_mainmenu_showblog.GetBool());
 };
 
 void CTFMainMenuPanel::GameLayout()
@@ -339,44 +317,6 @@ void CTFMainMenuPanel::SetServerlistSize(int size)
 void CTFMainMenuPanel::UpdateServerInfo()
 {
 	m_pServerlistPanel->UpdateServerInfo();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
-CTFBlogPanel::CTFBlogPanel(vgui::Panel* parent, const char *panelName) : CTFMenuPanelBase(parent, panelName)
-{
-	m_pHTMLPanel = new vgui::HTML(this, "HTMLPanel");
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-CTFBlogPanel::~CTFBlogPanel()
-{
-}
-
-void CTFBlogPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	LoadControlSettings("resource/UI/main_menu/BlogPanel.res");
-}
-
-void CTFBlogPanel::PerformLayout()
-{
-	BaseClass::PerformLayout();
-
-	LoadBlogPost(BLOG_URL);
-}
-
-void CTFBlogPanel::LoadBlogPost(const char* URL)
-{
-	if (m_pHTMLPanel)
-	{
-		m_pHTMLPanel->SetVisible(true);
-		m_pHTMLPanel->OpenURL(URL, NULL);
-	}
 }
 
 //-----------------------------------------------------------------------------
