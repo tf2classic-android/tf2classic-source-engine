@@ -31,64 +31,76 @@ static const char *pszClassModels[TF_CLASS_COUNT_ALL] =
 	"models/player/spy.mdl",
 	"models/player/engineer.mdl",
 	"models/player/civilian.mdl",
-	"models/player/merc_deathmatch.mdl",
+	"models/player/merc_deathmatch.mdl"
 };
 
 static int g_aClassLoadoutSlots[TF_CLASS_COUNT_ALL][INVENTORY_ROWNUM] =
 {
+	// none
 	{
 		-1, -1, -1,
 	},
+	// scout
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// sniper
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// soldier
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// demo
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// medic
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// heavy
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// pyro
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// spy
 	{
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_BUILDING,
 		TF_LOADOUT_SLOT_MELEE
 	},
+	// engineer
 	{
 		TF_LOADOUT_SLOT_PRIMARY,
 		TF_LOADOUT_SLOT_SECONDARY,
 		TF_LOADOUT_SLOT_MELEE,
 	},
+	// civilian
 	{
 		TF_LOADOUT_SLOT_MELEE,
 		-1,
 		-1,
 	},
+	// mercenary
 	{
 		TF_LOADOUT_SLOT_MELEE,
 		-1,
@@ -300,50 +312,53 @@ void CTFLoadoutPanel::SetCurrentClass( int iClass )
 	DefaultLayout();
 };
 
-
 void CTFLoadoutPanel::OnCommand( const char* command )
 {
 	if ( !Q_strcmp( command, "back" ) || ( !Q_strcmp( command, "vguicancel" ) ) )
 	{
 		Hide();
 	}
-	else if ( !Q_strcmp( command, "select_scout" ) )
+	else if ( ( !Q_strcmp( command, "select_scout" ) ) || ( !Q_strcmp( command, "selectclass_scout" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_SCOUT );
 	}
-	else if ( !Q_strcmp( command, "select_soldier" ) )
+	else if ( ( !Q_strcmp( command, "select_soldier" ) ) || ( !Q_strcmp( command, "selectclass_soldier" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_SOLDIER );
 	}
-	else if ( !Q_strcmp( command, "select_pyro" ) )
+	else if ( ( !Q_strcmp( command, "select_pyro" ) ) || ( !Q_strcmp( command, "selectclass_pyro" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_PYRO );
 	}
-	else if ( !Q_strcmp( command, "select_demoman" ) )
+	else if ( ( !Q_strcmp( command, "select_demoman" ) ) || ( !Q_strcmp( command, "selectclass_demoman") ) )
 	{
 		SetCurrentClass( TF_CLASS_DEMOMAN );
 	}
-	else if ( !Q_strcmp( command, "select_heavyweapons" ) )
+	else if ( ( !Q_strcmp( command, "select_heavyweapons" ) ) || ( !Q_strcmp( command, "selectclass_heavy" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_HEAVYWEAPONS );
 	}
-	else if ( !Q_strcmp( command, "select_engineer" ) )
+	else if ( ( !Q_strcmp( command, "select_engineer" ) ) || ( !Q_strcmp( command, "selectclass_engineer" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_ENGINEER );
 	}
-	else if ( !Q_strcmp( command, "select_medic" ) )
+	else if ( ( !Q_strcmp( command, "select_medic" ) ) || ( !Q_strcmp( command, "selectclass_medic" ) ))
 	{
 		SetCurrentClass( TF_CLASS_MEDIC );
 	}
-	else if ( !Q_strcmp( command, "select_sniper" ) )
+	else if ( ( !Q_strcmp( command, "select_sniper" ) ) || ( !Q_strcmp( command, "selectclass_sniper" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_SNIPER );
 	}
-	else if ( !Q_strcmp( command, "select_spy" ) )
+	else if ( ( !Q_strcmp( command, "select_spy" ) ) || ( !Q_strcmp( command, "selectclass_spy" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_SPY );
 	}
-	else if ( !Q_strcmp( command, "select_merc" ) )
+	else if ( ( !Q_strcmp( command, "select_civ" ) ) || ( !Q_strcmp( command, "selectclass_civilian" ) ) )
+	{
+		SetCurrentClass( TF_CLASS_CIVILIAN );
+	}
+	else if ( ( !Q_strcmp( command, "select_merc" ) ) || ( !Q_strcmp( command, "selectclass_mercenary" ) ) )
 	{
 		SetCurrentClass( TF_CLASS_MERCENARY );
 	}
