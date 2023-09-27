@@ -129,6 +129,8 @@ ConVar tf_birthday( "tf_birthday", "0", FCVAR_NOTIFY | FCVAR_REPLICATED );
 // TF2C specific cvars.
 ConVar tf2c_falldamage_disablespread( "tf2c_falldamage_disablespread", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Toggles random 20% fall damage spread." );
 ConVar tf2c_allow_thirdperson( "tf2c_allow_thirdperson", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allow players to switch to third person mode." );
+// TODO: RETRO GAMETYPE
+//ConVar tf2c_dm_fraglimit( "tf2c_dm_fraglimit", "50", FCVAR_NOTIFY | FCVAR_REPLICATED );
 
 #ifdef GAME_DLL
 // TF overrides the default value of this convar
@@ -5570,6 +5572,25 @@ bool CTFGameRules::IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer )
 	}
 
 	return false;
+}
+
+int CTFGameRules::GetFragLimit()
+{
+	int iFragLimit = 0;
+
+	// TODO: RETRO GAMETYPE (rewrite all game)
+
+	// TODO: to use tf2c_dm_fraglimit you need to rewrite all game
+	//iFragLimit = tf2c_dm_fraglimit.GetInt();
+	iFragLimit = fraglimit.GetInt();
+
+	// TODO: ExtendCurrentMap vote
+	//if( !IsRoundBasedMode() && ( iFragLimit > 0 ) )
+	//{
+	//	iFragLimit += m_iFragLimitBonus;
+	//}
+
+	return iFragLimit;
 }
 
 #ifdef CLIENT_DLL
