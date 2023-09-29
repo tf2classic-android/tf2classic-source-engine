@@ -28,8 +28,8 @@ extern void SendProxy_Angles( const SendProp *pProp, const void *pStruct, const 
 IMPLEMENT_NETWORKCLASS_ALIASED( TFBaseRocket, DT_TFBaseRocket )
 
 BEGIN_NETWORK_TABLE( CTFBaseRocket, DT_TFBaseRocket )
-	// Client specific.
 #ifdef CLIENT_DLL
+	// Client specific.
 	RecvPropVector( RECVINFO( m_vInitialVelocity ) ),
 
 	RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ),
@@ -42,8 +42,9 @@ BEGIN_NETWORK_TABLE( CTFBaseRocket, DT_TFBaseRocket )
 
 	RecvPropBool( RECVINFO( m_bCritical ) ),
 
-	// Server specific.
+	RecvPropInt( RECVINFO( m_iType ) ),
 #else
+	// Server specific.
 	SendPropVector( SENDINFO( m_vInitialVelocity ), 12 /*nbits*/, 0 /*flags*/, -3000 /*low value*/, 3000 /*high value*/ ),
 
 	SendPropExclude( "DT_BaseEntity", "m_vecOrigin" ),
@@ -58,6 +59,8 @@ BEGIN_NETWORK_TABLE( CTFBaseRocket, DT_TFBaseRocket )
 	SendPropVector( SENDINFO( m_vecVelocity ), -1, SPROP_NOSCALE | SPROP_CHANGES_OFTEN ),
 
 	SendPropBool( SENDINFO( m_bCritical ) ),
+
+	SendPropInt( SENDINFO( m_iType ), 6, SPROP_UNSIGNED ),
 #endif
 END_NETWORK_TABLE()
 
@@ -88,6 +91,8 @@ CTFBaseRocket::CTFBaseRocket()
 	m_vInitialVelocity.Init();
 	m_iDeflected = 0;
 	m_hLauncher = NULL;
+
+	m_iType = TF_PROJECTILE_NONE;
 
 	// Client specific.
 #ifdef CLIENT_DLL
@@ -256,7 +261,7 @@ void CTFBaseRocket::Simulate( void )
 // Purpose: 
 //-----------------------------------------------------------------------------
 CTFBaseRocket *CTFBaseRocket::Create( CBaseEntity *pWeapon, const char *pszClassname, const Vector &vecOrigin,
-	const QAngle &vecAngles, CBaseEntity *pOwner )
+	const QAngle &vecAngles, CBaseEntity *pOwner, int iType )
 {
 	CTFBaseRocket *pRocket = static_cast<CTFBaseRocket*>( CBaseEntity::CreateNoSpawn( pszClassname, vecOrigin, vecAngles, pOwner ) );
 	if ( !pRocket )
@@ -264,6 +269,12 @@ CTFBaseRocket *CTFBaseRocket::Create( CBaseEntity *pWeapon, const char *pszClass
 
 	// Set firing weapon.
 	pRocket->SetLauncher( pWeapon );
+
+	// Print rocket type.
+	DevMsg( 3, "[DEBUG]: CTFBaseRocket::Create : iType %d (%s)\n", iType, g_szProjectileNames[iType] );
+
+	// Set rocket type.
+	pRocket->m_iType.Set( iType );
 
 	// Spawn.
 	DispatchSpawn( pRocket );

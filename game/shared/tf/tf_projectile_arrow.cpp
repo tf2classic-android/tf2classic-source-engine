@@ -28,11 +28,6 @@ const char *g_pszArrowModels[] =
 
 IMPLEMENT_NETWORKCLASS_ALIASED( TFProjectile_Arrow, DT_TFProjectile_Arrow )
 BEGIN_NETWORK_TABLE( CTFProjectile_Arrow, DT_TFProjectile_Arrow )
-#ifdef CLIENT_DLL
-	RecvPropInt( RECVINFO( m_iType ) ),
-#else
-	SendPropInt( SENDINFO( m_iType ), 6, SPROP_UNSIGNED ),
-#endif
 END_NETWORK_TABLE()
 
 #ifdef GAME_DLL
@@ -61,7 +56,7 @@ CTFProjectile_Arrow::~CTFProjectile_Arrow()
 
 CTFProjectile_Arrow *CTFProjectile_Arrow::Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, float flSpeed, float flGravity, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType )
 {
-	CTFProjectile_Arrow *pArrow = static_cast<CTFProjectile_Arrow *>( CTFBaseRocket::Create( pWeapon, "tf_projectile_arrow", vecOrigin, vecAngles, pOwner ) );
+	CTFProjectile_Arrow *pArrow = static_cast<CTFProjectile_Arrow *>( CTFBaseRocket::Create( pWeapon, "tf_projectile_arrow", vecOrigin, vecAngles, pOwner, iType ) );
 
 	if ( pArrow )
 	{

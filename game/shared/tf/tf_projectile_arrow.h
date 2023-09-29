@@ -53,11 +53,7 @@ public:
 
 private:
 #ifdef GAME_DLL
-	CNetworkVar( int, m_iType );
-
 	EHANDLE		m_hSpriteTrail;
-#else
-	int			m_iType;
 #endif
 };
 

@@ -15,12 +15,14 @@
 // Client specific.
 #ifdef CLIENT_DLL
 #define CTFRocketLauncher C_TFRocketLauncher
+#define CTFRocketLauncher_Merc C_TFRocketLauncher_Merc
 #endif
 
 //=============================================================================
 //
 // TF Weapon Rocket Launcher.
 //
+//=============================================================================
 class CTFRocketLauncher : public CTFWeaponBaseGun
 {
 public:
@@ -51,25 +53,33 @@ private:
 	CTFRocketLauncher( const CTFRocketLauncher & ) {}
 };
 
-// Server specific
-#ifdef GAME_DLL
 
 //=============================================================================
 //
-// Generic rocket.
+// TF Weapon Rocket Launcher (QuakeRPG)
 //
-class CTFRocket : public CTFBaseRocket
+//=============================================================================
+class CTFRocketLauncher_Merc : public CTFRocketLauncher
 {
 public:
 
-	DECLARE_CLASS( CTFRocket, CTFBaseRocket );
+	DECLARE_CLASS( CTFRocketLauncher_Merc, CTFRocketLauncher );
+	DECLARE_NETWORKCLASS();
+	DECLARE_PREDICTABLE();
 
-	// Creation.
-	static CTFRocket *Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL );	
-	virtual void Spawn();
-	virtual void Precache();
+	CTFRocketLauncher_Merc()
+	{
+		/* Nothing */
+	}
+
+	virtual ~CTFRocketLauncher_Merc()
+	{
+		/* Nothing */
+	}
+
+	virtual int GetWeaponID( void ) const
+	{
+		return TF_WEAPON_ROCKETLAUNCHER_MERC;
+	}
 };
-
-#endif
-
 #endif // TF_WEAPON_ROCKETLAUNCHER_H

@@ -54,6 +54,7 @@ protected:
 	CNetworkVector( m_vInitialVelocity );
 	IMPLEMENT_NETWORK_VAR_FOR_DERIVED( m_vecVelocity );
 	CNetworkVar( bool, m_bCritical );
+	CNetworkVar( int, m_iType );
 
 //=============================================================================
 //
@@ -82,7 +83,7 @@ private:
 public:
 	DECLARE_DATADESC();
 
-	static CTFBaseRocket *Create( CBaseEntity *pWeapon, const char *szClassname, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL );
+	static CTFBaseRocket *Create( CBaseEntity *pWeapon, const char *szClassname, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL, int iType = TF_PROJECTILE_NONE );
 
 	// IScorer interface
 	virtual CBasePlayer *GetScorer( void );

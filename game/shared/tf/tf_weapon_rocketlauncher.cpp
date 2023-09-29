@@ -20,6 +20,7 @@
 //
 // Weapon Rocket Launcher tables.
 //
+//=============================================================================
 CREATE_SIMPLE_WEAPON_TABLE( TFRocketLauncher, tf_weapon_rocketlauncher )
 
 //-----------------------------------------------------------------------------
@@ -123,3 +124,10 @@ void CTFRocketLauncher::CreateMuzzleFlashEffects( C_BaseEntity *pAttachEnt, int 
 }
 
 #endif
+
+//=============================================================================
+//
+// QuakeRPG tables.
+//
+//=============================================================================
+CREATE_SIMPLE_WEAPON_TABLE( TFRocketLauncher_Merc, tf_weapon_rocketlauncher_merc )

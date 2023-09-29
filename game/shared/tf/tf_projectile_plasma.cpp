@@ -45,7 +45,7 @@ CTFProjectile_Plasma::~CTFProjectile_Plasma()
 //-----------------------------------------------------------------------------
 CTFProjectile_Plasma *CTFProjectile_Plasma::Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer )
 {
-	CTFProjectile_Plasma *pRocket = static_cast<CTFProjectile_Plasma *>( CTFBaseRocket::Create( pWeapon, "tf_projectile_plasma", vecOrigin, vecAngles, pOwner ) );
+	CTFProjectile_Plasma *pRocket = static_cast<CTFProjectile_Plasma *>( CTFBaseRocket::Create( pWeapon, "tf_projectile_plasma", vecOrigin, vecAngles, pOwner, TF_PROJECTILE_PLASMA ) );
 
 	if ( pRocket )
 	{
@@ -167,7 +167,7 @@ PRECACHE_REGISTER( tf_projectile_plasma_bomb );
 //-----------------------------------------------------------------------------
 CTFProjectile_PlasmaBomb *CTFProjectile_PlasmaBomb::Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer )
 {
-	CTFProjectile_PlasmaBomb *pBomb = static_cast<CTFProjectile_PlasmaBomb *>( CTFBaseRocket::Create( pWeapon, "tf_projectile_plasma_bomb", vecOrigin, vecAngles, pOwner ) );
+	CTFProjectile_PlasmaBomb *pBomb = static_cast<CTFProjectile_PlasmaBomb *>( CTFBaseRocket::Create( pWeapon, "tf_projectile_plasma_bomb", vecOrigin, vecAngles, pOwner, TF_PROJECTILE_PLASMA ) );
 
 	if ( pBomb )
 	{

@@ -228,19 +228,19 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 	case TF_PROJECTILE_FESTITIVE_HEALING_BOLT:
 	case TF_PROJECTILE_GRAPPLINGHOOK:
 	case TF_PROJECTILE_PLASMA:
+	case TF_PROJECTILE_CROSSBOW_BOLT:
+	case TF_PROJECTILE_ROCKET_CLASSIC:
+	case TF_PROJECTILE_PIPEBOMB_CLASSIC:
 		pProjectile = FireRocket( pPlayer, iProjectile );
 		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
 		break;
 
 	case TF_PROJECTILE_SYRINGE:
 	case TF_PROJECTILE_NAIL:
+	case TF_PROJECTILE_DART:
+	case TF_PROJECTILE_SUPERNAIL:
 		pProjectile = FireNail( pPlayer, iProjectile );
 		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
-		break;
-
-	case TF_PROJECTILE_DART:
-		pProjectile = FireNail(pPlayer, iProjectile);
-		pPlayer->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
 		break;
 
 	case TF_PROJECTILE_PIPEBOMB:
@@ -290,6 +290,19 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 	UpdatePunchAngles( pPlayer );
 
 	return pProjectile;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CTFWeaponBaseGun::GetAmmoPerShot()
+{
+	int iAmmoPerShot = 0;
+	CALL_ATTRIB_HOOK_INT( iAmmoPerShot, mod_ammo_per_shot );
+	if ( iAmmoPerShot > 0 )
+		return iAmmoPerShot;
+
+	return m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_iAmmoPerShot;
 }
 
 //-----------------------------------------------------------------------------
@@ -510,7 +523,8 @@ CBaseEntity *CTFWeaponBaseGun::FireRocket( CTFPlayer *pPlayer, int iType )
 	switch ( iType )
 	{
 	case TF_PROJECTILE_ROCKET:
-		pProjectile = CTFProjectile_Rocket::Create( this, vecSrc, angForward, pPlayer, pPlayer );
+	case TF_PROJECTILE_ROCKET_CLASSIC:
+		pProjectile = CTFProjectile_Rocket::Create( this, vecSrc, angForward, pPlayer, pPlayer, iType );
 		break;
 	case TF_PROJECTILE_FLARE:
 		pProjectile = CTFProjectile_Flare::Create( this, vecSrc, angForward, pPlayer, pPlayer );

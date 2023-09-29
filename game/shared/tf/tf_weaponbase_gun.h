@@ -63,6 +63,8 @@ public:
 	virtual float GetProjectileSpeed( void );
 	virtual float GetProjectileGravity( void );
 
+	int GetAmmoPerShot();
+
 	void UpdatePunchAngles( CTFPlayer *pPlayer );
 	virtual float GetProjectileDamage( void );
 

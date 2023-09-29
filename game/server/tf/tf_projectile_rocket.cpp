@@ -1,4 +1,3 @@
-
 //====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======
 //
 // TF Rocket
@@ -24,9 +23,9 @@ END_NETWORK_TABLE()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-CTFProjectile_Rocket *CTFProjectile_Rocket::Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer )
+CTFProjectile_Rocket *CTFProjectile_Rocket::Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType )
 {
-	CTFProjectile_Rocket *pRocket = static_cast<CTFProjectile_Rocket*>( CTFBaseRocket::Create( pWeapon, "tf_projectile_rocket", vecOrigin, vecAngles, pOwner ) );
+	CTFProjectile_Rocket *pRocket = static_cast<CTFProjectile_Rocket*>( CTFBaseRocket::Create( pWeapon, "tf_projectile_rocket", vecOrigin, vecAngles, pOwner, iType ) );
 
 	if ( pRocket )
 	{
@@ -54,6 +53,10 @@ void CTFProjectile_Rocket::Precache()
 
 	PrecacheTeamParticles( "critical_rocket_%s", true );
 	PrecacheParticleSystem( "rockettrail" );
+	PrecacheParticleSystem( "rockettrail_dm" );
+	PrecacheParticleSystem( "rockettrail_underwater" );
+	PrecacheParticleSystem( "rocket_trail_classic" );
+	PrecacheTeamParticles( "rocket_trail_classic_crit_%s", false );
 
 	BaseClass::Precache();
 }

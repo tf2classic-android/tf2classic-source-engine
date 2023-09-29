@@ -57,24 +57,43 @@ void C_TFProjectile_Rocket::CreateRocketTrails( void )
 	if ( IsDormant() )
 		return;
 
-	if ( enginetrace->GetPointContents( GetAbsOrigin() ) & MASK_WATER )
+	if( m_iType == TF_PROJECTILE_ROCKET_CLASSIC )
 	{
-		ParticleProp()->Create( "rockettrail_underwater", PATTACH_POINT_FOLLOW, "trail" );
+		ParticleProp()->Create( "rocket_trail_classic", PATTACH_POINT_FOLLOW, "trail" );
+
+		if( m_bCritical )
+		{
+			const char *pszClassicEffectName = ConstructTeamParticle( "rocket_trail_classic_crit_%s", GetTeamNumber(), true );
+			CNewParticleEffect *pNewParticle = ParticleProp()->Create( pszClassicEffectName, PATTACH_ABSORIGIN_FOLLOW );
+
+			C_TFPlayer *pTFPlayer = ToTFPlayer( GetOwnerEntity() );
+			if( pTFPlayer )
+			{
+				pTFPlayer->m_Shared.SetParticleToMercColor( pNewParticle );
+			}
+		}
 	}
 	else
 	{
-		ParticleProp()->Create( GetTrailParticleName(), PATTACH_POINT_FOLLOW, "trail" );
-	}
-
-	if ( m_bCritical )
-	{
-		const char *pszEffectName = ConstructTeamParticle( "critical_rocket_%s", GetTeamNumber(), true );
-		CNewParticleEffect *pParticle = ParticleProp()->Create( pszEffectName, PATTACH_ABSORIGIN_FOLLOW );
-
-		C_TFPlayer *pPlayer = ToTFPlayer( GetOwnerEntity() );
-		if ( pPlayer )
+		if ( enginetrace->GetPointContents( GetAbsOrigin() ) & MASK_WATER )
 		{
-			pPlayer->m_Shared.SetParticleToMercColor( pParticle );
+			ParticleProp()->Create( "rockettrail_underwater", PATTACH_POINT_FOLLOW, "trail" );
+		}
+		else
+		{
+			ParticleProp()->Create( GetTrailParticleName(), PATTACH_POINT_FOLLOW, "trail" );
+		}
+
+		if ( m_bCritical )
+		{
+			const char *pszEffectName = ConstructTeamParticle( "critical_rocket_%s", GetTeamNumber(), true );
+			CNewParticleEffect *pParticle = ParticleProp()->Create( pszEffectName, PATTACH_ABSORIGIN_FOLLOW );
+
+			C_TFPlayer *pPlayer = ToTFPlayer( GetOwnerEntity() );
+			if ( pPlayer )
+			{
+				pPlayer->m_Shared.SetParticleToMercColor( pParticle );
+			}
 		}
 	}
 }

@@ -422,7 +422,7 @@ const char *g_aWeaponNames[] =
 	"TF_WEAPON_HAMMERFISTS",
 	"TF_WEAPON_SHOTGUN_MERC",
 	"TF_WEAPON_PISTOL_MERC",
-	//"TF_WEAPON_ROCKETLAUNCHER_MERC",
+	"TF_WEAPON_ROCKETLAUNCHER_MERC",
 	//"TF_WEAPON_GRENADELAUNCHER_MERC",
 	//"TF_WEAPON_SUPERSHOTGUN",
 	//"TF_WEAPON_STENGUN",
@@ -536,7 +536,7 @@ int g_aWeaponDamageTypes[] =
 	DMG_CLUB, // TF_WEAPON_HAMMERFISTS,
 	DMG_BULLET | DMG_BUCKSHOT | DMG_USEDISTANCEMOD, // TF_WEAPON_SHOTGUN_MERC,
 	DMG_BULLET | DMG_USEDISTANCEMOD, // TF_WEAPON_PISTOL_MERC,
-	//TF_WEAPON_ROCKETLAUNCHER_MERC,
+	2098240, // TF_WEAPON_ROCKETLAUNCHER_MERC, // TODO(SanyaSho): RECREATE BITS!!!
 	//TF_WEAPON_GRENADELAUNCHER_MERC,
 	//TF_WEAPON_SUPERSHOTGUN,
 	//TF_WEAPON_STENGUN,
@@ -607,8 +607,12 @@ const char *g_szProjectileNames[] =
 	// Add new projectiles here.
 	"projectile_nail",
 	"projectile_dart",
+	"projectile_supernail",
 	"projectile_mirv",
 	"projectile_plasma",
+	"projectile_crossbow_bolt",
+	"projectile_rocket_classic",
+	"projectile_pipe_classic"
 };
 
 // these map to the projectiles named in g_szProjectileNames
