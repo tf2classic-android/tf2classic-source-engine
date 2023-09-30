@@ -84,6 +84,13 @@ CWeaponSpawner::CWeaponSpawner()
 //-----------------------------------------------------------------------------
 void CWeaponSpawner::Spawn( void )
 {
+	// HACK(SanyaSho): add tf_weapon_chaingun
+	if( m_nItemID == 9020 )
+	{
+		Warning( "[CWeaponSpawner]: Found tf_weaponspawner with chaingun, fallback to heavyweapons minigun...\n" );
+		m_nItemID = 15;
+	}
+
 	CEconItemDefinition *pItemDef = GetItemSchema()->GetItemDefinition( m_nItemID );
 	if ( !pItemDef )
 	{
