@@ -754,6 +754,52 @@ int GetWeaponFromDamage( const CTakeDamageInfo &info )
 
 #endif
 
+tf_powerup_t g_aPowerups[] =
+{
+	{
+		TF_COND_POWERUP_CRITDAMAGE,
+		"item_powerup_critdamage",
+		"hud/powerup_critdamage",
+		"d_kill_bg_critdamage",
+		true
+	},
+	{
+		TF_COND_POWERUP_SHIELD,
+		"item_powerup_shield",
+		"hud/powerup_shield",
+		"d_kill_bg_shield",
+		true
+	},
+	{
+		TF_COND_POWERUP_SPEEDBOOST,
+		"item_powerup_speedboost",
+		"hud/powerup_speedboost",
+		"d_kill_bg_speedboost",
+		true
+	},
+	{
+		TF_COND_POWERUP_CLOAK,
+		"item_powerup_cloak",
+		"hud/powerup_cloak",
+		"d_kill_bg_cloak",
+		true
+	},
+	{
+		TF_COND_POWERUP_RAGEMODE,
+		"item_powerup_ragemode",
+		"hud/powerup_ragemode",
+		NULL,
+		true
+	},
+	{
+		TF_COND_LAST,
+		NULL,
+		NULL,
+		NULL,
+		false
+	}
+};
+
 //-----------------------------------------------------------------------------
 // Conditions stuff.
 //-----------------------------------------------------------------------------
@@ -782,27 +828,6 @@ int condition_to_attribute_translation[] =
 	TF_COND_ENERGY_BUFF,
 	TF_COND_LAST
 };
-
-int g_aPowerupConds[] =
-{
-	TF_COND_POWERUP_CRITDAMAGE,
-	TF_COND_POWERUP_SHIELD,
-	TF_COND_POWERUP_SPEEDBOOST,
-	TF_COND_POWERUP_CLOAK,
-	TF_COND_POWERUP_RAGEMODE,
-	TF_COND_LAST
-};
-
-const char *g_aPowerupNames[] =
-{
-	"item_powerup_critdamage", // TF_COND_POWERUP_CRITDAMAGE,
-	"item_powerup_shield", // TF_COND_POWERUP_SHIELD,
-	"item_powerup_speedboost", // TF_COND_POWERUP_SPEEDBOOST,
-	"item_powerup_cloak", // TF_COND_POWERUP_CLOAK,
-	"item_powerup_ragemode", // TF_COND_POWERUP_RAGEMODE,
-};
-
-COMPILE_TIME_ASSERT( ( ARRAYSIZE( g_aPowerupConds ) - 1 ) == ARRAYSIZE( g_aPowerupNames ) );
 
 bool ConditionExpiresFast( int nCond )
 {

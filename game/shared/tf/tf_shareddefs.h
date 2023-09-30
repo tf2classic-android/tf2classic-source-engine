@@ -602,11 +602,26 @@ enum ETFCond
 	TF_COND_LAST
 };
 
-extern int condition_to_attribute_translation[];
-extern const char *g_aPowerupNames[];
-extern int g_aPowerupConds[];
+enum ETFPowerupDropStyle
+{
+	TF_POWERUP_DROP_INVALID = -1,
+	TF_POWERUP_DROP_FEET = 0,
+	TF_POWERUP_DROP_THROW,
+	TF_POWERUP_DROP_EXPLODE
+};
 
-#define TF_POWERUP_COND_COUNT ARRAYSIZE( g_aPowerupConds )
+struct tf_powerup_t
+{
+	ETFCond cond;
+	const char *name;
+	const char *hud_icon;
+	const char *kill_bg;
+	bool drop_on_death;
+};
+
+extern tf_powerup_t g_aPowerups[];
+
+extern int condition_to_attribute_translation[];
 
 bool ConditionExpiresFast( int nCond );
 

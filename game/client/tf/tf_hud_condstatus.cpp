@@ -35,16 +35,12 @@ void CTFPowerupPanel::ApplySchemeSettings( IScheme *pScheme )
 
 	if ( m_pProgressBar )
 	{
-		for ( int i = 0; g_aPowerupConds[i] != TF_COND_LAST; i++ )
+		for ( int i = 0; g_aPowerups[i].cond != TF_COND_LAST; i++ )
 		{
-			ETFCond nCond = g_aPowerupConds[i];
+			ETFCond nCond = g_aPowerups[i].cond;
 			if ( nCond == m_nCond )
 			{
-				// Skipping "item_" prefix.
-				char szIcon[64];
-				V_snprintf( szIcon, sizeof( szIcon ), "hud/%s", g_aPowerupNames[i] + 5 );
-
-				m_pProgressBar->SetIcon( szIcon );
+				m_pProgressBar->SetIcon( g_aPowerups[i].hud_icon );
 			}
 		}
 	}
@@ -90,10 +86,10 @@ CTFHudCondStatus::CTFHudCondStatus( const char *pElementName ) : CHudElement( pE
 	Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
 
-	for ( int i = 0; g_aPowerupConds[i] != TF_COND_LAST; i++ )
+	for ( int i = 0; g_aPowerups[i].cond != TF_COND_LAST; i++ )
 	{
 		CTFPowerupPanel *pPowerup = new CTFPowerupPanel( this, "PowerupPanel" );
-		pPowerup->SetData( g_aPowerupConds[i], 0.0f, 0.0f );
+		pPowerup->SetData( g_aPowerups[i].cond, 0.0f, 0.0f );
 		m_pPowerups.AddToTail( pPowerup );
 	}
 

@@ -118,6 +118,9 @@ ConVar tf2c_force_stock_weapons( "tf2c_force_stock_weapons", "0", FCVAR_NOTIFY, 
 ConVar tf2c_legacy_weapons( "tf2c_legacy_weapons", "0", FCVAR_DEVELOPMENTONLY, "Disables all new weapons as well as Econ Item System." );
 ConVar tf2c_dm_spawnprotect( "tf2c_dm_spawnprotect", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "DM spawn protection switcher" );
 ConVar tf2c_dm_spawnprotecttime( "tf2c_dm_spawnprotecttime", "5", FCVAR_REPLICATED | FCVAR_NOTIFY, "Time (in seconds) that the DM spawn protection lasts" );
+ConVar tf2c_player_powerup_allowdrop( "tf2c_player_powerup_allowdrop", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Allow players to drop their powerups." );
+ConVar tf2c_player_powerup_throwforce( "tf2c_player_powerup_throwforce", "500", FCVAR_DEVELOPMENTONLY, "Force when the player 'throws' their powerup." );
+ConVar tf2c_player_powerup_explodeforce( "tf2c_player_powerup_explodeforce", "200", FCVAR_DEVELOPMENTONLY, "Force when the player 'explodes' with a powerup." );
 
 // -------------------------------------------------------------------------------- //
 // Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
@@ -4539,7 +4542,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	if( TFGameRules()->IsDeathmatch() )
 	{
-		DropPowerups();
+		DropPowerups( TF_POWERUP_DROP_EXPLODE );
 	}
 
 	// Remove all conditions...
@@ -5276,14 +5279,38 @@ void CTFPlayer::DropWeapon( CTFWeaponBase *pWeapon, bool bKilled /*= false*/ )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPlayer::DropPowerups( void )
+void CTFPlayer::DropPowerups( ETFPowerupDropStyle dropStyle )
 {
-	for ( int i = 0; g_aPowerupConds[i] != TF_COND_LAST; i++ )
+	for ( int i = 0; g_aPowerups[i].cond != TF_COND_LAST; i++ )
 	{
-		int nCond = g_aPowerupConds[i];
-		if ( m_Shared.InCond( nCond ) )
+		int nCond = g_aPowerups[i].cond;
+		if ( g_aPowerups[i].drop_on_death && m_Shared.InCond( nCond ) )
 		{
-			CTFBaseDMPowerup::Create( WorldSpaceCenter(), vec3_angle, this, g_aPowerupNames[i], m_Shared.GetConditionDuration( nCond ) );
+			CTFBaseDMPowerup *pPowerup = CTFBaseDMPowerup::Create( WorldSpaceCenter(), vec3_angle, this, g_aPowerups[i].name, m_Shared.GetConditionDuration( nCond ) );
+
+			if( pPowerup )
+			{
+				Vector vecThrow;
+				switch( dropStyle )
+				{
+					case TF_POWERUP_DROP_THROW:
+						AngleVectors( EyeAngles(), &vecThrow );
+						vecThrow *= tf2c_player_powerup_throwforce.GetFloat();
+						break;
+
+					case TF_POWERUP_DROP_EXPLODE:
+						AngleVectors( RandomAngle( -360.0f, 360.0f ), &vecThrow );
+						vecThrow.z = 1;
+						vecThrow *= tf2c_player_powerup_explodeforce.GetFloat();
+						break;
+
+					default:
+						vecThrow = Vector( 0, 0, 0 );
+						break;
+				};
+				pPowerup->SetAbsVelocity( vecThrow );
+				m_Shared.RemoveCond( g_aPowerups[i].cond );
+			}
 		}
 	}
 }
@@ -6783,15 +6810,42 @@ void CTFPlayer::SaveMe( void )
 //-----------------------------------------------------------------------------
 // Purpose: drops the flag
 //-----------------------------------------------------------------------------
-void CC_DropItem( void )
+CON_COMMAND( dropitem, "Drop the flag." )
 {
-	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() ); 
+	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() );
 	if ( pPlayer )
 	{
 		pPlayer->DropFlag();
 	}
 }
-static ConCommand dropitem( "dropitem", CC_DropItem, "Drop the flag." );
+
+CON_COMMAND( droppowerup, "Drop the active powerup." )
+{
+	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() );
+	if( !pPlayer )
+		return;
+
+	// don't drop if not allowed
+	if( !tf2c_player_powerup_allowdrop.GetBool() )
+		return;
+
+	pPlayer->DropPowerups( TF_POWERUP_DROP_THROW );
+}
+
+CON_COMMAND( tf2c_debug_powerups, "Show powerups info." )
+{
+	Msg( "POWERUPS:\n" );
+
+	for( int i = 0; i < 6; i++ )
+	{
+		Msg( "\tPowerup: %d\n", i );
+		Msg( "\t\tPowerup Condition: %d\n", g_aPowerups[i].cond );
+		Msg( "\t\tPowerup Name: %s\n", g_aPowerups[i].name );
+		Msg( "\t\tPowerup Hud Icon: %s\n", g_aPowerups[i].hud_icon );
+		Msg( "\t\tPowerup Kill BG: %s\n", g_aPowerups[i].kill_bg );
+		Msg( "\t\tPowerup DOD: %s\n", g_aPowerups[i].drop_on_death ? "yes" : "no" );
+	}
+};
 
 class CObserverPoint : public CPointEntity
 {
