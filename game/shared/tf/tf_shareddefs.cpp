@@ -615,20 +615,6 @@ const char *g_szProjectileNames[] =
 	"projectile_pipe_classic"
 };
 
-// these map to the projectiles named in g_szProjectileNames
-int g_iProjectileWeapons[] = 
-{
-	TF_WEAPON_NONE,
-	TF_WEAPON_PISTOL,
-	TF_WEAPON_ROCKETLAUNCHER,
-	TF_WEAPON_PIPEBOMBLAUNCHER,
-	TF_WEAPON_GRENADELAUNCHER,
-	TF_WEAPON_SYRINGEGUN_MEDIC,
-	TF_WEAPON_NAILGUN,
-	TF_WEAPON_TRANQ,
-	TF_WEAPON_FLAREGUN,
-};
-
 const char *g_pszHintMessages[] =
 {
 	"#Hint_spotted_a_friend",
