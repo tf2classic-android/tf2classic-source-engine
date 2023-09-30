@@ -19,24 +19,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-/*
-Old FGD info.
-
-16 : "Sniper rifle ( Primary )"
-17 : "Minigun ( Primary )"
-21 : "Rocket launcher ( Primary )"
-22 : "Pipebomb launcher ( Primary )"
-24 : "Flamethrower ( Primary )"
-67 : "Sten Gun ( Primary )"
-71 : "Heavy Artillery ( Primary )"
-68 : "Double barrel shotgun ( Primary )"
-12 : "Shotgun ( Secondary )"
-18 : "SMG ( Secondary )"
-37 : "Pistol ( Secondary )"
-69 : "Six Shooter ( Secondary )"
-5 : "Crowbar ( Melee )"
-*/
-
 struct WeaponTranslation_t
 {
 	int iWeaponID;
@@ -47,21 +29,21 @@ struct WeaponTranslation_t
 // We need to eventually remove this once all DM maps are updated.
 static WeaponTranslation_t g_aWeaponTranslations[] =
 {
-	{ 5, 9010 },
-	{ 12, 10 },
-	{ 15, 13 },
-	{ 16, 14 },
-	{ 17, 15 },
-	{ 18, 16 },
-	{ 21, 18 },
-	{ 22, 19 },
-	{ 24, 21 },
-	{ 37, 22 },
-	{ 65, 39 },
-	{ 67, 9011 },
-	{ 68, 9012 },
-	{ 69, 9013 },
-	{ 71, 9014 }
+	{ 5, 9010 },			// 5	=> TF_WEAPON_CROWBAR
+	{ 12, 10 },			// 12	=> TF_WEAPON_SHOTGUN_SOLDIER
+	{ 15, 13 },			// 15	=> TF_WEAPON_SCATTERGUN
+	{ 16, 14 },			// 16	=> TF_WEAPON_SNIPERRIFLE // TODO: Replace with leverrifle.
+	{ 17, 15 },			// 17	=> TF_WEAPON_MINIGUN // TODO: Replace with chaingun?
+	{ 18, 16 },			// 18	=> TF_WEAPON_SMG // TODO: Replace with assault rifle?
+	{ 21, 9027 },			// 21	=> TF_WEAPON_ROCKETLAUNCHER_MERC // OLD: 18 (TF_WEAPON_ROCKETLAUNCHER)
+	{ 22, 9028 },			// 22	=> TF_WEAPON_GRENADELAUNCHER_MERC // OLD: 19 (TF_WEAPON_GRENADELAUNCHER)
+	{ 24, 21 },			// 24	=> TF_WEAPON_FLAMETHROWER
+	{ 37, 9026 },			// 37	=> TF_WEAPON_PISTOL_MERC // OLD: 22 (TF_WEAPON_PISTOL)
+	{ 65, 39 },			// 65	=> TF_WEAPON_FLAREGUN
+	{ 67, 9011 },			// 67	=> TF_WEAPON_STENGUN // OLD: TF_WEAPON_SMG with Sten model
+	{ 68, 9012 },			// 68	=> TF_WEAPON_SHOTGUN_PRIMARY (Super Shotgun)
+	{ 69, 9013 },			// 69	=> TF_WEAPON_SIXSHOOTER // OLD: TF_WEAPON_REVOLVER with shitty broken model
+	{ 71, 9014 }			// 71	=> TF_WEAPON_TOMMYGUN
 };
 
 //#define RESPAWN_PARTICLE "particlename"
