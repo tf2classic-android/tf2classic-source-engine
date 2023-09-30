@@ -119,7 +119,7 @@ void CTFProjectile_Arrow::Spawn( void )
 		SetModel( g_pszArrowModels[2] );
 		break;
 	case TF_PROJECTILE_HEALING_BOLT:
-	case TF_PROJECTILE_FESTITIVE_HEALING_BOLT:
+	case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
 		SetModel( g_pszArrowModels[1] );
 		break;
 	default:
@@ -302,7 +302,7 @@ void CTFProjectile_Arrow::Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir )
 //-----------------------------------------------------------------------------
 bool CTFProjectile_Arrow::CanHeadshot( void )
 {
-	return ( m_iType == TF_PROJECTILE_ARROW || m_iType == TF_PROJECTILE_FESTITIVE_ARROW );
+	return ( m_iType == TF_PROJECTILE_ARROW || m_iType == TF_PROJECTILE_FESTIVE_ARROW );
 }
 
 //-----------------------------------------------------------------------------
@@ -320,7 +320,7 @@ const char *CTFProjectile_Arrow::GetTrailParticleName( void )
 		bLongTeamName = true;
 		break;
 	case TF_PROJECTILE_HEALING_BOLT:
-	case TF_PROJECTILE_FESTITIVE_HEALING_BOLT:
+	case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
 		pszFormat = "effects/healingtrail_%s.vmt";
 		break;
 	default:

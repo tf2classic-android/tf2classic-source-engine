@@ -7,14 +7,16 @@
 
 //=============================================================================
 //
-// Weapon SMG tables.
+// Weapon Nailgun tables.
 //
+//=============================================================================
 CREATE_SIMPLE_WEAPON_TABLE( TFNailgun, tf_weapon_nailgun )
 
 //=============================================================================
 //
 // Weapon Nailgun functions.
 //
+//=============================================================================
 void CTFNailgun::Precache()
 {
 	BaseClass::Precache();
@@ -23,3 +25,10 @@ void CTFNailgun::Precache()
 	PrecacheTeamParticles( "nailtrails_scout_%s_crit", true );
 #endif
 }
+
+//=============================================================================
+//
+// Weapon Super Nailgun tables.
+//
+//=============================================================================
+CREATE_SIMPLE_WEAPON_TABLE( TFSuperNailgun, tf_weapon_supernailgun )

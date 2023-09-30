@@ -213,60 +213,62 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 
 	CBaseEntity *pProjectile = NULL;
 
+	Msg( "[DEBUG]: iProjectile : %d (%s)\n", iProjectile,g_szProjectileNames[iProjectile] );
+
 	switch( iProjectile )
 	{
-	case TF_PROJECTILE_BULLET:
-		FireBullet( pPlayer );
-		break;
+		case TF_PROJECTILE_BULLET:
+			FireBullet( pPlayer );
+			break;
 
-	case TF_PROJECTILE_ROCKET:
-	case TF_PROJECTILE_FLARE:
-	case TF_PROJECTILE_ARROW:
-	case TF_PROJECTILE_HEALING_BOLT:
-	case TF_PROJECTILE_BUILDING_REPAIR_BOLT:
-	case TF_PROJECTILE_FESTITIVE_ARROW:
-	case TF_PROJECTILE_FESTITIVE_HEALING_BOLT:
-	case TF_PROJECTILE_GRAPPLINGHOOK:
-	case TF_PROJECTILE_PLASMA:
-	case TF_PROJECTILE_CROSSBOW_BOLT:
-	case TF_PROJECTILE_ROCKET_CLASSIC:
-	case TF_PROJECTILE_PIPEBOMB_CLASSIC:
-		pProjectile = FireRocket( pPlayer, iProjectile );
-		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
-		break;
+		case TF_PROJECTILE_ROCKET:
+		case TF_PROJECTILE_FLARE:
+		case TF_PROJECTILE_ARROW:
+		case TF_PROJECTILE_HEALING_BOLT:
+		case TF_PROJECTILE_BUILDING_REPAIR_BOLT:
+		case TF_PROJECTILE_FESTIVE_ARROW:
+		case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
+		case TF_PROJECTILE_GRAPPLINGHOOK:
+		case TF_PROJECTILE_PLASMA:
+		case TF_PROJECTILE_CROSSBOW_BOLT:
+		case TF_PROJECTILE_ROCKET_CLASSIC:
+			pProjectile = FireRocket( pPlayer, iProjectile );
+			pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
+			break;
 
-	case TF_PROJECTILE_SYRINGE:
-	case TF_PROJECTILE_NAIL:
-	case TF_PROJECTILE_DART:
-	case TF_PROJECTILE_SUPERNAIL:
-		pProjectile = FireNail( pPlayer, iProjectile );
-		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
-		break;
+		case TF_PROJECTILE_PIPEBOMB:
+		case TF_PROJECTILE_PIPEBOMB_REMOTE:
+		case TF_PROJECTILE_PIPEBOMB_REMOTE_PRACTICE:
+		case TF_PROJECTILE_CANNONBALL:
+		case TF_PROJECTILE_MIRV:
+		case TF_PROJECTILE_PIPEBOMB_CLASSIC:
+			pProjectile = FireGrenade( pPlayer, iProjectile );
+			pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
+			break;
 
-	case TF_PROJECTILE_PIPEBOMB:
-	case TF_PROJECTILE_CANNONBALL:
-	case TF_PROJECTILE_PIPEBOMB_REMOTE:
-	case TF_PROJECTILE_PIPEBOMB_REMOTE_PRACTICE:
-	case TF_PROJECTILE_MIRV:
-		pProjectile = FireGrenade( pPlayer, iProjectile );
-		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
-		break;
+		case TF_PROJECTILE_SYRINGE:
+		case TF_PROJECTILE_NAIL:
+		case TF_PROJECTILE_DART:
+		case TF_PROJECTILE_SUPERNAIL:
+			pProjectile = FireNail( pPlayer, iProjectile );
+			pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
+			break;
 
-	case TF_PROJECTILE_JAR:
-	case TF_PROJECTILE_JAR_MILK:
-	case TF_PROJECTILE_CLEAVER:
-	case TF_PROJECTILE_THROWABLE:
-	case TF_PROJECTILE_FESTITIVE_URINE:
-	case TF_PROJECTILE_BREADMONSTER_JARATE:
-	case TF_PROJECTILE_BREADMONSTER_MADMILK:
-		// TO-DO: Implement 'grenade' support
-		break;
+		case TF_PROJECTILE_JAR:
+		case TF_PROJECTILE_JAR_MILK:
+		case TF_PROJECTILE_CLEAVER:
+		case TF_PROJECTILE_THROWABLE:
+		case TF_PROJECTILE_FESTIVE_URINE:
+		case TF_PROJECTILE_BREADMONSTER_JARATE:
+		case TF_PROJECTILE_BREADMONSTER_MADMILK:
+			// TO-DO: Implement 'grenade' support
+			break;
 
-	case TF_PROJECTILE_NONE:
-	default:
-		// do nothing!
-		DevMsg( "Weapon does not have a projectile type set\n" );
-		break;
+		case TF_PROJECTILE_NONE:
+		default:
+			// do nothing!
+			DevMsg( "Weapon does not have a projectile type set\n" );
+			break;
 	}
 
 	if ( UsesClipsForAmmo1() )
@@ -521,7 +523,7 @@ CBaseEntity *CTFWeaponBaseGun::FireRocket( CTFPlayer *pPlayer, int iType )
 		vecOffset.y *= -1.0f;
 	}
 
-	bool bUseHitboxes = ( iType == TF_PROJECTILE_ARROW || iType == TF_PROJECTILE_FESTITIVE_ARROW );
+	bool bUseHitboxes = ( iType == TF_PROJECTILE_ARROW || iType == TF_PROJECTILE_FESTIVE_ARROW );
 
 	GetProjectileFireSetup( pPlayer, vecOffset, &vecSrc, &angForward, false, bUseHitboxes );
 
@@ -539,8 +541,9 @@ CBaseEntity *CTFWeaponBaseGun::FireRocket( CTFPlayer *pPlayer, int iType )
 	case TF_PROJECTILE_ARROW:
 	case TF_PROJECTILE_HEALING_BOLT:
 	case TF_PROJECTILE_BUILDING_REPAIR_BOLT:
-	case TF_PROJECTILE_FESTITIVE_ARROW:
-	case TF_PROJECTILE_FESTITIVE_HEALING_BOLT:
+	case TF_PROJECTILE_FESTIVE_ARROW:
+	case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
+	case TF_PROJECTILE_CROSSBOW_BOLT:
 	//case TF_PROJECTILE_GRAPPLINGHOOK:
 		pProjectile = CTFProjectile_Arrow::Create( this, vecSrc, angForward, GetProjectileSpeed(), GetProjectileGravity(), pPlayer, pPlayer, iType );
 		break;
@@ -593,13 +596,17 @@ CBaseEntity *CTFWeaponBaseGun::FireNail( CTFPlayer *pPlayer, int iSpecificNail )
 		break;
 
 	case TF_PROJECTILE_NAIL:
-		pProjectile = CTFProjectile_Nail::Create(vecSrc, angForward, pPlayer, pPlayer, IsCurrentAttackACrit());
+		pProjectile = CTFProjectile_Nail::Create( vecSrc, angForward, pPlayer, pPlayer, IsCurrentAttackACrit() );
 		break;
 
 	case TF_PROJECTILE_DART:
-		pProjectile = CTFProjectile_Dart::Create(vecSrc, angForward, pPlayer, pPlayer, IsCurrentAttackACrit());
+		pProjectile = CTFProjectile_Dart::Create( vecSrc, angForward, pPlayer, pPlayer, IsCurrentAttackACrit() );
 		break;
 
+	case TF_PROJECTILE_SUPERNAIL:
+		// TODO(SanyaSho): is SUPERNAIL uses custom projectile?
+		pProjectile = CTFProjectile_Nail::Create( vecSrc, angForward, pPlayer, pPlayer, IsCurrentAttackACrit() );
+		break;
 	default:
 		Assert(0);
 	}
@@ -646,6 +653,7 @@ CBaseEntity *CTFWeaponBaseGun::FireGrenade( CTFPlayer *pPlayer, int iType )
 			pPlayer, this );
 		break;
 	case TF_PROJECTILE_PIPEBOMB:
+	case TF_PROJECTILE_PIPEBOMB_CLASSIC:
 		pProjectile = CTFGrenadePipebombProjectile::Create( vecSrc, pPlayer->EyeAngles(), vecVelocity,
 			AngularImpulse( 600, random->RandomInt( -1200, 1200 ), 0 ),
 			pPlayer, this );
