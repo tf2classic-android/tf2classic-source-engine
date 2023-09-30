@@ -24,9 +24,12 @@
 #include "tf_hud_freezepanel.h"
 #include "tf_mainmenu.h"
 
+ConVar tf2c_hud_betastamp_draw( "tf2c_hud_betastamp_draw", "1", FCVAR_HIDDEN, "Show or hide betastamp in game." );
+
 using namespace vgui;
 
 DECLARE_HUDELEMENT( CTFHudBetaStamp );
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -42,13 +45,15 @@ CTFHudBetaStamp::CTFHudBetaStamp( const char *pElementName ) : CHudElement( pEle
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 100 );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFHudBetaStamp::PerformLayout( void )
 {
 	BaseClass::PerformLayout();
 
 	m_bGlowing = true;
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -71,9 +76,8 @@ void CTFHudBetaStamp::OnThink()
 //-----------------------------------------------------------------------------
 bool CTFHudBetaStamp::ShouldDraw( void )
 {
-	return true;
+	return tf2c_hud_betastamp_draw.GetBool();
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
