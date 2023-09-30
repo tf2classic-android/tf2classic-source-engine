@@ -25,9 +25,9 @@ public:
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual void UpdateStatus( void );
 
-	void SetData( int cond, float dur, float initdur );
+	void SetData( ETFCond cond, float dur, float initdur );
 
-	int m_nCond;
+	ETFCond m_nCond;
 	float m_flDuration;
 	float m_flInitDuration;
 

@@ -32,7 +32,7 @@ public:
 
 	virtual void	Precache();
 
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_TRANQ; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_TRANQ; }
 
 private:
 

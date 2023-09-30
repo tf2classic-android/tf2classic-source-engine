@@ -452,7 +452,7 @@ public:
 	float				MedicGetChargeLevel( void );
 
 	CWeaponMedigun		*GetMedigun( void );
-	CTFWeaponBase		*Weapon_OwnsThisID( int iWeaponID );
+	CTFWeaponBase		*Weapon_OwnsThisID( ETFWeaponID iWeaponID );
 	CTFWeaponBase		*Weapon_GetWeaponByType( int iType );
 	CEconEntity			*GetEntityForLoadoutSlot( int iSlot );
 	CEconWearable		*GetWearableForLoadoutSlot( int iSlot );

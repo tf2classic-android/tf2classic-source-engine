@@ -104,15 +104,15 @@ public:
 
 	// Condition (TF_COND_*).
 	int		GetCond() const						{ return m_nPlayerCond; }
-	void	SetCond( int nCond )				{ m_nPlayerCond = nCond; }
-	void	AddCond( int nCond, float flDuration = PERMANENT_CONDITION );
-	void	RemoveCond( int nCond );
-	bool	InCond( int nCond );
+	void	SetCond( ETFCond nCond )				{ m_nPlayerCond = nCond; }
+	void	AddCond( ETFCond nCond, float flDuration = PERMANENT_CONDITION );
+	void	RemoveCond( ETFCond nCond );
+	bool	InCond( ETFCond nCond );
 	void	RemoveAllCond( CTFPlayer *pPlayer );
-	void	OnConditionAdded( int nCond );
-	void	OnConditionRemoved( int nCond );
+	void	OnConditionAdded( ETFCond nCond );
+	void	OnConditionRemoved( ETFCond nCond );
 	void	ConditionThink( void );
-	float	GetConditionDuration( int nCond );
+	float	GetConditionDuration( ETFCond nCond );
 
 	bool	IsCritBoosted( void );
 	bool	IsInvulnerable( void );
@@ -224,6 +224,7 @@ public:
 	void	IncrementAirDucks( void );
 	void	ResetAirDucks( void );
 
+	bool	IsEnemy( CBaseEntity *pEntity );
 	void	DebugPrintConditions( void );
 
 	float	GetStealthNoAttackExpireTime( void );

@@ -43,7 +43,7 @@ public:
 
 	CTFBackpack();
 	virtual void PrimaryAttack();
-	virtual int	GetWeaponID( void ) const { return TF_WEAPON_BACKPACK; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_BACKPACK; }
 	bool CanPickup(void){ return (cEntityName[0] == '\0') ? true : false; }
 	void AddNewEntity(const char* cNewEntity) { cEntityName = cNewEntity; };
 	void AddNewEntityByType(int iType, int iSize);

@@ -13,7 +13,7 @@
 #define TE_RIFLE_SHELL 1024
 #define TE_PISTOL_SHELL 2048
 
-extern CTFWeaponInfo *GetTFWeaponInfo( int iWeapon );
+extern CTFWeaponInfo *GetTFWeaponInfo( ETFWeaponID iWeapon );
 
 //-----------------------------------------------------------------------------
 // Purpose: TF Eject Brass

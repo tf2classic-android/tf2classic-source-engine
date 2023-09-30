@@ -37,7 +37,7 @@ void CTFPowerupPanel::ApplySchemeSettings( IScheme *pScheme )
 	{
 		for ( int i = 0; g_aPowerupConds[i] != TF_COND_LAST; i++ )
 		{
-			int nCond = g_aPowerupConds[i];
+			ETFCond nCond = g_aPowerupConds[i];
 			if ( nCond == m_nCond )
 			{
 				// Skipping "item_" prefix.
@@ -75,7 +75,7 @@ void CTFPowerupPanel::UpdateStatus( void )
 //-----------------------------------------------------------------------------
 // Purpose:  
 //-----------------------------------------------------------------------------
-void CTFPowerupPanel::SetData( int cond, float dur, float initdur )
+void CTFPowerupPanel::SetData( ETFCond cond, float dur, float initdur )
 {
 	m_nCond = cond;
 	m_flDuration = dur;

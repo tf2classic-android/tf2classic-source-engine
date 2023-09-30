@@ -301,7 +301,7 @@ extern const char *g_aAmmoNames[];
 
 #define TF_WEAPON_ZOOM_FOV								20
 
-enum
+enum ETFWeaponID
 {
 	TF_WEAPON_NONE = 0,
 	TF_WEAPON_BAT,
@@ -400,11 +400,11 @@ int GetWeaponFromDamage( const CTakeDamageInfo &info );
 #endif
 int GetBuildableId( const char *pszBuildableName );
 
-const char *WeaponIdToAlias( int iWeapon );
-const char *WeaponIdToClassname( int iWeapon );
+const char *WeaponIdToAlias( ETFWeaponID iWeapon );
+const char *WeaponIdToClassname( ETFWeaponID iWeapon );
 const char *TranslateWeaponEntForClass( const char *pszName, int iClass );
 
-enum
+enum ProjectileType_t
 {
 	TF_PROJECTILE_NONE,
 	TF_PROJECTILE_BULLET,
@@ -477,7 +477,7 @@ extern const char *g_szProjectileNames[];
 #define TF_PLAYER_INDEX_NONE			( MAX_PLAYERS + 1 )
 
 // Most of these conds aren't actually implemented but putting them here for compatibility.
-enum
+enum ETFCond
 {
 	TF_COND_AIMING = 0,		// Sniper aiming, Heavy minigun.
 	TF_COND_ZOOMED,

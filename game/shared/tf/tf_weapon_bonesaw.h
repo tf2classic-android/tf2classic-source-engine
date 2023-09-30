@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFBonesaw() {}
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_BONESAW; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_BONESAW; }
 
 #ifdef CLIENT_DLL
 	virtual void		OnDataChanged( DataUpdateType_t updateType );

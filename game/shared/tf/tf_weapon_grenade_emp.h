@@ -33,7 +33,7 @@ public:
 	CTFGrenadeEmp() {}
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_EMP; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_EMP; }
 
 // Server specific.
 #ifdef GAME_DLL
@@ -60,7 +60,7 @@ public:
 	DECLARE_CLASS( CTFGrenadeEmpProjectile, CTFWeaponBaseGrenadeProj );
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_EMP; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_EMP; }
 
 	// Creation.
 	static CTFGrenadeEmpProjectile *Create( const Vector &position, const QAngle &angles, const Vector &velocity, 

@@ -30,7 +30,7 @@ public:
 
 	CTFCompoundBow();
 
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_COMPOUND_BOW; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_COMPOUND_BOW; }
 
 	virtual void	Precache( void );
 

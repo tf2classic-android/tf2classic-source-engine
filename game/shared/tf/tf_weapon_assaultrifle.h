@@ -30,7 +30,7 @@ public:
 	CTFAssaultRifle() {}
 	~CTFAssaultRifle() {}
 
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_ASSAULTRIFLE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_ASSAULTRIFLE; }
 
 private:
 

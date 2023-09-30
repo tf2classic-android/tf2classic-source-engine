@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFPipe() {}
-	virtual int			GetWeaponID(void) const			{ return TF_WEAPON_PIPE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_PIPE; }
 
 	virtual void PrimaryAttack();
 	virtual void SecondaryAttack();

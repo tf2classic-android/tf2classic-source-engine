@@ -28,7 +28,7 @@ public:
 	CTFProjectile_Arrow();
 	~CTFProjectile_Arrow();
 
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_COMPOUND_BOW; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_COMPOUND_BOW; }
 
 #ifdef GAME_DLL
 	static CTFProjectile_Arrow *Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, float flSpeed, float flGravity, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType );

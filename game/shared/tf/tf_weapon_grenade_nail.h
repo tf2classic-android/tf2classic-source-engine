@@ -33,7 +33,7 @@ public:
 	CTFGrenadeNail() {}
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_NAIL; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_NAIL; }
 
 // Server specific.
 #ifdef GAME_DLL
@@ -82,7 +82,7 @@ public:
 	DECLARE_DATADESC();
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_NAIL; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_NAIL; }
 
 	// Creation.
 	static CTFGrenadeNailProjectile *Create( const Vector &position, const QAngle &angles, const Vector &velocity, 

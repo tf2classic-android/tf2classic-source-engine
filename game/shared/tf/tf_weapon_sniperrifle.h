@@ -85,7 +85,7 @@ public:
 	CTFSniperRifle();
 	~CTFSniperRifle();
 
-	virtual int	GetWeaponID( void ) const			{ return TF_WEAPON_SNIPERRIFLE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_SNIPERRIFLE; }
 
 	virtual void Spawn();
 	virtual void Precache();

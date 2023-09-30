@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFBat();
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_BAT; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_BAT; }
 
 private:
 

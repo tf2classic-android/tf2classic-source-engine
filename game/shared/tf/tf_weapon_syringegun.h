@@ -33,7 +33,7 @@ public:
 	~CTFSyringeGun() {}
 
 	virtual void Precache();
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_SYRINGEGUN_MEDIC; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_SYRINGEGUN_MEDIC; }
 
 private:
 

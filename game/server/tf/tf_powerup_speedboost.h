@@ -26,7 +26,7 @@ public:
 	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_speed.mdl"; }
 	virtual const char *GetDefaultPickupSound( void ) { return "PowerupSpeedBoost.Touch"; }
 
-	virtual int	GetCondition( void ) { return TF_COND_POWERUP_SPEEDBOOST; }
+	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_SPEEDBOOST; }
 };
 
 #endif // POWERUP_SPEEDBOOST_H

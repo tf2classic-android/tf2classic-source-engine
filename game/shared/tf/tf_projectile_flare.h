@@ -33,7 +33,7 @@ public:
 	virtual void	Spawn();
 	virtual void	Precache();
 
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_FLAREGUN; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_FLAREGUN; }
 	virtual float	GetRocketSpeed( void );
 
 	// Overrides.

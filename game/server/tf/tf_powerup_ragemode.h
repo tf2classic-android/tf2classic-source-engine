@@ -27,7 +27,7 @@ public:
 	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_berserk.mdl"; }
 	virtual const char *GetDefaultPickupSound( void ) { return "PowerupBerserk.Touch"; }
 
-	virtual int	GetCondition( void ) { return TF_COND_POWERUP_RAGEMODE; }
+	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_RAGEMODE; }
 };
 
 #endif // POWERUP_RAGEMODE_H

@@ -37,7 +37,7 @@ public:
 	void					InitGrenade( const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner, CBaseEntity *pWeapon );
 
 	// Unique identifier.
-	virtual int GetWeaponID( void ) const { return TF_WEAPON_NONE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_NONE; }
 
 	// This gets sent to the client and placed in the client's interpolation history
 	// so the projectile starts out moving right off the bat.

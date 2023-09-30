@@ -31,7 +31,7 @@ public:
 	CTFSMG() {}
 	~CTFSMG() {}
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_SMG; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_SMG; }
 
 private:
 

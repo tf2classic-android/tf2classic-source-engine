@@ -26,7 +26,7 @@ public:
 	CTFFlareGun();
 
 	virtual void	Spawn( void );
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_FLAREGUN; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_FLAREGUN; }
 
 	DECLARE_DM_ACTTABLE();
 };

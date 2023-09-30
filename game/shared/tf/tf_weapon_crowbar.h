@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFCrowbar();
-	virtual int			GetWeaponID( void ) const { return TF_WEAPON_CROWBAR; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_CROWBAR; }
 
 private:
 

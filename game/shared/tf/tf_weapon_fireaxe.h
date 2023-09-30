@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFFireAxe() {}
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_FIREAXE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_FIREAXE; }
 
 private:
 

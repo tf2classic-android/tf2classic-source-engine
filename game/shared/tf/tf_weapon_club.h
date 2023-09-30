@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFClub();
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_CLUB; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_CLUB; }
 
 private:
 

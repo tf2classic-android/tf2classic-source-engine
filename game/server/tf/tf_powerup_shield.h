@@ -26,7 +26,7 @@ public:
 	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_shield.mdl"; }
 	virtual const char *GetDefaultPickupSound( void ) { return "PowerupUber.Touch"; }
 
-	virtual int	GetCondition( void ) { return TF_COND_POWERUP_SHIELD; }
+	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_SHIELD; }
 };
 
 #endif // POWERUP_SHIELD_H

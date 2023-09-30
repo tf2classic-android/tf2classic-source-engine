@@ -45,7 +45,7 @@ public:
 	virtual void	SecondaryAttack();
 	virtual bool	CanHolster( void ) const;
 	virtual bool	Holster( CBaseCombatWeapon *pSwitchingTo );
-	virtual int		GetWeaponID( void ) const						{ return TF_WEAPON_NONE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_NONE; }
 	virtual bool	ShouldDrawCrosshair( void )						{ return true; }
 	virtual void	WeaponReset( void );
 

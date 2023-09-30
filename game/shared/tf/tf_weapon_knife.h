@@ -29,7 +29,7 @@ public:
 
 	CTFKnife();
 
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_KNIFE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_KNIFE; }
 
 	virtual bool		Deploy( void );
 	virtual void		ItemPostFrame( void );

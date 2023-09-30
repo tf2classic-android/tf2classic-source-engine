@@ -57,7 +57,7 @@ public:
 	void	Precache( void );
 	void	Spawn( void );
 
-	virtual int   GetWeaponID( void ) const { return m_iWeaponID; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return m_iWeaponID; }
 	void		  SetWeaponID( int iID ) { m_iWeaponID = iID; }
 
 	bool		  IsCritical( void )				{ return m_bCritical; }

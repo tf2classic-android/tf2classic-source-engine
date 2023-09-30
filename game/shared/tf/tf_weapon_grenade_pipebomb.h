@@ -30,7 +30,7 @@ public:
 	~CTFGrenadePipebombProjectile();
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const { return TF_WEAPON_GRENADE_DEMOMAN; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_DEMOMAN; }
 
 private:
 	float		m_flCreationTime;

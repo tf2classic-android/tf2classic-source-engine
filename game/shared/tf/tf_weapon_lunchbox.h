@@ -23,7 +23,7 @@ public:
 	DECLARE_NETWORKCLASS();
 	DECLARE_PREDICTABLE();
 
-	virtual int GetWeaponID() const { return TF_WEAPON_LUNCHBOX; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_LUNCHBOX; }
 
 	virtual bool	ShouldBlockPrimaryFire( void ) { return true; }
 

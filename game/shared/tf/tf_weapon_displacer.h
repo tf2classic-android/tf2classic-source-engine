@@ -25,7 +25,7 @@ public:
 
 	CTFWeaponDisplacer();
 
-	virtual int GetWeaponID( void ) const { return TF_WEAPON_DISPLACER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_DISPLACER; }
 
 	virtual void	Precache( void );
 	virtual void	WeaponReset( void );

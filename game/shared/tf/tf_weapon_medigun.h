@@ -60,7 +60,7 @@ public:
 	virtual bool	AppliesModifier( void ) { return true; }
 	int				GetMedigunType( void );
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_MEDIGUN; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_MEDIGUN; }
 
 	bool			IsReleasingCharge( void ) { return (m_bChargeRelease && !m_bHolstered); }
 	medigun_charge_types GetChargeType( void );

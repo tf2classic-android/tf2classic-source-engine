@@ -33,7 +33,7 @@ public:
 	CTFGrenadeHeal() {}
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_HEAL; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_HEAL; }
 
 	// Server specific.
 #ifdef GAME_DLL
@@ -60,7 +60,7 @@ public:
 	DECLARE_CLASS( CTFGrenadeHealProjectile, CTFWeaponBaseGrenadeProj );
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_HEAL; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_HEAL; }
 
 	// Creation.
 	static CTFGrenadeHealProjectile *Create( const Vector &position, const QAngle &angles, const Vector &velocity, 

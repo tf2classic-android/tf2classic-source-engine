@@ -22,7 +22,7 @@ public:
 	CTFSixShooter();
 	virtual ~CTFSixShooter();
 
-	virtual int GetWeaponID( void ) const
+	virtual ETFWeaponID GetWeaponID( void ) const
 	{
 		return TF_WEAPON_SIXSHOOTER;
 	}

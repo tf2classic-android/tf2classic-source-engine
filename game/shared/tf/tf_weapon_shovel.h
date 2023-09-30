@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFShovel();
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_SHOVEL; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_SHOVEL; }
 
 private:
 

@@ -217,7 +217,7 @@ public:
 	virtual	bool		Weapon_Switch( C_BaseCombatWeapon *pWeapon, int viewmodelindex = 0 );
 
 	CWeaponMedigun		*GetMedigun( void );
-	CTFWeaponBase		*Weapon_OwnsThisID( int iWeaponID );
+	CTFWeaponBase		*Weapon_OwnsThisID( ETFWeaponID iWeaponID );
 	CTFWeaponBase		*Weapon_GetWeaponByType( int iType );
 	virtual bool		Weapon_SlotOccupied( CBaseCombatWeapon *pWeapon );
 	virtual CBaseCombatWeapon *Weapon_GetSlot( int slot ) const;

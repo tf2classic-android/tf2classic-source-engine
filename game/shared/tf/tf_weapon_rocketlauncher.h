@@ -37,7 +37,7 @@ public:
 #ifndef CLIENT_DLL
 	virtual void	Precache();
 #endif
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_ROCKETLAUNCHER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_ROCKETLAUNCHER; }
 	virtual CBaseEntity *FireProjectile( CTFPlayer *pPlayer );
 	virtual void	ItemPostFrame( void );
 	virtual bool	Deploy( void );
@@ -77,7 +77,7 @@ public:
 		/* Nothing */
 	}
 
-	virtual int GetWeaponID( void ) const
+	virtual ETFWeaponID GetWeaponID( void ) const
 	{
 		return TF_WEAPON_ROCKETLAUNCHER_MERC;
 	}

@@ -65,7 +65,7 @@ public:
 	int		GetPosition( void ) const;
 	const char *GetPrintName( void ) const;
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_BUILDER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_BUILDER; }
 
 	virtual void	WeaponReset( void );
 

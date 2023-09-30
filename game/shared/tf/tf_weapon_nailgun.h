@@ -31,7 +31,7 @@ public:
 	~CTFNailgun() {}
 
 	virtual void	Precache();
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_NAILGUN; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_NAILGUN; }
 
 private:
 

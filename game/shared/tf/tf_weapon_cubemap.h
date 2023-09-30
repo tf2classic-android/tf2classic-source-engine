@@ -18,7 +18,7 @@ public:
 	DECLARE_NETWORKCLASS();
 	DECLARE_PREDICTABLE();
 
-	virtual int GetWeaponID( void ) const
+	virtual ETFWeaponID GetWeaponID( void ) const
 	{
 		return TF_WEAPON_CUBEMAP;
 	}

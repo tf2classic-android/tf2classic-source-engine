@@ -26,7 +26,7 @@ public:
 	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_invis.mdl"; }
 	virtual const char *GetDefaultPickupSound( void ) { return "PowerupCloak.Touch"; }
 
-	virtual int	GetCondition( void ) { return TF_COND_POWERUP_CLOAK; }
+	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_CLOAK; }
 };
 
 #endif // POWERUP_CLOAK_H

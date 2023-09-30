@@ -43,7 +43,7 @@ public:
 
 	virtual void	PrimaryAttack();
 	virtual void	SecondaryAttack();
-	virtual int		GetWeaponID( void ) const						{ return TF_WEAPON_PDA; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_PDA; }
 	virtual bool	ShouldDrawCrosshair( void )						{ return false; }
 	virtual bool	HasPrimaryAmmo()								{ return true; }
 	virtual bool	CanBeSelected()									{ return true; }
@@ -68,7 +68,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	virtual const char *GetPanelName() { return ""; }
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_PDA_ENGINEER_BUILD; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_PDA_ENGINEER_BUILD; }
 };
 
 #ifdef CLIENT_DLL
@@ -84,7 +84,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	virtual const char *GetPanelName() { return ""; }
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_PDA_ENGINEER_DESTROY; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_PDA_ENGINEER_DESTROY; }
 
 	virtual bool	VisibleInWeaponSelection( void )
 	{
@@ -109,7 +109,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	virtual const char *GetPanelName() { return ""; }
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_PDA_SPY; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_PDA_SPY; }
 
 #ifdef CLIENT_DLL
 	virtual bool Deploy( void );

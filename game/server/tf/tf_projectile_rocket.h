@@ -25,7 +25,7 @@ public:
 	// Creation.
 	static CTFProjectile_Rocket *Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL, CBaseEntity *pScorer = NULL, int iType = TF_PROJECTILE_ROCKET );
 
-	virtual int GetWeaponID() const
+	virtual ETFWeaponID GetWeaponID() const
 	{
 		if( m_iType == TF_PROJECTILE_ROCKET_CLASSIC )
 		{

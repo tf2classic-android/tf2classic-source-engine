@@ -33,7 +33,7 @@ public:
 	CTFGrenadeSmokeBomb() {}
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_SMOKE_BOMB; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_SMOKE_BOMB; }
 
 	// Server specific.
 #ifdef GAME_DLL

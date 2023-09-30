@@ -108,7 +108,7 @@ public:
 
 	void			SetupInitialTransmittedGrenadeVelocity( const Vector &velocity )	{ m_vInitialVelocity = velocity; }
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_ROCKETLAUNCHER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_ROCKETLAUNCHER; }
 
 	virtual CBaseEntity		*GetEnemy( void )			{ return m_hEnemy; }
 

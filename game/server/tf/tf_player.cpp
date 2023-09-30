@@ -2662,11 +2662,11 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 				if ( args.ArgC() >= 3 )
 				{
 					float flDuration = atof( args[2] );
-					pTargetPlayer->m_Shared.AddCond( iCond, flDuration );
+					pTargetPlayer->m_Shared.AddCond( (ETFCond)iCond, flDuration );
 				}
 				else
 				{
-					pTargetPlayer->m_Shared.AddCond( iCond );
+					pTargetPlayer->m_Shared.AddCond( (ETFCond)iCond );
 				}
 			}
 			return true;
@@ -2680,7 +2680,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 			if ( args.ArgC() >= 2 )
 			{
 				int iCond = clamp( atoi( args[1] ), 0, TF_COND_LAST-1 );
-				m_Shared.RemoveCond( iCond );
+				m_Shared.RemoveCond( (ETFCond)iCond );
 			}
 			return true;
 		}

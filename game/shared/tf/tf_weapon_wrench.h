@@ -30,7 +30,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFWrench();
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_WRENCH; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_WRENCH; }
 	virtual void		Smack( void );
 	virtual float		GetMeleeDamage( CBaseEntity *pTarget, int &iCustomDamage );
 

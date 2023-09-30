@@ -31,7 +31,7 @@ public:
 	CTFRevolver() {}
 	~CTFRevolver() {}
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_REVOLVER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_REVOLVER; }
 
 	DECLARE_DM_ACTTABLE();
 

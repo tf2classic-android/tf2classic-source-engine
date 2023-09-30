@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFUmbrella();
-	virtual int			GetWeaponID( void ) const { return TF_WEAPON_UMBRELLA; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_UMBRELLA; }
 
 private:
 

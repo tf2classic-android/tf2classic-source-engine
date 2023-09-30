@@ -357,7 +357,7 @@ const CTFWeaponInfo &CTFWeaponBase::GetTFWpnData() const
 // -----------------------------------------------------------------------------
 // Purpose:
 // -----------------------------------------------------------------------------
-int CTFWeaponBase::GetWeaponID( void ) const
+ETFWeaponID CTFWeaponBase::GetWeaponID( void ) const
 {
 	Assert( false );
 	return TF_WEAPON_NONE;
@@ -366,7 +366,7 @@ int CTFWeaponBase::GetWeaponID( void ) const
 // -----------------------------------------------------------------------------
 // Purpose:
 // -----------------------------------------------------------------------------
-bool CTFWeaponBase::IsWeapon( int iWeapon ) const
+bool CTFWeaponBase::IsWeapon( ETFWeaponID iWeapon ) const
 {
 	return GetWeaponID() == iWeapon;
 }
@@ -3461,7 +3461,7 @@ EXPOSE_INTERFACE( CWeaponInvisProxy, IMaterialProxy, "weapon_invis" IMATERIAL_PR
 
 #endif // CLIENT_DLL
 
-CTFWeaponInfo *GetTFWeaponInfo( int iWeapon )
+CTFWeaponInfo *GetTFWeaponInfo( ETFWeaponID iWeapon )
 {
 	// Get the weapon information.
 	const char *pszWeaponAlias = WeaponIdToAlias( iWeapon );

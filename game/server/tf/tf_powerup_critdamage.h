@@ -29,7 +29,7 @@ public:
 	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_crit.mdl"; }
 	virtual const char *GetDefaultPickupSound( void ) { return "PowerupCrit.Touch"; }
 
-	virtual int	GetCondition( void ) { return TF_COND_POWERUP_CRITDAMAGE; }
+	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_CRITDAMAGE; }
 };
 
 #endif // POWERUP_CRITDAMAGE_H

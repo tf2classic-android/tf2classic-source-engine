@@ -40,7 +40,7 @@
 
 #define MAX_TRACER_NAME		128
 
-CTFWeaponInfo *GetTFWeaponInfo(int iWeapon);
+CTFWeaponInfo *GetTFWeaponInfo(ETFWeaponID iWeapon);
 CTFWeaponInfo *GetTFWeaponInfoForItem( CEconItemView *pItem, int iClass );
 
 class CTFPlayer;
@@ -126,8 +126,8 @@ class CTFWeaponBase : public CBaseCombatWeapon
 
 	// Weapon Data.
 	CTFWeaponInfo const	&GetTFWpnData() const;
-	virtual int GetWeaponID( void ) const;
-	bool IsWeapon( int iWeapon ) const;
+	virtual ETFWeaponID GetWeaponID( void ) const;
+	bool IsWeapon( ETFWeaponID iWeapon ) const;
 	virtual int	GetDamageType() const { return g_aWeaponDamageTypes[ GetWeaponID() ]; }
 	virtual int GetCustomDamageType() const { return TF_DMG_CUSTOM_NONE; }
 

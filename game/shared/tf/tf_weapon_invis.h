@@ -34,7 +34,7 @@ public:
 	virtual void	HideThink( void );
 	virtual bool	Holster( CBaseCombatWeapon *pSwitchingTo );
 
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_INVIS; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_INVIS; }
 	virtual bool	ShouldDrawCrosshair( void ) { return false; }
 	virtual bool	HasPrimaryAmmo() { return true; }
 	virtual bool	CanBeSelected() { return true; }

@@ -30,7 +30,7 @@ public:
 
 	CTFPowerupCustom();
 
-	virtual int	GetCondition( void ) { return m_iPowerupCondition; }
+	virtual ETFCond GetCondition( void ) { return m_iPowerupCondition; }
 
 private:
 	int		m_iPowerupCondition;

@@ -65,7 +65,7 @@ public:
 
 	virtual bool HasAmmo( void );
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_BUILDER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_BUILDER; }
 
 	int GetObjectType( void ) { return m_iObjectType; }
 

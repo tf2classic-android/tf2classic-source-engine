@@ -32,7 +32,7 @@ public:
 	~CTFGrenadeLauncher();
 
 	virtual void	Spawn( void );
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_GRENADELAUNCHER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADELAUNCHER; }
 	virtual float	GetProjectileSpeed( void );
 
 private:

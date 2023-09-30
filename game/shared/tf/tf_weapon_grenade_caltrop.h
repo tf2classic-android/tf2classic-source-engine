@@ -34,7 +34,7 @@ public:
 	CTFGrenadeCaltrop() {}
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_CALTROP; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_CALTROP; }
 
 // Server specific.
 #ifdef GAME_DLL
@@ -59,7 +59,7 @@ public:
 	DECLARE_NETWORKCLASS();
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_CALTROP; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_CALTROP; }
 
 #ifdef GAME_DLL
 	// Creation.

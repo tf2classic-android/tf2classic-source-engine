@@ -52,7 +52,7 @@ public:
 	virtual void	Spawn( void );
 	virtual void	Precache( void );
 
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_FLAMETHROWER; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_FLAMETHROWER; }
 
 	virtual bool	Holster( CBaseCombatWeapon *pSwitchingTo );
 	virtual void	ItemPostFrame( void );
@@ -137,7 +137,7 @@ class CTFFlameRocket : public CTFProjectile_Rocket
 public:
 	DECLARE_NETWORKCLASS(); 
 
-	virtual int		GetWeaponID( void ) const		{ return TF_WEAPON_FLAMETHROWER_ROCKET; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_FLAMETHROWER_ROCKET; }
 	virtual float	GetRadius() { return TF_FLAMETHROWER_ROCKET_BURN_RADIUS; }
 
 #ifdef GAME_DLL

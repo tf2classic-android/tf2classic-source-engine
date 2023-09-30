@@ -29,7 +29,7 @@ public:
 	DECLARE_PREDICTABLE();
 
 	CTFBottle();
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_BOTTLE; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_BOTTLE; }
 
 	virtual void		Smack( void );
 	virtual void		WeaponReset( void );

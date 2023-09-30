@@ -51,7 +51,7 @@ public:
 
 	virtual void	Precache( void );
 	virtual void	Spawn(void);
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_MINIGUN; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_MINIGUN; }
 	virtual void	PrimaryAttack();
 	virtual void	SecondaryAttack();
 	void			MinigunModelBrassEject();

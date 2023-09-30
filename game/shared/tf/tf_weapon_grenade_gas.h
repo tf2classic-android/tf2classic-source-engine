@@ -33,7 +33,7 @@ public:
 	CTFGrenadeGas() {}
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_GAS; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_GAS; }
 
 // Server specific.
 #ifdef GAME_DLL
@@ -92,7 +92,7 @@ public:
 	~CTFGrenadeGasProjectile();
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_GAS; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_GAS; }
 
 	// Creation.
 	static CTFGrenadeGasProjectile *Create( const Vector &position, const QAngle &angles, const Vector &velocity, 

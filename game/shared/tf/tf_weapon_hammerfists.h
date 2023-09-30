@@ -40,7 +40,7 @@ public:
 
 	virtual void		DoViewModelAnimation( void );
 
-	virtual int			GetWeaponID( void ) const { return TF_WEAPON_HAMMERFISTS; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_HAMMERFISTS; }
 
 private:
 	void Punch( void );

@@ -38,7 +38,7 @@ public:
 
 	virtual void	PrimaryAttack( void );
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_PISTOL; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_PISTOL; }
 
 	DECLARE_DM_ACTTABLE();
 
@@ -54,7 +54,7 @@ public:
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();
 
-	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_PISTOL_SCOUT; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_PISTOL_SCOUT; }
 };
 
 // Mercenary
@@ -65,7 +65,7 @@ public:
 	DECLARE_NETWORKCLASS();
 	DECLARE_PREDICTABLE();
 
-	virtual int GetWeaponID( void ) const
+	virtual ETFWeaponID GetWeaponID( void ) const
 	{
 		return TF_WEAPON_PISTOL_MERC;
 	}

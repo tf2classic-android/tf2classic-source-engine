@@ -282,7 +282,7 @@ void CTFPlayerShared::Init( CTFPlayer *pPlayer )
 // Purpose: Add a condition and duration
 // duration of PERMANENT_CONDITION means infinite duration
 //-----------------------------------------------------------------------------
-void CTFPlayerShared::AddCond( int nCond, float flDuration /* = PERMANENT_CONDITION */ )
+void CTFPlayerShared::AddCond( ETFCond nCond, float flDuration /* = PERMANENT_CONDITION */ )
 {
 	Assert( nCond >= 0 && nCond < TF_COND_LAST );
 	int nCondFlag = nCond;
@@ -321,7 +321,7 @@ void CTFPlayerShared::AddCond( int nCond, float flDuration /* = PERMANENT_CONDIT
 //-----------------------------------------------------------------------------
 // Purpose: Forcibly remove a condition
 //-----------------------------------------------------------------------------
-void CTFPlayerShared::RemoveCond( int nCond )
+void CTFPlayerShared::RemoveCond( ETFCond nCond )
 {
 	Assert( nCond >= 0 && nCond < TF_COND_LAST );
 
@@ -362,7 +362,7 @@ void CTFPlayerShared::RemoveCond( int nCond )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CTFPlayerShared::InCond( int nCond )
+bool CTFPlayerShared::InCond( ETFCond nCond )
 {
 	Assert( nCond >= 0 && nCond < TF_COND_LAST );
 
@@ -400,7 +400,7 @@ bool CTFPlayerShared::InCond( int nCond )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-float CTFPlayerShared::GetConditionDuration( int nCond )
+float CTFPlayerShared::GetConditionDuration( ETFCond nCond )
 {
 	Assert( nCond >= 0 && nCond < TF_COND_LAST );
 
@@ -463,6 +463,14 @@ bool CTFPlayerShared::IsStealthed( void )
 	return false;
 }
 
+bool CTFPlayerShared::IsEnemy( CBaseEntity *pEntity )
+{
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		return true;
+
+	return ( pEntity->GetTeamNumber() != m_pOuter->GetTeamNumber() );
+}
+
 void CTFPlayerShared::DebugPrintConditions( void )
 {
 #ifndef CLIENT_DLL
@@ -477,7 +485,7 @@ void CTFPlayerShared::DebugPrintConditions( void )
 	int iNumFound = 0;
 	for ( i = 0; i < TF_COND_LAST; i++ )
 	{
-		if ( InCond( i ) )
+		if ( InCond( (ETFCond)i ) )
 		{
 			if ( m_flCondExpireTimeLeft[i] == PERMANENT_CONDITION )
 			{
@@ -579,11 +587,11 @@ void CTFPlayerShared::SyncConditions( int nCond, int nOldCond, int nUnused, int 
 	{
 		if ( nCondAdded & (1<<i) )
 		{
-			OnConditionAdded( i + iOffset );
+			OnConditionAdded( (ETFCond)i + iOffset );
 		}
 		else if ( nCondRemoved & (1<<i) )
 		{
-			OnConditionRemoved( i + iOffset );
+			OnConditionRemoved( (ETFCond)i + iOffset );
 		}
 	}
 }
@@ -598,7 +606,7 @@ void CTFPlayerShared::RemoveAllCond( CTFPlayer *pPlayer )
 	int i;
 	for ( i = 0; i < TF_COND_LAST; i++ )
 	{
-		if ( InCond( i ) )
+		if ( InCond( (ETFCond)i ) )
 		{
 			RemoveCond( i );
 		}
@@ -616,7 +624,7 @@ void CTFPlayerShared::RemoveAllCond( CTFPlayer *pPlayer )
 // Purpose: Called on both client and server. Server when we add the bit,
 // and client when it recieves the new cond bits and finds one added
 //-----------------------------------------------------------------------------
-void CTFPlayerShared::OnConditionAdded( int nCond )
+void CTFPlayerShared::OnConditionAdded( ETFCond nCond )
 {
 	switch ( nCond )
 	{
@@ -720,7 +728,7 @@ void CTFPlayerShared::OnConditionAdded( int nCond )
 // Purpose: Called on both client and server. Server when we remove the bit,
 // and client when it recieves the new cond bits and finds one removed
 //-----------------------------------------------------------------------------
-void CTFPlayerShared::OnConditionRemoved( int nCond )
+void CTFPlayerShared::OnConditionRemoved( ETFCond nCond )
 {
 	switch ( nCond )
 	{
@@ -864,7 +872,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 	int i;
 	for ( i = 0; i < TF_COND_LAST; i++ )
 	{
-		if ( InCond( i ) )
+		if ( InCond( (ETFCond)i ) )
 		{
 			// Ignore permanent conditions
 			if ( m_flCondExpireTimeLeft[i] != PERMANENT_CONDITION )
@@ -887,7 +895,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 
 				if ( m_flCondExpireTimeLeft[i] == 0 )
 				{
-					RemoveCond( i );
+					RemoveCond( (ETFCond)i );
 				}
 			}
 		}
@@ -3826,7 +3834,7 @@ CWeaponMedigun *CTFPlayer::GetMedigun( void )
 	return NULL;
 }
 
-CTFWeaponBase *CTFPlayer::Weapon_OwnsThisID( int iWeaponID )
+CTFWeaponBase *CTFPlayer::Weapon_OwnsThisID( ETFWeaponID iWeaponID )
 {
 	for ( int i = 0; i < WeaponCount(); i++ )
 	{

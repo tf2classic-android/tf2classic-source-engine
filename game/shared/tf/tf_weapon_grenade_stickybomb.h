@@ -30,7 +30,7 @@ public:
 	~CTFGrenadeStickybombProjectile();
 
 	// Unique identifier.
-	virtual int			GetWeaponID( void ) const { return TF_WEAPON_GRENADE_PIPEBOMB; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_PIPEBOMB; }
 
 	virtual int			GetDamageType();
 	virtual void		UpdateOnRemove( void );

@@ -704,7 +704,7 @@ int GetWeaponId( const char *pszWeaponName )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-const char *WeaponIdToAlias( int iWeapon )
+const char *WeaponIdToAlias( ETFWeaponID iWeapon )
 {
 	// if this doesn't match, you need to add missing weapons to the array
 	assert( ARRAYSIZE( g_aWeaponNames ) == ( TF_WEAPON_COUNT + 1 ) );
@@ -719,7 +719,7 @@ const char *WeaponIdToAlias( int iWeapon )
 // Purpose: Entity classnames need to be in lower case. Use this whenever
 // you're spawning a weapon.
 //-----------------------------------------------------------------------------
-const char *WeaponIdToClassname( int iWeapon )
+const char *WeaponIdToClassname( ETFWeaponID iWeapon )
 {
 	const char *pszWeaponAlias = WeaponIdToAlias( iWeapon );
 

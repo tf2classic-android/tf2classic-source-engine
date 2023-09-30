@@ -35,7 +35,7 @@ public:
 
 	virtual void	Precache( void );
 	virtual void	Spawn( void );
-	virtual int		GetWeaponID( void ) const { return TF_WEAPON_GRENADE_MIRV; }
+	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_GRENADE_MIRV; }
 
 	virtual bool	Holster( CBaseCombatWeapon *pSwitchingTo );
 	virtual bool	Deploy( void );
