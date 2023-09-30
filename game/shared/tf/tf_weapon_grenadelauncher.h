@@ -14,12 +14,14 @@
 // Client specific.
 #ifdef CLIENT_DLL
 #define CTFGrenadeLauncher C_TFGrenadeLauncher
+#define CTFGrenadeLauncher_Merc C_TFGrenadeLauncher_Merc
 #endif
 
 //=============================================================================
 //
 // TF Weapon Grenade Launcher.
 //
+//=============================================================================
 class CTFGrenadeLauncher : public CTFWeaponBaseGun
 {
 public:
@@ -39,4 +41,32 @@ private:
 	CTFGrenadeLauncher( const CTFGrenadeLauncher & ) {}
 };
 
+//=============================================================================
+//
+// TF Weapon Grenade Launcher (Mercenary).
+//
+//=============================================================================
+class CTFGrenadeLauncher_Merc : public CTFGrenadeLauncher
+{
+public:
+
+	DECLARE_CLASS( CTFGrenadeLauncher_Merc, CTFGrenadeLauncher );
+	DECLARE_NETWORKCLASS();
+	DECLARE_PREDICTABLE();
+
+	CTFGrenadeLauncher_Merc()
+	{
+	}
+
+	virtual ~CTFGrenadeLauncher_Merc()
+	{
+	}
+
+	virtual ETFWeaponID GetWeaponID( void ) const
+	{
+		return TF_WEAPON_GRENADELAUNCHER_MERC;
+	}
+
+	virtual float GetProjectileSpeed( void );
+};
 #endif // TF_WEAPON_GRENADELAUNCHER_H

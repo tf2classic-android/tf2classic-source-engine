@@ -10,6 +10,7 @@
 //
 // Weapon Grenade Launcher tables.
 //
+//=============================================================================
 CREATE_SIMPLE_WEAPON_TABLE( TFGrenadeLauncher, tf_weapon_grenadelauncher )
 
 //=============================================================================
@@ -20,6 +21,7 @@ CREATE_SIMPLE_WEAPON_TABLE( TFGrenadeLauncher, tf_weapon_grenadelauncher )
 //
 // Weapon Grenade Launcher functions.
 //
+//=============================================================================
 
 CTFGrenadeLauncher::CTFGrenadeLauncher()
 {
@@ -44,4 +46,16 @@ float CTFGrenadeLauncher::GetProjectileSpeed( void )
 	float flVelocity = TF_GRENADE_LAUNCER_VEL;
 	CALL_ATTRIB_HOOK_FLOAT( flVelocity, mult_projectile_speed );
 	return flVelocity;
+}
+
+//=============================================================================
+//
+// Weapon Grenade Launcher (Mercenary) tables.
+//
+//=============================================================================
+CREATE_SIMPLE_WEAPON_TABLE( TFGrenadeLauncher_Merc, tf_weapon_grenadelauncher_merc )
+
+float CTFGrenadeLauncher_Merc::GetProjectileSpeed( void )
+{
+	return TF_GRENADE_LAUNCER_VEL;
 }
