@@ -446,6 +446,13 @@ void CTFWeaponBaseGun::GetProjectileFireSetup( CTFPlayer *pPlayer, Vector vecOff
 		vecOffset.y *= -1.0f;
 	}
 
+	int iCenterFireProjectile = 0;
+	CALL_ATTRIB_HOOK_INT( iCenterFireProjectile, centerfire_projectile );
+	if( iCenterFireProjectile == 1 )
+	{
+		vecOffset.y = 0;
+	}
+
 	// Offset actual start point
 	*vecSrc = vecShootPos + (vecForward * vecOffset.x) + (vecRight * vecOffset.y) + (vecUp * vecOffset.z);
 #else
