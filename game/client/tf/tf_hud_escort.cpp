@@ -381,7 +381,7 @@ void CTFHudEscort::OnTick( void )
 
 	if ( m_pEscortItemPanel )
 	{
-		m_pEscortItemPanel->SetDialogVariable( "recede", (int)ceil( flRecedeTimeLeft ) );
+		m_pEscortItemPanel->SetDialogVariable( "recede", Ceil2Int( flRecedeTimeLeft ) );
 	}
 
 	if ( m_pRecedeTime )
