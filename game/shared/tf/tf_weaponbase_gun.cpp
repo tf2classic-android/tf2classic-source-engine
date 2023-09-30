@@ -213,7 +213,8 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 
 	CBaseEntity *pProjectile = NULL;
 
-	Msg( "[DEBUG]: iProjectile : %d (%s)\n", iProjectile,g_szProjectileNames[iProjectile] );
+	// SanyaSho: uncomment me if something is fucked up again.
+	//Msg( "[DEBUG]: iProjectile : %d (%s)\n", iProjectile,g_szProjectileNames[iProjectile] );
 
 	switch( iProjectile )
 	{
