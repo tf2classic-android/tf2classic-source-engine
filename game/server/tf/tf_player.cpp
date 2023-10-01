@@ -645,8 +645,8 @@ void CTFPlayer::PreThink()
 	if (m_nButtons & IN_GRENADE1)
 	{
 		TFPlayerClassData_t *pData = m_PlayerClass.GetData();
-		CTFWeaponBase *pGrenade = Weapon_OwnsThisID(pData->m_aGrenades[0]);
-		if (pGrenade)
+		CTFWeaponBase *pGrenade = Weapon_OwnsThisID( (ETFWeaponID)pData->m_aGrenades[0] );
+		if( pGrenade )
 		{
 			pGrenade->Deploy();
 		}
@@ -1542,7 +1542,7 @@ void CTFPlayer::ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData )
 {
 	for ( int iWeapon = 0; iWeapon < TF_PLAYER_WEAPON_COUNT; ++iWeapon )
 	{
-		int iWeaponID = GetTFInventory()->GetWeapon( m_PlayerClass.GetClassIndex(), iWeapon );
+		ETFWeaponID iWeaponID = (ETFWeaponID)GetTFInventory()->GetWeapon( m_PlayerClass.GetClassIndex(), iWeapon );
 
 		if ( iWeaponID != TF_WEAPON_NONE )
 		{
@@ -1600,7 +1600,7 @@ void CTFPlayer::ManageRandomWeapons( TFPlayerClassData_t *pData )
 	// TODO: Make this work with Econ weapons. Not a priority atm.
 	for ( int iWeapon = 0; iWeapon < TF_PLAYER_WEAPON_COUNT; ++iWeapon )
 	{
-		int iWeaponID = RandomInt( TF_WEAPON_NONE + 1, TF_WEAPON_COUNT - 1 );
+		ETFWeaponID iWeaponID = (ETFWeaponID)RandomInt( TF_WEAPON_NONE + 1, TF_WEAPON_COUNT - 1 );
 		const char *pszWeaponName = WeaponIdToClassname( iWeaponID );
 
 		CTFWeaponBase *pWeapon = (CTFWeaponBase *)GetWeapon( iWeapon );
@@ -1655,7 +1655,7 @@ void CTFPlayer::ManageGrenades( TFPlayerClassData_t *pData )
 				UTIL_Remove( pGrenade );
 			}
 
-			pGrenade = (CTFWeaponBase *)Weapon_OwnsThisID( pData->m_aGrenades[iGrenade] );
+			pGrenade = (CTFWeaponBase *)Weapon_OwnsThisID( (ETFWeaponID)pData->m_aGrenades[iGrenade] );
 
 			if ( pGrenade )
 			{
@@ -1669,7 +1669,7 @@ void CTFPlayer::ManageGrenades( TFPlayerClassData_t *pData )
 			}
 			else
 			{
-				const char *pszGrenadeName = WeaponIdToClassname( pData->m_aGrenades[iGrenade] );
+				const char *pszGrenadeName = WeaponIdToClassname( (ETFWeaponID)pData->m_aGrenades[iGrenade] );
 				pGrenade = (CTFWeaponBase *)GiveNamedItem( pszGrenadeName );
 
 				if ( pGrenade )
@@ -3702,7 +3702,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 		{
 			for ( int i = 0; condition_to_attribute_translation[i] != TF_COND_LAST; i++ )
 			{
-				int nCond = condition_to_attribute_translation[i];
+				ETFCond nCond = condition_to_attribute_translation[i];
 				int nFlag = ( 1 << i );
 				if ( ( nCritOnCond & nFlag ) && m_Shared.InCond( nCond ) )
 				{
@@ -5283,7 +5283,7 @@ void CTFPlayer::DropPowerups( ETFPowerupDropStyle dropStyle )
 {
 	for ( int i = 0; g_aPowerups[i].cond != TF_COND_LAST; i++ )
 	{
-		int nCond = g_aPowerups[i].cond;
+		ETFCond nCond = g_aPowerups[i].cond;
 		if ( g_aPowerups[i].drop_on_death && m_Shared.InCond( nCond ) )
 		{
 			CTFBaseDMPowerup *pPowerup = CTFBaseDMPowerup::Create( WorldSpaceCenter(), vec3_angle, this, g_aPowerups[i].name, m_Shared.GetConditionDuration( nCond ) );
@@ -8413,7 +8413,7 @@ CON_COMMAND_F( give_weapon, "Give specified weapon.", FCVAR_CHEAT )
 
 	int iWeaponID = GetWeaponId( pszWeaponName );
 
-	CTFWeaponInfo *pWeaponInfo = GetTFWeaponInfo( iWeaponID );
+	CTFWeaponInfo *pWeaponInfo = GetTFWeaponInfo( (ETFWeaponID)iWeaponID );
 	if ( !pWeaponInfo )
 		return;
 

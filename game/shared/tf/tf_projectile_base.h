@@ -58,14 +58,14 @@ public:
 	void	Spawn( void );
 
 	virtual ETFWeaponID GetWeaponID( void ) const { return m_iWeaponID; }
-	void		  SetWeaponID( int iID ) { m_iWeaponID = iID; }
+	void		  SetWeaponID( ETFWeaponID iID ) { m_iWeaponID = iID; }
 
 	bool		  IsCritical( void )				{ return m_bCritical; }
 	virtual void  SetCritical( bool bCritical )		{ m_bCritical = bCritical; }
 
 private:
 
-	int				m_iWeaponID;
+	ETFWeaponID		m_iWeaponID;
 	bool			m_bCritical;
 
 protected:

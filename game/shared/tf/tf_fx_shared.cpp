@@ -135,7 +135,7 @@ void FX_TFTracer( const char *pszTracerEffectName, const Vector &vecStart, const
 // only does the damage calculations.  On the client, it does all the effects.
 //-----------------------------------------------------------------------------
 void FX_FireBullets( int iPlayer, const Vector &vecOrigin, const QAngle &vecAngles,
-					 int iWeapon, int iMode, int iSeed, float flSpread, float flDamage /* = -1.0f */, bool bCritical /* = false*/ )
+					 ETFWeaponID iWeapon, int iMode, int iSeed, float flSpread, float flDamage /* = -1.0f */, bool bCritical /* = false*/ )
 {
 	// Get the weapon information.
 	CTFWeaponInfo *pWeaponInfo = GetTFWeaponInfo( iWeapon );

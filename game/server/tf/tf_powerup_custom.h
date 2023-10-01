@@ -33,7 +33,7 @@ public:
 	virtual ETFCond GetCondition( void ) { return m_iPowerupCondition; }
 
 private:
-	int		m_iPowerupCondition;
+	ETFCond m_iPowerupCondition;
 };
 
 #endif // POWERUP_CUSTOM_H

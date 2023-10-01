@@ -744,7 +744,7 @@ const char *TranslateWeaponEntForClass( const char *pszName, int iClass )
 //-----------------------------------------------------------------------------
 int GetWeaponFromDamage( const CTakeDamageInfo &info )
 {
-	int iWeapon = TF_WEAPON_NONE;
+	ETFWeaponID iWeapon = TF_WEAPON_NONE;
 
 	// Work out what killed the player, and send a message to all clients about it
 	TFGameRules()->GetKillingWeaponName( info, NULL, iWeapon );
@@ -803,7 +803,7 @@ tf_powerup_t g_aPowerups[] =
 //-----------------------------------------------------------------------------
 // Conditions stuff.
 //-----------------------------------------------------------------------------
-int condition_to_attribute_translation[] =
+ETFCond condition_to_attribute_translation[] =
 {
 	TF_COND_BURNING,
 	TF_COND_AIMING,

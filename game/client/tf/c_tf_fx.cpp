@@ -24,7 +24,7 @@ public:
 	int		m_iPlayer;
 	Vector	m_vecOrigin;
 	QAngle	m_vecAngles;
-	int		m_iWeaponID;
+	ETFWeaponID	m_iWeaponID;
 	int		m_iMode;
 	int		m_iSeed;
 	float	m_flSpread;

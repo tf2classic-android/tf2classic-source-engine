@@ -30,7 +30,7 @@ public:
 	CNetworkVar( int, m_iPlayer );
 	CNetworkVector( m_vecOrigin );
 	CNetworkQAngle( m_vecAngles );
-	CNetworkVar( int, m_iWeaponID );
+	CNetworkVar( ETFWeaponID, m_iWeaponID );
 	CNetworkVar( int, m_iMode );
 	CNetworkVar( int, m_iSeed );
 	CNetworkVar( float, m_flSpread );
@@ -108,7 +108,7 @@ public:
 
 	Vector m_vecOrigin;
 	Vector m_vecNormal;
-	int m_iWeaponID;
+	ETFWeaponID m_iWeaponID;
 	int m_iItemID;
 	int m_nEntIndex;
 	int m_iPlayerIndex;
@@ -148,7 +148,7 @@ IMPLEMENT_SERVERCLASS_ST( CTETFExplosion, DT_TETFExplosion )
 	SendPropInt( SENDINFO_NAME( m_nEntIndex, entindex ), MAX_EDICT_BITS ),
 END_SEND_TABLE()
 
-void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, CBasePlayer *pPlayer /*= NULL*/, int iTeam /*= TEAM_UNASSIGNED*/, bool bCrit /*= false*/, int iItemID /*= -1*/ )
+void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, ETFWeaponID iWeaponID, int nEntIndex, CBasePlayer *pPlayer /*= NULL*/, int iTeam /*= TEAM_UNASSIGNED*/, bool bCrit /*= false*/, int iItemID /*= -1*/ )
 {
 	VectorCopy( vecOrigin, g_TETFExplosion.m_vecOrigin );
 	VectorCopy( vecNormal, g_TETFExplosion.m_vecNormal );

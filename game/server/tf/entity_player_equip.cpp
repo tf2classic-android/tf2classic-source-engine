@@ -29,7 +29,7 @@ public:
 private:
 
 	void		EquipPlayer(CBaseEntity *pPlayer);
-	int			m_iWeaponNumber[TF_PLAYER_WEAPON_COUNT];
+	ETFWeaponID	m_iWeaponNumber[TF_PLAYER_WEAPON_COUNT];
 	bool		m_bStripWeapons;
 
 };
@@ -85,16 +85,16 @@ void CTFPlayerEquip::EquipPlayer(CBaseEntity *pEntity)
 		{
 			if (!m_bStripWeapons)
 			{
-				CTFWeaponBase *pWeapon = pTFPlayer->Weapon_GetWeaponByType(GetTFWeaponInfo(m_iWeaponNumber[i])->m_iWeaponType);
-				if (pWeapon)
+				CTFWeaponBase *pWeapon = pTFPlayer->Weapon_GetWeaponByType( GetTFWeaponInfo( m_iWeaponNumber[i] )->m_iWeaponType );
+				if( pWeapon )
 				{
-					pTFPlayer->Weapon_Detach(pWeapon);
-					pTFPlayer->SwitchToNextBestWeapon(NULL);
-					UTIL_Remove(pWeapon);
+					pTFPlayer->Weapon_Detach( pWeapon );
+					pTFPlayer->SwitchToNextBestWeapon( NULL );
+					UTIL_Remove( pWeapon );
 				}
 			}
 
-			pTFPlayer->GiveNamedItem(GetTFWeaponInfo(m_iWeaponNumber[i])->szClassName);
+			pTFPlayer->GiveNamedItem( GetTFWeaponInfo( m_iWeaponNumber[i] )->szClassName );
 		}
 	}
 }

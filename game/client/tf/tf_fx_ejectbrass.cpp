@@ -20,7 +20,7 @@ extern CTFWeaponInfo *GetTFWeaponInfo( ETFWeaponID iWeapon );
 //-----------------------------------------------------------------------------
 void TF_EjectBrassCallback( const CEffectData &data )
 {
-	CTFWeaponInfo *pWeaponInfo = GetTFWeaponInfo( data.m_nHitBox );
+	CTFWeaponInfo *pWeaponInfo = GetTFWeaponInfo( (ETFWeaponID)data.m_nHitBox );
 	if ( !pWeaponInfo )
 		return;
 	if ( !pWeaponInfo->m_szBrassModel || !pWeaponInfo->m_szBrassModel[0] )

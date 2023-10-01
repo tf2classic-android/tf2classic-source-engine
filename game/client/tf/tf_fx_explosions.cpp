@@ -21,7 +21,7 @@ extern CTFWeaponInfo *GetTFWeaponInfo( ETFWeaponID iWeapon );
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void TFExplosionCallback( const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, ClientEntityHandle_t hEntity, int iPlayerIndex, int iTeam, bool bCrit, int iItemID )
+void TFExplosionCallback( const Vector &vecOrigin, const Vector &vecNormal, ETFWeaponID iWeaponID, ClientEntityHandle_t hEntity, int iPlayerIndex, int iTeam, bool bCrit, int iItemID )
 {
 	// Get the weapon information.
 	CTFWeaponInfo *pWeaponInfo = NULL;
@@ -191,12 +191,12 @@ public:
 
 	Vector			m_vecOrigin;
 	Vector			m_vecNormal;
-	int				m_iWeaponID;
-	int				m_iItemID;
-	int				m_iPlayerIndex;
-	int				m_iTeamNum;
+	ETFWeaponID		m_iWeaponID;
+	int			m_iItemID;
+	int			m_iPlayerIndex;
+	int			m_iTeamNum;
 	bool			m_bCritical;
-	ClientEntityHandle_t m_hEntity;
+	ClientEntityHandle_t	m_hEntity;
 };
 
 //-----------------------------------------------------------------------------

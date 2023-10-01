@@ -621,7 +621,7 @@ struct tf_powerup_t
 
 extern tf_powerup_t g_aPowerups[];
 
-extern int condition_to_attribute_translation[];
+extern ETFCond condition_to_attribute_translation[];
 
 bool ConditionExpiresFast( int nCond );
 
@@ -655,8 +655,8 @@ enum medigun_charge_types
 
 typedef struct
 {
-	int condition_enable;
-	int condition_disable;
+	ETFCond condition_enable;
+	ETFCond condition_disable;
 	const char *sound_enable;
 	const char *sound_disable;
 } MedigunEffects_t;

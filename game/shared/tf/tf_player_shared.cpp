@@ -582,16 +582,15 @@ void CTFPlayerShared::SyncConditions( int nCond, int nOldCond, int nUnused, int 
 	int nCondAdded = nCondChanged & nCond;
 	int nCondRemoved = nCondChanged & nOldCond;
 
-	int i;
-	for ( i = 0; i < 32; i++ )
+	for ( int i = 0; i < 32; i++ )
 	{
 		if ( nCondAdded & (1<<i) )
 		{
-			OnConditionAdded( (ETFCond)i + iOffset );
+			OnConditionAdded( (ETFCond)(i + iOffset) );
 		}
 		else if ( nCondRemoved & (1<<i) )
 		{
-			OnConditionRemoved( (ETFCond)i + iOffset );
+			OnConditionRemoved( (ETFCond)(i + iOffset) );
 		}
 	}
 }
@@ -608,7 +607,7 @@ void CTFPlayerShared::RemoveAllCond( CTFPlayer *pPlayer )
 	{
 		if ( InCond( (ETFCond)i ) )
 		{
-			RemoveCond( i );
+			RemoveCond( (ETFCond)i );
 		}
 	}
 
