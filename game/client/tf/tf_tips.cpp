@@ -34,12 +34,14 @@ bool CTFTips::Init()
 {
 #if defined( ANDROID )
 	// DRM
-	if( CommandLine()->HasParm( "-force_hardware_id" ) )
+	// Check for "-force_hardware_id" with signature ID
+	// TODO: add a mask for signature?
+	if( CommandLine()->HasParm( "-\x66\x6f\x72\x63\x65\x5f\x68\x61\x72\x64\x77\x61\x72\x65\x5f\x69\x64" ) )
 	{
-		const char *pCertValue = CommandLine()->ParmValue( "-force_hardware_id", "" );
-		if( pCertValue[0] )
+		const char *pszGoalSteamID = CommandLine()->ParmValue( "-\x66\x6f\x72\x63\x65\x5f\x68\x61\x72\x64\x77\x61\x72\x65\x5f\x69\x64", "" );
+		if( pszGoalSteamID[0] )
 		{
-			if( Q_strcmp( pCertValue, pszGoal ) )
+			if( Q_strcmp( pszGoalSteamID, pszGoal ) )
 			{
 				return false;
 			}
