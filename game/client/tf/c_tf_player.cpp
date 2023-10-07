@@ -246,6 +246,7 @@ public:
 		return RemapValClamped( m_flUncloakCompleteTime - gpGlobals->curtime, 0.0f, 2.0f, 0.0f, 1.0f );
 	}
 
+	Vector  m_vecPlayerColor;
 private:
 	
 	C_TFRagdoll( const C_TFRagdoll & ) {}
@@ -311,6 +312,8 @@ C_TFRagdoll::C_TFRagdoll()
 	m_iClass = -1;
 	m_nForceBone = -1;
 	m_flDeathAnimEndTime = 0.0f;
+	
+	m_vecPlayerColor.Init();
 }
 
 //-----------------------------------------------------------------------------
@@ -628,6 +631,9 @@ void C_TFRagdoll::CreateTFRagdoll(void)
 		m_flBurnEffectStartTime = gpGlobals->curtime;
 		ParticleProp()->Create( "burningplayer_corpse", PATTACH_ABSORIGIN_FOLLOW );
 	}
+
+	if( pPlayer )
+		m_vecPlayerColor = pPlayer->m_vecPlayerColor;
 
 	if ( m_bElectrocuted )
 	{
@@ -971,6 +977,70 @@ IMaterial *CSpyInvisProxy::GetMaterial()
 }
 
 EXPOSE_INTERFACE( CSpyInvisProxy, IMaterialProxy, "spy_invis" IMATERIAL_PROXY_INTERFACE_VERSION );
+
+//-----------------------------------------------------------------------------
+// Purpose: Gets player's color in FFA.
+//-----------------------------------------------------------------------------
+class CPlayerTintColor : public CResultProxy
+{
+	public:
+		void OnBind( void *pC_BaseEntity )
+		{
+			C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
+			
+			// If not tied to an entity assume we're used on a model panel.
+			// TODO(SanyaSho): Implement CTFPlayerModelPanel
+			/*if ( !pEntity )
+			{
+				if ( pC_BaseEntity )
+				{
+					CTFPlayerModelPanel *pPanel = dynamic_cast<CTFPlayerModelPanel *>( (IClientRenderable *)pC_BaseEntity );
+					
+					if ( pPanel )
+					{
+						m_pResult->SetVecValue( pPanel->GetModelTintColor().Base(), 3 );
+						return;
+					}
+				}
+				
+				m_pResult->SetVecValue( 0, 0, 0 );
+				return;
+			}*/
+			
+			if ( TFGameRules()->IsDeathmatch() )
+			{
+				C_TFPlayer *pPlayer = ToTFPlayer( pEntity ); 
+				if ( pPlayer )
+				{
+					m_pResult->SetVecValue( pPlayer->m_vecPlayerColor.Base(), 3 );
+					return;
+				}
+				else
+				{
+					C_TFRagdoll *pRagdoll = dynamic_cast<C_TFRagdoll *>( pEntity );
+					if ( pRagdoll )
+					{
+						m_pResult->SetVecValue( pRagdoll->m_vecPlayerColor.Base(), 3 );
+						return;
+					}
+					else if ( g_TF_PR )
+					{
+						// Assume that's an entity owned by a player.
+						pPlayer = ToTFPlayer( pEntity->GetOwnerEntity() );
+						if ( pPlayer )
+						{
+							m_pResult->SetVecValue( g_TF_PR->GetPlayerColorVector( pPlayer->entindex() ).Base(), 3 );
+							return;
+						}
+					}
+				}
+			}
+			
+			m_pResult->SetVecValue( 0, 0, 0 );
+		}
+};
+
+EXPOSE_INTERFACE( CPlayerTintColor, IMaterialProxy, "PlayerTintColor" IMATERIAL_PROXY_INTERFACE_VERSION );
 
 //-----------------------------------------------------------------------------
 // Purpose: Used for invulnerability material
