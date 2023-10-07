@@ -2020,6 +2020,12 @@ bool CTFPlayer::SelectFurthestSpawnSpot( const char *pEntClassName, CBaseEntity*
 	{
 		if ( bTelefrag )
 		{
+			if( !pSpot )
+			{
+				// We can't get pSpot for it
+				return false;
+			}
+
 			// Kill off anyone occupying this spot if it's somehow busy.
 			CBaseEntity *pList[MAX_PLAYERS];
 			Vector vecMins = pSpot->GetAbsOrigin() + VEC_HULL_MIN;
