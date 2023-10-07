@@ -27,8 +27,6 @@
 
 DECLARE_HUDELEMENT_DEPTH( CTFFreezePanel, 1 );
 
-ConVar tf_hud_freezepanel_show_avatars( "tf_hud_freezepanel_show_avatars", "0", FCVAR_ARCHIVE, "Show avatars on freezecam panel" );
-
 vgui::IImage* GetDefaultAvatarImage( C_BasePlayer *pPlayer );
 
 #define CALLOUT_WIDE		(XRES(100))
@@ -269,7 +267,7 @@ void CTFFreezePanel::FireGameEvent( IGameEvent * event )
 
 				m_pBasePanel->SetDialogVariable( "killername", g_PR->GetPlayerName( m_iKillerIndex ) );
 
-				if ( tf_hud_freezepanel_show_avatars.GetBool() && m_pAvatar )
+				if ( m_pAvatar )
 				{
 					m_pAvatar->SetDefaultAvatar( GetDefaultAvatarImage( (C_BasePlayer*)pKiller ) );
 
@@ -293,7 +291,7 @@ void CTFFreezePanel::FireGameEvent( IGameEvent * event )
 
 					m_pBasePanel->SetDialogVariable( "killername", g_PR->GetPlayerName( m_iKillerIndex ) );
 
-					if ( tf_hud_freezepanel_show_avatars.GetBool() && m_pAvatar )
+					if ( m_pAvatar )
 					{
 						m_pAvatar->SetDefaultAvatar( GetDefaultAvatarImage( pOwner ) );
 
