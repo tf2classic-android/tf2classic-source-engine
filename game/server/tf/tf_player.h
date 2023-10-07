@@ -346,10 +346,12 @@ public:
 
 	virtual int DrawDebugTextOverlays( void );
 
+	virtual int CalculateTeamBalanceScore( void );
+	void CalculateTeamScrambleScore( void );
+	float GetTeamScrambleScore( void ) { return m_flTeamScrambleScore; }
+
 	float m_flNextVoiceCommandTime;
 	float m_flNextSpeakWeaponFire;
-
-	virtual int	CalculateTeamBalanceScore( void );
 
 	bool ShouldAnnouceAchievement( void );
 
@@ -617,6 +619,8 @@ private:
 	CNetworkVar( bool, m_bTyping );
 
 	CNetworkVarEmbedded( CAttributeManager, m_AttributeManager );
+
+	float m_flTeamScrambleScore;
 
 	COutputEvent		m_OnDeath;
 

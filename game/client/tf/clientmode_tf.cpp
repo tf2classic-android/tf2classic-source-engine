@@ -406,10 +406,9 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 						g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#TF_Joined_Deathmatch_Spectator" ), 1, wszPlayerName );
 					}
 
-					C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-					if ( tf_PR )
+					if( g_TF_PR )
 					{
-						col = tf_PR->GetPlayerColor( iPlayerIndex );
+						col = g_TF_PR->GetPlayerColor( iPlayerIndex );
 					}
 				}
 				else

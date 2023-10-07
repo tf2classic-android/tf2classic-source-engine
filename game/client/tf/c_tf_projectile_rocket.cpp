@@ -97,3 +97,16 @@ void C_TFProjectile_Rocket::CreateRocketTrails( void )
 		}
 	}
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+const char *C_TFProjectile_Rocket::GetTrailParticleName( void )
+{
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+	{
+		return "rockettrail_dm";
+	}
+
+	return "rockettrail";
+}

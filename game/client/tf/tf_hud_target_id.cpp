@@ -356,13 +356,11 @@ void CTargetID::UpdateID( void )
 				// Spy can see enemy's health.
 				printFormatString = "#TF_playerid_diffteam";
 				bShowHealth = true;
-			}			
+			}
 
 			if ( bShowHealth )
 			{
-				C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-
-				if ( tf_PR )
+				if ( g_TF_PR )
 				{
 					if ( bDisguisedEnemy )
 					{
@@ -373,7 +371,7 @@ void CTargetID::UpdateID( void )
 					else
 					{
 						flHealth = (float)pPlayer->GetHealth();
-						flMaxHealth = tf_PR->GetMaxHealth( m_iTargetEntIndex );
+						flMaxHealth = g_TF_PR->GetMaxHealth( m_iTargetEntIndex );
 						iMaxBuffedHealth = pPlayer->m_Shared.GetMaxBuffedHealth();
 					}
 				}

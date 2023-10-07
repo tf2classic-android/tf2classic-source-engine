@@ -180,11 +180,9 @@ Color CHudChat::GetClientColor( int clientIndex )
 		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 		{
 			// Show their chosen player color in DM unless they're in spec.
-			C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-
-			if ( tf_PR && iTeam >= FIRST_GAME_TEAM )
+			if ( g_TF_PR && iTeam >= FIRST_GAME_TEAM )
 			{
-				return tf_PR->GetPlayerColor( clientIndex );
+				return g_TF_PR->GetPlayerColor( clientIndex );
 			}
 			else
 			{

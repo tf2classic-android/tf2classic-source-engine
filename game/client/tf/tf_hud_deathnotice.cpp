@@ -395,11 +395,6 @@ void CTFHudDeathNotice::RetireExpiredDeathNotices()
 //-----------------------------------------------------------------------------
 void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 {
-	if ( !g_PR )
-		return;
-
-	C_TF_PlayerResource *g_TF_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-
 	if ( !g_TF_PR )
 	{
 		return;
@@ -835,11 +830,6 @@ void CTFHudDeathNotice::CalcRoundedCorners()
 //-----------------------------------------------------------------------------
 void CTFHudDeathNotice::AddAdditionalMsg( int iKillerID, int iVictimID, const char *pMsgKey )
 {
-	if ( !g_PR )
-		return;
-
-	C_TF_PlayerResource *g_TF_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-
 	DeathNoticeItem &msg2 = m_DeathNotices[AddDeathNoticeItem()];
 	V_strcpy_safe( msg2.Killer.szName, g_PR->GetPlayerName( iKillerID ) );
 	V_strcpy_safe( msg2.Victim.szName, g_PR->GetPlayerName( iVictimID ) );

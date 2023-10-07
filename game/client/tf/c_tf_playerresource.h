@@ -42,12 +42,6 @@ protected:
 	Vector	m_vecColors[MAX_PLAYERS + 1];
 };
 
-inline C_TF_PlayerResource *GetTFPlayerResource( void )
-{
-	if ( !g_PR )
-		return NULL;
-
-	return assert_cast<C_TF_PlayerResource *>( g_PR );
-}
+extern C_TF_PlayerResource *g_TF_PR;
 
 #endif // C_TF_PLAYERRESOURCE_H

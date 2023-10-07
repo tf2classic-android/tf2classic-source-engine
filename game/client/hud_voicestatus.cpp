@@ -365,8 +365,7 @@ void CHudVoiceStatus::Paint()
 
 		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 		{
-			C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-			c = tf_PR ? tf_PR->GetPlayerColor( playerId ) : COLOR_GREY;
+			c = g_TF_PR ? g_TF_PR->GetPlayerColor( playerId ) : COLOR_GREY;
 		}
 		else
 		{

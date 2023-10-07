@@ -112,7 +112,7 @@ void CTFClientScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme )
 		m_iImageNemesis = m_pImageList->AddImage( scheme()->GetImage( "../hud/leaderboard_nemesis", true ) );
 
 		// We're skipping the mercenary, as he shouldn't have a visible class emblem during regular gameplay
-		for (int i = TF_CLASS_SCOUT; i < TF_CLASS_MERCENARY; i++)
+		for (int i = TF_FIRST_NORMAL_CLASS; i < TF_CLASS_COUNT; i++)
 		{
 			m_iClassEmblem[i] = m_pImageList->AddImage(scheme()->GetImage(g_aPlayerClassEmblems[i - 1], true));
 			m_iClassEmblemDead[i] = m_pImageList->AddImage(scheme()->GetImage(g_aPlayerClassEmblemsDead[i - 1], true));
@@ -453,9 +453,9 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 	m_pPlayerListRed->RemoveAll();
 	m_pPlayerListBlue->RemoveAll();
 
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-	if ( !tf_PR )
+	if( !g_TF_PR )
 		return;
+
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 	if ( !pLocalPlayer )
 		return;
@@ -481,8 +481,8 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 			if ( null == pPlayerList )
 				continue;			
 
-			const char *szName = tf_PR->GetPlayerName( playerIndex );
-			int score = tf_PR->GetTotalScore( playerIndex );
+			const char *szName = g_TF_PR->GetPlayerName( playerIndex );
+			int score = g_TF_PR->GetTotalScore( playerIndex );
 
 			KeyValues *pKeyValues = new KeyValues( "data" );
 
@@ -496,8 +496,8 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 				// class name
 				if( g_PR->IsConnected( playerIndex ) )
 				{
-					int iClass = tf_PR->GetPlayerClass( playerIndex );
-					if ( GetLocalPlayerIndex() == playerIndex && !tf_PR->IsAlive( playerIndex ) ) 
+					int iClass = g_TF_PR->GetPlayerClass( playerIndex );
+					if ( GetLocalPlayerIndex() == playerIndex && !g_TF_PR->IsAlive( playerIndex ) ) 
 					{
 						// If this is local player and he is dead, show desired class (which he will spawn as) rather than current class.
 						C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
@@ -511,19 +511,19 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 					else 
 					{
 						// for non-local players, show the current class
-						iClass = tf_PR->GetPlayerClass( playerIndex );
+						iClass = g_TF_PR->GetPlayerClass( playerIndex );
 					}
 
 					if( iClass >= TF_FIRST_NORMAL_CLASS && iClass < TF_CLASS_MERCENARY )
 					{
 						//pKeyValues->SetString( "class", g_aPlayerClassNames[iClass] );
-						pKeyValues->SetInt( "class", tf_PR->IsAlive( playerIndex) ? m_iClassEmblem[iClass] : m_iClassEmblemDead[iClass] );
+						pKeyValues->SetInt( "class", g_TF_PR->IsAlive( playerIndex) ? m_iClassEmblem[iClass] : m_iClassEmblemDead[iClass] );
 					}
 					else
 					{
 						pKeyValues->SetString( "class", "" );
 					}
-				}				
+				}
 			}
 			else
 			{
@@ -546,7 +546,7 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 			}
 
 			// display whether player is alive or dead (all players see this for all other players on both teams)
-			//pKeyValues->SetInt( "status", tf_PR->IsAlive( playerIndex ) ?  0 : m_iImageDead );
+			//pKeyValues->SetInt( "status", g_TF_PR->IsAlive( playerIndex ) ?  0 : m_iImageDead );
 
 			if ( g_PR->GetPing( playerIndex ) < 1 )
 			{
@@ -566,10 +566,10 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 
 
 			UpdatePlayerAvatar( playerIndex, pKeyValues );
-			
+
 			int itemID = pPlayerList->AddItem( 0, pKeyValues );
 			Color clr = g_PR->GetTeamColor( g_PR->GetTeam( playerIndex ) );
-			if ( !tf_PR->IsAlive( playerIndex ) )
+			if ( !g_TF_PR->IsAlive( playerIndex ) )
 				clr.SetColor( clr.r(), clr.g(), clr.b(), clr.a() / 2 );
 
 			pPlayerList->SetItemFgColor( itemID, clr );
@@ -645,24 +645,22 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails( void )
 {
 	ClearPlayerDetails();
 
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-	if ( !tf_PR )
+	if( !g_TF_PR )
 		return;
-	
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 
+	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 	if ( !pLocalPlayer )
 		return;
 
 	int playerIndex = pLocalPlayer->entindex();
 
 	// Make sure the selected player is still connected. 
-	if ( !tf_PR->IsConnected( playerIndex ) ) 
+	if ( !g_TF_PR->IsConnected( playerIndex ) ) 
 		return;
 
 	if ( engine->IsHLTV() )
 	{
-		SetDialogVariable( "playername", tf_PR->GetPlayerName( playerIndex ) );
+		SetDialogVariable( "playername", g_TF_PR->GetPlayerName( playerIndex ) );
 		return;
 	}
 
@@ -670,8 +668,8 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails( void )
 
 	if ( m_pLocalPlayerStatsPanel )
 	{
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "kills", tf_PR->GetPlayerScore( playerIndex ) );
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "deaths", tf_PR->GetDeaths( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "kills", g_TF_PR->GetPlayerScore( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "deaths", g_TF_PR->GetDeaths( playerIndex ) );
 		m_pLocalPlayerStatsPanel->SetDialogVariable( "assists", roundStats.m_iStat[TFSTAT_KILLASSISTS] );
 		m_pLocalPlayerStatsPanel->SetDialogVariable( "destruction", roundStats.m_iStat[TFSTAT_BUILDINGSDESTROYED] );
 		m_pLocalPlayerStatsPanel->SetDialogVariable( "captures", roundStats.m_iStat[TFSTAT_CAPTURES] );
@@ -688,8 +686,8 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails( void )
 		m_pLocalPlayerStatsPanel->SetDialogVariable( "damage", roundStats.m_iStat[TFSTAT_DAMAGE] );
 
 	}
-	SetDialogVariable( "playername", tf_PR->GetPlayerName( playerIndex ) );
-	SetDialogVariable( "playerscore", GetPointsString( tf_PR->GetTotalScore( playerIndex ) ) );
+	SetDialogVariable( "playername", g_TF_PR->GetPlayerName( playerIndex ) );
+	SetDialogVariable( "playerscore", GetPointsString( g_TF_PR->GetTotalScore( playerIndex ) ) );
 
 	Color clr = g_PR->GetTeamColor( g_PR->GetTeam( playerIndex ) );
 	m_pLabelPlayerName->SetFgColor( clr );
@@ -806,15 +804,15 @@ const wchar_t *GetPointsString( int iPoints )
 //-----------------------------------------------------------------------------
 bool CTFClientScoreBoardDialog::ShouldShowAsSpectator( int iPlayerIndex )
 {
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-	if ( !tf_PR )
+	C_TF_PlayerResource *g_TF_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
+	if ( !g_TF_PR )
 		return false;
 
 	// see if player is connected
-	if ( tf_PR->IsConnected( iPlayerIndex ) ) 
+	if ( g_TF_PR->IsConnected( iPlayerIndex ) ) 
 	{
 		// either spectating or unassigned team should show in spectator list
-		int iTeam = tf_PR->GetTeam( iPlayerIndex );
+		int iTeam = g_TF_PR->GetTeam( iPlayerIndex );
 		if ( TEAM_SPECTATOR == iTeam )
 			return true;
 	}
@@ -826,16 +824,16 @@ bool CTFClientScoreBoardDialog::ShouldShowAsSpectator( int iPlayerIndex )
 //-----------------------------------------------------------------------------
 bool CTFClientScoreBoardDialog::ShouldShowAsUnassigned(int iPlayerIndex)
 {
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
-	if (!tf_PR)
+	C_TF_PlayerResource *g_TF_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
+	if (!g_TF_PR)
 		return false;
 
 	// If the player hasn't connected yet, show him in the status bar
-	if (!tf_PR->IsConnected(iPlayerIndex))
+	if (!g_TF_PR->IsConnected(iPlayerIndex))
 		return true;
 
 	// If the player has connected, but hasn't picked anything.
-	int iTeam = tf_PR->GetTeam(iPlayerIndex);
+	int iTeam = g_TF_PR->GetTeam(iPlayerIndex);
 	if (TEAM_UNASSIGNED == iTeam)
 		return true;
 

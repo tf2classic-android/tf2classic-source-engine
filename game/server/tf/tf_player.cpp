@@ -57,6 +57,8 @@
 #include "tf_weapon_flamethrower.h"
 #include "tf_basedmpowerup.h"
 #include "tf_weapon_lunchbox.h"
+#include "player_resource.h"
+#include "tf_player_resource.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -454,6 +456,8 @@ CTFPlayer::CTFPlayer()
 	m_bJumpEffect = false;
 
 	memset( m_WeaponPreset, 0, TF_CLASS_COUNT_ALL * TF_LOADOUT_SLOT_COUNT * sizeof( int ) );
+
+	m_flTeamScrambleScore = 0.0f;
 
 	m_bIsPlayerADev = false;
 }
@@ -8282,6 +8286,65 @@ int	CTFPlayer::CalculateTeamBalanceScore( void )
 	}
 
 	return iScore;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::CalculateTeamScrambleScore( void )
+{
+        CTFPlayerResource *pResource = GetTFPlayerResource();
+        if ( !pResource )
+        {
+                m_flTeamScrambleScore = 0.0f;
+                return;
+        }
+
+        /*int iMode = mp_scrambleteams_mode.GetInt();
+        float flScore = 0.0f;
+
+        switch ( iMode )
+        {
+                case TDC_SCRAMBLEMODE_SCORETIME_RATIO:
+                default:
+                {
+                        // Points per minute ratio.
+                        float flTime = GetConnectionTime() / 60.0f;
+                        float flScore = (float)pResource->GetTotalScore( entindex() );
+
+                        flScore = ( flScore / flTime );
+                        break;
+                }
+                case TDC_SCRAMBLEMODE_KILLDEATH_RATIO:
+                {
+                        // Don't divide by zero.
+                        PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( this );
+                        int iKills = pStats->statsAccumulated.m_iStat[TFSTAT_KILLS];
+                        int iDeaths = Max( 1, pStats->statsAccumulated.m_iStat[TFSTAT_DEATHS] );
+
+                        flScore = ( (float)iKills / (float)iDeaths );
+                        break;
+                }
+                case TDC_SCRAMBLEMODE_SCORE:
+                        flScore = (float)pResource->GetTotalScore( entindex() );
+                        break;
+                case TDC_SCRAMBLEMODE_CLASS:
+                        flScore = (float)m_PlayerClass.GetClassIndex();
+                        break;
+        }*/
+
+	float flScore = 0.0f;
+
+	// Use TDC_SCRAMBLEMODE_KILLDEATH_RATIO strategy
+
+        // Don't divide by zero.
+        PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( this );
+        int iKills = pStats->statsAccumulated.m_iStat[TFSTAT_KILLS];
+        int iDeaths = Max( 1, pStats->statsAccumulated.m_iStat[TFSTAT_DEATHS] );
+
+        flScore = ( (float)iKills / (float)iDeaths );
+
+        m_flTeamScrambleScore = flScore;
 }
 
 //-----------------------------------------------------------------------------

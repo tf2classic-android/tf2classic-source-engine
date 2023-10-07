@@ -128,7 +128,7 @@ void CTFDeathMatchScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme 
 		m_iImageNemesis = m_pImageList->AddImage( scheme()->GetImage( "../hud/leaderboard_nemesis", true ) );
 
 		// We're skipping the mercenary, as he shouldn't have a visible class emblem during regular gameplay
-		for ( int i = TF_CLASS_SCOUT; i < TF_CLASS_MERCENARY; i++ )
+		for ( int i = TF_FIRST_NORMAL_CLASS; i < TF_CLASS_COUNT; i++ )
 		{
 			m_iClassEmblem[i] = m_pImageList->AddImage( scheme()->GetImage( g_aPlayerClassEmblems[i - 1], true ) );
 			m_iClassEmblemDead[i] = m_pImageList->AddImage( scheme()->GetImage( g_aPlayerClassEmblemsDead[i - 1], true ) );
@@ -410,9 +410,9 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 
 	m_pPlayerListRed->RemoveAll();
 
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-	if ( !tf_PR )
+	if( !g_TF_PR )
 		return;
+
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 	if ( !pLocalPlayer )
 		return;
@@ -435,11 +435,11 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 			if ( null == pPlayerList )
 				continue;
 
-			const char *szName = tf_PR->GetPlayerName( playerIndex );
-			int score = tf_PR->GetTotalScore( playerIndex );
-			int kills = tf_PR->GetPlayerScore( playerIndex );
-			int deaths = tf_PR->GetDeaths( playerIndex );
-			int streak = tf_PR->GetKillstreak( playerIndex );
+			const char *szName = g_TF_PR->GetPlayerName( playerIndex );
+			int score = g_TF_PR->GetTotalScore( playerIndex );
+			int kills = g_TF_PR->GetPlayerScore( playerIndex );
+			int deaths = g_TF_PR->GetDeaths( playerIndex );
+			int streak = g_TF_PR->GetKillstreak( playerIndex );
 
 			KeyValues *pKeyValues = new KeyValues( "data" );
 
@@ -456,8 +456,8 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 				// class name
 				if ( g_PR->IsConnected( playerIndex ) )
 				{
-					int iClass = tf_PR->GetPlayerClass( playerIndex );
-					if ( GetLocalPlayerIndex() == playerIndex && !tf_PR->IsAlive( playerIndex ) )
+					int iClass = g_TF_PR->GetPlayerClass( playerIndex );
+					if ( GetLocalPlayerIndex() == playerIndex && !g_TF_PR->IsAlive( playerIndex ) )
 					{
 						// If this is local player and he is dead, show desired class (which he will spawn as) rather than current class.
 						C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
@@ -471,7 +471,7 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 					else
 					{
 						// for non-local players, show the current class
-						iClass = tf_PR->GetPlayerClass( playerIndex );
+						iClass = g_TF_PR->GetPlayerClass( playerIndex );
 					}
 				}
 			}
@@ -492,7 +492,7 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 			}
 
 			// display whether player is alive or dead (all players see this for all other players on both teams)
-			pKeyValues->SetInt( "status", tf_PR->IsAlive( playerIndex ) ? 0 : m_iImageDead );
+			pKeyValues->SetInt( "status", g_TF_PR->IsAlive( playerIndex ) ? 0 : m_iImageDead );
 
 			if ( g_PR->GetPing( playerIndex ) < 1 )
 			{
@@ -515,7 +515,7 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 
 			int itemID = pPlayerList->AddItem( 0, pKeyValues );
 
-			Color clr = tf_PR->GetPlayerColor( playerIndex );
+			Color clr = g_TF_PR->GetPlayerColor( playerIndex );
 			pPlayerList->SetItemFgColor( itemID, clr );
 
 			if ( iSelectedPlayerIndex == playerIndex )
@@ -603,8 +603,7 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerDetails()
 {
 	ClearPlayerDetails();
 
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-	if ( !tf_PR )
+	if( !g_TF_PR )
 		return;
 
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
@@ -613,27 +612,27 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerDetails()
 	int playerIndex = pLocalPlayer->entindex();
 
 	// Make sure the selected player is still connected. 
-	if ( !tf_PR->IsConnected( playerIndex ) )
+	if ( !g_TF_PR->IsConnected( playerIndex ) )
 		return;
 
 	if ( engine->IsHLTV() )
 	{
-		SetDialogVariable( "playername", tf_PR->GetPlayerName( playerIndex ) );
+		SetDialogVariable( "playername", g_TF_PR->GetPlayerName( playerIndex ) );
 		return;
 	}
 
 	RoundStats_t &roundStats = GetStatPanel()->GetRoundStatsCurrentGame();
 
-	SetDialogVariable( "kills", tf_PR->GetPlayerScore( playerIndex ) );
-	SetDialogVariable( "deaths", tf_PR->GetDeaths( playerIndex ) );
+	SetDialogVariable( "kills", g_TF_PR->GetPlayerScore( playerIndex ) );
+	SetDialogVariable( "deaths", g_TF_PR->GetDeaths( playerIndex ) );
 	SetDialogVariable( "assists", roundStats.m_iStat[TFSTAT_KILLASSISTS] );
 	SetDialogVariable( "dominations", roundStats.m_iStat[TFSTAT_DOMINATIONS] );
 	SetDialogVariable( "revenge", roundStats.m_iStat[TFSTAT_REVENGE] );
 
-	SetDialogVariable( "playername", tf_PR->GetPlayerName( playerIndex ) );
-	SetDialogVariable( "playerscore", GetPointsString( tf_PR->GetTotalScore( playerIndex ) ) );
+	SetDialogVariable( "playername", g_TF_PR->GetPlayerName( playerIndex ) );
+	SetDialogVariable( "playerscore", GetPointsString( g_TF_PR->GetTotalScore( playerIndex ) ) );
 
-	Color clr = tf_PR->GetPlayerColor( playerIndex );
+	Color clr = g_TF_PR->GetPlayerColor( playerIndex );
 	m_pRedScoreBG->SetFillColor( clr );
 }
 
@@ -695,15 +694,14 @@ bool CTFDeathMatchScoreBoardDialog::TFPlayerSortFunc( vgui::SectionedListPanel *
 //-----------------------------------------------------------------------------
 bool CTFDeathMatchScoreBoardDialog::ShouldShowAsSpectator( int iPlayerIndex )
 {
-	C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-	if ( !tf_PR )
+	if( !g_TF_PR )
 		return false;
 
 	// see if player is connected
-	if ( tf_PR->IsConnected( iPlayerIndex ) )
+	if ( g_TF_PR->IsConnected( iPlayerIndex ) )
 	{
 		// either spectating or unassigned team should show in spectator list
-		int iTeam = tf_PR->GetTeam( iPlayerIndex );
+		int iTeam = g_TF_PR->GetTeam( iPlayerIndex );
 		if ( TEAM_SPECTATOR == iTeam || TEAM_UNASSIGNED == iTeam )
 			return true;
 	}
@@ -746,8 +744,7 @@ void CTFDeathMatchScoreBoardDialog::FireGameEvent( IGameEvent *event )
 		bLockInput = true;
 		bool bPlayerFirst = false;
 
-		C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-		if ( !tf_PR )
+		if( !g_TF_PR )
 			return;
 
 		// look for the top 3 players sent in the event
@@ -793,7 +790,7 @@ void CTFDeathMatchScoreBoardDialog::FireGameEvent( IGameEvent *event )
 			if ( bShow )
 			{
 				// set the player labels to team color
-				Color clr = tf_PR->GetPlayerColor( iPlayerIndex );
+				Color clr = g_TF_PR->GetPlayerColor( iPlayerIndex );
 				pPlayerName->SetFgColor( clr );
 				pPlayerKills->SetFgColor( clr );
 				pPlayerDeaths->SetFgColor( clr );

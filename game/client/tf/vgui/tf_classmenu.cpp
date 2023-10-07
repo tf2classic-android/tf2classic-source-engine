@@ -621,9 +621,7 @@ void CTFClassMenu::UpdateNumClassLabels( int iTeam )
 	int nTotalCount = 0;
 
 	// count how many of each class there are
-	C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-
-	if ( !tf_PR )
+	if( !g_TF_PR )
 		return;
 
 	if ( iTeam < FIRST_GAME_TEAM || iTeam >= TF_TEAM_COUNT ) // invalid team number
@@ -631,7 +629,7 @@ void CTFClassMenu::UpdateNumClassLabels( int iTeam )
 
 	for (int i = TF_FIRST_NORMAL_CLASS; i <= TF_CLASS_ENGINEER; i++)
 	{
-		int classCount = tf_PR->GetCountForPlayerClass( iTeam, g_sClassDefines[i], true );
+		int classCount = g_TF_PR->GetCountForPlayerClass( iTeam, g_sClassDefines[i], true );
 
 		if ( classCount > 0 )
 		{

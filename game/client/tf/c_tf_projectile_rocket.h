@@ -29,7 +29,7 @@ public:
 	virtual void	OnDataChanged( DataUpdateType_t updateType );
 
 	virtual void	CreateRocketTrails( void );
-	virtual const char *GetTrailParticleName( void ) { return "rockettrail"; }
+	virtual const char *GetTrailParticleName( void );
 };
 
 #endif // C_TF_PROJECTILE_ROCKET_H

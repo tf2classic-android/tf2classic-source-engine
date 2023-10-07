@@ -22,6 +22,7 @@ IMPLEMENT_CLIENTCLASS_DT( C_TF_PlayerResource, DT_TFPlayerResource, CTFPlayerRes
 	RecvPropArray3( RECVINFO_ARRAY( m_iKillstreak ), RecvPropInt( RECVINFO( m_iKillstreak[0] ) ) ),
 END_RECV_TABLE()
 
+C_TF_PlayerResource *g_TF_PR = NULL;
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -34,6 +35,8 @@ C_TF_PlayerResource::C_TF_PlayerResource()
 	m_Colors[TF_TEAM_BLUE] = COLOR_BLUE;
 	m_Colors[TF_TEAM_GREEN] = COLOR_GREEN;
 	m_Colors[TF_TEAM_YELLOW] = COLOR_YELLOW;
+
+	g_TF_PR = this;
 }
 
 //-----------------------------------------------------------------------------
@@ -41,6 +44,7 @@ C_TF_PlayerResource::C_TF_PlayerResource()
 //-----------------------------------------------------------------------------
 C_TF_PlayerResource::~C_TF_PlayerResource()
 {
+	g_TF_PR = NULL;
 }
 
 //-----------------------------------------------------------------------------

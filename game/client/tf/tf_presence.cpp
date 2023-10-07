@@ -441,8 +441,7 @@ void CTF_Presence::UploadStats()
 
 		CUtlVector< XUSER_PROPERTY > skillStats;
 
-		C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>( g_PR );
-		if ( !tf_PR )
+		if( !g_TF_PR )
 			return;
 
 		XUID localId = matchmaking->PlayerIdToXuid( GetLocalPlayerIndex() );
@@ -465,7 +464,7 @@ void CTF_Presence::UploadStats()
 				Msg( "XUID: %d\n", id );
 				XUSER_PROPERTY prop;
 
-				int nScore = tf_PR->GetTotalScore( i );
+				int nScore = g_TF_PR->GetTotalScore( i );
 
 				// Write the player's skill stats
 				prop.dwPropertyId = X_PROPERTY_RELATIVE_SCORE;

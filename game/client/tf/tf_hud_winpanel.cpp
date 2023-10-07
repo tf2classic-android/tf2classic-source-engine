@@ -320,10 +320,6 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 			m_pTeamScorePanel->SetVisible( bRoundComplete );
 		}
 
-		C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-		if ( !tf_PR )
-			return;
-
 		// look for the top 3 players sent in the event
 		for ( int i = 1; i <= 3; i++ )
 		{
@@ -372,7 +368,7 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 
 				// set label contents
 				pPlayerName->SetText( g_PR->GetPlayerName( iPlayerIndex ) );
-				pPlayerClass->SetText( g_aPlayerClassNames[tf_PR->GetPlayerClass( iPlayerIndex )] );
+				pPlayerClass->SetText( g_aPlayerClassNames[ g_TF_PR ? g_TF_PR->GetPlayerClass( iPlayerIndex ) : TF_CLASS_SCOUT ] );
 				pPlayerScore->SetText( CFmtStr( "%d", iRoundScore ) );
 			}
 

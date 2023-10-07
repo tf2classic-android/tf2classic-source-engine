@@ -124,6 +124,7 @@ const char *g_aPlayerClassEmblems[] =
 	"../hud/leaderboard_class_spy",
 	"../hud/leaderboard_class_engineer",
 	"../hud/leaderboard_class_civilian",
+	"../hud/leaderboard_class_mercenary"
 };
 
 const char *g_aPlayerClassEmblemsDead[] =
@@ -138,6 +139,7 @@ const char *g_aPlayerClassEmblemsDead[] =
 	"../hud/leaderboard_class_spy_d",
 	"../hud/leaderboard_class_engineer_d",
 	"../hud/leaderboard_class_civilian_d",
+	"../hud/leaderboard_class_mercenary_d"
 };
 
 const char *g_aPlayerClassNames_NonLocalized[] =

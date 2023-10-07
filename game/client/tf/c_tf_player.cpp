@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "c_tf_player.h"
 #include "c_user_message_register.h"
+#include "mathlib/mathlib.h"
 #include "view.h"
 #include "iclientvehicle.h"
 #include "ivieweffects.h"
@@ -62,6 +63,8 @@
 #include "tf_viewmodel.h"
 
 #include "tf_inventory.h"
+
+#include "c_te_legacytempents.h"
 
 #if defined( CTFPlayer )
 #undef CTFPlayer
@@ -1753,13 +1756,8 @@ void C_TFPlayer::UpdateOnRemove( void )
 // Purpose: returns max health for this player
 //-----------------------------------------------------------------------------
 int C_TFPlayer::GetMaxHealth( void ) const
-{	
-	C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-	if ( tf_PR )
-	{
-		return tf_PR->GetMaxHealth( entindex() );
-	}
-	return 1;
+{
+	return g_TF_PR ? g_TF_PR->GetMaxHealth( entindex() ) : 1;
 }
 
 //-----------------------------------------------------------------------------

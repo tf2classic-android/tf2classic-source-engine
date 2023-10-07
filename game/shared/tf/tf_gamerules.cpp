@@ -4034,10 +4034,6 @@ void CTFGameRules::SendWinPanelInfo( void )
 		winEvent->SetInt( "red_score_prev", iRedScorePrev );
 		winEvent->SetInt( "round_complete", bRoundComplete );
 
-		CTFPlayerResource *pResource = GetTFPlayerResource();
-		if ( !pResource )
-			return;
- 
 		// determine the 3 players on winning team who scored the most points this round
 
 		// build a vector of players & round scores
@@ -4573,18 +4569,7 @@ void CTFGameRules::InternalHandleTeamWin( int iWinningTeam )
 // sort function for the list of players that we're going to use to scramble the teams
 int ScramblePlayersSort( CTFPlayer* const *p1, CTFPlayer* const *p2 )
 {
-	CTFPlayerResource *pResource = GetTFPlayerResource();
-
-	if ( pResource )
-	{
-		// check the priority
-		if ( pResource->GetTotalScore( (*p2)->entindex() ) > pResource->GetTotalScore( (*p1)->entindex() ) )
-		{
-			return 1;
-		}
-	}
-
-	return -1;
+	return ( ( *p2 )->GetTeamScrambleScore() - ( *p1 )->GetTeamScrambleScore() );
 }
 
 //-----------------------------------------------------------------------------
@@ -4607,6 +4592,10 @@ void CTFGameRules::HandleScrambleTeams( void )
 	}
 
 	// sort the list
+	FOR_EACH_VEC( pListPlayers, i );
+	{
+		pListPlayers[i]->CalculateTeamScrambleScore();
+	}
 	pListPlayers.Sort( ScramblePlayersSort );
 
 	// loop through and put everyone on Spectator to clear the teams (or the autoteam step won't work correctly)

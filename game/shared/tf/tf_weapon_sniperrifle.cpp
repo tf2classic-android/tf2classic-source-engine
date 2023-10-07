@@ -939,8 +939,7 @@ int CSniperDot::DrawModel( int flags )
 	if ( TFGameRules()->IsDeathmatch() )
 	{
 		// Get the color of the mercenary we are drawing the dot of.
-		C_TF_PlayerResource *tf_PR = GetTFPlayerResource();
-		Color ownercolor = tf_PR ? tf_PR->GetPlayerColor( pPlayer->index ) : COLOR_WHITE ;
+		Color ownercolor = g_TF_PR ? g_TF_PR->GetPlayerColor( pPlayer->index ) : COLOR_WHITE ;
 
 		// Convert to HSV so we can edit the color better.
 		Vector hsv, rgb;

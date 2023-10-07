@@ -270,16 +270,15 @@ void CTFCueBuilder::FireGameEvent( IGameEvent *event )
 	{
 		if (TFGameRules()->IsDeathmatch())
 		{
-			C_TF_PlayerResource *tf_PR = dynamic_cast<C_TF_PlayerResource *>(g_PR);
-			if (!tf_PR)
+			if( !g_TF_PR )
 				return;
 
 			if (m_iCurrentTrack == -1)
 				return;
 
 			int iLocalIndex = GetLocalPlayerIndex();
-			int iLocalScore = tf_PR->GetTotalScore(iLocalIndex);
-			int iLocalKillstreak = tf_PR->GetKillstreak(iLocalIndex);
+			int iLocalScore = g_TF_PR->GetTotalScore(iLocalIndex);
+			int iLocalKillstreak = g_TF_PR->GetKillstreak(iLocalIndex);
 
 			float fSkipmult = GetCurrentTrack()->GetCurrentSequence().skipmultiplier;
 			ConVar *mp_fraglimit = cvar->FindVar("mp_fraglimit");
