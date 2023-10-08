@@ -19,6 +19,8 @@
 #include "te_effect_dispatch.h"
 #endif
 
+#include "tf_gamerules.h"
+
 ConVar tf_use_fixed_weaponspreads( "tf_use_fixed_weaponspreads", "0", FCVAR_NOTIFY|FCVAR_REPLICATED, "If set to 1, weapons that fire multiple pellets per shot will use a non-random pellet distribution." );
 
 // Client specific.
@@ -247,7 +249,8 @@ void FX_FireBullets( int iPlayer, const Vector &vecOrigin, const QAngle &vecAngl
 
 	if ( bBuckshot && nBulletsPerShot > 1 )
 	{
-		bFixedSpread = tf_use_fixed_weaponspreads.GetBool();
+		// enable fixed spread in deathmatch or with cvar
+		bFixedSpread = ( tf_use_fixed_weaponspreads.GetBool() || ( TFGameRules() && TFGameRules()->IsDeathmatch() ) );
 	}
 
 	for ( int iBullet = 0; iBullet < nBulletsPerShot; ++iBullet )
