@@ -987,30 +987,31 @@ class CPlayerTintColor : public CResultProxy
 		void OnBind( void *pC_BaseEntity )
 		{
 			C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
-			
+
 			// If not tied to an entity assume we're used on a model panel.
 			// TODO(SanyaSho): Implement CTFPlayerModelPanel
-			/*if ( !pEntity )
+			if ( !pEntity )
 			{
 				if ( pC_BaseEntity )
 				{
-					CTFPlayerModelPanel *pPanel = dynamic_cast<CTFPlayerModelPanel *>( (IClientRenderable *)pC_BaseEntity );
-					
-					if ( pPanel )
+					/*CTFPlayerModelPanel *pPanel = dynamic_cast<CTFPlayerModelPanel *>( (IClientRenderable *)pC_BaseEntity );
+					if( pPanel )
 					{
 						m_pResult->SetVecValue( pPanel->GetModelTintColor().Base(), 3 );
 						return;
-					}
+					}*/
+					Vector vecColor = Vector( tf2c_setmerccolor_r.GetFloat(), tf2c_setmerccolor_g.GetFloat(), tf2c_setmerccolor_b.GetFloat() );
+					m_pResult->SetVecValue( vecColor.Base(), 3 );
 				}
-				
+
 				m_pResult->SetVecValue( 0, 0, 0 );
 				return;
-			}*/
-			
-			if ( TFGameRules()->IsDeathmatch() )
+			}
+
+			if( TFGameRules()->IsDeathmatch() )
 			{
-				C_TFPlayer *pPlayer = ToTFPlayer( pEntity ); 
-				if ( pPlayer )
+				C_TFPlayer *pPlayer = ToTFPlayer( pEntity );
+				if( pPlayer )
 				{
 					m_pResult->SetVecValue( pPlayer->m_vecPlayerColor.Base(), 3 );
 					return;
@@ -1035,7 +1036,7 @@ class CPlayerTintColor : public CResultProxy
 					}
 				}
 			}
-			
+
 			m_pResult->SetVecValue( 0, 0, 0 );
 		}
 };
