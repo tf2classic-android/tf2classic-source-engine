@@ -981,6 +981,7 @@ void CTFPlayer::Spawn()
 
 	// Create our off hand viewmodel if necessary
 	CreateViewModel( 1 );
+
 	// Make sure it has no model set, in case it had one before
 	GetViewModel( 1 )->SetWeaponModel( NULL, NULL );
 
@@ -1238,6 +1239,7 @@ void CTFPlayer::CreateViewModel( int iViewModel )
 		pViewModel->SetIndex( iViewModel );
 		DispatchSpawn( pViewModel );
 		pViewModel->FollowEntity( this, false );
+		pViewModel->SetOwnerEntity( this );
 		m_hViewModel.Set( iViewModel, pViewModel );
 	}
 }
