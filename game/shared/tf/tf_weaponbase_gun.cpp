@@ -719,6 +719,21 @@ float CTFWeaponBaseGun::GetWeaponSpread( void )
 {
 	float flSpread = m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flSpread;
 	CALL_ATTRIB_HOOK_FLOAT( flSpread, mult_spread_scale );
+
+	CTFPlayer *pPlayer = ToTFPlayer( GetPlayerOwner() );
+
+        if( pPlayer )
+        {
+                // Some weapons change fire delay based on player's health
+                float flReducedHealthBonus = 1.0f;
+                CALL_ATTRIB_HOOK_FLOAT( flReducedHealthBonus, panic_attack_negative );
+                if ( flReducedHealthBonus != 1.0f )
+                {
+                        flReducedHealthBonus = RemapValClamped( pPlayer->HealthFraction(), 0.2f, 0.9f, flReducedHealthBonus, 1.0f );
+                        flSpread *= flReducedHealthBonus;
+                }
+        }
+
 	return flSpread;
 }
 
