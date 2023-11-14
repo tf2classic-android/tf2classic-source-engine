@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2006, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -29,6 +29,7 @@
 #include "c_tf_player.h"
 #include "ihudlcd.h"
 #include "tf_hud_ammostatus.h"
+#include "tf_gamerules.h"
 
 using namespace vgui;
 
@@ -37,10 +38,13 @@ using namespace vgui;
 
 DECLARE_HUDELEMENT( CTFHudWeaponAmmo );
 
+static ConVar hud_low_ammo_warning_threshold( "hud_lowammowarning_threshold", "0.40", FCVAR_CLIENTDLL | FCVAR_DEVELOPMENTONLY, "Percentage threshold at which the low ammo warning will become visible." );
+static ConVar hud_low_ammo_warning_max_pos_adjust( "hud_lowammowarning_maxposadjust", "5", FCVAR_CLIENTDLL | FCVAR_DEVELOPMENTONLY, "Maximum pixel amount to increase the low ammo warning image." );
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFHudWeaponAmmo::CTFHudWeaponAmmo( const char *pElementName ) : CHudElement( pElementName ), BaseClass( NULL, "HudWeaponAmmo" )
+CTFHudWeaponAmmo::CTFHudWeaponAmmo( const char *pElementName ) : CHudElement( pElementName ), BaseClass( NULL, "HudWeaponAmmo" ) 
 {
 	Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
@@ -62,10 +66,12 @@ CTFHudWeaponAmmo::CTFHudWeaponAmmo( const char *pElementName ) : CHudElement( pE
 	m_pWeaponBucket = NULL;
 	m_bShowWeaponIcon = false;
 
-	m_nAmmo = -1;
+	m_nAmmo	= -1;
 	m_nAmmo2 = -1;
 	m_hCurrentActiveWeapon = NULL;
 	m_flNextThink = 0.0f;
+
+	RegisterForRenderGroup( "inspect_panel" );
 }
 
 //-----------------------------------------------------------------------------
@@ -99,7 +105,14 @@ void CTFHudWeaponAmmo::ApplySchemeSettings( IScheme *pScheme )
 
 	m_pWeaponBucket = dynamic_cast<ImagePanel *>( FindChildByName( "WeaponBucket" ) );
 
-	m_nAmmo = -1;
+	m_pLowAmmoImage = dynamic_cast<ImagePanel *>( FindChildByName( "HudWeaponLowAmmoImage" ) );
+
+	if ( m_pLowAmmoImage )
+	{
+		m_pLowAmmoImage->GetBounds( m_nLowAmmoImageOrigX, m_nLowAmmoImageOrigY, m_nLowAmmoImageOrigW, m_nLowAmmoImageOrigH );
+	}
+
+	m_nAmmo	= -1;
 	m_nAmmo2 = -1;
 	m_hCurrentActiveWeapon = NULL;
 	m_flNextThink = 0.0f;
@@ -120,21 +133,42 @@ bool CTFHudWeaponAmmo::ShouldDraw( void )
 		return false;
 	}
 
-	C_TFWeaponBase *pWeapon = pPlayer->GetActiveTFWeapon();
+	CTFWeaponBase *pWeapon = pPlayer->GetActiveTFWeapon();
 
 	if ( !pWeapon )
 	{
 		return false;
 	}
 
-	if ( !pWeapon->UsesPrimaryAmmo() && !tf2c_ammobucket.GetBool() )
+	if( !pWeapon->UsesPrimaryAmmo() && !tf2c_ammobucket.GetBool() )
+	{
+		return false;
+	}
+
+	if ( pWeapon->GetWeaponID() == TF_WEAPON_MEDIGUN )
+	{
+		return false;
+	}
+
+	// Don't show for weapons that don't use any ammo
+	if ( !pWeapon->UsesPrimaryAmmo() )
+	{
+		return false;
+	}
+
+	// Don't show for weapons that use metal for their primary ammo
+	if ( pWeapon->GetPrimaryAmmoType() == TF_AMMO_METAL )
 	{
 		return false;
 	}
 
 	CHudElement *pMedicCharge = GET_NAMED_HUDELEMENT( CHudElement, CHudMedicChargeMeter );
-
 	if ( pMedicCharge && pMedicCharge->IsActive() )
+	{
+		return false;
+	}
+
+	if ( pPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) )
 	{
 		return false;
 	}
@@ -176,31 +210,75 @@ void CTFHudWeaponAmmo::UpdateAmmoLabels( bool bPrimary, bool bReserve, bool bNoC
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudWeaponAmmo::ShowLowAmmoIndicator( void )
+{
+	if ( m_pLowAmmoImage && m_pLowAmmoImage->IsVisible() == false )
+	{
+		m_pLowAmmoImage->SetBounds( m_nLowAmmoImageOrigX, m_nLowAmmoImageOrigY, m_nLowAmmoImageOrigW, m_nLowAmmoImageOrigH );
+		m_pLowAmmoImage->SetVisible( true );
+		m_pLowAmmoImage->SetFgColor( Color( 255, 0, 0, 255 ) );
+		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudLowAmmoPulse" );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudWeaponAmmo::SizeLowAmmoIndicator( float flCurrentAmount, float flMaxAmount )
+{
+	if ( m_pLowAmmoImage && m_pLowAmmoImage->IsVisible() == true )
+	{
+		float flPercent = ( flMaxAmount - flCurrentAmount ) / flMaxAmount;
+		float nLowAmmoPosAdj = hud_low_ammo_warning_max_pos_adjust.GetFloat();
+
+		int nPosAdj = RoundFloatToInt( flPercent * nLowAmmoPosAdj );
+		int nSizeAdj = 2 * nPosAdj;
+		
+		m_pLowAmmoImage->SetBounds( m_nLowAmmoImageOrigX - nPosAdj, 
+									m_nLowAmmoImageOrigY - nPosAdj, 
+									m_nLowAmmoImageOrigW + nSizeAdj,
+									m_nLowAmmoImageOrigH + nSizeAdj );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudWeaponAmmo::HideLowAmmoIndicator( void )
+{
+	if ( m_pLowAmmoImage && m_pLowAmmoImage->IsVisible() == true )
+	{
+		m_pLowAmmoImage->SetBounds( m_nLowAmmoImageOrigX, m_nLowAmmoImageOrigY, m_nLowAmmoImageOrigW, m_nLowAmmoImageOrigH );
+		m_pLowAmmoImage->SetVisible( false );
+		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudLowAmmoPulseStop" );
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Get ammo info from the weapon and update the displays.
 //-----------------------------------------------------------------------------
 void CTFHudWeaponAmmo::OnThink()
 {
 	// Get the player and active weapon.
-	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( !pPlayer )
-		return;
-
-	C_BaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	C_BaseCombatWeapon *pWeapon = GetActiveWeapon();
 
 	if ( m_flNextThink < gpGlobals->curtime )
 	{
-		if ( m_pWeaponBucket )
+		if( m_pWeaponBucket )
 		{
-			if ( pWeapon != m_hCurrentActiveWeapon.Get() )
+			if( pWeapon != m_hCurrentActiveWeapon.Get() )
 			{
 				// Weapon changed, update the icon.
 				m_bShowWeaponIcon = false;
 
-				if ( pWeapon )
+				if( pWeapon )
 				{
 					CEconItemDefinition *pItemDef = pWeapon->GetItem()->GetStaticData();
 
-					if ( pItemDef && pItemDef->image_inventory[0] != '\0' )
+					if( pItemDef && pItemDef->image_inventory[0] != '\0' )
 					{
 						char szImage[128];
 						Q_snprintf( szImage, sizeof( szImage ), "../%s_large", pItemDef->image_inventory );
@@ -210,7 +288,7 @@ void CTFHudWeaponAmmo::OnThink()
 				}
 			}
 
-			bool bShow = m_bShowWeaponIcon && tf2c_ammobucket.GetBool();
+			bool bShow = ( m_bShowWeaponIcon && tf2c_ammobucket.GetBool() );
 
 			if ( m_pWeaponBucket->IsVisible() != bShow )
 			{
@@ -221,13 +299,16 @@ void CTFHudWeaponAmmo::OnThink()
 		hudlcd->SetGlobalStat( "(weapon_print_name)", pWeapon ? pWeapon->GetPrintName() : " " );
 		hudlcd->SetGlobalStat( "(weapon_name)", pWeapon ? pWeapon->GetName() : " " );
 
-		if ( !pWeapon || !pWeapon->UsesPrimaryAmmo() )
+		if ( !pPlayer || !pWeapon || !pWeapon->UsesPrimaryAmmo() )
 		{
 			hudlcd->SetGlobalStat( "(ammo_primary)", "n/a" );
 			hudlcd->SetGlobalStat( "(ammo_secondary)", "n/a" );
 
 			// turn off our ammo counts
 			UpdateAmmoLabels( false, false, false );
+
+			// hide low ammo indicator since it is not applicable
+			HideLowAmmoIndicator();
 
 			m_nAmmo = -1;
 			m_nAmmo2 = -1;
@@ -249,7 +330,7 @@ void CTFHudWeaponAmmo::OnThink()
 			{
 				nAmmo2 = pPlayer->GetAmmoCount( pWeapon->GetPrimaryAmmoType() );
 			}
-
+			
 			hudlcd->SetGlobalStat( "(ammo_primary)", VarArgs( "%d", nAmmo1 ) );
 			hudlcd->SetGlobalStat( "(ammo_secondary)", VarArgs( "%d", nAmmo2 ) );
 
@@ -271,6 +352,25 @@ void CTFHudWeaponAmmo::OnThink()
 					UpdateAmmoLabels( false, false, true );
 					SetDialogVariable( "Ammo", m_nAmmo );
 				}
+			}
+
+			// low ammo warning
+			int nTotalAmmo = nAmmo1 + nAmmo2;
+			int nMaxTotalAmmo = ((CTFPlayer*)pPlayer)->GetMaxAmmo( pWeapon->GetPrimaryAmmoType() );
+			// include ammount in the current clip as well
+			if ( pWeapon->GetMaxClip1() > 0 )
+			{
+				nMaxTotalAmmo += pWeapon->GetMaxClip1();
+			}
+			float flWarningAmmoThreshold = (float)nMaxTotalAmmo * hud_low_ammo_warning_threshold.GetFloat();
+			if ( nTotalAmmo < RoundFloatToInt( flWarningAmmoThreshold ) )
+			{
+				ShowLowAmmoIndicator();
+				SizeLowAmmoIndicator( (float)nTotalAmmo, flWarningAmmoThreshold );
+			}
+			else
+			{
+				HideLowAmmoIndicator();
 			}
 		}
 
