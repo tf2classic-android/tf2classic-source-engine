@@ -18,6 +18,7 @@
 #define CTFShotgun_HWG C_TFShotgun_HWG
 #define CTFShotgun_Pyro C_TFShotgun_Pyro
 #define CTFShotgun_Merc C_TFShotgun_Merc
+#define CTFSuperShotgun C_TFSuperShotgun
 
 #define CTFScatterGun C_TFScatterGun
 #endif
@@ -110,6 +111,20 @@ public:
 	virtual ETFWeaponID GetWeaponID( void ) const
 	{
 		return TF_WEAPON_SHOTGUN_MERC;
+	}
+};
+
+// COMPUCOLOR(TM) SUPERSHOTGUN(TM)
+class CTFSuperShotgun : public CTFShotgun
+{
+public:
+	DECLARE_CLASS( CTFSuperShotgun, CTFShotgun );
+	DECLARE_NETWORKCLASS();
+	DECLARE_PREDICTABLE();
+
+	virtual ETFWeaponID GetWeaponID( void ) const
+	{
+		return TF_WEAPON_SUPERSHOTGUN;
 	}
 };
 

@@ -426,7 +426,7 @@ const char *g_aWeaponNames[] =
 	"TF_WEAPON_PISTOL_MERC",
 	"TF_WEAPON_ROCKETLAUNCHER_MERC",
 	"TF_WEAPON_GRENADELAUNCHER_MERC",
-	//"TF_WEAPON_SUPERSHOTGUN",
+	"TF_WEAPON_SUPERSHOTGUN",
 	"TF_WEAPON_STENGUN",
 	"TF_WEAPON_SIXSHOOTER",
 	"TF_WEAPON_CHAINSAW",
@@ -540,7 +540,7 @@ int g_aWeaponDamageTypes[] =
 	DMG_BULLET | DMG_USEDISTANCEMOD, // TF_WEAPON_PISTOL_MERC,
 	2098240, // TF_WEAPON_ROCKETLAUNCHER_MERC, // TODO(SanyaSho): RECREATE BITS!!!
 	1088, // TF_WEAPON_GRENADELAUNCHER_MERC, // TODO(SanyaSho): RECREATE BITS!!!
-	//TF_WEAPON_SUPERSHOTGUN,
+	DMG_BULLET | DMG_BUCKSHOT | DMG_USEDISTANCEMOD,
 	DMG_BULLET | DMG_USEDISTANCEMOD, // TF_WEAPON_STENGUN,
 	DMG_BULLET | DMG_USEDISTANCEMOD, // TF_WEAPON_SIXSHOOTER,
 	DMG_SLASH, // TF_WEAPON_CHAINSAW,
@@ -573,6 +573,52 @@ const Vector g_vecFixedWpnSpreadPellets[] =
 	Vector( -0.85, 0.85, 0 ),
 	Vector( 0, 0, 0 ),
 };
+
+const Vector g_vecFixedSuperShotgunSpread[] =
+{
+	Vector( 0.2, 0.0, 0 ),
+	Vector( 0.0, 0.2, 0 ),
+	Vector( -0.2, 0.0, 0 ),
+	Vector( 0.0, -0.2, 0 ),
+	Vector( 0.5, 0.0, 0 ),
+	Vector( 0.0, 0.5, 0 ),
+	Vector( -0.5, 0.0, 0 ),
+	Vector( 0.0, -0.5, 0 ),
+	Vector( 0.44999999, 0.44999999, 0 ),
+	Vector( -0.44999999, 0.44999999, 0 ),
+	Vector( 0.44999999, -0.44999999, 0 ),
+	Vector( -0.44999999, -0.44999999, 0 ),
+	Vector( 0.40000001, 0.2, 0 ),
+	Vector( 0.2, 0.40000001, 0 ),
+	Vector( -0.40000001, 0.2, 0 ),
+	Vector( -0.2, 0.40000001, 0 ),
+	Vector( 0.40000001, -0.2, 0 ),
+	Vector( 0.2, -0.40000001, 0 ),
+	Vector( -0.40000001, -0.2, 0 ),
+	Vector( -0.2, -0.40000001, 0 )
+};
+
+/*
+const Vector2D g_vecFixedHuntingShotgunSpread[16] =
+{
+  { 0.0, 0.5 },
+  { -0.25, 0.32499999 },
+  { 0.25, 0.32499999 },
+  { -0.5, 0.2 },
+  { 0.0, 0.2 },
+  { 0.0, 0.2 },
+  { 0.5, 0.2 },
+  { -0.25, 0.0 },
+  { 0.25, 0.0 },
+  { -0.5, -0.2 },
+  { 0.0, -0.2 },
+  { 0.0, -0.2 },
+  { 0.5, -0.2 },
+  { -0.25, -0.32499999 },
+  { 0.25, -0.32499999 },
+  { 0.0, -0.5 }
+};
+*/
 
 const char *g_szProjectileNames[] =
 {

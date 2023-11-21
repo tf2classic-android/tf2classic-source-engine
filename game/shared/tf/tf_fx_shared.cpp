@@ -273,8 +273,37 @@ void FX_FireBullets( int iPlayer, const Vector &vecOrigin, const QAngle &vecAngl
 				bPerfectAccuracy = flFireInterval > 0.25f;
 		}
 
+		/*
+			const Vector2D v23;
+
+			if ( v55 )
+            {
+              v23 = g_vecFixedWpnSpreadPellets;
+              v24 = 10;
+              if ( iWeapon == TF_WEAPON_SUPERSHOTGUN )
+              {
+                v23 = g_vecFixedSuperShotgunSpread;
+                v24 = 20;
+              }
+              else if ( iWeapon == TF_WEAPON_HUNTINGSHOTGUN )
+              {
+                v23 = g_vecFixedHuntingShotgunSpread;
+                v24 = 16;
+              }
+              v25 = SLODWORD(v54) % v24;
+              v20 = v54;
+              v26 = v23[v25].x;
+              v27 = v23[v25].y;
+            }
+		*/
 		// See if we're using pre-determined spread pattern.
-		if ( bFixedSpread )
+		if( bFixedSpread )
+		{
+			int iIndex = ( iBullet % ( (iWeapon == TF_WEAPON_SUPERSHOTGUN) ? 20 : 10 ) );
+			x = (iWeapon == TF_WEAPON_SUPERSHOTGUN) ? g_vecFixedSuperShotgunSpread[iIndex].x : g_vecFixedWpnSpreadPellets[iIndex].x;
+			y = (iWeapon == TF_WEAPON_SUPERSHOTGUN) ? g_vecFixedSuperShotgunSpread[iIndex].y : g_vecFixedWpnSpreadPellets[iIndex].y;
+		}
+		/*if ( bFixedSpread )
 		{
 			int iIndex = iBullet;
 			while ( iIndex > 9 )
@@ -284,7 +313,7 @@ void FX_FireBullets( int iPlayer, const Vector &vecOrigin, const QAngle &vecAngl
 
 			x = 0.5f * g_vecFixedWpnSpreadPellets[iIndex].x;
 			y = 0.5f * g_vecFixedWpnSpreadPellets[iIndex].y;
-		}
+		}*/
 
 		// Apply random spread if none of the above conditions are true.
 		if ( !bPerfectAccuracy && !bFixedSpread )
