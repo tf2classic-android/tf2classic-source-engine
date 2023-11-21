@@ -791,6 +791,70 @@ void CTFPlayer::PostThink()
 	m_bTyping = ( m_nButtons & IN_TYPING ) != 0;
 }
 
+/*
+void __usercall CTFPlayer::Precache(CTFPlayer *this@<ecx>, const char *a2@<edi>)
+{
+  CTFPlayer::PrecachePlayerModels(this, a2);
+  CBaseEntity::PrecacheScriptSound("Player.Spawn");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.Pain");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.CritHit");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.CritPain");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.CritDeath");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.FreezeCam");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.Drown");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.AttackerPain");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.SaveMe");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.Jump");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.MedicChargedDeath");
+  CBaseEntity::PrecacheScriptSound("PowerupSpeedBoost.WearOff");
+  CBaseEntity::PrecacheScriptSound("Player.ResistanceLight");
+  CBaseEntity::PrecacheScriptSound("Player.ResistanceMedium");
+  CBaseEntity::PrecacheScriptSound("Player.ResistanceHeavy");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.ArmorStepLeft");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.ArmorStepRight");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.TranqHit");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.VIPDeath");
+  CBaseEntity::PrecacheScriptSound("TFPlayer.Disconnect");
+  PrecacheParticleSystem("crit_text");
+  PrecacheParticleSystem("cig_smoke");
+  PrecacheParticleSystem("bday_blood");
+  PrecacheParticleSystem("bday_confetti");
+  PrecacheParticleSystem("speech_mediccall");
+  PrecacheParticleSystem("speech_mediccall_auto");
+  PrecacheParticleSystem("speech_typing");
+  PrecacheParticleSystem("speech_voice");
+  PrecacheTeamParticles("player_recent_teleport_%s", 1, g_aTeamLowerNames);
+  PrecacheTeamParticles("particle_nemesis_%s", 1, g_aTeamLowerNames);
+  PrecacheTeamParticles("spy_start_disguise_%s", 0, g_aTeamLowerNames);
+  PrecacheTeamParticles("burningplayer_%s", 1, g_aTeamLowerNames);
+  PrecacheParticleSystem("burningplayer_corpse");
+  PrecacheParticleSystem("burninggibs");
+  PrecacheTeamParticles("critgun_weaponmodel_%s", 1, g_aTeamNamesShort);
+  PrecacheTeamParticles("healthlost_%s", 1, g_aTeamNamesShort);
+  PrecacheTeamParticles("healthgained_%s", 1, g_aTeamNamesShort);
+  PrecacheTeamParticles("healthgained_%s_large", 1, g_aTeamNamesShort);
+  PrecacheTeamParticles("overhealedplayer_%s_pluses", 1, g_aTeamLowerNames);
+  PrecacheTeamParticles("electrocuted_%s", 0, g_aTeamLowerNames);
+  PrecacheTeamParticles("electrocuted_gibbed_%s", 0, g_aTeamLowerNames);
+  PrecacheTeamParticles("healhuff_%s", 0, g_aTeamNamesShort);
+  PrecacheTeamParticles("highfive_%s", 0, g_aTeamLowerNames);
+  PrecacheTeamParticles("highfive_%s_old", 0, g_aTeamLowerNames);
+  PrecacheParticleSystem("blood_spray_red_01");
+  PrecacheParticleSystem("blood_spray_red_01_far");
+  PrecacheParticleSystem("water_blood_impact_red_01");
+  PrecacheParticleSystem("blood_impact_red_01");
+  PrecacheParticleSystem("blood_headshot");
+  PrecacheParticleSystem("water_playerdive");
+  PrecacheParticleSystem("water_playeremerge");
+  PrecacheParticleSystem("rocketjump_smoke");
+  PrecacheParticleSystem("speed_boost_trail");
+  PrecacheParticleSystem("player_poof");
+  UTIL_PrecacheOther("item_healthkit_small", 0);
+  PrecacheParticleSystem("achieved");
+  CBasePlayer::Precache(this);
+}
+*/
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -839,9 +903,10 @@ void CTFPlayer::Precache()
 	PrecacheParticleSystem( "water_playerdive" );
 	PrecacheParticleSystem( "water_playeremerge" );
 	PrecacheParticleSystem( "rocketjump_smoke" );
+	PrecacheParticleSystem( "speed_boost_trail" ); // SanyaSho: 
 	PrecacheTeamParticles( "overhealedplayer_%s_pluses", true );
 	PrecacheParticleSystem( "speech_typing" );
-					 
+ 
 	BaseClass::Precache();
 }
 

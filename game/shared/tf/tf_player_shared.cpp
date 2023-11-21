@@ -263,6 +263,7 @@ CTFPlayerShared::CTFPlayerShared()
 	m_pDisguiseWeaponInfo = NULL;
 	m_pCritSound = NULL;
 	m_pCritEffect = NULL;
+	m_pSpeedEffect = NULL;
 #else
 	memset( m_flChargeOffTime, 0, sizeof( m_flChargeOffTime ) );
 	memset( m_bChargeSounds, 0, sizeof( m_bChargeSounds ) );
@@ -1558,6 +1559,13 @@ void CTFPlayerShared::OnRemoveShield( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::OnAddSpeedBoost( void )
 {
+#if defined( CLIENT_DLL )
+	if( !m_pSpeedEffect )
+	{
+		m_pSpeedEffect = m_pOuter->ParticleProp()->Create( "speed_boost_trail", PATTACH_ABSORIGIN_FOLLOW );
+	}
+#endif
+
 	m_pOuter->TeamFortress_SetSpeed();
 }
 
@@ -1569,6 +1577,13 @@ void CTFPlayerShared::OnRemoveSpeedBoost( void )
 #ifdef GAME_DLL
 	CSingleUserRecipientFilter filter( m_pOuter );
 	m_pOuter->EmitSound( filter, m_pOuter->entindex(), "PowerupSpeedBoost.WearOff" );
+#endif
+#if defined( CLIENT_DLL )
+	if( m_pSpeedEffect )
+	{
+		m_pOuter->ParticleProp()->StopEmission( m_pSpeedEffect );
+		m_pSpeedEffect = NULL;
+	}
 #endif
 
 	m_pOuter->TeamFortress_SetSpeed();

@@ -417,6 +417,7 @@ private:
 	WEAPON_FILE_INFO_HANDLE	m_hDisguiseWeaponInfo;
 
 	CNewParticleEffect *m_pCritEffect;
+	CNewParticleEffect *m_pSpeedEffect;
 	EHANDLE m_hCritEffectHost;
 	CSoundPatch *m_pCritSound;
 
