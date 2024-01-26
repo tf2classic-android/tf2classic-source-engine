@@ -6,11 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <cstdio>
-
-#if !defined( Q_strnicmp )
-#define Q_strnicmp strncasecmp
-#endif
+#include "tier1/strtools.h"
 
 // from 01-Jan-1900 to 18-Feb-2023 = 44973
 // 44973+1=44974
