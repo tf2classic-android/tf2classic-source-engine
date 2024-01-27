@@ -3226,16 +3226,33 @@ void CTFPlayer::TeamFortress_SetSpeed()
 	{
 		CTFWeaponBase *pWeapon = GetActiveTFWeapon();
 
-		// Heavy moves slightly faster spun-up
-		if ( pWeapon && pWeapon->IsWeapon( TF_WEAPON_MINIGUN ) )
+		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 		{
-			if ( maxfbspeed > 110 )
-				maxfbspeed = 110;
+			// Minigun carrier moves slightly faster spun-up
+			if ( pWeapon && pWeapon->IsWeapon( TF_WEAPON_MINIGUN ) )
+			{
+				if ( maxfbspeed > 130 )
+					maxfbspeed = 130;
+			}
+			else
+			{
+				if ( maxfbspeed > 100 )
+					maxfbspeed = 100;
+			}
 		}
 		else
 		{
-			if ( maxfbspeed > 80 )
-				maxfbspeed = 80;
+			// Heavy moves slightly faster spun-up
+			if ( pWeapon && pWeapon->IsWeapon( TF_WEAPON_MINIGUN ) )
+			{
+				if ( maxfbspeed > 110 )
+					maxfbspeed = 110;
+			}
+			else
+			{
+				if ( maxfbspeed > 80 )
+					maxfbspeed = 80;
+			}
 		}
 	}
 
