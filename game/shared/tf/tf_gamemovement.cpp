@@ -39,7 +39,8 @@ ConVar  tf_clamp_back_speed_min( "tf_clamp_back_speed_min", "100", FCVAR_REPLICA
 ConVar	tf_clamp_airducks( "tf_clamp_airducks", "1", FCVAR_REPLICATED );
 ConVar  tf_resolve_stuck_players( "tf_resolve_stuck_players", "1", FCVAR_REPLICATED );
 
-ConVar	tf2c_bunnyjump_max_speed_factor("tf2c_bunnyjump_max_speed_factor", "1.2", FCVAR_REPLICATED);
+ConVar	tf2c_bunnyjump_max_speed_factor( "tf2c_bunnyjump_max_speed_factor", "1.2", FCVAR_REPLICATED );
+ConVar	tf2c_dm_bunnyjump_max_speed_factor( "tf2c_dm_bunnyjump_max_speed_factor", "1.6", FCVAR_REPLICATED );
 ConVar  tf2c_autojump( "tf2c_autojump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Automatically jump while holding the jump button down" );
 ConVar  tf2c_duckjump( "tf2c_duckjump", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Toggles jumping while ducked" );
 ConVar  tf2c_groundspeed_cap("tf2c_groundspeed_cap", "1", FCVAR_REPLICATED, "Toggles the max speed cap imposed when a player is standing on the ground");
@@ -348,10 +349,12 @@ void CTFGameMovement::AirDash( void )
 void CTFGameMovement::PreventBunnyJumping()
 {
 	// Speed at which bunny jumping is limited
-	float maxscaledspeed = tf2c_bunnyjump_max_speed_factor.GetFloat() * player->m_flMaxspeed;
+	float maxscaledspeed = 0.0f;
 
-	if (TFGameRules()->IsDeathmatch())
-		maxscaledspeed = 1.50f * player->m_flMaxspeed;
+	if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		maxscaledspeed = tf2c_dm_bunnyjump_max_speed_factor.GetFloat() * player->m_flMaxspeed;
+	else
+		maxscaledspeed = tf2c_bunnyjump_max_speed_factor.GetFloat() * player->m_flMaxspeed;
 
 	if ( maxscaledspeed <= 0.0f )
 		return;
