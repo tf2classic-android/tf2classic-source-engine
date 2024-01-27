@@ -69,6 +69,8 @@ private:
 public:
 	CTFFreezePanel( const char *pElementName );
 
+	static CTFFreezePanel *Instance();
+
 	virtual void Reset();
 	virtual void Init();
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
@@ -92,6 +94,8 @@ protected:
 		CUtlVector<Vector> *vecCalloutsBR, Vector &vecFreezeTL, Vector &vecFreezeBR, Vector &vecStatTL, Vector &vecStatBR, int *iX, int *iY );
 
 private:
+	static CTFFreezePanel *s_pFreezePanel;
+
 	void ShowNemesisPanel( bool bShow );
 
 	int						m_iYBase;

@@ -45,7 +45,7 @@ bool IsTakingAFreezecamScreenshot( void )
 	if ( bInFreezeCam == true && engine->IsTakingScreenshot() )
 		return true;
 
-	CTFFreezePanel *pPanel = GET_HUDELEMENT( CTFFreezePanel );
+	CTFFreezePanel *pPanel = CTFFreezePanel::Instance();
 	if ( pPanel )
 	{
 		if ( pPanel->IsHoldingAfterScreenShot() )
@@ -57,12 +57,25 @@ bool IsTakingAFreezecamScreenshot( void )
 
 DECLARE_BUILD_FACTORY( CTFFreezePanelHealth );
 
+CTFFreezePanel *CTFFreezePanel::s_pFreezePanel = NULL;
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+CTFFreezePanel *CTFFreezePanel::Instance()
+{
+	return s_pFreezePanel;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
 CTFFreezePanel::CTFFreezePanel( const char *pElementName )
 	: EditablePanel( NULL, "FreezePanel" ), CHudElement( pElementName )
 {
+	AssertMsg( !s_pFreezePanel, "There can be only single instance of CTFFreezePanel" );
+	s_pFreezePanel = this;
+
 	vgui::Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
 	SetVisible( false );
