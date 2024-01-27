@@ -829,14 +829,17 @@ void CTFGameMovement::WalkMove( void )
 	Assert( mv->m_vecVelocity.z == 0.0f );
 
 	// Clamp the players speed in x,y.
-	if ( tf2c_groundspeed_cap.GetBool() )
+	if ( TFGameRules() && !TFGameRules()->IsDeathmatch() )
 	{
-		float flNewSpeed = VectorLength(mv->m_vecVelocity);
-		if (flNewSpeed > mv->m_flMaxSpeed)
+		if ( tf2c_groundspeed_cap.GetBool() )
 		{
-			float flScale = (mv->m_flMaxSpeed / flNewSpeed);
-			mv->m_vecVelocity.x *= flScale;
-			mv->m_vecVelocity.y *= flScale;
+			float flNewSpeed = VectorLength(mv->m_vecVelocity);
+			if (flNewSpeed > mv->m_flMaxSpeed)
+			{
+				float flScale = (mv->m_flMaxSpeed / flNewSpeed);
+				mv->m_vecVelocity.x *= flScale;
+				mv->m_vecVelocity.y *= flScale;
+			}
 		}
 	}
 
