@@ -4774,18 +4774,34 @@ vgui::IImage* GetDefaultAvatarImage( C_BasePlayer *pPlayer )
 {
 	if ( pPlayer )
 	{
+		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		{
+			static vgui::IImage* pMercAvatar = scheme()->GetImage( "../vgui/avatar_default_merc", true );
+			return pMercAvatar;
+		}
+
 		switch ( pPlayer->GetTeamNumber() )
 		{
-		case TF_TEAM_RED:
-		{
-			static vgui::IImage *pRedAvatar = scheme()->GetImage( "../vgui/avatar_default_red", true );
-			return pRedAvatar;
-		}
-		case TF_TEAM_BLUE:
-		{
-			static vgui::IImage *pBlueAvatar = scheme()->GetImage( "../vgui/avatar_default_blue", true );
-			return pBlueAvatar;
-		}
+			case TF_TEAM_RED:
+			{
+				static vgui::IImage *pRedAvatar = scheme()->GetImage( "../vgui/avatar_default_red", true );
+				return pRedAvatar;
+			}
+			case TF_TEAM_BLUE:
+			{
+				static vgui::IImage *pBlueAvatar = scheme()->GetImage( "../vgui/avatar_default_blue", true );
+				return pBlueAvatar;
+			}
+			case TF_TEAM_YELLOW:
+			{
+				static vgui::IImage* pYellowAvatar = scheme()->GetImage( "../vgui/avatar_default_yellow", true );
+				return pYellowAvatar;
+			}
+			case TF_TEAM_GREEN:
+			{
+				static vgui::IImage* pGreenAvatar = scheme()->GetImage( "../vgui/avatar_default_green", true );
+				return pGreenAvatar;
+			}
 		}
 	}
 
