@@ -3553,8 +3553,11 @@ void CTFGameRules::CreateStandardEntities()
 
 	CBaseEntity::Create("vote_controller", vec3_origin, vec3_angle);
 
-	CKickIssue* pIssue = new CKickIssue("Kick");
-	pIssue->Init();
+	CKickIssue* pKickIssue = new CKickIssue("Kick");
+	pKickIssue->Init();
+
+	CRestartGameIssue* pRestartIssue = new CRestartGameIssue("RestartGame");
+	pRestartIssue->Init();
 }
 
 //-----------------------------------------------------------------------------

@@ -6,6 +6,9 @@
 
 #include "vote_controller.h"
 
+//-----------------------------------------------------------------------------
+// Purpose: Kick Player Issue
+//-----------------------------------------------------------------------------
 class CKickIssue : public CBaseIssue
 {
 public:
@@ -22,7 +25,7 @@ public:
 	int PrintLogData();
 	void OnVoteFailed(int a2);
 	bool CreateVoteDataFromDetails(const char *s);
-	int CanCallVote(int a1, char *s, int a2, int a3); // idb
+	bool CanCallVote( int iEntIndex, const char* pszDetails, vote_create_failed_t& nFailCode, int& nTime );
 	void ExecuteCommand();
 	bool IsTeamRestrictedVote();
 
@@ -30,6 +33,28 @@ private:
 	char		 m_pzPlayerName[64];
 	char		 m_pzReason[64];
 	int			 m_iPlayerID;
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: Restart Round Issue
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+class CRestartGameIssue : public CBaseIssue
+{
+public:
+	CRestartGameIssue( const char* typeString );
+	~CRestartGameIssue();
+
+	void		ExecuteCommand();
+	bool		IsEnabled();
+	void		Init();
+	bool		CanCallVote( int iEntIndex, const char* pszDetails, vote_create_failed_t& nFailCode, int& nTime );
+	const char* GetDisplayString();
+	void		ListIssueDetails( CBasePlayer* pPlayer );
+	const char* GetVotePassedString();
 };
 
 

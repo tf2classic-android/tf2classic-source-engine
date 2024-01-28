@@ -1,10 +1,15 @@
 #include "cbase.h"
 #include "tf_shareddefs.h"
 #include "tf_voteissues.h"
+#include "tf_gamerules.h"
 
 extern ConVar sv_vote_timer_duration;
 
+//-----------------------------------------------------------------------------
+// Purpose: Kick Player Issue
+//-----------------------------------------------------------------------------
 ConVar sv_vote_issue_kick_allowed( "sv_vote_issue_kick_allowed", "1", FCVAR_REPLICATED, "Can players call vote to kick players from the server?" );
+ConVar sv_vote_issue_kick_cooldown( "sv_vote_issue_kick_cooldown", "30", FCVAR_NONE, "Minimum time before another kick vote can occur (in seconds)" );
 
 CKickIssue::CKickIssue(const char *typeString) : CBaseIssue(typeString)
 {
@@ -111,18 +116,115 @@ bool CKickIssue::CreateVoteDataFromDetails(const char *s)
 	return 0;
 }
 
-int CKickIssue::CanCallVote(int a1, char *s, int a2, int a3)
+bool CKickIssue::CanCallVote( int iEntIndex, const char* pszDetails, vote_create_failed_t& nFailCode, int& nTime )
 {
 	return 0;
 }
 
 void CKickIssue::ExecuteCommand()
 {
-	;
+	if ( sv_vote_issue_kick_cooldown.GetInt() )
+	{
+		SetIssueCooldownDuration( sv_vote_issue_kick_cooldown.GetFloat() );
+	}
+
+	// Currently doesnt kick
 }
 
 bool CKickIssue::IsTeamRestrictedVote()
 {
-	return 1;
+	return true;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Restart Round Issue
+//-----------------------------------------------------------------------------
+ConVar sv_vote_issue_restart_game_allowed( "sv_vote_issue_restart_game_allowed", "1", FCVAR_REPLICATED, "Can players call vote to restart the game?" );
+ConVar sv_vote_issue_restart_game_cooldown( "sv_vote_issue_restart_game_cooldown", "300", FCVAR_NONE, "Minimum time before another restart vote can occur (in seconds) ");
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CRestartGameIssue::CRestartGameIssue(const char* typeString) : CBaseIssue( typeString )
+{
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CRestartGameIssue::~CRestartGameIssue()
+{
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CRestartGameIssue::ExecuteCommand()
+{
+	if ( sv_vote_issue_restart_game_cooldown.GetInt() )
+	{
+		SetIssueCooldownDuration( sv_vote_issue_restart_game_cooldown.GetFloat() );
+	}
+
+	engine->ServerCommand( "mp_restartgame 2;" );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CRestartGameIssue::IsEnabled()
+{
+	return sv_vote_issue_restart_game_allowed.GetBool();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CRestartGameIssue::Init()
+{
+
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CRestartGameIssue::CanCallVote( int iEntIndex, const char* pszDetails, vote_create_failed_t& nFailCode, int& nTime )
+{
+	if ( !CBaseIssue::CanCallVote ( iEntIndex, pszDetails, nFailCode, nTime ) )
+		return false;
+
+	if ( !IsEnabled() )
+	{
+		nFailCode = VOTE_FAILED_ISSUE_DISABLED;
+		return false;
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+const char* CRestartGameIssue::GetDisplayString()
+{
+	return "#TF_vote_restart_game";
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+const char* CRestartGameIssue::GetVotePassedString()
+{
+	return "#TF_vote_passed_restart_game";
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CRestartGameIssue::ListIssueDetails(CBasePlayer* pForWhom)
+{
+	if ( !sv_vote_issue_restart_game_allowed.GetBool() )
+		return;
+
+	ListStandardNoArgCommand(pForWhom, GetTypeString());
+}
