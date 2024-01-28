@@ -4,6 +4,8 @@
 
 extern ConVar sv_vote_timer_duration;
 
+ConVar sv_vote_issue_kick_allowed( "sv_vote_issue_kick_allowed", "1", FCVAR_REPLICATED, "Can players call vote to kick players from the server?" );
+
 CKickIssue::CKickIssue(const char *typeString) : CBaseIssue(typeString)
 {
 	Q_snprintf(m_pzPlayerName, sizeof(m_pzPlayerName), "");
@@ -27,23 +29,21 @@ const char *CKickIssue::GetDisplayString()
 const char *CKickIssue::GetVotePassedString()
 {
 	return "#TF_vote_passed_kick_player";
-	//TODO: add something for "#TF_vote_passed_ban_player";
 }
 
-void CKickIssue::ListIssueDetails(CBasePlayer *a2)
+void CKickIssue::ListIssueDetails( CBasePlayer* pPlayer )
 {
-	char s[64];
-	if (true)//There should be check or something
-	{
-		V_snprintf(s, sizeof(s), "callvote %s <userID>\n", GetTypeString());
-		ClientPrint(a2, 2, s);
-	}
+	if ( !sv_vote_issue_kick_allowed.GetBool() )
+		return;
+
+	char szBuffer[MAX_COMMAND_LENGTH];
+	Q_snprintf( szBuffer, MAX_COMMAND_LENGTH, "callvote %s <userID>\n", GetTypeString() );
+	ClientPrint( pPlayer, HUD_PRINTCONSOLE, szBuffer );
 }
 
 bool CKickIssue::IsEnabled()
 {
-	//Also some check
-	return true;
+	return sv_vote_issue_kick_allowed.GetBool();
 }
 
 const char * CKickIssue::GetDetailsString()

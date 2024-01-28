@@ -13,7 +13,7 @@ public:
 	~CKickIssue();
 	const char *GetDisplayString();
 	const char * GetVotePassedString();
-	void ListIssueDetails(CBasePlayer *a2);
+	void ListIssueDetails( CBasePlayer* pPlayer );
 	bool IsEnabled();
 	const char * GetDetailsString();
 	void OnVoteStarted();
