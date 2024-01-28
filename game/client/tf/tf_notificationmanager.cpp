@@ -81,11 +81,6 @@ CON_COMMAND_F( tf2c_checkmessages, "Check for the messages", FCVAR_DEVELOPMENTON
 	GetNotificationManager()->CheckVersionAndMessages();
 }
 
-CON_COMMAND_F( tf2c_updateserverlist, "Check for the messages", FCVAR_DEVELOPMENTONLY )
-{
-	GetNotificationManager()->UpdateServerlistInfo();
-}
-
 ConVar tf2c_checkfrequency( "tf2c_checkfrequency", "900", FCVAR_DEVELOPMENTONLY, "Messages check frequency (seconds)" );
 ConVar tf2c_updatefrequency( "tf2c_updatefrequency", "15", FCVAR_DEVELOPMENTONLY, "Updatelist update frequency (seconds)" );
 ConVar tf2c_latest_notification( "tf2c_latest_notification", "0", FCVAR_ARCHIVE );
@@ -117,7 +112,6 @@ bool CTFNotificationManager::Init()
 
 		m_SteamHTTP = steamapicontext->SteamHTTP();
 		SetDefLessFunc( m_Requests );
-		SetDefLessFunc( m_Servers );
 		m_flLastCheck = tf2c_checkfrequency.GetFloat() * -1;
 		m_flUpdateLastCheck = tf2c_updatefrequency.GetFloat() * -1;
 		m_iCurrentRequest = REQUEST_IDLE;
@@ -126,17 +120,9 @@ bool CTFNotificationManager::Init()
 		m_bPlayedSound = false;
 		m_bInited = true;
 
-		m_hRequest = 0;
 		MatchMakingKeyValuePair_t filter;
 		Q_strncpy( filter.m_szKey, "gamedir", sizeof( filter.m_szKey ) );
 		Q_strncpy( filter.m_szValue, "tf2classic", sizeof( filter.m_szKey ) ); // change "tf2classic" to engine->GetGameDirectory() before the release
-		m_ServerFilters.AddToTail( filter );
-
-		if ( MAINMENU_ROOT )
-		{
-			//Do it only once
-			AddRequest( REQUEST_SERVERLIST );
-		}
 	}
 	return true;
 }
@@ -155,7 +141,6 @@ void CTFNotificationManager::Update( float frametime )
 	if ( !MAINMENU_ROOT->InGame() && gpGlobals->curtime - m_flUpdateLastCheck > tf2c_updatefrequency.GetFloat() )
 	{
 		m_flUpdateLastCheck = gpGlobals->curtime;
-		UpdateServerlistInfo();
 	}
 }
 
@@ -200,9 +185,6 @@ void CTFNotificationManager::AddRequest( RequestType type )
 	case REQUEST_MESSAGE:
 		m_CallResultMessage.Set( hSteamAPICall, this, ( &CTFNotificationManager::OnHTTPRequestCompleted ) );
 		break;
-	case REQUEST_SERVERLIST:
-		m_CallResultServerlist.Set( hSteamAPICall, this, ( &CTFNotificationManager::OnHTTPRequestCompleted ) );
-		break;
 	}
 	m_bCompleted = false;
 }
@@ -236,9 +218,6 @@ void CTFNotificationManager::OnHTTPRequestCompleted( HTTPRequestCompleted_t *Cal
 			break;
 		case REQUEST_MESSAGE:
 			OnMessageCheckCompleted( result );
-			break;
-		case REQUEST_SERVERLIST:
-			OnServerlistCheckCompleted( result );
 			break;
 		}
 	}
@@ -338,107 +317,6 @@ void CTFNotificationManager::OnMessageCheckCompleted( const char *pszPage )
 			pNotifyPanel->SetupNotifyCustom( szMessage, "ico_notify_flag_moving", pLocalPlayer->GetTeamNumber() );
 		}
 	}
-}
-
-void CTFNotificationManager::OnServerlistCheckCompleted( const char* pMessage )
-{
-	if ( pMessage[0] == '\0' )
-		return;
-
-	if ( m_pzLastMessage[0] != '\0' && !Q_strcmp( pMessage, m_pzLastMessage ) )
-		return;
-
-	char pzResultString[128];
-	char pzMessageString[128];
-
-	char * pch = (char*)pMessage;
-	char* pMes = (char*)pMessage;
-	int id = 0;
-	int offset = 0;
-
-	while ( pch != NULL )
-	{
-		pMes = pch;
-		pch = strchr( (char*)pMes, ' ' );
-		if ( !pch ) break;
-		id = pch - pMes + 1 - offset;
-		Q_snprintf( pzResultString, id, pMes + offset );
-
-		pMes = pch;
-		pch = strchr( (char*)pMes, '\n' );
-		if ( !pch ) break;
-		id = pch - pMes + 1;
-		Q_snprintf( pzMessageString, id, pMes );
-
-		offset = 1;
-
-		gameserveritem_t m_Server;
-		m_Server.m_NetAdr.Init( atoi( pzResultString ), atoi( pzMessageString ), atoi( pzMessageString ) );
-		m_ServerList.AddToTail( m_Server );
-	}
-
-	UpdateServerlistInfo();
-}
-
-void CTFNotificationManager::UpdateServerlistInfo()
-{
-	ISteamMatchmakingServers *pMatchmaking = steamapicontext->SteamMatchmakingServers();
-
-	if ( !pMatchmaking || pMatchmaking->IsRefreshing( m_hRequest ) )
-		return;
-
-	MatchMakingKeyValuePair_t *pFilters;
-	int nFilters = GetServerFilters( &pFilters );
-	m_hRequest = pMatchmaking->RequestInternetServerList( engine->GetAppID(), &pFilters, nFilters, this );
-}
-
-gameserveritem_t CTFNotificationManager::GetServerInfo( int index )
-{
-	return m_Servers[index];
-};
-
-bool CTFNotificationManager::IsOfficialServer( int index )
-{
-	for ( int i = 0; i < m_ServerList.Count(); i++ )
-	{
-		if ( m_ServerList[i].m_NetAdr.GetIP() == m_Servers[index].m_NetAdr.GetIP() &&
-			m_ServerList[i].m_NetAdr.GetConnectionPort() == m_Servers[index].m_NetAdr.GetConnectionPort() )
-		{
-			return true;
-		}
-	}
-	return false;
-};
-
-void CTFNotificationManager::ServerResponded( HServerListRequest hRequest, int iServer )
-{
-	gameserveritem_t *pServerItem = steamapicontext->SteamMatchmakingServers()->GetServerDetails( hRequest, iServer );
-	int index = m_Servers.Find( iServer );
-	if ( index == m_Servers.InvalidIndex() )
-	{
-		m_Servers.Insert( iServer, *pServerItem );
-		//Msg("%i SERVER %s (%s): PING %i, PLAYERS %i/%i, MAP %s\n", iServer, pServerItem->GetName(), pServerItem->m_NetAdr.GetQueryAddressString(),
-		//	pServerItem->m_nPing, pServerItem->m_nPlayers, pServerItem->m_nMaxPlayers, pServerItem->m_szMap);
-	}
-	else
-	{
-		m_Servers[index] = *pServerItem;
-	}
-}
-
-void CTFNotificationManager::RefreshComplete( HServerListRequest hRequest, EMatchMakingServerResponse response )
-{
-	MAINMENU_ROOT->SetServerlistSize( m_Servers.Count() );
-	MAINMENU_ROOT->OnServerInfoUpdate();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-uint32 CTFNotificationManager::GetServerFilters( MatchMakingKeyValuePair_t **pFilters )
-{
-	*pFilters = m_ServerFilters.Base();
-	return m_ServerFilters.Count();
 }
 
 //-----------------------------------------------------------------------------

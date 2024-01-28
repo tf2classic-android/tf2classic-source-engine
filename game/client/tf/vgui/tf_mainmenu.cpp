@@ -347,13 +347,3 @@ void CTFMainMenu::OnNotificationUpdate()
 	GET_MAINMENUPANEL(CTFMainMenuPanel)->OnNotificationUpdate();
 	GET_MAINMENUPANEL(CTFPauseMenuPanel)->OnNotificationUpdate();
 }
-
-void CTFMainMenu::SetServerlistSize(int size)
-{
-	GET_MAINMENUPANEL(CTFMainMenuPanel)->SetServerlistSize(size);
-}
-
-void CTFMainMenu::OnServerInfoUpdate()
-{
-	GET_MAINMENUPANEL(CTFMainMenuPanel)->UpdateServerInfo();
-}

@@ -70,8 +70,6 @@ public:
 	virtual void ShowItemToolTip(CEconItemDefinition *pItemData);
 	virtual void HideItemToolTip();
 	virtual void OnNotificationUpdate();
-	virtual void SetServerlistSize(int size);
-	virtual void OnServerInfoUpdate();
 
 private:
 	CUtlVector<CTFMenuPanelBase*>		m_pPanels;

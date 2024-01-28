@@ -22,7 +22,6 @@ enum RequestType
 	REQUEST_IDLE = -1,
 	REQUEST_VERSION = 0,
 	REQUEST_MESSAGE,
-	REQUEST_SERVERLIST,
 
 	REQUEST_COUNT
 };
@@ -46,7 +45,7 @@ struct MessageNotification
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CTFNotificationManager : public CAutoGameSystemPerFrame, public CGameEventListener, public ISteamMatchmakingServerListResponse
+class CTFNotificationManager : public CAutoGameSystemPerFrame, public CGameEventListener
 {
 public:
 	CTFNotificationManager();
@@ -73,18 +72,6 @@ public:
 	const char *GetVersionName( void );
 	time_t GetVersionTimeStamp( void );
 
-	uint32 GetServerFilters( MatchMakingKeyValuePair_t **pFilters );
-	// Server has responded ok with updated data
-	virtual void ServerResponded( HServerListRequest hRequest, int iServer );
-	// Server has failed to respond
-	virtual void ServerFailedToRespond( HServerListRequest hRequest, int iServer ) {}
-	// A list refresh you had initiated is now 100% completed
-	virtual void RefreshComplete( HServerListRequest hRequest, EMatchMakingServerResponse response );
-
-	void UpdateServerlistInfo();
-	gameserveritem_t GetServerInfo( int index );
-	bool IsOfficialServer( int index );
-
 private:
 	bool		m_bInited;
 	CUtlVector<MessageNotification>	m_Notifications;
@@ -105,18 +92,11 @@ private:
 
 	void				OnMessageCheckCompleted( const char* pMessage );
 	void				OnVersionCheckCompleted( const char* pMessage );
-	void				OnServerlistCheckCompleted( const char* pMessage );
 
 	CCallResult<CTFNotificationManager, HTTPRequestCompleted_t> m_CallResultVersion;
 	CCallResult<CTFNotificationManager, HTTPRequestCompleted_t> m_CallResultMessage;
-	CCallResult<CTFNotificationManager, HTTPRequestCompleted_t> m_CallResultServerlist;
 
 	void				OnHTTPRequestCompleted( HTTPRequestCompleted_t *CallResult, bool iofailure );
-
-	HServerListRequest m_hRequest;
-	CUtlVector<gameserveritem_t> m_ServerList;
-	CUtlMap<int, gameserveritem_t> m_Servers;
-	CUtlVector<MatchMakingKeyValuePair_t> m_ServerFilters;
 };
 
 CTFNotificationManager *GetNotificationManager();
