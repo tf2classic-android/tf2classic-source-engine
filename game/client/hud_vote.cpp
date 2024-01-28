@@ -17,6 +17,7 @@
 #include "con_nprint.h"
 #include "hud_vote.h"
 #include "menu.h"
+#include "fmtstr.h"
 
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
@@ -115,6 +116,23 @@ public:
 	wchar_t m_wszPlayerName[MAX_PLAYER_NAME_LENGTH];
 };
 #endif	// TF_CLIENT_DLL
+
+
+
+CON_COMMAND( vote_slot, "Usage: vote_slot <slot [1-5]>" )
+{
+	CHudVote *pHudVote = GET_HUDELEMENT( CHudVote );
+	if( pHudVote && pHudVote->IsVisible() )
+	{
+		if( args.ArgC() < 2 )
+		{
+			return;
+		}
+
+		int key = clamp( atoi( args[1] ), 1, 5 );
+		engine->ClientCmd( CFmtStr( "vote option %d", key ).Get() );
+	}
+}
 
 
 //-----------------------------------------------------------------------------
