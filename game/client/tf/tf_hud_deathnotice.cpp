@@ -27,6 +27,14 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+const char *szLocalizedObjectNames[OBJ_LAST] =
+{
+        "#TF_Object_Dispenser",
+        "#TF_Object_Tele",
+        "#TF_Object_Sentry",
+        "#TF_object_Sapper"
+};
+
 // Player entries in a death notice
 struct DeathNoticePlayer
 {
@@ -158,6 +166,7 @@ CHudElement( pElementName ), BaseClass( NULL, "HudDeathNotice" )
 void CTFHudDeathNotice::Init( void )
 {
 	ListenForGameEvent( "player_death" );
+	ListenForGameEvent( "object_destroyed" );
 	ListenForGameEvent( "teamplay_flag_event" );
 	//ListenForGameEvent( "rd_robot_killed" );
 }
@@ -413,13 +422,16 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 	int iMsg = AddDeathNoticeItem();
 	int iLocalPlayerIndex = GetLocalPlayerIndex();
 
-	if ( FStrEq( pszEventName, "player_death" ) )
+	if ( FStrEq( pszEventName, "player_death" ) || FStrEq( pszEventName, "object_destroyed" ) )
 	{
+		bool bIsObjectDestroyed = FStrEq( pszEventName, "object_destroyed" );
 		int victim = engine->GetPlayerForUserID( event->GetInt( "userid" ) );
 		int killer = engine->GetPlayerForUserID( event->GetInt( "attacker" ) );
 		const char *killedwith = event->GetString( "weapon" );
 		const char *killedwithweaponlog = event->GetString( "weapon_logclassname" );
 		int nPowerupFlags = event->GetInt( "powerup_flags" );
+
+		Msg("bIsObjectDestroyed %i\n", bIsObjectDestroyed);
 
 		// Get the names of the players
 		const char *killer_name = ( killer > 0 ) ? g_PR->GetPlayerName( killer ) : "";
@@ -571,25 +583,67 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 		int iVictimID = engine->GetPlayerForUserID( event->GetInt( "userid" ) );
 		int nDeathFlags = event->GetInt( "death_flags" );
 
-		if ( nDeathFlags & TF_DEATH_DOMINATION )
+		if ( !bIsObjectDestroyed )
 		{
-			AddAdditionalMsg( iKillerID, iVictimID, "#Msg_Dominating" );
-			PlayRivalrySounds( iKillerID, iVictimID, TF_DEATH_DOMINATION );
+			if ( nDeathFlags & TF_DEATH_DOMINATION )
+			{
+				AddAdditionalMsg( iKillerID, iVictimID, "#Msg_Dominating" );
+				PlayRivalrySounds( iKillerID, iVictimID, TF_DEATH_DOMINATION );
+			}
+			if ( ( nDeathFlags & TF_DEATH_ASSISTER_DOMINATION ) && ( iAssisterID > 0 ) )
+			{
+				AddAdditionalMsg( iAssisterID, iVictimID, "#Msg_Dominating" );
+				PlayRivalrySounds( iAssisterID, iVictimID, TF_DEATH_DOMINATION );
+			}
+			if ( nDeathFlags & TF_DEATH_REVENGE )
+			{
+				AddAdditionalMsg( iKillerID, iVictimID, "#Msg_Revenge" );
+				PlayRivalrySounds( iKillerID, iVictimID, TF_DEATH_REVENGE );
+			}
+			if ( ( nDeathFlags & TF_DEATH_ASSISTER_REVENGE ) && ( iAssisterID > 0 ) )
+			{
+				AddAdditionalMsg( iAssisterID, iVictimID, "#Msg_Revenge" );
+				PlayRivalrySounds( iAssisterID, iVictimID, TF_DEATH_REVENGE );
+			}
 		}
-		if ( ( nDeathFlags & TF_DEATH_ASSISTER_DOMINATION ) && ( iAssisterID > 0 ) )
+		else
 		{
-			AddAdditionalMsg( iAssisterID, iVictimID, "#Msg_Dominating" );
-			PlayRivalrySounds( iAssisterID, iVictimID, TF_DEATH_DOMINATION );
-		}
-		if ( nDeathFlags & TF_DEATH_REVENGE )
-		{
-			AddAdditionalMsg( iKillerID, iVictimID, "#Msg_Revenge" );
-			PlayRivalrySounds( iKillerID, iVictimID, TF_DEATH_REVENGE );
-		}
-		if ( ( nDeathFlags & TF_DEATH_ASSISTER_REVENGE ) && ( iAssisterID > 0 ) )
-		{
-			AddAdditionalMsg( iAssisterID, iVictimID, "#Msg_Revenge" );
-			PlayRivalrySounds( iAssisterID, iVictimID, TF_DEATH_REVENGE );
+			// if this is an object destroyed message, set the victim name to "<object type> (<owner>)"
+			int iObjectType = event->GetInt( "objecttype" );
+			if ( iObjectType >= 0 && iObjectType < OBJ_LAST )
+			{
+				// get the localized name for the object
+				char szLocalizedObjectName[MAX_PLAYER_NAME_LENGTH];
+				szLocalizedObjectName[ 0 ] = 0;
+				const wchar_t* wszLocalizedObjectName = g_pVGuiLocalize->Find( szLocalizedObjectNames[iObjectType] );
+				if ( wszLocalizedObjectName )
+				{
+					g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalizedObjectName, szLocalizedObjectName, ARRAYSIZE( szLocalizedObjectName ) );
+				}
+				else
+				{
+					Warning( "Couldn't find localized object name for '%s'\n", szLocalizedObjectNames[iObjectType] );
+					Q_strncpy( szLocalizedObjectName, szLocalizedObjectNames[iObjectType], sizeof( szLocalizedObjectName ) );
+				}
+
+				// compose the string
+				DeathNoticeItem& msg = m_DeathNotices[ iMsg ];
+				if ( msg.Victim.szName[0] )
+				{
+					char szVictimBuf[MAX_PLAYER_NAME_LENGTH * 2];
+					Q_snprintf( szVictimBuf, ARRAYSIZE( szVictimBuf ), "%s (%s)", szLocalizedObjectName, msg.Victim.szName );
+					Q_strncpy( msg.Victim.szName, szVictimBuf, ARRAYSIZE( msg.Victim.szName ) );
+				}
+				else
+				{
+					Q_strncpy( msg.Victim.szName, szLocalizedObjectName, ARRAYSIZE( msg.Victim.szName ) );
+				}
+
+			}
+			else
+			{
+				Assert( false ); // invalid object type
+			}
 		}
 
 		int iCustomDamage = event->GetInt( "customkill" );
