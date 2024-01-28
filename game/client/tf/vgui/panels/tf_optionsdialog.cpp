@@ -22,6 +22,7 @@
 
 #include "KeyValues.h"
 #include "tf_optionsmousepanel.h"
+#include "tf_optionstouchpanel.h"
 #include "tf_optionskeyboardpanel.h"
 #include "tf_optionsaudiopanel.h"
 #include "tf_optionsvideopanel.h"
@@ -55,6 +56,7 @@ bool CTFOptionsDialog::Init()
 
 	AddPanel(new CTFOptionsAdvancedPanel(this, "MultiplayerOptions"), PANEL_ADV);
 	AddPanel(new CTFOptionsMousePanel(this, "MouseOptions"), PANEL_MOUSE);
+	AddPanel(new CTFOptionsTouchPanel(this, "TouchOptions"), PANEL_TOUCH);
 	AddPanel(new CTFOptionsKeyboardPanel(this, "KeyboardOptions"), PANEL_KEYBOARD);
 	AddPanel(new CTFOptionsAudioPanel(this, "AudioOptions"), PANEL_AUDIO);
 	AddPanel(new CTFOptionsVideoPanel(this, "VideoOptions"), PANEL_VIDEO);
@@ -144,6 +146,10 @@ void CTFOptionsDialog::OnCommand(const char* command)
 	else if (!Q_strcmp(command, "newoptionsmouse"))
 	{
 		SetCurrentPanel(PANEL_MOUSE);
+	}
+	else if (!Q_strcmp(command, "newoptionstouch"))
+	{
+		SetCurrentPanel(PANEL_TOUCH);
 	}
 	else if (!Q_strcmp(command, "newoptionskeyboard"))
 	{
