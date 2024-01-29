@@ -2794,12 +2794,17 @@ bool CTeamplayRoundBasedRules::MapHasActiveTimer( void )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::CreateTimeLimitTimer( void )
 {
-	if ( IsInArenaMode () == true || IsInKothMode() == true )
+	if( IsInArenaMode() || IsInKothMode() )
 		return;
+
+	bool bIsDeathmatch = false;
+#if defined( TF_CLASSIC )
+	bIsDeathmatch = ( TFGameRules() && TFGameRules()->IsDeathmatch() );
+#endif
 
 	// this is the same check we use in State_Think_RND_RUNNING()
 	// don't show the timelimit timer if we're not going to end the map when it runs out
-	bool bAllowStalemate = ( m_bAllowStalemateAtTimelimit || ( mp_match_end_at_timelimit.GetBool() && !IsValveMap() ) );
+	bool bAllowStalemate = ( m_bAllowStalemateAtTimelimit || bIsDeathmatch || ( mp_match_end_at_timelimit.GetBool() && !IsValveMap() ) );
 	if ( !bAllowStalemate )
 		return;
 
