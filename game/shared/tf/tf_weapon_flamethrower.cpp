@@ -34,11 +34,11 @@
 
 	ConVar	tf_debug_flamethrower("tf_debug_flamethrower", "0", FCVAR_CHEAT, "Visualize the flamethrower damage." );
 	ConVar  tf_flamethrower_velocity( "tf_flamethrower_velocity", "2300.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Initial velocity of flame damage entities." );
-	ConVar	tf_flamethrower_drag("tf_flamethrower_drag", "0.89", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Air drag of flame damage entities." );
+	ConVar	tf_flamethrower_drag("tf_flamethrower_drag", "0.87", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Air drag of flame damage entities." );
 	ConVar	tf_flamethrower_float("tf_flamethrower_float", "50.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Upward float velocity of flame damage entities." );
 	ConVar  tf_flamethrower_flametime("tf_flamethrower_flametime", "0.5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time to live of flame damage entities." );
 	ConVar  tf_flamethrower_vecrand("tf_flamethrower_vecrand", "0.05", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Random vector added to initial velocity of flame damage entities." );
-	ConVar  tf_flamethrower_boxsize("tf_flamethrower_boxsize", "8.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Size of flame damage entities." );
+	ConVar  tf_flamethrower_boxsize("tf_flamethrower_boxsize", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Size of flame damage entities." );
 	ConVar  tf_flamethrower_maxdamagedist("tf_flamethrower_maxdamagedist", "350.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Maximum damage distance for flamethrower." );
 	ConVar  tf_flamethrower_shortrangedamagemultiplier("tf_flamethrower_shortrangedamagemultiplier", "1.2", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Damage multiplier for close-in flamethrower damage." );
 	ConVar  tf_flamethrower_velocityfadestart("tf_flamethrower_velocityfadestart", ".3", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time at which attacker's velocity contribution starts to fade." );
@@ -1131,6 +1131,11 @@ void CTFFlameEntity::FlameThink( void )
 		UTIL_Remove( this );
 		return;
 	}
+	else
+	{
+		// Always think, if we haven't died due to our timeout.
+		SetNextThink( gpGlobals->curtime );
+	}
 
 	// Do collision detection.  We do custom collision detection because we can do it more cheaply than the
 	// standard collision detection (don't need to check against world unless we might have hit an enemy) and
@@ -1216,8 +1221,6 @@ void CTFFlameEntity::FlameThink( void )
 		}
 	}
 
-	SetNextThink( gpGlobals->curtime );
-
 	m_vecPrevPos = GetAbsOrigin();
 }
 
@@ -1282,6 +1285,13 @@ void CTFFlameEntity::CheckCollision( CBaseEntity *pOther, bool *pbHitWorld )
 //-----------------------------------------------------------------------------
 void CTFFlameEntity::OnCollide( CBaseEntity *pOther )
 {
+	int nContents = UTIL_PointContents( GetAbsOrigin() );
+	if ( (nContents & MASK_WATER) )
+	{
+		UTIL_Remove( this );
+		return;
+	}
+
 	// remember that we've burnt this player
 	m_hEntitiesBurnt.AddToTail( pOther );
 
