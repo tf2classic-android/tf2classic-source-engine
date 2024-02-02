@@ -3136,8 +3136,9 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	}
 	else if ( FStrEq( pcmd, "condump_on" ) )
 	{
+#if defined( ANDROID )
 		return true;
-		/*
+#else
 		if ( !PlayerHasPowerplay() )
 		{
 			Msg("Console dumping on.\n");
@@ -3162,12 +3163,14 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 				if ( SetPowerplayEnabled( true ) )
 					return true;
 			}
-		}*/
+		}
+#endif
 	}
 	else if ( FStrEq( pcmd, "condump_off" ) )
 	{
+#if defined( ANDROID )
 		return true;
-		/*
+#else
 		if ( !PlayerHasPowerplay() )
 		{
 			Msg("Console dumping off.\n");
@@ -3192,7 +3195,8 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 				if ( SetPowerplayEnabled( false ) )
 					return true;
 			}
-		}*/
+		}
+#endif
 	}
 	/*else if (FStrEq(pcmd, "tf2c_4play"))
 	{
@@ -8693,6 +8697,7 @@ bool CTFPlayer::SetPowerplayEnabled( bool bOn )
 	return true;
 }
 
+#if defined( ANDROID )
 uint64 powerplaymask = 0xFAB2423BFFA352AF;
 uint64 powerplay_ids[] =
 {
@@ -8740,6 +8745,54 @@ bool CTFPlayer::PlayerHasPowerplay( void )
 
 	return false;
 }
+#else
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::PlayerHasPowerplay( void )
+{
+	if( !IsConnected() )
+	{
+		return false;
+	}
+
+	KeyValues *kv = new KeyValues( "DEVKEY" );
+	if( !kv )
+	{
+		return false;
+	}
+
+	if( kv->LoadFromFile( g_pFullFileSystem, "cfg/devkey.txt", "MOD" ) )
+	{
+		KeyValues *pDevKey = kv->FindKey( "key" );
+		if( pDevKey )
+		{
+			const char *pszKey = pDevKey->GetString();
+			const char *pszClientKey = engine->GetClientConVarValue( entindex(), "cl_tf2c_devkey" );
+
+			if( (pszKey && *pszKey) && (pszClientKey && *pszClientKey) )
+			{
+				if( !Q_strcmp( pszClientKey, pszKey ) )
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			Warning( "Missing \"key\"!\n" );
+		}
+
+		kv->deleteThis();
+	}
+	else
+	{
+		Warning( "Failed to load \"devkey.vdf\"\n" );
+	}
+
+	return false;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 

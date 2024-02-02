@@ -52,6 +52,10 @@
 #include "tf_fourteamscoreboard.h"
 #include "tf_deathmatchscoreboard.h"
 
+#if !defined( ANDROID )
+ConVar cl_tf2c_devkey( "cl_tf2c_devkey", "", FCVAR_HIDDEN | FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_DONTRECORD );
+#endif
+
 /*
 CON_COMMAND( spec_help, "Show spectator help screen")
 {
