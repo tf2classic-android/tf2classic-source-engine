@@ -277,6 +277,7 @@ private:
 	void OnAddRagemode( void );
 	void OnAddShield( void );
 	void OnAddSpeedBoost( void );
+	void OnAddUrine( void );
 
 	void OnRemoveZoomed( void );
 	void OnRemoveBurning( void );
@@ -294,6 +295,7 @@ private:
 	void OnRemoveRagemode( void );
 	void OnRemoveShield( void );
 	void OnRemoveSpeedBoost( void );
+	void OnRemoveUrine( void );
 
 	float GetCritMult( void );
 
@@ -372,6 +374,10 @@ private:
 	float					m_flFlameRemoveTime;
 	float					m_flTauntRemoveTime;
 
+public:
+	// Jarate Player
+	EHANDLE m_hUrineAttacker;
+private:
 
 	float m_flDisguiseCompleteTime;
 

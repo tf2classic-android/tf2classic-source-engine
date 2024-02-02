@@ -2404,6 +2404,89 @@ void CTFGameRules::RadiusDamage( CTFRadiusDamageInfo &radiusInfo )
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Logic for jar-based throwable object collisions
+//-----------------------------------------------------------------------------
+bool CTFGameRules::RadiusJarEffect( CTFRadiusDamageInfo &radiusInfo, ETFCond iCond )
+{
+	bool bExtinguished = false;
+	CBaseEntity *pAttacker = radiusInfo.info.GetAttacker();
+
+	CBaseEntity *pEntity = NULL;
+	for ( CEntitySphereQuery sphere( radiusInfo.m_vecSrc, radiusInfo.m_flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+	{
+		if ( pEntity == radiusInfo.m_pEntityIgnore )
+			continue;
+
+		if ( pEntity->m_takedamage == DAMAGE_NO )
+			continue;
+
+		// UNDONE: this should check a damage mask, not an ignore
+		if ( radiusInfo.m_iClassIgnore != CLASS_NONE && pEntity->Classify() == radiusInfo.m_iClassIgnore )
+		{
+			continue;
+		}
+
+		// Checking distance from source because Valve were apparently too lazy to fix the engine function.
+		Vector vecHitPoint;
+		pEntity->CollisionProp()->CalcNearestPoint( radiusInfo.m_vecSrc, &vecHitPoint );
+		Vector vecDir = vecHitPoint - radiusInfo.m_vecSrc;
+
+		if ( vecDir.LengthSqr() > ( radiusInfo.m_flRadius * radiusInfo.m_flRadius ) )
+			continue;
+
+		CTFPlayer *pTFPlayer = ToTFPlayer( pEntity );
+		if ( pTFPlayer )
+		{
+			if ( !pTFPlayer->InSameTeam( pAttacker ) )
+			{
+				pTFPlayer->m_Shared.AddCond( iCond, 10.0f );
+				switch ( iCond )
+				{
+					case TF_COND_URINE:
+						pTFPlayer->m_Shared.m_hUrineAttacker.Set( pAttacker );
+						break;
+					//case TF_COND_MAD_MILK:
+						//pTFPlayer->m_Shared.m_hMilkAttacker.Set( pAttacker );
+						//break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				if ( pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) )
+				{
+					pTFPlayer->m_Shared.RemoveCond( TF_COND_BURNING );
+					pTFPlayer->EmitSound( "TFPlayer.FlameOut" );
+
+					if ( pEntity != pAttacker )
+					{
+						bExtinguished = true;
+
+						CTFPlayer *pTFAttacker = ToTFPlayer( pAttacker );
+						if ( pTFAttacker )
+						{
+							// Bonus points.
+							IGameEvent *event_bonus = gameeventmanager->CreateEvent( "player_bonuspoints" );
+							if ( event_bonus )
+							{
+								event_bonus->SetInt( "player_entindex", pEntity->entindex() );
+								event_bonus->SetInt( "source_entindex", pAttacker->entindex() );
+								event_bonus->SetInt( "points", 1 );
+
+								gameeventmanager->FireEvent( event_bonus );
+							}
+							CTF_GameStats.Event_PlayerAwardBonusPoints( pTFAttacker, pEntity, 1 );
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return bExtinguished;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

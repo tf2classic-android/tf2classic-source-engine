@@ -707,6 +707,10 @@ void CTFPlayerShared::OnConditionAdded( ETFCond nCond )
 		OnAddStunned();
 		break;
 
+	case TF_COND_URINE:
+		OnAddUrine();
+		break;
+
 	case TF_COND_POWERUP_RAGEMODE:
 		OnAddRagemode();
 		break;
@@ -813,6 +817,10 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond nCond )
 
 	case TF_COND_STUNNED:
 		OnRemoveStunned();
+		break;
+
+	case TF_COND_URINE:
+		OnRemoveUrine();
 		break;
 
 	case TF_COND_POWERUP_RAGEMODE:
@@ -1450,6 +1458,47 @@ void CTFPlayerShared::OnRemoveStunned( void )
 	{
 		pWeapon->SetWeaponVisible( true );
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayerShared::OnAddUrine( void )
+{
+#ifdef GAME_DLL
+	m_pOuter->SpeakConceptIfAllowed( MP_CONCEPT_JARATE_HIT );
+#else
+	m_pOuter->ParticleProp()->Create( "peejar_drips", PATTACH_ABSORIGIN_FOLLOW );
+
+	if ( m_pOuter->IsLocalPlayer() )
+	{
+		IMaterial *pMaterial = materials->FindMaterial( "effects/jarate_overlay", TEXTURE_GROUP_CLIENT_EFFECTS, false );
+		if ( !IsErrorMaterial( pMaterial ) )
+		{
+			view->SetScreenOverlayMaterial( pMaterial );
+		}
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayerShared::OnRemoveUrine( void )
+{
+#ifdef GAME_DLL
+	if( m_nPlayerState != TF_STATE_DYING )
+	{
+		m_hUrineAttacker = NULL;
+	}
+#else
+	m_pOuter->ParticleProp()->StopParticlesNamed( "peejar_drips" );
+
+	if ( m_pOuter->IsLocalPlayer() )
+	{
+		view->SetScreenOverlayMaterial( NULL );
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
