@@ -40,7 +40,6 @@
 	ConVar  tf_flamethrower_vecrand("tf_flamethrower_vecrand", "0.05", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Random vector added to initial velocity of flame damage entities." );
 	ConVar  tf_flamethrower_boxsize("tf_flamethrower_boxsize", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Size of flame damage entities." );
 	ConVar  tf_flamethrower_maxdamagedist("tf_flamethrower_maxdamagedist", "350.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Maximum damage distance for flamethrower." );
-	ConVar  tf_flamethrower_shortrangedamagemultiplier("tf_flamethrower_shortrangedamagemultiplier", "1.2", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Damage multiplier for close-in flamethrower damage." );
 	ConVar  tf_flamethrower_velocityfadestart("tf_flamethrower_velocityfadestart", ".3", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time at which attacker's velocity contribution starts to fade." );
 	ConVar  tf_flamethrower_velocityfadeend("tf_flamethrower_velocityfadeend", ".5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time at which attacker's velocity contribution finishes fading." );
 	//ConVar  tf_flame_force( "tf_flame_force", "30" );
@@ -1296,18 +1295,10 @@ void CTFFlameEntity::OnCollide( CBaseEntity *pOther )
 	m_hEntitiesBurnt.AddToTail( pOther );
 
 	float flDistance = GetAbsOrigin().DistTo( m_vecInitialPos );
-	float flMultiplier;
-	if ( flDistance <= 125 )
-	{
-		// at very short range, apply short range damage multiplier
-		flMultiplier = tf_flamethrower_shortrangedamagemultiplier.GetFloat();
-	}
-	else
-	{
-		// make damage ramp down from 100% to 60% from half the max dist to the max dist
-		flMultiplier = RemapValClamped( flDistance, tf_flamethrower_maxdamagedist.GetFloat()/2, tf_flamethrower_maxdamagedist.GetFloat(), 1.0, 0.6 );
-	}
+	// make damage ramp down from 100% to 60% from half the max dist to the max dist
+	float flMultiplier = RemapValClamped( flDistance, tf_flamethrower_maxdamagedist.GetFloat()/2, tf_flamethrower_maxdamagedist.GetFloat(), 1.0f, 0.6f );
 	float flDamage = m_flDmgAmount * flMultiplier;
+
 	flDamage = MAX( flDamage, 1.0 );
 	if ( tf_debug_flamethrower.GetInt() )
 	{
