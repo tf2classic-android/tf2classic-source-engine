@@ -77,13 +77,8 @@ void tf2c_buildnum_callback( IConVar *var, const char *pOldString, float flOldVa
 	}
 }
 
-#define FCVAR_TF2C_SV_BUILD FCVAR_GAMEDLL | FCVAR_PRINTABLEONLY | FCVAR_HIDDEN | FCVAR_REPLICATED
-ConVar tf2c_sv_buildnum( "tf2c_sv_buildnum", UTIL_CLSV_VarArgs( "%d", build_number() ), FCVAR_TF2C_SV_BUILD, "[SERVER] GameDLL build number.", tf2c_buildnum_callback );
-
-#if defined( CLIENT_DLL )
-#define FCVAR_TF2C_CL_BUILD FCVAR_CLIENTDLL | FCVAR_USERINFO | FCVAR_PRINTABLEONLY | FCVAR_HIDDEN
-ConVar tf2c_cl_buildnum( "tf2c_cl_buildnum", UTIL_CLSV_VarArgs( "%d", build_number() ), FCVAR_TF2C_CL_BUILD, "[CLIENT] ClientDLL build number.", tf2c_buildnum_callback );
-#endif
+#define FCVAR_TF2C_BUILD FCVAR_PRINTABLEONLY | FCVAR_HIDDEN | FCVAR_REPLICATED
+ConVar tf2c_buildnum( "tf2c_buildnum", UTIL_CLSV_VarArgs( "%d", build_number() ), FCVAR_TF2C_BUILD, "build number", tf2c_buildnum_callback );
 // BUILDNUM
 
 // memdbgon must be the last include file in a .cpp file!!!

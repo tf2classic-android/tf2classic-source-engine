@@ -272,13 +272,13 @@ void CTFMainMenuPanel::OnNotificationUpdate()
 	}
 };
 
-extern ConVar tf2c_cl_buildnum;
+extern ConVar tf2c_buildnum;
 void CTFMainMenuPanel::SetVersionLabel()  //GetVersionString
 {
 	if (m_pVersionLabel)
 	{
 		char verString[64];
-		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d", GetNotificationManager()->GetVersionName(), tf2c_cl_buildnum.GetInt());
+		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt());
 		m_pVersionLabel->SetText(verString);
 	}
 };
