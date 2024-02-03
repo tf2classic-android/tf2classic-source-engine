@@ -3631,11 +3631,24 @@ void CTFGameRules::CreateStandardEntities()
 
 	CBaseEntity::Create("vote_controller", vec3_origin, vec3_angle);
 
-	CKickIssue* pKickIssue = new CKickIssue("Kick");
+	/*
+	CKickIssue *pKickIssue = new CKickIssue();
 	pKickIssue->Init();
 
-	CRestartGameIssue* pRestartIssue = new CRestartGameIssue("RestartGame");
+	CRestartGameIssue *pRestartIssue = new CRestartGameIssue();
 	pRestartIssue->Init();
+	*/
+
+	// Vote Issue classes are handled/cleaned-up by g_voteController
+	new CKickIssue;
+	new CRestartGameIssue;
+	new CChangeLevelIssue;
+	new CNextLevelIssue;
+	new CExtendLevelIssue;
+	new CScrambleTeams;
+	new CTeamAutoBalanceIssue;
+	new CClassLimitsIssue;
+	new CPauseGameIssue;
 }
 
 //-----------------------------------------------------------------------------
