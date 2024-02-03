@@ -1257,6 +1257,19 @@ void CTFPlayer::Regenerate( void )
 		m_Shared.RemoveCond( TF_COND_SLOWED );
 	}
 
+	// Remove jarate condition
+	if ( m_Shared.InCond( TF_COND_URINE ) )
+	{
+		m_Shared.RemoveCond( TF_COND_URINE );
+	}
+
+	// Remove Mad Milk condition
+	if ( m_Shared.InCond( TF_COND_MAD_MILK ) )
+	{
+		m_Shared.RemoveCond( TF_COND_MAD_MILK );
+	}
+
+
 	// Fill Spy cloak
 	m_Shared.SetSpyCloakMeter( 100.0f );
 }

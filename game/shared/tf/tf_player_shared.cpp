@@ -1124,6 +1124,19 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		}
 	}
 
+        if ( m_pOuter->GetWaterLevel() >= WL_Waist )
+        {
+                if ( InCond( TF_COND_URINE ) )
+                {
+                        RemoveCond( TF_COND_URINE );
+                }
+
+                if ( InCond( TF_COND_MAD_MILK ) )
+                {
+                        RemoveCond( TF_COND_MAD_MILK );
+                }
+        }
+
 	if ( InCond( TF_COND_DISGUISING ) )
 	{
 		if ( gpGlobals->curtime > m_flDisguiseCompleteTime )
@@ -1280,6 +1293,16 @@ void CTFPlayerShared::OnAddInvulnerable( void )
 	{
 		RemoveCond( TF_COND_SLOWED );
 	}
+
+        if ( InCond( TF_COND_URINE ) )
+        {
+                RemoveCond( TF_COND_URINE );
+        }
+
+        if ( InCond( TF_COND_MAD_MILK ) )
+        {
+                RemoveCond( TF_COND_MAD_MILK );
+        }
 #else
 	if ( m_pOuter->IsLocalPlayer() )
 	{
@@ -1986,7 +2009,7 @@ void CTFPlayerShared::InvisibilityThink( void )
 {
 	float flTargetInvis = 0.0f;
 	float flTargetInvisScale = 1.0f;
-	if ( InCond( TF_COND_STEALTHED_BLINK ) )
+	if ( InCond( TF_COND_STEALTHED_BLINK ) || InCond( TF_COND_URINE ) || InCond( TF_COND_MAD_MILK ) )
 	{
 		// We were bumped into or hit for some damage.
 		flTargetInvisScale = TF_SPY_STEALTH_BLINKSCALE;/*tf_spy_stealth_blink_scale.GetFloat();*/
