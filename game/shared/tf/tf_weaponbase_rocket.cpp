@@ -18,6 +18,7 @@ extern void SendProxy_Angles( const SendProp *pProp, const void *pStruct, const 
 #endif
 
 #define TF_ROCKET_RADIUS	146.0f	// Matches grenade radius.
+#define TF_ROCKET_SELF_DAMAGE_RADIUS	121.0f	// Original rocket radius, used for self damage.
 #define TF_ROCKET_SPEED		1100.0f
 
 //=============================================================================
@@ -434,13 +435,8 @@ void CTFBaseRocket::Explode( trace_t *pTrace, CBaseEntity *pOther )
 	// Damage.
 	float flRadius = GetRadius();
 
-	CTFRadiusDamageInfo radiusInfo;
-	radiusInfo.info.Set( this, pAttacker, m_hLauncher.Get(), vec3_origin, vecOrigin, GetDamage(), GetDamageType() );
-	radiusInfo.m_vecSrc = vecOrigin;
-	radiusInfo.m_flRadius = flRadius;
-	radiusInfo.m_flSelfDamageRadius = GetSelfDamageRadius();
-	radiusInfo.m_bStockSelfDamage = UseStockSelfDamage();
-
+	CTakeDamageInfo newInfo( this, pAttacker, m_hLauncher, vec3_origin, vecOrigin, GetDamage(), GetDamageType() );
+	CTFRadiusDamageInfo radiusInfo( &newInfo, vecOrigin, flRadius, NULL, TF_ROCKET_SELF_DAMAGE_RADIUS );
 	TFGameRules()->RadiusDamage( radiusInfo );
 
 	// Debug!

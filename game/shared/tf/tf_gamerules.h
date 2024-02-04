@@ -54,21 +54,37 @@ extern ConVar	fraglimit;
 extern Vector g_TFClassViewVectors[];
 
 #ifdef GAME_DLL
+
 class CTFRadiusDamageInfo
 {
+	DECLARE_CLASS_NOBASE( CTFRadiusDamageInfo );
 public:
-	CTFRadiusDamageInfo();
+	CTFRadiusDamageInfo( CTakeDamageInfo *pInfo, const Vector &vecSrcIn, float flRadiusIn, CBaseEntity *pIgnore = NULL, float flRJRadiusIn = 0, float flForceScaleIn = 1.0f )
+	{
+		dmgInfo = pInfo;
+		vecSrc = vecSrcIn;
+		flRadius = flRadiusIn;
+		pEntityIgnore = pIgnore;
+		flRJRadius = flRJRadiusIn;
+		flFalloff = 0;
+		m_flForceScale = flForceScaleIn;
+		m_pEntityTarget = NULL;
+	}
 
-	bool	ApplyToEntity( CBaseEntity *pEntity );
+	bool ApplyToEntity( CBaseEntity *pEntity );
 
 public:
-	CTakeDamageInfo info;
-	Vector m_vecSrc;
-	float m_flRadius;
-	float m_flSelfDamageRadius;
-	int m_iClassIgnore;
-	CBaseEntity *m_pEntityIgnore;
-	bool m_bStockSelfDamage;
+	// Fill these in & call RadiusDamage()
+	CTakeDamageInfo	*dmgInfo;
+	Vector			vecSrc;
+	float			flRadius;
+	CBaseEntity		*pEntityIgnore;
+	float			flRJRadius;	// Radius to use to calculate RJ, to maintain RJs when damage/radius changes on a RL
+	float			m_flForceScale;
+	CBaseEntity		*m_pEntityTarget;		// Target being direct hit if any
+private:
+	// These are used during the application of the RadiusDamage 
+	float			flFalloff;
 };
 #endif
 
@@ -383,8 +399,7 @@ public:
 	virtual void ClientDisconnected( edict_t *pClient );
 
 	void	RadiusDamage( CTFRadiusDamageInfo &radiusInfo );
-	bool	RadiusJarEffect( CTFRadiusDamageInfo &radiusInfo, ETFCond iCond );
-	virtual void  RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore );
+	bool	RadiusJarEffect( CTFRadiusDamageInfo &radiusInfo, ETFCond nCond );
 
 	virtual float FlPlayerFallDamage( CBasePlayer *pPlayer );
 

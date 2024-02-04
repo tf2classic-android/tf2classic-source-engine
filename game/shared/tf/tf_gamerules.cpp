@@ -2183,16 +2183,8 @@ private:
 	const IHandleEntity *m_pHitEntity;
 };
 
-CTFRadiusDamageInfo::CTFRadiusDamageInfo()
-{
-	m_flRadius = 0.0f;
-	m_iClassIgnore = CLASS_NONE;
-	m_pEntityIgnore = NULL;
-	m_flSelfDamageRadius = 0.0f;
-	m_bStockSelfDamage = true;
-}
-
 ConVar tf_fixedup_damage_radius( "tf_fixedup_damage_radius", "1", FCVAR_DEVELOPMENTONLY );
+
 
 bool CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 {
@@ -2201,16 +2193,16 @@ bool CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	float		falloff;
 	Vector		vecSpot;
 
-	if ( info.GetDamageType() & DMG_RADIUS_MAX )
+	if ( dmgInfo->GetDamageType() & DMG_RADIUS_MAX )
 		falloff = 0.0;
-	else if ( info.GetDamageType() & DMG_HALF_FALLOFF )
+	else if ( dmgInfo->GetDamageType() & DMG_HALF_FALLOFF )
 		falloff = 0.5;
-	else if ( m_flRadius )
-		falloff = info.GetDamage() / m_flRadius;
+	else if ( flRadius )
+		falloff = dmgInfo->GetDamage() / flRadius;
 	else
 		falloff = 1.0;
 
-	CBaseEntity *pInflictor = info.GetInflictor();
+	CBaseEntity *pInflictor = dmgInfo->GetInflictor();
 
 	//	float flHalfRadiusSqr = Square( flRadius / 2.0f );
 
@@ -2218,9 +2210,9 @@ bool CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	float flBlockedDamagePercent = 0.0f;
 
 	// Check that the explosion can 'see' this entity, trace through players.
-	vecSpot = pEntity->BodyTarget( m_vecSrc, false );
-	CTraceFilterHitPlayer filter( info.GetInflictor(), pEntity, COLLISION_GROUP_PROJECTILE );
-	UTIL_TraceLine( m_vecSrc, vecSpot, MASK_RADIUS_DAMAGE, &filter, &tr );
+	vecSpot = pEntity->BodyTarget( vecSrc, false );
+	CTraceFilterHitPlayer filter( dmgInfo->GetInflictor(), pEntity, COLLISION_GROUP_PROJECTILE );
+	UTIL_TraceLine( vecSrc, vecSpot, MASK_RADIUS_DAMAGE, &filter, &tr );
 
 	if ( tr.fraction != 1.0 && tr.m_pEnt != pEntity )
 		return false;
@@ -2240,28 +2232,28 @@ bool CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	else if ( pEntity->IsPlayer() )
 	{
 		// Use whichever is closer, absorigin or worldspacecenter
-		float flToWorldSpaceCenter = ( m_vecSrc - pEntity->WorldSpaceCenter() ).Length();
-		float flToOrigin = ( m_vecSrc - pEntity->GetAbsOrigin() ).Length();
+		float flToWorldSpaceCenter = ( vecSrc - pEntity->WorldSpaceCenter() ).Length();
+		float flToOrigin = ( vecSrc - pEntity->GetAbsOrigin() ).Length();
 
 		flDistanceToEntity = MIN( flToWorldSpaceCenter, flToOrigin );
 	}
 	else
 	{
-		flDistanceToEntity = ( m_vecSrc - tr.endpos ).Length();
+		flDistanceToEntity = ( vecSrc - tr.endpos ).Length();
 	}
 
 	if ( tf_fixedup_damage_radius.GetBool() )
 	{
-		flAdjustedDamage = RemapValClamped( flDistanceToEntity, 0, m_flRadius, info.GetDamage(), info.GetDamage() * falloff );
+		flAdjustedDamage = RemapValClamped( flDistanceToEntity, 0, flRadius, dmgInfo->GetDamage(), dmgInfo->GetDamage() * falloff );
 	}
 	else
 	{
 		flAdjustedDamage = flDistanceToEntity * falloff;
-		flAdjustedDamage = info.GetDamage() - flAdjustedDamage;
+		flAdjustedDamage = dmgInfo->GetDamage() - flAdjustedDamage;
 	}
 
 	// Take a little less damage from yourself
-	if ( tr.m_pEnt == info.GetAttacker() )
+	if ( tr.m_pEnt == dmgInfo->GetAttacker() )
 	{
 		flAdjustedDamage = flAdjustedDamage * 0.75;
 	}
@@ -2273,35 +2265,35 @@ bool CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	if ( tr.startsolid )
 	{
 		// if we're stuck inside them, fixup the position and distance
-		tr.endpos = m_vecSrc;
+		tr.endpos = vecSrc;
 		tr.fraction = 0.0;
 	}
 
-	CTakeDamageInfo adjustedInfo = info;
+	CTakeDamageInfo adjustedInfo = *dmgInfo;
 	//Msg("%s: Blocked damage: %f percent (in:%f  out:%f)\n", pEntity->GetClassname(), flBlockedDamagePercent * 100, flAdjustedDamage, flAdjustedDamage - (flAdjustedDamage * flBlockedDamagePercent) );
 	adjustedInfo.SetDamage( flAdjustedDamage - ( flAdjustedDamage * flBlockedDamagePercent ) );
 
 	// Now make a consideration for skill level!
-	if ( info.GetAttacker() && info.GetAttacker()->IsPlayer() && pEntity->IsNPC() )
+	if ( dmgInfo->GetAttacker() && dmgInfo->GetAttacker()->IsPlayer() && pEntity->IsNPC() )
 	{
 		// An explosion set off by the player is harming an NPC. Adjust damage accordingly.
 		adjustedInfo.AdjustPlayerDamageInflictedForSkillLevel();
 	}
 
-	Vector dir = vecSpot - m_vecSrc;
+	Vector dir = vecSpot - vecSrc;
 	VectorNormalize( dir );
 
 	// If we don't have a damage force, manufacture one
 	if ( adjustedInfo.GetDamagePosition() == vec3_origin || adjustedInfo.GetDamageForce() == vec3_origin )
 	{
-		CalculateExplosiveDamageForce( &adjustedInfo, dir, m_vecSrc );
+		CalculateExplosiveDamageForce( &adjustedInfo, dir, vecSrc );
 	}
 	else
 	{
 		// Assume the force passed in is the maximum force. Decay it based on falloff.
 		float flForce = adjustedInfo.GetDamageForce().Length() * falloff;
 		adjustedInfo.SetDamageForce( dir * flForce );
-		adjustedInfo.SetDamagePosition( m_vecSrc );
+		adjustedInfo.SetDamagePosition( vecSrc );
 	}
 
 	if ( tr.fraction != 1.0 && pEntity == tr.m_pEnt )
@@ -2316,7 +2308,7 @@ bool CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	}
 
 	// Now hit all triggers along the way that respond to damage... 
-	pEntity->TraceAttackToTriggers( adjustedInfo, m_vecSrc, tr.endpos, dir );
+	pEntity->TraceAttackToTriggers( adjustedInfo, vecSrc, tr.endpos, dir );
 
 	return true;
 }
@@ -2327,71 +2319,99 @@ bool CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 //-----------------------------------------------------------------------------
 void CTFGameRules::RadiusDamage( CTFRadiusDamageInfo &radiusInfo )
 {
-	CTakeDamageInfo &info = radiusInfo.info;
-	CBaseEntity *pAttacker = info.GetAttacker();
+	CTakeDamageInfo *info = (CTakeDamageInfo *)radiusInfo.dmgInfo;
+	CBaseEntity *pAttacker = info->GetAttacker();
 	int iPlayersDamaged = 0;
+	int iTotalPlayerDamage = 0;
 
 	CBaseEntity *pEntity = NULL;
-	for ( CEntitySphereQuery sphere( radiusInfo.m_vecSrc, radiusInfo.m_flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+	for ( CEntitySphereQuery sphere( radiusInfo.vecSrc, radiusInfo.flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
 	{
-		if ( pEntity == radiusInfo.m_pEntityIgnore )
+		if ( pEntity == radiusInfo.pEntityIgnore )
 			continue;
 
 		if ( pEntity->m_takedamage == DAMAGE_NO )
 			continue;
 
-		// UNDONE: this should check a damage mask, not an ignore
-		if ( radiusInfo.m_iClassIgnore != CLASS_NONE && pEntity->Classify() == radiusInfo.m_iClassIgnore )
-		{
-			continue;
-		}
-
 		// Skip the attacker as we'll handle him separately.
-		if ( pEntity == pAttacker && radiusInfo.m_flSelfDamageRadius != 0.0f )
+		if ( pEntity == pAttacker )
 			continue;
 
 		// Checking distance from source because Valve were apparently too lazy to fix the engine function.
 		Vector vecHitPoint;
-		pEntity->CollisionProp()->CalcNearestPoint( radiusInfo.m_vecSrc, &vecHitPoint );
-		Vector vecDir = vecHitPoint - radiusInfo.m_vecSrc;
+		pEntity->CollisionProp()->CalcNearestPoint( radiusInfo.vecSrc, &vecHitPoint );
+		Vector vecDir = vecHitPoint - radiusInfo.vecSrc;
 
-		if ( vecDir.LengthSqr() > ( radiusInfo.m_flRadius * radiusInfo.m_flRadius ) )
+		if ( vecDir.LengthSqr() > Square(radiusInfo.flRadius) )
 			continue;
 
-		if ( radiusInfo.ApplyToEntity( pEntity ) )
+		int iCurrentPlayerDamage = radiusInfo.ApplyToEntity( pEntity );
+		if ( iCurrentPlayerDamage > 0 )
 		{
 			if ( pEntity->IsPlayer() && !pEntity->InSameTeam( pAttacker ) )
 			{
 				iPlayersDamaged++;
+				iTotalPlayerDamage += iCurrentPlayerDamage;
 			}
 		}
 	}
 
-	info.SetDamagedOtherPlayers( iPlayersDamaged );
+	info->SetDamagedOtherPlayers( iPlayersDamaged );
+	
+	//Check if we get any health from radius damage from damaging people.
+	float flAddHealth = 0;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info->GetWeapon(), flAddHealth, add_health_on_radius_damage );
+
+	if (flAddHealth > 0 && iTotalPlayerDamage)
+	{
+		CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(info->GetWeapon());
+		CBaseEntity *pOwner = info->GetAttacker();
+		if (pWeapon && pOwner)
+		{
+			// Compare the total damage we did to our stock damage, and adjust our health bonus based on that ratio. 
+			flAddHealth *= Clamp(iTotalPlayerDamage / (float)pWeapon->GetTFWpnData().GetWeaponData(TF_WEAPON_PRIMARY_MODE).m_nDamage, 0.0f, 1.0f);
+			// Same as add_onhit_addhealth from here.
+			if (flAddHealth)
+			{
+				int iHealthRestored = pOwner->TakeHealth(flAddHealth, DMG_GENERIC);
+
+				if (iHealthRestored)
+				{
+					IGameEvent *event = gameeventmanager->CreateEvent("player_healonhit");
+
+					if (event)
+					{
+						event->SetInt("amount", iHealthRestored);
+						event->SetInt("entindex", pOwner->entindex());
+
+						gameeventmanager->FireEvent(event);
+					}
+				}
+			}
+		}
+	}
 
 	// For attacker, radius and damage need to be consistent so custom weapons don't screw up rocket jumping.
-	if ( radiusInfo.m_flSelfDamageRadius != 0.0f )
+	if ( radiusInfo.flRJRadius != 0.0f )
 	{
 		if ( pAttacker )
 		{
-			if ( radiusInfo.m_bStockSelfDamage )
+			// Get stock damage.
+			CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>( info->GetWeapon() );
+			if ( pWeapon )
 			{
-				// Get stock damage.
-				CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>( info.GetWeapon() );
-				if ( pWeapon )
-				{
-					info.SetDamage( (float)pWeapon->GetTFWpnData().GetWeaponData( TF_WEAPON_PRIMARY_MODE ).m_nDamage );
-				}
+				info->SetDamage( (float)pWeapon->GetTFWpnData().GetWeaponData( TF_WEAPON_PRIMARY_MODE ).m_nDamage );
+				info->CopyDamageToBaseDamage();
 			}
 
 			// Use stock radius.
-			radiusInfo.m_flRadius = radiusInfo.m_flSelfDamageRadius;
+			radiusInfo.flRadius = radiusInfo.flRJRadius;
 
 			Vector vecHitPoint;
-			pAttacker->CollisionProp()->CalcNearestPoint( radiusInfo.m_vecSrc, &vecHitPoint );
-			Vector vecDir = vecHitPoint - radiusInfo.m_vecSrc;
+			pAttacker->CollisionProp()->CalcNearestPoint( radiusInfo.vecSrc, &vecHitPoint );
+			Vector vecDir = vecHitPoint - radiusInfo.vecSrc;
 
-			if ( vecDir.LengthSqr() <= ( radiusInfo.m_flRadius * radiusInfo.m_flRadius ) )
+			if ( vecDir.LengthSqr() <= Square(radiusInfo.flRadius) )
 			{
 				radiusInfo.ApplyToEntity( pAttacker );
 			}
@@ -2402,32 +2422,26 @@ void CTFGameRules::RadiusDamage( CTFRadiusDamageInfo &radiusInfo )
 //-----------------------------------------------------------------------------
 // Purpose: Logic for jar-based throwable object collisions
 //-----------------------------------------------------------------------------
-bool CTFGameRules::RadiusJarEffect( CTFRadiusDamageInfo &radiusInfo, ETFCond iCond )
+bool CTFGameRules::RadiusJarEffect( CTFRadiusDamageInfo &radiusInfo, ETFCond nCond )
 {
 	bool bExtinguished = false;
-	CBaseEntity *pAttacker = radiusInfo.info.GetAttacker();
+	CBaseEntity *pAttacker = radiusInfo.dmgInfo->GetAttacker();
 
 	CBaseEntity *pEntity = NULL;
-	for ( CEntitySphereQuery sphere( radiusInfo.m_vecSrc, radiusInfo.m_flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+	for ( CEntitySphereQuery sphere( radiusInfo.vecSrc, radiusInfo.flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
 	{
-		if ( pEntity == radiusInfo.m_pEntityIgnore )
+		if ( pEntity == radiusInfo.pEntityIgnore )
 			continue;
 
 		if ( pEntity->m_takedamage == DAMAGE_NO )
 			continue;
 
-		// UNDONE: this should check a damage mask, not an ignore
-		if ( radiusInfo.m_iClassIgnore != CLASS_NONE && pEntity->Classify() == radiusInfo.m_iClassIgnore )
-		{
-			continue;
-		}
-
 		// Checking distance from source because Valve were apparently too lazy to fix the engine function.
 		Vector vecHitPoint;
-		pEntity->CollisionProp()->CalcNearestPoint( radiusInfo.m_vecSrc, &vecHitPoint );
-		Vector vecDir = vecHitPoint - radiusInfo.m_vecSrc;
+		pEntity->CollisionProp()->CalcNearestPoint( radiusInfo.vecSrc, &vecHitPoint );
+		Vector vecDir = vecHitPoint - radiusInfo.vecSrc;
 
-		if ( vecDir.LengthSqr() > ( radiusInfo.m_flRadius * radiusInfo.m_flRadius ) )
+		if ( vecDir.LengthSqr() > ( radiusInfo.flRadius * radiusInfo.flRadius ) )
 			continue;
 
 		CTFPlayer *pTFPlayer = ToTFPlayer( pEntity );
@@ -2435,8 +2449,8 @@ bool CTFGameRules::RadiusJarEffect( CTFRadiusDamageInfo &radiusInfo, ETFCond iCo
 		{
 			if ( !pTFPlayer->InSameTeam( pAttacker ) )
 			{
-				pTFPlayer->m_Shared.AddCond( iCond, 10.0f );
-				switch ( iCond )
+				pTFPlayer->m_Shared.AddCond( nCond, 10.0f );
+				switch ( nCond )
 				{
 					case TF_COND_URINE:
 						pTFPlayer->m_Shared.m_hUrineAttacker.Set( pAttacker );
@@ -2481,26 +2495,6 @@ bool CTFGameRules::RadiusJarEffect( CTFRadiusDamageInfo &radiusInfo, ETFCond iCo
 	}
 
 	return bExtinguished;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : &info - 
-//			&vecSrcIn - 
-//			flRadius - 
-//			iClassIgnore - 
-//			*pEntityIgnore - 
-//-----------------------------------------------------------------------------
-void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore )
-{
-	CTFRadiusDamageInfo radiusInfo;
-	radiusInfo.info = info;
-	radiusInfo.m_vecSrc = vecSrcIn;
-	radiusInfo.m_flRadius = flRadius;
-	radiusInfo.m_iClassIgnore = iClassIgnore;
-	radiusInfo.m_pEntityIgnore = pEntityIgnore;
-
-	RadiusDamage( radiusInfo );
 }
 
 	// --------------------------------------------------------------------------------------------------- //
