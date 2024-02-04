@@ -175,8 +175,11 @@ public:
 	void	Heal( CTFPlayer *pPlayer, float flAmount, bool bDispenserHeal = false );
 	void	StopHealing( CTFPlayer *pPlayer );
 	void	RecalculateChargeEffects( bool bInstantRemove = false );
+	//TF_MOD_BOT changes
+	EHANDLE GetHealerByIndex(int index);
 	int		FindHealerIndex( CTFPlayer *pPlayer );
 	EHANDLE	GetFirstHealer();
+	bool HealerIsDispenser(int index) const;
 	void	HealthKitPickupEffects( int iAmount );
 #endif
 	int		GetNumHealers( void ) { return m_nNumHealers; }

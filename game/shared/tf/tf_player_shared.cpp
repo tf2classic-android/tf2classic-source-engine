@@ -2542,6 +2542,29 @@ void CTFPlayerShared::RecalculateChargeEffects( bool bInstantRemove )
 	}
 }
 
+//TF_MOD_BOT changes
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+EHANDLE	CTFPlayerShared::GetHealerByIndex(int index)
+{
+	if (m_aHealers.IsValidIndex(index))
+		return m_aHealers[index].pPlayer;
+
+	return NULL;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayerShared::HealerIsDispenser(int index) const
+{
+	if (!m_aHealers.IsValidIndex(index))
+		return false;
+
+	return m_aHealers[index].bDispenserHeal;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -3372,6 +3395,11 @@ void CTFPlayer::TeamFortress_SetSpeed()
 				maxfbspeed *= 0.9f;
 			}
 		}
+	}
+
+	if( IsBot() )
+	{
+		maxfbspeed *= 0.5f;
 	}
 
 	// Set the speed

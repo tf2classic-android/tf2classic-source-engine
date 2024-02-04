@@ -55,6 +55,11 @@ public:
 
 	// Engineer hit me with a wrench
 	virtual bool	OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vector vecHitPos );
+
+	//TF_MOD_BOT changes
+	const QAngle& GetTurretAngles(void) const { return m_vecCurAngles; }
+	float GetTimeSinceLastFired(void) const;
+
 	// If the players hit us with a wrench, should we upgrade
 	virtual bool	CanBeUpgraded( CTFPlayer *pPlayer );
 
@@ -64,6 +69,9 @@ public:
 	virtual int		GetTracerAttachment( void );
 
 	virtual bool	IsUpgrading( void ) const;
+
+	//TF_MOD_BOT changes
+	bool ValidTargetBot(CBaseCombatCharacter* pActor);
 
 	virtual int		GetBaseHealth( void );
 	virtual int		GetMaxUpgradeLevel( void );
@@ -141,6 +149,9 @@ private:
 	float m_flHeavyBulletResist;
 
 	int m_iPlacementBodygroup;
+
+	//TF_MOD_BOT changes
+	IntervalTimer m_fireTimer;
 
 	DECLARE_DATADESC();
 };

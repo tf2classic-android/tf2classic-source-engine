@@ -67,6 +67,9 @@ public:
 
 	bool DispenseAmmo( CTFPlayer *pPlayer );
 
+	//TF_MOD_BOT changes
+	virtual int GetAvailableMetal(void) const { return m_iAmmoMetal; }
+
 	void StartHealing( CBaseEntity *pOther );
 	void StopHealing( CBaseEntity *pOther );
 

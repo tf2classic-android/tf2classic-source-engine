@@ -178,6 +178,25 @@ enum
 };
 extern const char *g_aGameTypeNames[];	// localized gametype names
 
+// common utility
+inline int GetEnemyTeam( int team )
+{
+	if ( team == TF_TEAM_RED )
+		return TF_TEAM_BLUE;
+
+	if ( team == TF_TEAM_BLUE )
+		return TF_TEAM_RED;
+
+	if ( team == TF_TEAM_GREEN )
+		return TF_TEAM_YELLOW;
+
+	if ( team == TF_TEAM_YELLOW )
+		return TF_TEAM_GREEN;
+
+	// no enemy team
+	return team;
+}
+
 //-----------------------------------------------------------------------------
 // Buildings.
 //-----------------------------------------------------------------------------
@@ -893,7 +912,7 @@ extern const char *g_pszHintMessages[];
 #define IT_LAST_ITEM			IT_KEY4
 
 /*==================================================*/
-/* New Weapon Related Defines		                */
+/* New Weapon Related Defines				*/
 /*==================================================*/
 
 // Medikit
@@ -967,6 +986,11 @@ enum
 #define SENTRYGUN_MAX_SHELLS_2			200
 #define SENTRYGUN_MAX_SHELLS_3			200
 #define SENTRYGUN_MAX_ROCKETS			20
+//TF_MOD_BOT changes
+#define SENTRYGUN_BASE_RANGE			1100.0f
+#define TF_PIPEBOMB_MIN_CHARGE_VEL						900
+#define TF_PIPEBOMB_MAX_CHARGE_VEL						2400
+#define TF_PIPEBOMB_MAX_CHARGE_TIME						4.0f
 
 // Dispenser's maximum carrying capability
 #define DISPENSER_MAX_METAL_AMMO		400

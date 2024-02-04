@@ -257,11 +257,12 @@ public:
 	void AddBuildResources( int iAmount );
 
 	bool IsBuilding( void );
-	int CanBuild( int iObjectType, int iObjectMode );
+	int CanBuild( int iObjectType, int iObjectMode = 0 );
 
-	CBaseObject	*GetObject( int index );
-	int	GetObjectCount( void );
-	int GetNumObjects( int iObjectType, int iObjectMode );
+	CBaseObject	*GetObject( int index ) const;
+	CBaseObject *GetObjectOfType( int iObjectType, int iObjectMode = 0 ) const;
+	int	GetObjectCount( void ) const;
+	int GetNumObjects( int iObjectType, int iObjectMode = 0 );
 	void RemoveAllObjects( bool bSilent );
 	void StopPlacement( void );
 	int	StartedBuildingObject( int iObjectType );
@@ -271,8 +272,8 @@ public:
 	void OwnedObjectDestroyed( CBaseObject *pObject );
 	void RemoveObject( CBaseObject *pObject );
 	bool PlayerOwnsObject( CBaseObject *pObject );
-	void DetonateOwnedObjectsOfType( int iType, int iMode );
-	void StartBuildingObjectOfType( int iType, int iMode );
+	void DetonateOwnedObjectsOfType( int iType, int iMode = 0 );
+	void StartBuildingObjectOfType( int iType, int iMode = 0);
 
 	CTFTeam *GetTFTeam( void );
 	CTFTeam *GetOpposingTFTeam( void );
@@ -463,9 +464,19 @@ public:
 
 	bool				SelectFurthestSpawnSpot( const char *pEntClassName, CBaseEntity* &pSpot, bool bTelefrag = true );
 
-private:
+	//TF_MOD_BOT changes
+	IntervalTimer m_lastCalledMedic;
+	void OnSapperPlaced(CBaseEntity* sappedObject);
+	bool IsPlacingSapper(void) const;
 
-	int					GetAutoTeam( void );
+	// Client commands.
+	void				HandleCommand_JoinTeam( const char *pTeamName );
+	void				HandleCommand_JoinClass( const char *pClassName );
+	void				HandleCommand_JoinTeam_NoMenus( const char *pTeamName );
+	void				HandleCommand_JoinTeam_NoKill( const char *pTeamName );
+	int				GetAutoTeam( void );
+
+private:
 
 	// Creation/Destruction.
 	void				InitClass( void );
@@ -483,11 +494,10 @@ private:
 	EHANDLE				m_hTauntScene;
 	bool				m_bInitTaunt;
 
-	// Client commands.
-	void				HandleCommand_JoinTeam( const char *pTeamName );
-	void				HandleCommand_JoinClass( const char *pClassName );
-	void				HandleCommand_JoinTeam_NoMenus( const char *pTeamName );
-	void				HandleCommand_JoinTeam_NoKill( const char *pTeamName );
+	//TF_MOD_BOT changes
+	// Sapper events
+	bool				m_bSapping;
+	CountdownTimer			m_sapperTimer;
 
 	// Bots.
 	friend void			Bot_Think( CTFPlayer *pBot );
@@ -630,6 +640,17 @@ public:
 	void				PowerplayThink( void );
 	float				m_flPowerPlayTime;
 };
+
+//TF_MOD_BOT changes
+inline void CTFPlayer::OnSapperPlaced(CBaseEntity* sappedObject)
+{
+	m_sapperTimer.Start(3.0f);
+}
+
+inline bool CTFPlayer::IsPlacingSapper(void) const
+{
+	return !m_sapperTimer.IsElapsed();
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Utility function to convert an entity into a tf player.

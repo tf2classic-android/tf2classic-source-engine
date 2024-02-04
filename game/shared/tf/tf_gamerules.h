@@ -30,6 +30,7 @@
 #include "c_tf_player.h"
 #else
 #include "tf_player.h"
+#include "team_train_watcher.h"
 #endif
 
 #ifdef CLIENT_DLL
@@ -188,11 +189,35 @@ public:
 
 	virtual bool	ShouldBalanceTeams( void );
 
-	CTeamRoundTimer* GetBlueKothRoundTimer( void ) { return m_hBlueKothTimer.Get(); }
-	CTeamRoundTimer* GetRedKothRoundTimer( void ) { return m_hRedKothTimer.Get(); }
-	CTeamRoundTimer* GetGreenKothRoundTimer( void ) { return m_hGreenKothTimer.Get(); }
-	CTeamRoundTimer* GetYellowKothRoundTimer( void ) { return m_hYellowKothTimer.Get(); }
+	CTeamRoundTimer *GetKothTeamTimer( int iTeam )
+	{
+		if( !IsInKothMode() )
+			return NULL;
 
+		switch( iTeam )
+		{
+			case TF_TEAM_RED:
+				return m_hRedKothTimer.Get();
+				break;
+
+			case TF_TEAM_BLUE:
+				return m_hBlueKothTimer.Get();
+				break;
+
+			case TF_TEAM_GREEN:
+				return m_hGreenKothTimer.Get();
+				break;
+
+			case TF_TEAM_YELLOW:
+				return m_hYellowKothTimer.Get();
+				break;
+
+			default:
+				Assert( 0 );
+		};
+
+		return NULL;
+	}
 
 #ifdef GAME_DLL
 public:
@@ -266,12 +291,38 @@ public:
 
 	virtual void	PlayTrainCaptureAlert( CTeamControlPoint *pPoint, bool bFinalPointInMap );
 
-	void			SetBlueKothRoundTimer( CTeamRoundTimer *pTimer ) { m_hBlueKothTimer.Set( pTimer ); }
-	void			SetRedKothRoundTimer( CTeamRoundTimer *pTimer ) { m_hRedKothTimer.Set( pTimer ); }
-	void			SetGreenKothRoundTimer( CTeamRoundTimer *pTimer ) { m_hGreenKothTimer.Set( pTimer ); }
-	void			SetYellowKothRoundTimer( CTeamRoundTimer *pTimer ) { m_hYellowKothTimer.Set( pTimer ); }
+	// populate vector with set of control points the player needs to capture
+	virtual void CollectCapturePoints( CBasePlayer *player, CUtlVector< CTeamControlPoint * > *captureVector ) const;
+
+	// populate vector with set of control points the player needs to defend from capture
+	virtual void CollectDefendPoints( CBasePlayer *player, CUtlVector< CTeamControlPoint * > *defendVector ) const;
 
 	virtual bool	ClientConnected(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+
+	void SetKothTeamTimer( int iTeam, CTeamRoundTimer *pTimer )
+	{
+		switch( iTeam )
+		{
+			case TF_TEAM_RED:
+				m_hRedKothTimer.Set( pTimer );
+				break;
+
+			case TF_TEAM_BLUE:
+				m_hBlueKothTimer.Set( pTimer );
+				break;
+
+			case TF_TEAM_GREEN:
+				m_hGreenKothTimer.Set( pTimer );
+				break;
+
+			case TF_TEAM_YELLOW:
+				m_hYellowKothTimer.Set( pTimer );
+				break;
+
+			default:
+				Assert( 0 );
+		};
+	}
 
 protected:
 	virtual void	InitTeams( void );
@@ -320,8 +371,8 @@ public:
 	virtual bool	IsFourTeamGame( void ){ return m_bFourTeamMode; };
 	virtual bool	IsDeathmatch( void ){ return m_nGameType == TF_GAMETYPE_DM; };
 	virtual bool    IsMannVsMachineMode( void ) { return false; };
-	virtual bool	IsInArenaMode( void ) { return m_nGameType == TF_GAMETYPE_ARENA; }
-	virtual bool	IsInKothMode( void ) { return m_bPlayingKoth; }
+	virtual bool	IsInArenaMode( void ) const { return m_nGameType == TF_GAMETYPE_ARENA; }
+	virtual bool	IsInKothMode( void ) const { return m_bPlayingKoth; }
 	virtual bool    IsHalloweenScenario( int iEventType ) { return false; };
 	virtual bool	IsPVEModeActive( void ) { return false; };
 	virtual bool	IsCompetitiveMode( void ){ return m_bCompetitiveMode; };
@@ -383,6 +434,13 @@ public:
 
 	virtual const char *GetGameDescription( void );
 
+	//TF_MOD_BOT changes
+	const CUtlVector<EHANDLE>& GetAmmoEnts(void) const { Assert(m_hAmmoEntities.Count()); return m_hAmmoEntities; }
+	const CUtlVector<EHANDLE>& GetHealthEnts(void) const { Assert(m_hHealthEntities.Count()); return m_hHealthEntities; }
+
+	CHandle< CTeamTrainWatcher > GetPayloadToPush( int pushingTeam ) const;			// return the train watcher for the Payload cart the given team needs to push to win, or NULL if none currently exists
+	CHandle< CTeamTrainWatcher > GetPayloadToBlock( int blockingTeam ) const;		// return the train watcher for the Payload cart the given team needs to block from advancing, or NULL if none currently exists
+
 	// Sets up g_pPlayerResource.
 	virtual void CreateStandardEntities();
 
@@ -421,6 +479,10 @@ private:
 private:
 
 #ifdef GAME_DLL
+	mutable CHandle< CTeamTrainWatcher > m_redPayloadToPush;
+	mutable CHandle< CTeamTrainWatcher > m_bluePayloadToPush;
+	mutable CHandle< CTeamTrainWatcher > m_redPayloadToBlock;
+	mutable CHandle< CTeamTrainWatcher > m_bluePayloadToBlock;
 
 	Vector2D	m_vecPlayerPositions[MAX_PLAYERS];
 
@@ -435,6 +497,10 @@ private:
 	int m_iCurrentRoundState;
 	int m_iCurrentMiniRoundMask;
 	float m_flTimerMayExpireAt;
+
+	//TF_MOD_BOT changes
+	CUtlVector<EHANDLE> m_hAmmoEntities;
+	CUtlVector<EHANDLE> m_hHealthEntities;
 
 	bool m_bFirstBlood;
 	int	m_iArenaTeamCount;

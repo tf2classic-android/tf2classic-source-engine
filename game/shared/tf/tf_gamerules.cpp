@@ -552,20 +552,20 @@ void CTFGameRulesProxy::InputAddYellowTeamScore( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CTFGameRulesProxy::InputSetRedKothClockActive(inputdata_t &inputdata)
 {
-	if ( TFGameRules() && TFGameRules()->GetRedKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_RED ) )
 	{
-		TFGameRules()->GetRedKothRoundTimer()->InputEnable( inputdata );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->InputEnable( inputdata );
 
-		if ( TFGameRules()->GetBlueKothRoundTimer() )
-			TFGameRules()->GetBlueKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->InputDisable( inputdata );
 
 		if ( TFGameRules()->IsFourTeamGame() )
 		{
-			if ( TFGameRules()->GetGreenKothRoundTimer() )
-				TFGameRules()->GetGreenKothRoundTimer()->InputDisable( inputdata );
+			if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN ) )
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->InputDisable( inputdata );
 
-			if ( TFGameRules()->GetYellowKothRoundTimer() )
-				TFGameRules()->GetYellowKothRoundTimer()->InputDisable( inputdata );
+			if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW ) )
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->InputDisable( inputdata );
 		}
 	}
 }
@@ -575,20 +575,20 @@ void CTFGameRulesProxy::InputSetRedKothClockActive(inputdata_t &inputdata)
 //-----------------------------------------------------------------------------
 void CTFGameRulesProxy::InputSetBlueKothClockActive( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetBlueKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE ) )
 	{
-		TFGameRules()->GetBlueKothRoundTimer()->InputEnable( inputdata );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->InputEnable( inputdata );
 
-		if ( TFGameRules()->GetRedKothRoundTimer() )
-			TFGameRules()->GetRedKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_RED ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->InputDisable( inputdata );
 
 		if ( TFGameRules()->IsFourTeamGame() )
 		{
-			if ( TFGameRules()->GetGreenKothRoundTimer() )
-				TFGameRules()->GetGreenKothRoundTimer()->InputDisable( inputdata );
+			if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN ) )
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->InputDisable( inputdata );
 
-			if ( TFGameRules()->GetYellowKothRoundTimer() )
-				TFGameRules()->GetYellowKothRoundTimer()->InputDisable( inputdata );
+			if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW ) )
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->InputDisable( inputdata );
 		}
 	}
 }
@@ -604,18 +604,18 @@ void CTFGameRulesProxy::InputSetGreenKothClockActive(inputdata_t &inputdata)
 		return;
 	}
 
-	if ( TFGameRules() && TFGameRules()->GetGreenKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN ) )
 	{
-		TFGameRules()->GetGreenKothRoundTimer()->InputEnable( inputdata );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->InputEnable( inputdata );
 
-		if ( TFGameRules()->GetRedKothRoundTimer() )
-			TFGameRules()->GetRedKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_RED ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->InputDisable( inputdata );
 
-		if ( TFGameRules()->GetBlueKothRoundTimer() )
-			TFGameRules()->GetBlueKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->InputDisable( inputdata );
 
-		if ( TFGameRules()->GetYellowKothRoundTimer() )
-			TFGameRules()->GetYellowKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->InputDisable( inputdata );
 	}
 }
 
@@ -630,18 +630,18 @@ void CTFGameRulesProxy::InputSetYellowKothClockActive( inputdata_t &inputdata )
 		return;
 	}
 
-	if ( TFGameRules() && TFGameRules()->GetYellowKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW ) )
 	{
-		TFGameRules()->GetYellowKothRoundTimer()->InputEnable( inputdata );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->InputEnable( inputdata );
 
-		if ( TFGameRules()->GetRedKothRoundTimer() )
-			TFGameRules()->GetRedKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_RED ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->InputDisable( inputdata );
 
-		if ( TFGameRules()->GetBlueKothRoundTimer() )
-			TFGameRules()->GetBlueKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->InputDisable( inputdata );
 
-		if ( TFGameRules()->GetGreenKothRoundTimer() )
-			TFGameRules()->GetGreenKothRoundTimer()->InputDisable( inputdata );
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN ) )
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->InputDisable( inputdata );
 	}
 }
 
@@ -1016,50 +1016,50 @@ void CKothLogic::InputRoundSpawn( inputdata_t &inputdata )
 	{
 		sVariant.SetInt( m_iTimerLength );
 
-		TFGameRules()->SetBlueKothRoundTimer( (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
+		TFGameRules()->SetKothTeamTimer( TF_TEAM_BLUE, (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
 
-		if ( TFGameRules()->GetBlueKothRoundTimer() )
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE ) )
 		{
-			TFGameRules()->GetBlueKothRoundTimer()->SetName( MAKE_STRING( "zz_blue_koth_timer" ) );
-			TFGameRules()->GetBlueKothRoundTimer()->SetShowInHud( false );
-			TFGameRules()->GetBlueKothRoundTimer()->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
-			TFGameRules()->GetBlueKothRoundTimer()->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
-			TFGameRules()->GetBlueKothRoundTimer()->ChangeTeam( TF_TEAM_BLUE );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->SetName( MAKE_STRING( "zz_blue_koth_timer" ) );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->SetShowInHud( false );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->ChangeTeam( TF_TEAM_BLUE );
 		}
 
-		TFGameRules()->SetRedKothRoundTimer( (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
+		TFGameRules()->SetKothTeamTimer( TF_TEAM_RED, (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
 
-		if ( TFGameRules()->GetRedKothRoundTimer() )
+		if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_RED ) )
 		{
-			TFGameRules()->GetRedKothRoundTimer()->SetName( MAKE_STRING( "zz_red_koth_timer" ) );
-			TFGameRules()->GetRedKothRoundTimer()->SetShowInHud( false );
-			TFGameRules()->GetRedKothRoundTimer()->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
-			TFGameRules()->GetRedKothRoundTimer()->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
-			TFGameRules()->GetRedKothRoundTimer()->ChangeTeam( TF_TEAM_RED );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->SetName( MAKE_STRING( "zz_red_koth_timer" ) );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->SetShowInHud( false );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
+			TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->ChangeTeam( TF_TEAM_RED );
 		}
 
 		if ( TFGameRules()->IsFourTeamGame() )
 		{
-			TFGameRules()->SetGreenKothRoundTimer( (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
+			TFGameRules()->SetKothTeamTimer( TF_TEAM_GREEN, (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
 
-			if ( TFGameRules()->GetGreenKothRoundTimer() )
+			if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN ) )
 			{
-				TFGameRules()->GetGreenKothRoundTimer()->SetName( MAKE_STRING( "zz_green_koth_timer" ) );
-				TFGameRules()->GetGreenKothRoundTimer()->SetShowInHud( false );
-				TFGameRules()->GetGreenKothRoundTimer()->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
-				TFGameRules()->GetGreenKothRoundTimer()->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
-				TFGameRules()->GetGreenKothRoundTimer()->ChangeTeam( TF_TEAM_GREEN );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->SetName( MAKE_STRING( "zz_green_koth_timer" ) );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->SetShowInHud( false );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->ChangeTeam( TF_TEAM_GREEN );
 			}
 
-			TFGameRules()->SetYellowKothRoundTimer( (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
+			TFGameRules()->SetKothTeamTimer( TF_TEAM_YELLOW, (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle ) );
 
-			if ( TFGameRules()->GetYellowKothRoundTimer() )
+			if ( TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW ) )
 			{
-				TFGameRules()->GetYellowKothRoundTimer()->SetName( MAKE_STRING( "zz_yellow_koth_timer" ) );
-				TFGameRules()->GetYellowKothRoundTimer()->SetShowInHud( false );
-				TFGameRules()->GetYellowKothRoundTimer()->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
-				TFGameRules()->GetYellowKothRoundTimer()->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
-				TFGameRules()->GetYellowKothRoundTimer()->ChangeTeam( TF_TEAM_YELLOW );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->SetName( MAKE_STRING( "zz_yellow_koth_timer" ) );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->SetShowInHud( false );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
+				TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->ChangeTeam( TF_TEAM_YELLOW );
 			}
 		}
 	}
@@ -1084,65 +1084,65 @@ void CKothLogic::InputRoundActivate( inputdata_t &inputdata )
 
 void CKothLogic::InputAddBlueTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetBlueKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE ) )
 	{
-		TFGameRules()->GetBlueKothRoundTimer()->AddTimerSeconds(inputdata.value.Int());
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->AddTimerSeconds(inputdata.value.Int());
 	}
 }
 
 void CKothLogic::InputAddRedTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetRedKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_RED ) )
 	{
-		TFGameRules()->GetRedKothRoundTimer()->AddTimerSeconds( inputdata.value.Int() );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->AddTimerSeconds( inputdata.value.Int() );
 	}
 }
 
 void CKothLogic::InputAddGreenTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetGreenKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN ) )
 	{
-		TFGameRules()->GetGreenKothRoundTimer()->AddTimerSeconds( inputdata.value.Int() );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->AddTimerSeconds( inputdata.value.Int() );
 	}
 }
 
 void CKothLogic::InputAddYellowTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetYellowKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW ) )
 	{
-		TFGameRules()->GetYellowKothRoundTimer()->AddTimerSeconds( inputdata.value.Int() );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->AddTimerSeconds( inputdata.value.Int() );
 	}
 }
 
 void CKothLogic::InputSetBlueTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetBlueKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE ) )
 	{
-		TFGameRules()->GetBlueKothRoundTimer()->SetTimeRemaining( inputdata.value.Int() );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE )->SetTimeRemaining( inputdata.value.Int() );
 	}
 }
 
 void CKothLogic::InputSetRedTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetRedKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_RED ) )
 	{
-		TFGameRules()->GetRedKothRoundTimer()->SetTimeRemaining( inputdata.value.Int() );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_RED )->SetTimeRemaining( inputdata.value.Int() );
 	}
 }
 
 void CKothLogic::InputSetGreenTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetGreenKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN ) )
 	{
-		TFGameRules()->GetGreenKothRoundTimer()->SetTimeRemaining( inputdata.value.Int() );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN )->SetTimeRemaining( inputdata.value.Int() );
 	}
 }
 
 void CKothLogic::InputSetYellowTimer( inputdata_t &inputdata )
 {
-	if ( TFGameRules() && TFGameRules()->GetYellowKothRoundTimer() )
+	if ( TFGameRules() && TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW ) )
 	{
-		TFGameRules()->GetYellowKothRoundTimer()->SetTimeRemaining( inputdata.value.Int() );
+		TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW )->SetTimeRemaining( inputdata.value.Int() );
 	}
 }
 
@@ -1444,6 +1444,11 @@ CTFGameRules::CTFGameRules()
 	Q_snprintf( szCommand, sizeof( szCommand ), "exec %s.cfg\n", STRING( gpGlobals->mapname ) );
 	engine->ServerCommand( szCommand );
 
+	m_redPayloadToPush = NULL;
+	m_bluePayloadToPush = NULL;
+	m_redPayloadToBlock = NULL;
+	m_bluePayloadToBlock = NULL;
+
 	// Load 'authenticated' data
 	unsigned char szPassword[8];
 	V_memcpy(szPassword, g_aAuthDataKey, sizeof(szPassword));
@@ -1499,6 +1504,87 @@ bool CTFGameRules::FlagsMayBeCapped( void )
 }
 
 #ifdef GAME_DLL
+
+//-----------------------------------------------------------------------------
+// Populate vector with set of control points the player needs to capture
+//-----------------------------------------------------------------------------
+void CTFGameRules::CollectCapturePoints( CBasePlayer *player, CUtlVector< CTeamControlPoint * > *captureVector ) const
+{
+	if ( !captureVector )
+		return;
+
+	captureVector->RemoveAll();
+
+	CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+	if ( pMaster )
+	{
+		// special case hack for KotH mode to use control points that are locked at the start of the round
+		if ( IsInKothMode() && pMaster->GetNumPoints() == 1 )
+		{
+			captureVector->AddToTail( pMaster->GetControlPoint( 0 ) );
+			return;
+		}
+
+		for( int i=0; i<pMaster->GetNumPoints(); ++i )
+		{
+			CTeamControlPoint *point = pMaster->GetControlPoint( i );
+			if ( point && pMaster->IsInRound( point ) )
+			{
+				if ( ObjectiveResource()->GetOwningTeam( point->GetPointIndex() ) == player->GetTeamNumber() )
+					continue;
+
+				if ( player && player->IsBot() && point->ShouldBotsIgnore() )
+					continue;
+
+				if ( ObjectiveResource()->TeamCanCapPoint( point->GetPointIndex(), player->GetTeamNumber() ) )
+				{
+					if ( TeamplayGameRules()->TeamMayCapturePoint( player->GetTeamNumber(), point->GetPointIndex() ) )
+					{
+						// unlocked point not on our team available to capture
+						captureVector->AddToTail( point );
+					}
+				}
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Populate vector with set of control points the player needs to defend from capture
+//-----------------------------------------------------------------------------
+void CTFGameRules::CollectDefendPoints( CBasePlayer *player, CUtlVector< CTeamControlPoint * > *defendVector ) const
+{
+	if ( !defendVector )
+		return;
+
+	defendVector->RemoveAll();
+
+	CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+	if ( pMaster )
+	{
+		for( int i=0; i<pMaster->GetNumPoints(); ++i )
+		{
+			CTeamControlPoint *point = pMaster->GetControlPoint( i );
+			if ( point && pMaster->IsInRound( point ) )
+			{
+				if ( ObjectiveResource()->GetOwningTeam( point->GetPointIndex() ) != player->GetTeamNumber() )
+					continue;
+					
+				if ( player && player->IsBot() && point->ShouldBotsIgnore() )
+					continue;
+
+				if ( ObjectiveResource()->TeamCanCapPoint( point->GetPointIndex(), GetEnemyTeam( player->GetTeamNumber() ) ) )
+				{
+					if ( TeamplayGameRules()->TeamMayCapturePoint( GetEnemyTeam( player->GetTeamNumber() ), point->GetPointIndex() ) )
+					{
+						// unlocked point on our team vulnerable to capture
+						defendVector->AddToTail( point );
+					}
+				}
+			}
+		}
+	}
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Determines whether we should allow mp_timelimit to trigger a map change
@@ -1675,6 +1761,11 @@ void CTFGameRules::Activate()
 		tf_gamemode_cp.SetValue( 1 );
 		return;
 	}
+
+	m_redPayloadToPush = NULL;
+	m_bluePayloadToPush = NULL;
+	m_redPayloadToBlock = NULL;
+	m_bluePayloadToBlock = NULL;
 }
 
 extern ConVar tf2c_allow_special_classes;
@@ -1972,12 +2063,28 @@ void CTFGameRules::SetupOnRoundStart( void )
 		m_iNumCaps[i] = 0;
 	}
 
+	//TF_MOD_BOT changes
+	m_hAmmoEntities.RemoveAll();
+	m_hHealthEntities.RemoveAll();
+
 	// Let all entities know that a new round is starting
 	CBaseEntity *pEnt = gEntList.FirstEnt();
 	while( pEnt )
 	{
 		variant_t emptyVariant;
 		pEnt->AcceptInput( "RoundSpawn", NULL, NULL, emptyVariant, 0 );
+
+		if (pEnt->ClassMatches("func_regenerate") || pEnt->ClassMatches("item_ammopack*"))
+		{
+			EHANDLE hndl(pEnt);
+			m_hAmmoEntities.AddToTail(hndl);
+		}
+
+		if (pEnt->ClassMatches("func_regenerate") || pEnt->ClassMatches("item_healthkit*"))
+		{
+			EHANDLE hndl(pEnt);
+			m_hHealthEntities.AddToTail(hndl);
+		}
 
 		pEnt = gEntList.NextEnt( pEnt );
 	}
@@ -1991,6 +2098,11 @@ void CTFGameRules::SetupOnRoundStart( void )
 
 		pEnt = gEntList.NextEnt( pEnt );
 	}
+
+	m_redPayloadToPush = NULL;
+	m_bluePayloadToPush = NULL;
+	m_redPayloadToBlock = NULL;
+	m_bluePayloadToBlock = NULL;
 
 	if ( g_pObjectiveResource && !g_pObjectiveResource->PlayingMiniRounds() )
 	{
@@ -3603,6 +3715,120 @@ void CTFGameRules::CalcDominationAndRevenge( CTFPlayer *pAttacker, CTFPlayer *pV
 		CTF_GameStats.Event_PlayerRevenge( pAttacker );
 	}
 
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Return the Payload cart the given team needs to push to win, or NULL if none currently exists
+//-----------------------------------------------------------------------------
+CHandle< CTeamTrainWatcher > CTFGameRules::GetPayloadToPush( int pushingTeam ) const
+{
+	if ( TFGameRules()->GetGameType() != TF_GAMETYPE_ESCORT )
+		return NULL;
+
+	if ( pushingTeam == TF_TEAM_RED )
+	{
+		if ( m_redPayloadToPush == NULL )
+		{
+			// find our cart!
+			if ( TFGameRules()->HasMultipleTrains() )
+			{
+				// find the red cart
+			}
+			else
+			{
+				// normal Escort scenario, red always blocks
+				return NULL;
+			}
+		}
+
+		return m_redPayloadToPush;
+	}
+
+	if ( pushingTeam == TF_TEAM_BLUE )
+	{
+		if ( m_bluePayloadToPush == NULL )
+		{
+			if ( TFGameRules()->HasMultipleTrains() )
+			{
+				// find the blue cart
+			}
+			else
+			{
+				// only one cart in the map, and we need to push it
+				CTeamTrainWatcher *watcher = NULL;
+				while( ( watcher = dynamic_cast< CTeamTrainWatcher * >( gEntList.FindEntityByClassname( watcher, "team_train_watcher" ) ) ) != NULL )
+				{
+					if ( !watcher->IsDisabled() )
+					{
+						m_bluePayloadToPush = watcher;
+						break;
+					}
+				}
+			}
+		}
+
+		return m_bluePayloadToPush;
+	}
+
+	return NULL;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Return the Payload cart the given player needs to block from advancing, or NULL if none currently exists
+//-----------------------------------------------------------------------------
+CHandle< CTeamTrainWatcher > CTFGameRules::GetPayloadToBlock( int blockingTeam ) const
+{
+	if ( TFGameRules()->GetGameType() != TF_GAMETYPE_ESCORT )
+		return NULL;
+
+	if ( blockingTeam == TF_TEAM_RED )
+	{
+		if ( m_redPayloadToBlock == NULL )
+		{
+			// find our cart!
+			if ( TFGameRules()->HasMultipleTrains() )
+			{
+				// find the red cart
+			}
+			else
+			{
+				// normal Escort scenario, red always blocks
+				CTeamTrainWatcher *watcher = NULL;
+				while( ( watcher = dynamic_cast< CTeamTrainWatcher * >( gEntList.FindEntityByClassname( watcher, "team_train_watcher" ) ) ) != NULL )
+				{
+					if ( !watcher->IsDisabled() )
+					{
+						m_redPayloadToBlock = watcher;
+						break;
+					}
+				}
+			}
+		}
+
+		return m_redPayloadToBlock;
+	}
+
+	if ( blockingTeam == TF_TEAM_BLUE )
+	{
+		if ( m_bluePayloadToBlock == NULL )
+		{
+			if ( TFGameRules()->HasMultipleTrains() )
+			{
+				// find the blue cart
+			}
+			else
+			{
+				// normal Payload, blue never blocks
+				return NULL;
+			}
+		}
+
+		return m_bluePayloadToBlock;
+	}
+
+	return NULL;
 }
 
 //-----------------------------------------------------------------------------

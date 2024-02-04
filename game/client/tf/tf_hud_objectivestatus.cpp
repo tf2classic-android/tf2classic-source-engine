@@ -1156,7 +1156,7 @@ void CTFHudKothTimeStatus::Think( void )
 
 			if ( !pTimer )
 			{
-				pTimer = TFGameRules()->GetBlueKothRoundTimer();
+				pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE );
 				if ( pTimer && m_pBlueKothTimer->GetTimerIndex() != pTimer->index )
 					m_pBlueKothTimer->SetTimerIndex( pTimer->index );
 			}
@@ -1176,7 +1176,7 @@ void CTFHudKothTimeStatus::Think( void )
 
 			if ( !pTimer )
 			{
-				pTimer = TFGameRules()->GetRedKothRoundTimer();
+				pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_RED );
 				if ( pTimer && m_pRedKothTimer->GetTimerIndex() != pTimer->index )
 					m_pRedKothTimer->SetTimerIndex( pTimer->index );
 			}
@@ -1197,7 +1197,7 @@ void CTFHudKothTimeStatus::Think( void )
 
 				if ( !pTimer )
 				{
-					pTimer = TFGameRules()->GetGreenKothRoundTimer();
+					pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN );
 					if ( pTimer )
 						m_pGreenKothTimer->SetTimerIndex( pTimer->index );
 				}
@@ -1216,7 +1216,7 @@ void CTFHudKothTimeStatus::Think( void )
 
 				if ( !pTimer )
 				{
-					pTimer = TFGameRules()->GetYellowKothRoundTimer();
+					pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW );
 					if ( pTimer )
 						m_pYellowKothTimer->SetTimerIndex( pTimer->index );
 				}

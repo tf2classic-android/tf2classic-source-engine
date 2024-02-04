@@ -52,7 +52,9 @@ if ( object_verbose.GetInt() )									\
 // ------------------------------------------------------------------------ //
 // Resupply object that's built by the player
 // ------------------------------------------------------------------------ //
-class CBaseObject : public CBaseCombatCharacter, public IHasBuildPoints, public IScorer
+//TF_MOD_BOT changes
+DECLARE_AUTO_LIST(IBaseObjectAutoList)
+class CBaseObject : public CBaseCombatCharacter, public IHasBuildPoints, public IScorer, public IBaseObjectAutoList
 {
 	DECLARE_CLASS( CBaseObject, CBaseCombatCharacter );
 public:
@@ -238,6 +240,8 @@ public:
 
 	// Upgrades
 	int				GetUpgradeLevel(void) { return m_iUpgradeLevel; }
+
+	virtual bool ShouldBlockNav() const OVERRIDE { return false; }
 
 	// If the players hit us with a wrench, should we upgrade
 	virtual bool	CanBeUpgraded( CTFPlayer *pPlayer );

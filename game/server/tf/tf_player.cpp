@@ -448,6 +448,9 @@ CTFPlayer::CTFPlayer()
 
 	m_bSpeakingConceptAsDisguisedSpy = false;
 
+	//TF_MOD_BOT changes
+	m_lastCalledMedic.Invalidate();
+
 	m_flTauntAttackTime = 0.0f;
 	m_iTauntAttack = TF_TAUNT_NONE;
 
@@ -1133,6 +1136,9 @@ void CTFPlayer::Spawn()
 	m_nForceTauntCam = 0;
 
 	CTF_GameStats.Event_PlayerSpawned( this );
+
+	//TF_MOD_BOT changes
+	m_lastCalledMedic.Invalidate();
 
 	m_iSpawnCounter++;
 	m_bAllowInstantSpawn = false;
@@ -2582,7 +2588,8 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 		bShouldNotRespawn = true;
 	}
 
-	if ( stricmp( pClassName, "random" ) != 0 )
+	//TF_MOD_BOT changes
+	if ( stricmp( pClassName, "random" ) != 0 && stricmp(pClassName, "auto") != 0)
 	{
 		// Allow players to join the mercenary and civilian class if the cvar is enabled
 		int iLastClass = tf2c_allow_special_classes.GetBool() ? TF_CLASS_COUNT : TF_LAST_NORMAL_CLASS;
@@ -4295,7 +4302,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			event->SetInt( "attacker", 0 );
 		}
 
-        gameeventmanager->FireEvent( event );
+	gameeventmanager->FireEvent( event );
 	}
 	
 	if ( pAttacker != this && pAttacker->IsPlayer() )
@@ -5419,7 +5426,7 @@ void CTFPlayer::PlayerDeathThink( void )
 
 //-----------------------------------------------------------------------------
 // Purpose: Remove the tf items from the player then call into the base class
-//          removal of items.
+//	  removal of items.
 //-----------------------------------------------------------------------------
 void CTFPlayer::RemoveAllItems( bool removeSuit )
 {
@@ -6303,15 +6310,39 @@ void CTFPlayer::AddBuildResources( int iAmount )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CBaseObject	*CTFPlayer::GetObject( int index )
+CBaseObject	*CTFPlayer::GetObject( int index ) const
 {
 	return (CBaseObject *)( m_aObjects[index].Get() );
 }
 
 //-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+CBaseObject *CTFPlayer::GetObjectOfType( int iObjectType, int iObjectMode ) const
+{
+	int iNumObjects = GetObjectCount();
+	for ( int i=0; i<iNumObjects; i++ )
+	{
+		CBaseObject *pObj = GetObject(i);
+
+		if ( !pObj )
+			continue;
+
+		if ( pObj->GetType() != iObjectType )
+			continue;
+
+		if ( pObj->GetObjectMode() != iObjectMode )
+			continue;
+
+		return pObj;
+	}
+	return NULL;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int	CTFPlayer::GetObjectCount( void )
+int	CTFPlayer::GetObjectCount( void ) const
 {
 	return m_aObjects.Count();
 }
@@ -8097,6 +8128,16 @@ bool CTFPlayer::SpeakConceptIfAllowed( int iConcept, const char *modifiers, char
 	// Save the current concept.
 	m_iCurrentConcept = iConcept;
 
+	if( IsPlayerClass( TF_CLASS_MERCENARY ) )
+	{
+		if( iConcept == MP_CONCEPT_PLAYER_MEDIC )
+		{
+			SaveMe();
+		}
+
+		return true;
+	}
+
 	if ( m_Shared.InCond( TF_COND_DISGUISED ) && !filter )
 	{
 		CSingleUserRecipientFilter filter(this);
@@ -8383,58 +8424,58 @@ int	CTFPlayer::CalculateTeamBalanceScore( void )
 //-----------------------------------------------------------------------------
 void CTFPlayer::CalculateTeamScrambleScore( void )
 {
-        CTFPlayerResource *pResource = GetTFPlayerResource();
-        if ( !pResource )
-        {
-                m_flTeamScrambleScore = 0.0f;
-                return;
-        }
+	CTFPlayerResource *pResource = GetTFPlayerResource();
+	if ( !pResource )
+	{
+		m_flTeamScrambleScore = 0.0f;
+		return;
+	}
 
-        /*int iMode = mp_scrambleteams_mode.GetInt();
-        float flScore = 0.0f;
+	/*int iMode = mp_scrambleteams_mode.GetInt();
+	float flScore = 0.0f;
 
-        switch ( iMode )
-        {
-                case TDC_SCRAMBLEMODE_SCORETIME_RATIO:
-                default:
-                {
-                        // Points per minute ratio.
-                        float flTime = GetConnectionTime() / 60.0f;
-                        float flScore = (float)pResource->GetTotalScore( entindex() );
+	switch ( iMode )
+	{
+		case TDC_SCRAMBLEMODE_SCORETIME_RATIO:
+		default:
+		{
+			// Points per minute ratio.
+			float flTime = GetConnectionTime() / 60.0f;
+			float flScore = (float)pResource->GetTotalScore( entindex() );
 
-                        flScore = ( flScore / flTime );
-                        break;
-                }
-                case TDC_SCRAMBLEMODE_KILLDEATH_RATIO:
-                {
-                        // Don't divide by zero.
-                        PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( this );
-                        int iKills = pStats->statsAccumulated.m_iStat[TFSTAT_KILLS];
-                        int iDeaths = Max( 1, pStats->statsAccumulated.m_iStat[TFSTAT_DEATHS] );
+			flScore = ( flScore / flTime );
+			break;
+		}
+		case TDC_SCRAMBLEMODE_KILLDEATH_RATIO:
+		{
+			// Don't divide by zero.
+			PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( this );
+			int iKills = pStats->statsAccumulated.m_iStat[TFSTAT_KILLS];
+			int iDeaths = Max( 1, pStats->statsAccumulated.m_iStat[TFSTAT_DEATHS] );
 
-                        flScore = ( (float)iKills / (float)iDeaths );
-                        break;
-                }
-                case TDC_SCRAMBLEMODE_SCORE:
-                        flScore = (float)pResource->GetTotalScore( entindex() );
-                        break;
-                case TDC_SCRAMBLEMODE_CLASS:
-                        flScore = (float)m_PlayerClass.GetClassIndex();
-                        break;
-        }*/
+			flScore = ( (float)iKills / (float)iDeaths );
+			break;
+		}
+		case TDC_SCRAMBLEMODE_SCORE:
+			flScore = (float)pResource->GetTotalScore( entindex() );
+			break;
+		case TDC_SCRAMBLEMODE_CLASS:
+			flScore = (float)m_PlayerClass.GetClassIndex();
+			break;
+	}*/
 
 	float flScore = 0.0f;
 
 	// Use TDC_SCRAMBLEMODE_KILLDEATH_RATIO strategy
 
-        // Don't divide by zero.
-        PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( this );
-        int iKills = pStats->statsAccumulated.m_iStat[TFSTAT_KILLS];
-        int iDeaths = Max( 1, pStats->statsAccumulated.m_iStat[TFSTAT_DEATHS] );
+	// Don't divide by zero.
+	PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( this );
+	int iKills = pStats->statsAccumulated.m_iStat[TFSTAT_KILLS];
+	int iDeaths = Max( 1, pStats->statsAccumulated.m_iStat[TFSTAT_DEATHS] );
 
-        flScore = ( (float)iKills / (float)iDeaths );
+	flScore = ( (float)iKills / (float)iDeaths );
 
-        m_flTeamScrambleScore = flScore;
+	m_flTeamScrambleScore = flScore;
 }
 
 //-----------------------------------------------------------------------------

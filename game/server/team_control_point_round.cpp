@@ -128,20 +128,20 @@ int CTeamControlPointRound::CheckWinConditions( void )
 			CTeamRoundTimer *pTimer = NULL;
 			if ( iWinners == TF_TEAM_RED )
 			{
-				pTimer = TFGameRules()->GetRedKothRoundTimer();
+				pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_RED );
 			}
 			else if ( iWinners == TF_TEAM_BLUE )
 			{
-				pTimer = TFGameRules()->GetBlueKothRoundTimer();
+				pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_BLUE );
 			}
 #ifdef TF_CLASSIC
 			else if ( iWinners == TF_TEAM_GREEN )
 			{
-				pTimer = TFGameRules()->GetGreenKothRoundTimer();
+				pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_GREEN );
 			}
 			else if ( iWinners == TF_TEAM_YELLOW )
 			{
-				pTimer = TFGameRules()->GetYellowKothRoundTimer();
+				pTimer = TFGameRules()->GetKothTeamTimer( TF_TEAM_YELLOW );
 			}
 #endif
 

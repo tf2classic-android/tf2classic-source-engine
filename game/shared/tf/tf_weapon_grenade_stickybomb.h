@@ -73,6 +73,9 @@ public:
 	virtual int		OnTakeDamage( const CTakeDamageInfo &info );
 	virtual void	Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir );
 
+	// BOT
+	bool IsTouched() const { return m_bTouched; }
+
 private:
 	bool		m_bTouched;
 	bool		m_bFizzle;

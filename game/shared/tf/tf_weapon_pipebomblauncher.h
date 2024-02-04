@@ -11,6 +11,7 @@
 #endif
 
 #include "tf_weaponbase_gun.h"
+#include "tf_weapon_grenade_pipebomb.h"
 #include "tf_weapon_grenade_stickybomb.h"
 
 // Client specific.
@@ -65,6 +66,12 @@ public:
 	virtual const char* GetChargeSound( void ) { return "Weapon_GrenadeLauncher.ChargeUp"; }
 	int	GetPipeBombCount( void ) { return m_iPipebombCount; }
 
+	//TF_MOD_BOT changes
+	// List of active pipebombs
+	//typedef CHandle<CTFGrenadePipebombProjectile>	PipebombHandle;
+	typedef CHandle<CTFGrenadeStickybombProjectile>	PipebombHandle;
+	CUtlVector<PipebombHandle>		m_Pipebombs;
+
 	void LaunchGrenade( void );
 	bool DetonateRemotePipebombs( bool bFizzle );
 	void AddPipeBomb( CTFGrenadeStickybombProjectile *pBomb );
@@ -86,10 +93,6 @@ private:
 #ifdef CLIENT_DLL
 	int				m_iPipebombCount;
 #endif
-
-	// List of active pipebombs
-	typedef CHandle<CTFGrenadeStickybombProjectile>	PipebombHandle;
-	CUtlVector<PipebombHandle>		m_Pipebombs;
 
 	CNetworkVar( float, m_flChargeBeginTime );
 	float	m_flLastDenySoundTime;

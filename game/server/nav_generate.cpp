@@ -3414,6 +3414,8 @@ void CNavMesh::BeginGeneration( bool incremental )
 			host->ChangeTeam( TEAM_SPECTATOR );
 		}
 	}
+#elif defined( TF_CLASSIC )
+	engine->ServerCommand( "tf_bot_kick all\n" );
 #else
 	engine->ServerCommand( "bot_kick\n" );
 #endif

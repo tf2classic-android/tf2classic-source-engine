@@ -48,7 +48,8 @@ IMPLEMENT_AUTO_LIST(IFuncRespawnRoomVisualizerAutoList);
 LINK_ENTITY_TO_CLASS( func_respawnroom, CFuncRespawnRoom);
 
 BEGIN_DATADESC( CFuncRespawnRoom )
-	DEFINE_FUNCTION( RespawnRoomTouch ),
+	//TF_MOD_BOT changes
+	DEFINE_FUNCTION( CFuncRespawnRoomShim::Touch ),
 	DEFINE_KEYFIELD( m_bAllowFlag, FIELD_BOOLEAN, "AllowFlag"),
 	// inputs
 	DEFINE_INPUTFUNC( FIELD_VOID, "SetActive", InputSetActive ),
@@ -59,6 +60,9 @@ END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST( CFuncRespawnRoom, DT_FuncRespawnRoom )
 END_SEND_TABLE()
+
+//TF_MOD_BOT changes
+IMPLEMENT_AUTO_LIST(IFuncRespawnRoomAutoList)
 
 //-----------------------------------------------------------------------------
 // Purpose: Check whether the line between two vectors crosses an respawn room visualizer

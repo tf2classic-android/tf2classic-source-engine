@@ -95,6 +95,7 @@ CTeamControlPoint::CTeamControlPoint()
 
 	m_bLocked = false;
 	m_flUnlockTime = -1;
+	m_bBotsIgnore = false;
 
 #if defined ( TF_DLL ) || defined ( TF_CLASSIC )
 	UseClientSideAnimation();
@@ -156,6 +157,8 @@ void CTeamControlPoint::Spawn( void )
 	}
 
 	m_flLastContestedAt = -1;
+
+	m_bBotsIgnore = FBitSet( m_spawnflags, SF_CAP_POINT_BOTS_IGNORE ) > 0;
 
 	m_pCaptureInProgressSound = NULL;
 }

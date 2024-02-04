@@ -77,6 +77,12 @@ public:
 		m_hTeleportingPlayer = pPlayer;
 	}
 
+	//TF_MOD_BOT changes
+	CTFPlayer *GetTeleportingPlayer()
+	{
+		return m_hTeleportingPlayer.Get();
+	}
+
 	virtual int GetBaseHealth( void );
 	virtual int	GetMaxUpgradeLevel( void );
 	virtual char *GetPlacementModel( void );
