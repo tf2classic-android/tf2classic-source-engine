@@ -458,6 +458,8 @@ CTFPlayer::CTFPlayer()
 	m_bBlastLaunched = false;
 	m_bJumpEffect = false;
 
+	m_Shared.m_hUrineAttacker = NULL;
+
 	memset( m_WeaponPreset, 0, TF_CLASS_COUNT_ALL * TF_LOADOUT_SLOT_COUNT * sizeof( int ) );
 
 	m_flTeamScrambleScore = 0.0f;
