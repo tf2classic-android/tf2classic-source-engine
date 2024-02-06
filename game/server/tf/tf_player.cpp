@@ -4933,6 +4933,16 @@ bool CTFPlayer::BecomeRagdoll( const CTakeDamageInfo &info, const Vector &forceV
 }
 
 //-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPlayer::StopRagdollDeathAnim( void )
+{
+        CTFRagdoll *pRagdoll = dynamic_cast<CTFRagdoll *>( m_hRagdoll.Get() );
+        if ( pRagdoll )
+                pRagdoll->m_iDamageCustom = TF_DMG_CUSTOM_NONE;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 bool CTFPlayer::PlayDeathAnimation( const CTakeDamageInfo &info, CTakeDamageInfo &info_modified )
