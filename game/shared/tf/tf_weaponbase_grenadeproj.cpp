@@ -352,8 +352,11 @@ void CTFWeaponBaseGrenadeProj::Explode( trace_t *pTrace, int bitsDamageType )
 		DrawRadius( flRadius );
 	}
 
-	CTakeDamageInfo newInfo( this, GetThrower(), m_hLauncher, GetBlastForce(), GetAbsOrigin(), GetDamage(), bitsDamageType, 0, &vecReported );
-	CTFRadiusDamageInfo radiusInfo( &newInfo, GetAbsOrigin(), flRadius, NULL, 146.0f );
+	CTFRadiusDamageInfo radiusInfo;
+	radiusInfo.info.Set( this, GetThrower(), m_hLauncher, GetBlastForce(), GetAbsOrigin(), m_flDamage, bitsDamageType, 0, &vecReported );
+	radiusInfo.m_vecSrc = vecOrigin;
+	radiusInfo.m_flRadius = flRadius;
+	radiusInfo.m_flSelfDamageRadius = 146.0f;
 
 	TFGameRules()->RadiusDamage( radiusInfo );
 
