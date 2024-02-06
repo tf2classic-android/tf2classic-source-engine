@@ -1,8 +1,9 @@
 //=============================================================================//
 //
-// Purpose: Arrow used by Huntsman.
+// Purpose: Arrow used by Huntsman
 //
 //=============================================================================//
+
 #ifndef TF_PROJECTILE_ARROW_H
 #define TF_PROJECTILE_ARROW_H
 
@@ -11,6 +12,10 @@
 #endif
 
 #include "tf_weaponbase_rocket.h"
+
+#ifdef GAME_DLL
+#include "tf_player.h"
+#endif
 
 #ifdef CLIENT_DLL
 #define CTFProjectile_Arrow C_TFProjectile_Arrow
@@ -28,32 +33,98 @@ public:
 	CTFProjectile_Arrow();
 	~CTFProjectile_Arrow();
 
-	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_COMPOUND_BOW; }
+	void				SetType( int iType ) 			{ m_iProjType = iType; }
+	virtual ETFWeaponID		GetWeaponID( void ) const 		{ return TF_WEAPON_COMPOUND_BOW; }
+
 
 #ifdef GAME_DLL
 	static CTFProjectile_Arrow *Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, float flSpeed, float flGravity, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType );
 
-	virtual void	Precache( void );
-	virtual void	Spawn( void );
+	// IScorer interface
+	virtual CBasePlayer *GetScorer( void );
+	virtual CBasePlayer *GetAssistant( void ) { return NULL; }
 
-	virtual int		GetDamageType( void );
+	virtual void		Precache( void );
+	virtual void		Spawn( void );
+	virtual void		RemoveThink( void ) 			{ UTIL_Remove( this ); }
 
-	virtual void	Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir );
+	void				SetScorer( CBaseEntity *pScorer );
 
-	void			SetType( int iType ) { m_iType = iType; }
-	bool			CanHeadshot( void );
-	void			ArrowTouch( CBaseEntity *pOther );
-	const char		*GetTrailParticleName( void );
-	void			CreateTrail( void );
+	void				SetCritical( bool bCritical ) 	{ m_bCritical = bCritical; }
+	int					GetDamageType();
 
-	virtual void	UpdateOnRemove( void );
+	virtual bool		IsDeflectable();
+	virtual void		Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir );
+	virtual void		IncremenentDeflected( void );
+
+	virtual bool		CanHeadshot( void );
+
+	virtual int			GetProjectileType( void ) const { return m_iProjType; }
+	virtual void		ArrowTouch( CBaseEntity *pOther );
+	virtual bool		StrikeTarget( mstudiobbox_t *pBox, CBaseEntity *pTarget );
+	virtual bool		CheckSkyboxImpact( CBaseEntity *pOther );
+	virtual void		ImpactTeamPlayer( CTFPlayer *pTarget ) {}
+	void				HealBuilding( CBaseEntity *pTarget );
+
+	bool				CanPenetrate( void ) const { return m_bCanPenetrate; }
+	void				SetCanPenetrate( bool bSet ) { m_bCanPenetrate = bSet; }
+
+	virtual float		GetCollideWithTeammatesDelay( void ) const { return 0.10; }
+	void				FlyThink( void );
+
+	const char			*GetTrailParticleName( void );
+	void				CreateTrail( void );
+	void				RemoveTrail( void );
+
+	void				FadeOut( int iTime );
+	void				BreakArrow( void );
+
+	virtual void		AdjustDamageDirection( CTakeDamageInfo const &info, Vector &vecDirection, CBaseEntity *pEntity );
+
+	// Arrow attachment functions
+	bool				PositionArrowOnBone( mstudiobbox_t *pbox, CBaseAnimating *pAnim );
+	void				GetBoneAttachmentInfo( mstudiobbox_t *pbox, CBaseAnimating *pAnim, Vector &vecOrigin, QAngle &vecAngles, int &bone, int &iPhysicsBone );
+	bool				CheckRagdollPinned( Vector const& vecOrigin, Vector const& vecDirection, int iBone, int iPhysBone, CBaseEntity *pEntity, int iHitGroup, int iVictim );
+
+	virtual void		PlayImpactSound( CTFPlayer *pAttacker, const char *pszImpactSound, bool bIsPlayerImpact = false );
+
 #else
+	virtual void		ClientThink( void );
+	virtual void		OnDataChanged( DataUpdateType_t updateType );
+	void				CreateCritTrail( void );
+	void				CheckNearMiss( void );
+
+	virtual void   		NotifyBoneAttached( C_BaseAnimating* attachTarget );
+
+	// Tell the object when to die
+	void				SetDieTime( float flDieTime ) 	{ m_flDieTime = flDieTime; }
 
 #endif
 
-private:
+protected:
 #ifdef GAME_DLL
-	EHANDLE		m_hSpriteTrail;
+	EHANDLE m_Scorer;
+
+	CNetworkVar( bool, m_bCritical );
+	CNetworkVar( int, m_iProjType );
+
+	bool m_bImpacted;
+
+	bool m_bCanPenetrate;
+	CUtlVector<EHANDLE> m_aHitEnemies;
+
+	float m_flTrailLifetime;
+	EHANDLE m_hSpriteTrail;
+#else
+	bool		m_bCritical;
+	int		m_iProjType;
+
+	float		m_flDieTime;
+	bool		m_bAttachment;
+	bool		m_bWhizzed;
+	float       m_flCheckNearMiss;
+	CNewParticleEffect *m_pCritEffect;
+	int         m_iDeflectedParity;
 #endif
 };
 
