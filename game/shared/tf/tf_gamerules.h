@@ -40,10 +40,13 @@
 
 #else
 
+	#include "bot/map_entities/tf_bot_roster.h"
+
 	extern BOOL no_cease_fire_text;
 	extern BOOL cease_fire;
 
 	class CHealthKit;
+	class CTFBotRoster;
 
 #endif
 
@@ -260,6 +263,7 @@ public:
 
 	virtual int		GetClassLimit( int iDesiredClassIndex, int iTeam );
 	virtual bool	CanPlayerChooseClass( CBasePlayer *pPlayer, int iDesiredClassIndex );
+	virtual bool	CanBotChooseClass( CBasePlayer *pPlayer, int iDesiredClassIndex );
 
 	void			SetTeamGoalString( int iTeam, const char *pszGoal );
 
@@ -524,6 +528,10 @@ public:
 
 #ifdef GAME_DLL
 	float	m_flCTFBonusTime;
+
+	// for bot rosters
+	CHandle<CTFBotRoster> m_hBlueBotRoster;
+	CHandle<CTFBotRoster> m_hRedBotRoster;
 #endif
 
 };

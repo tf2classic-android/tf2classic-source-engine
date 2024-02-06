@@ -2369,187 +2369,272 @@ bool CTFBot::CanChangeClass( void )
 	}
 }
 
+class CCountClassMembers
+{
+public:
+	CCountClassMembers( const CTFBot *me, int teamID )
+	{
+		m_me = me;
+		m_myTeam = teamID;
+		m_teamSize = 0;
+
+		for( int i = 0; i < TF_CLASS_COUNT_ALL; ++i )
+			m_count[i] = 0;
+	}
+
+	bool operator() ( CBasePlayer *basePlayer )
+	{
+		CTFPlayer *player = (CTFPlayer *)basePlayer;
+
+		if( player->GetTeamNumber() != m_myTeam )
+			return true;
+
+		++m_teamSize;
+
+		if( m_me->IsSelf( player ) )
+			return true;
+
+		++m_count[player->GetDesiredPlayerClassIndex()];
+
+		return true;
+	}
+
+	const CTFBot *m_me;
+	int m_myTeam;
+	int m_count[TF_CLASS_COUNT_ALL + 1];
+	int m_teamSize;
+};
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 const char *CTFBot::GetNextSpawnClassname( void )
 {
-	typedef struct
+	struct ClassSelectionInfo
 	{
-		int m_iClass;
-		int m_nMinTeamSize;
-		int m_nRatioTeamSize;
-		int m_nMinimum;
-		int m_nMaximum[ DifficultyType::MAX ];
-	} ClassSelection_t;
+		int m_class;
+		int m_minTeamSizeToSelect;					// team must have this many members to choose this class
+		int m_countPerTeamSize;						// must have 1 Medic for each 4 team members, for example
+		int m_minLimit;								// minimum that must be present (once other constraints are met)
+		int m_maxLimit[ DifficultyType::MAX ];	// maximum that can be present (-1 for infinite)
+	};
 
-	static ClassSelection_t defenseRoster[] = 
+	const int NoLimit = -1;
+
+	static ClassSelectionInfo defenseRoster[] =
 	{
 		{ TF_CLASS_ENGINEER, 0, 4, 1, { 1, 2, 3, 3 } },
-		{ TF_CLASS_SOLDIER, 0, 0, 0, { -1, -1, -1, -1 } },
+		{ TF_CLASS_SOLDIER, 0, 0, 0, { NoLimit, NoLimit, NoLimit, NoLimit } },
 		{ TF_CLASS_DEMOMAN, 0, 0, 0, { 2, 3, 3, 3 } },
-		{ TF_CLASS_PYRO, 3, 0, 0, { -1, -1, -1, -1 } },
+		{ TF_CLASS_PYRO, 3, 0, 0, { NoLimit, NoLimit, NoLimit, NoLimit } },
 		{ TF_CLASS_HEAVYWEAPONS, 3, 0, 0, { 1, 1, 2, 2 } },
 		{ TF_CLASS_MEDIC, 4, 4, 1, { 1, 1, 2, 2 } },
 		{ TF_CLASS_SNIPER, 5, 0, 0, { 0, 1, 1, 1 } },
 		{ TF_CLASS_SPY, 5, 0, 0, { 0, 1, 2, 2 } },
+
 		{ TF_CLASS_UNDEFINED, 0, -1 },
 	};
 
-	static ClassSelection_t offenseRoster[] = 
+	static ClassSelectionInfo offenseRoster[] =
 	{
 		{ TF_CLASS_SCOUT, 0, 0, 1, { 3, 3, 3, 3 } },
-		{ TF_CLASS_SOLDIER, 0, 0, 0, { -1, -1, -1, -1 } },
-		{ TF_CLASS_DEMOMAN, 0, 0, 0, { 2, 3, 3, 3 } },
-		{ TF_CLASS_PYRO, 3, 0, 0, { -1, -1, -1, -1 } },
+		{ TF_CLASS_SOLDIER, 0, 0, 0, { NoLimit, NoLimit, NoLimit, NoLimit } },
+		{ TF_CLASS_DEMOMAN, 0, 0, 0, { 2, 3, 3, 3 } },							// must limit demomen, or the whole team will go demo to take out tough sentryguns
+		{ TF_CLASS_PYRO, 3, 0, 0, { NoLimit, NoLimit, NoLimit, NoLimit } },
 		{ TF_CLASS_HEAVYWEAPONS, 3, 0, 0, { 1, 1, 2, 2 } },
 		{ TF_CLASS_MEDIC, 4, 4, 1, { 1, 1, 2, 2 } },
 		{ TF_CLASS_SNIPER, 5, 0, 0, { 0, 1, 1, 1 } },
 		{ TF_CLASS_SPY, 5, 0, 0, { 0, 1, 2, 2 } },
 		{ TF_CLASS_ENGINEER, 5, 0, 0, { 1, 1, 1, 1 } },
+
 		{ TF_CLASS_UNDEFINED, 0, -1 },
 	};
 
-	static ClassSelection_t compRoster[] =
+	static ClassSelectionInfo compRoster[] =
 	{
 		{ TF_CLASS_SCOUT, 0, 0, 0, { 0, 0, 2, 2 } },
-		{ TF_CLASS_SOLDIER, 0, 0, 0, { 0, 0, -1, -1 } },
-		{ TF_CLASS_DEMOMAN, 0, 0, 0, { 0, 0, 2, 2 } },
+		{ TF_CLASS_SOLDIER, 0, 0, 0, { 0, 0, NoLimit, NoLimit } },
+		{ TF_CLASS_DEMOMAN, 0, 0, 0, { 0, 0, 2, 2 } },							// must limit demomen, or the whole team will go demo to take out tough sentryguns
 		{ TF_CLASS_PYRO, 0, -1 },
 		{ TF_CLASS_HEAVYWEAPONS, 3, 0, 0, { 0, 0, 2, 2 } },
 		{ TF_CLASS_MEDIC, 1, 0, 1, { 0, 0, 1, 1 } },
 		{ TF_CLASS_SNIPER, 0, -1 },
 		{ TF_CLASS_SPY, 0, -1 },
 		{ TF_CLASS_ENGINEER, 0, -1 },
+
 		{ TF_CLASS_UNDEFINED, 0, -1 },
 	};
 
-	static auto ClassBits =[] ( int i ) {
-		return ( 1 << ( i - 1 ) );
-	};
-
-	const char *szClassName = tf_bot_force_class.GetString();
-	if ( !FStrEq( szClassName, "" ) )
+	// if we are an engineer with an active sentry or teleporters, don't switch
+	if( IsPlayerClass( TF_CLASS_ENGINEER ) )
 	{
-		const int iClassIdx = GetClassIndexFromString( szClassName );
-		if ( iClassIdx != TF_CLASS_UNDEFINED )
-			return GetPlayerClassData( iClassIdx )->m_szClassName;
+		if( const_cast<CTFBot *>( this )->GetObjectOfType( OBJ_SENTRYGUN ) ||
+			const_cast<CTFBot *>( this )->GetObjectOfType( OBJ_TELEPORTER, 1 ) )
+		{
+			return "engineer";
+		}
 	}
 
-	if ( !CanChangeClass() )
-		return GetPlayerClass()->GetName();
+	// count classes in use by my team, not including me
+	CCountClassMembers currentRoster( this, GetTeamNumber() );
+	ForEachPlayer( currentRoster );
 
-	CountClassMembers func( this, GetTeamNumber() );
-	ForEachPlayer( func );
+	// assume offense
+	ClassSelectionInfo *desiredRoster = offenseRoster;
 
-	const ClassSelection_t *pRoster = offenseRoster;
-
-	if ( TFGameRules()->IsInKothMode() )
+	/*if( TFGameRules()->IsMatchTypeCompetitive() )
+	{
+		desiredRoster = compRoster;
+	}
+	else */if( TFGameRules()->IsInKothMode() )
 	{
 		CTeamControlPoint *point = GetMyControlPoint();
-		if ( point )
+		if( point )
 		{
-			if ( GetTeamNumber() == ObjectiveResource()->GetOwningTeam( point->GetPointIndex() ) )
+			if( GetTeamNumber() == ObjectiveResource()->GetOwningTeam( point->GetPointIndex() ) )
 			{
 				// defend our point
-				pRoster = defenseRoster;
+				desiredRoster = defenseRoster;
 			}
 		}
 	}
-	else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_CP )
+	else if( TFGameRules()->GetGameType() == TF_GAMETYPE_CP )
 	{
 		CUtlVector< CTeamControlPoint * > captureVector;
-		TFGameRules()->CollectCapturePoints( const_cast< CTFBot * >( this ), &captureVector );
+		TFGameRules()->CollectCapturePoints( const_cast<CTFBot *>( this ), &captureVector );
 
 		CUtlVector< CTeamControlPoint * > defendVector;
-		TFGameRules()->CollectDefendPoints( const_cast< CTFBot * >( this ), &defendVector );
+		TFGameRules()->CollectDefendPoints( const_cast<CTFBot *>( this ), &defendVector );
 
 		// if we have any points we can capture, try to do so
-		if ( captureVector.Count() > 0 || defendVector.Count() == 0 )
+		if( captureVector.Count() > 0 || defendVector.Count() == 0 )
 		{
-			pRoster = offenseRoster;
+			desiredRoster = offenseRoster;
 		}
 		else
 		{
-			pRoster = defenseRoster;
+			desiredRoster = defenseRoster;
 		}
 	}
-	else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
+	else if( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 	{
-		if ( GetTeamNumber() == TF_TEAM_RED )
+		if( GetTeamNumber() == TF_TEAM_RED )
 		{
-			pRoster = defenseRoster;
+			desiredRoster = defenseRoster;
 		}
 	}
 
-	int iDesiredClass = TF_CLASS_UNDEFINED;
-	int iAllowedClasses = 0;
+	// build vector of classes we can pick from
+	CUtlVector< int > desiredClassVector;
+	CUtlVector< int > allowedClassForBotRosterVector;
 
-	for ( int i=0; pRoster[i].m_iClass != TF_CLASS_UNDEFINED; ++i )
+	for( int i = 0; desiredRoster[i].m_class != TF_CLASS_UNDEFINED; ++i )
 	{
-		ClassSelection_t const *pInfo = &pRoster[i];
+		ClassSelectionInfo *desiredClassInfo = &desiredRoster[i];
 
-		if ( func.m_iTotal < pInfo->m_nMinTeamSize )
+		if( TFGameRules()->CanBotChooseClass( const_cast<CTFBot *>( this ), desiredClassInfo->m_class ) == false )
+		{
+			// not allowed to use this class
 			continue;
+		}
+		// just in case we hit the class limits, we want to make sure we select a class that is allowed
+		allowedClassForBotRosterVector.AddToTail( desiredClassInfo->m_class );
 
-		if ( func.m_aClassCounts[ pInfo->m_iClass ] < pInfo->m_nMinimum )
+		if( currentRoster.m_teamSize < desiredClassInfo->m_minTeamSizeToSelect )
 		{
-			iDesiredClass = pInfo->m_iClass;
+			// team is too small to choose this class
+			continue;
+		}
+
+		// check limits
+		if( currentRoster.m_count[desiredClassInfo->m_class] < desiredClassInfo->m_minLimit )
+		{
+			// below required limit - choose only this class
+			desiredClassVector.RemoveAll();
+			desiredClassVector.AddToTail( desiredClassInfo->m_class );
 			break;
 		}
 
-		const int nMaximum = pInfo->m_nMaximum[ m_iSkill ];
-		if ( nMaximum > -1 && func.m_aClassCounts[ pInfo->m_iClass ] >= nMaximum )
+		int maxLimit = desiredClassInfo->m_maxLimit[(int)clamp( tf_bot_difficulty.GetInt(), CTFBot::EASY, CTFBot::EXPERT)];
+
+		if( maxLimit > NoLimit && currentRoster.m_count[desiredClassInfo->m_class] >= maxLimit )
+		{
+			// at or above limit for this class
 			continue;
+		}
 
-		if ( pInfo->m_nRatioTeamSize > 0 )
+		if( desiredClassInfo->m_countPerTeamSize > 0 )
 		{
-			const int nNumPerSize = func.m_iTotal / pInfo->m_nRatioTeamSize;
-			const int nActualCount = func.m_aClassCounts[ pInfo->m_iClass ] - pInfo->m_nMinTeamSize;
-			if ( nActualCount < nNumPerSize )
+			// how many of this class should there be at the given "per" count
+			int maxCountPer = currentRoster.m_teamSize / desiredClassInfo->m_countPerTeamSize;
+			if( currentRoster.m_count[desiredClassInfo->m_class] - desiredClassInfo->m_minTeamSizeToSelect < maxCountPer )
 			{
-				iDesiredClass = pInfo->m_iClass;
+				// below required limit - choose only this class
+				desiredClassVector.RemoveAll();
+				desiredClassVector.AddToTail( desiredClassInfo->m_class );
 				break;
 			}
 		}
 
-		iAllowedClasses |= ClassBits( pInfo->m_iClass );
+		// valid class to choose
+		desiredClassVector.AddToTail( desiredClassInfo->m_class );
 	}
 
-	if ( iAllowedClasses == 0 && iDesiredClass == TF_CLASS_UNDEFINED)
+	if( desiredClassVector.Count() == 0 )
 	{
-		Warning( "TFBot unable to get data for desired class, defaulting to 'random'\n" );
-		return "random";
-	}
-
-	if ( iDesiredClass == TF_CLASS_UNDEFINED )
-	{
-		for( int i=0; i < TF_CLASS_COUNT_ALL; ++i )
+		if( allowedClassForBotRosterVector.Count() == 0 )
 		{
-			int iRandom = RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS );
-			if ( iAllowedClasses & ClassBits( iRandom ) )
-			{
-				iDesiredClass = iRandom;
-				break;
-			}
+			// nothing available
+			Warning( "TFBot unable to choose a class, defaulting to 'auto'\n" );
+			return "auto";
+		}
+		else
+		{
+			desiredClassVector = allowedClassForBotRosterVector;
 		}
 	}
 
-	if ( m_hTargetSentry )
+	int which = RandomInt( 0, desiredClassVector.Count() - 1 );
+
+	// if we need to destroy a sentry, pick a class that can do so
+	/*
+	if( GetEnemySentry() )
 	{
-		if ( iAllowedClasses & ClassBits( TF_CLASS_DEMOMAN ) )
-			iDesiredClass = TF_CLASS_DEMOMAN;
-		else if ( iAllowedClasses & ClassBits( TF_CLASS_SPY ) )
-			iDesiredClass = TF_CLASS_SPY;
-		else if ( iAllowedClasses & ClassBits( TF_CLASS_SOLDIER ) )
-			iDesiredClass = TF_CLASS_SOLDIER;
+		// best sentry demolitions
+		int demoman = desiredClassVector.Find( TF_CLASS_DEMOMAN );
+		if( demoman >= 0 )
+		{
+			which = demoman;
+		}
+		else
+		{
+			// next best sentry demolitions
+			int spy = desiredClassVector.Find( TF_CLASS_SPY );
+			if( spy >= 0 )
+			{
+				which = spy;
+			}
+			else
+			{
+				// good sentry demolitions
+				int soldier = desiredClassVector.Find( TF_CLASS_SOLDIER );
+				if( soldier >= 0 )
+				{
+					which = soldier;
+				}
+			}
+		}
+	}
+	*/
+
+	TFPlayerClassData_t *classData = GetPlayerClassData( desiredClassVector[which] );
+	if( classData )
+	{
+		return classData->m_szClassName;
 	}
 
-	if ( iDesiredClass > TF_CLASS_UNDEFINED )
-		return GetPlayerClassData( iDesiredClass )->m_szClassName;
-
-	Warning( "TFBot unable to get data for desired class, defaulting to 'random'\n" );
-	return "random";
+	Warning( "TFBot unable to get data for desired class, defaulting to 'auto'\n" );
+	return "auto";
 }
 
 CTFBotPathCost::CTFBotPathCost( CTFBot *actor, RouteType routeType )

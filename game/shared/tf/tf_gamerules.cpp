@@ -1733,6 +1733,35 @@ void CTFGameRules::Activate()
 		return;
 	}
 
+	// bot roster
+	m_hBlueBotRoster = NULL;
+	m_hRedBotRoster = NULL;
+
+	CHandle<CTFBotRoster> hBotRoster = dynamic_cast<CTFBotRoster *>( gEntList.FindEntityByClassname( NULL, "bot_roster" ) );
+	while( hBotRoster != NULL )
+	{
+		if( FStrEq( hBotRoster->m_teamName.ToCStr(), "blue" ) )
+		{
+			m_hBlueBotRoster = hBotRoster;
+		}
+		else if( FStrEq( hBotRoster->m_teamName.ToCStr(), "red" ) )
+		{
+			m_hRedBotRoster = hBotRoster;
+		}
+		else
+		{
+			if( m_hBlueBotRoster == NULL )
+			{
+				m_hBlueBotRoster = hBotRoster;
+			}
+			if( m_hRedBotRoster == NULL )
+			{
+				m_hRedBotRoster = hBotRoster;
+			}
+		}
+		hBotRoster = dynamic_cast<CTFBotRoster *>( gEntList.FindEntityByClassname( hBotRoster, "bot_roster" ) );
+	}
+
 	CCaptureFlag *pFlag = dynamic_cast<CCaptureFlag*> ( gEntList.FindEntityByClassname( NULL, "item_teamflag" ) );
 	if ( pFlag )
 	{
@@ -1878,6 +1907,31 @@ bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iDesiredClass
 	}
 
 	return true;
+}
+
+bool CTFGameRules::CanBotChooseClass( CBasePlayer *pPlayer, int iDesiredClassIndex )
+{
+	// if there's a roster for this bot's team, then check to see if the class the bot has requested is allowed by the roster
+	bool bCanChooseClass = CanPlayerChooseClass( pPlayer, iDesiredClassIndex );
+	if( bCanChooseClass )
+	{
+		// now check rosters...
+		switch( pPlayer->GetTeamNumber() )
+		{
+			case TF_TEAM_RED:
+				bCanChooseClass = m_hRedBotRoster ? m_hRedBotRoster->IsClassAllowed( iDesiredClassIndex ) : true;
+				break;
+			case TF_TEAM_BLUE:
+				bCanChooseClass = m_hBlueBotRoster ? m_hBlueBotRoster->IsClassAllowed( iDesiredClassIndex ) : true;
+				break;
+			default:
+				// no roster - spectator team
+				bCanChooseClass = true;
+				break;
+		}
+	}
+
+	return bCanChooseClass;
 }
 
 //-----------------------------------------------------------------------------

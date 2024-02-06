@@ -260,6 +260,8 @@ $Project "Server (TF)"
 
 				$Folder	"Map Entities"
 				{
+					$File "tf\bot\map_entities\tf_bot_roster.cpp"
+					$File "tf\bot\map_entities\tf_bot_roster.h"
 					$File "tf\bot\map_entities\tf_hint_entity.cpp"
 					$File "tf\bot\map_entities\tf_hint_entity.h"
 					$File "tf\bot\map_entities\tf_hint_sentrygun.cpp"
