@@ -767,6 +767,9 @@ public:
 	float				GetSimulationTime() const;
 	void				SetSimulationTime( float st );
 
+	float				GetCreateTime()										{ return m_flCreateTime; }
+	void				SetCreateTime( float flCreateTime )					{ m_flCreateTime = flCreateTime; }
+
 	void				SetRenderMode( RenderMode_t nRenderMode );
 	RenderMode_t		GetRenderMode() const;
 
@@ -809,6 +812,7 @@ public:
 	float		m_flPrevAnimTime;
 	CNetworkVar( float, m_flAnimTime );  // this is the point in time that the client will interpolate to position,angle,frame,etc.
 	CNetworkVar( float, m_flSimulationTime );
+	CNetworkVar( float, m_flCreateTime );
 
 	void IncrementInterpolationFrame(); // Call this to cause a discontinuity (teleport)
 
