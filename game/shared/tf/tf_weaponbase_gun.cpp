@@ -26,7 +26,6 @@
 	#include "tf_projectile_arrow.h"
 	#include "tf_weapon_grenade_mirv.h"
 	#include "tf_projectile_plasma.h"
-	#include "tf_projectile_jar.h"
 	#include "te.h"
 
 #else	// Client specific.
@@ -263,8 +262,7 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 		case TF_PROJECTILE_FESTIVE_URINE:
 		case TF_PROJECTILE_BREADMONSTER_JARATE:
 		case TF_PROJECTILE_BREADMONSTER_MADMILK:
-			pProjectile = FireJar( pPlayer, iProjectile );
-			pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
+			// TO-DO: Implement 'grenade' support
 			break;
 
 		case TF_PROJECTILE_NONE:
@@ -566,58 +564,6 @@ CBaseEntity *CTFWeaponBaseGun::FireRocket( CTFPlayer *pPlayer, int iType )
 
 	return pProjectile;
 
-#endif
-
-	return NULL;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Fire a throwable
-//-----------------------------------------------------------------------------
-CBaseEntity *CTFWeaponBaseGun::FireJar( CTFPlayer *pPlayer, int iType )
-{
-	PlayWeaponShootSound();
-
-#ifdef GAME_DLL
-	AngularImpulse spin = AngularImpulse( 600, random->RandomInt( -1200, 1200 ), 0 );
-
-	Vector vecForward, vecRight, vecUp;
-	AngleVectors( pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp );
-
-	// Set the starting position a bit behind the player so the projectile
-	// launches out of the players view
-	Vector vecSrc = pPlayer->Weapon_ShootPosition();
-	vecSrc +=  vecForward * -64.0f + vecRight * 8.0f + vecUp * -6.0f;
-	
-	Vector vecVelocity = ( vecForward * GetProjectileSpeed() ) + ( vecUp * 200.0f ) + ( random->RandomFloat( -10.0f, 10.0f ) * vecRight ) +		
-		( random->RandomFloat( -10.0f, 10.0f ) * vecUp );
-
-	//GetProjectileFireSetup( pPlayer, vecOffset, &vecSrc, &angForward, false, false );
-
-	CTFWeaponBaseGrenadeProj *pProjectile = NULL;
-
-	switch ( iType )
-	{
-		case TF_PROJECTILE_JAR:
-		case TF_PROJECTILE_FESTIVE_URINE:
-		case TF_PROJECTILE_BREADMONSTER_JARATE:
-			pProjectile = CTFProjectile_Jar::Create( this, vecSrc, pPlayer->EyeAngles(), vecVelocity, pPlayer, pPlayer, spin, GetTFWpnData() );
-			break;
-		//case TF_PROJECTILE_JAR_MILK:
-		//case TF_PROJECTILE_BREADMONSTER_MADMILK:
-			//pProjectile = CTFProjectile_JarMilk::Create( this, vecSrc, pPlayer->EyeAngles(), vecVelocity, pPlayer, pPlayer, spin, GetTFWpnData() );
-			//break;
-		//case TF_PROJECTILE_CLEAVER:
-			//pProjectile = CTFProjectile_Cleaver::Create( this, vecSrc, pPlayer->EyeAngles(), vecVelocity, pPlayer, pPlayer, spin, GetTFWpnData() );
-			//break;
-	}
-	
-	if ( pProjectile )
-	{
-		pProjectile->SetCritical( IsCurrentAttackACrit() );
-		pProjectile->SetDamage( GetProjectileDamage() );
-	}
-	return pProjectile;
 #endif
 
 	return NULL;
