@@ -53,6 +53,7 @@ CTFPowerup::CTFPowerup()
 {
 	m_bDisabled = false;
 	m_bRespawning = false;
+	m_flNextCollideTime = 0.0f;
 
 	UseClientSideAnimation();
 }
@@ -78,7 +79,6 @@ void CTFPowerup::Spawn( void )
 	}
 
 	m_bRespawning = false;
-
 	ResetSequence( LookupSequence("idle") );
 }
 
@@ -132,6 +132,12 @@ bool CTFPowerup::ValidTouch( CBasePlayer *pPlayer )
 	// Team number and does it match?
 	int iTeam = GetTeamNumber();
 	if ( iTeam && ( pPlayer->GetTeamNumber() != iTeam ) )
+	{
+		return false;
+	}
+
+	// Don't collide with the owner for the first portion of our life if we're a lunchbox item
+	if ( m_flNextCollideTime > gpGlobals->curtime && pPlayer == GetOwnerEntity() )
 	{
 		return false;
 	}

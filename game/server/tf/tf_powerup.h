@@ -58,6 +58,7 @@ public:
 	void			InputToggle( inputdata_t &inputdata );
 
 	virtual powerupsize_t	GetPowerupSize( void ) { return POWERUP_FULL; }
+	float			m_flNextCollideTime;
 
 public:
 	CNetworkVarForDerived( bool, m_bDisabled );
