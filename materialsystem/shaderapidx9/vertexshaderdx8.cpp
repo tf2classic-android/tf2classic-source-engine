@@ -2983,14 +2983,16 @@ bool	CShaderManager::LoadShaderCache( char *cacheName )
 	if ( !found ) 
 	{
 		Warning( "Could not load program cache file %s\n", cacheName );
+		pProgramCache->deleteThis();
 		return false;
 	}
 
-	    if ( Q_stricmp( pProgramCache->GetName(), k_pszShaderCacheRootKey ) ) 
-	    {
-			Warning( "Ignoring out-of-date shader cache (%s) with root key %s\n", cacheName, pProgramCache->GetName() );
-	        return false;
-	    }
+	if ( Q_stricmp( pProgramCache->GetName(), k_pszShaderCacheRootKey ) ) 
+	{
+		Warning( "Ignoring out-of-date shader cache (%s) with root key %s\n", cacheName, pProgramCache->GetName() );
+		pProgramCache->deleteThis();
+		return false;
+	}
     	
 	int nTotalLinkedShaders = 0;
 	int nTotalKeyValues = 0;
@@ -3111,8 +3113,8 @@ bool	CShaderManager::LoadShaderCache( char *cacheName )
 
 	Msg( "Loaded program cache file \"%s\", total keyvalues: %i, total successfully linked: %i\n", cacheName, nTotalKeyValues, nTotalLinkedShaders );
 
+	pProgramCache->deleteThis();
 	return true;
-
 #else
 	return false;	// have to return a value on Windows build to appease compiler
 #endif
