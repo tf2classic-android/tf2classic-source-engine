@@ -2126,13 +2126,6 @@ void CTFBot::SetupSniperSpotAccumulation( void )
 	VPROF_BUDGET( __FUNCTION__, "NextBot" );
 
 	CBaseEntity *pObjective = nullptr;
-	/*
-	if (TFGameRules()->GetGameType() != TF_GAMETYPE_CP)
-	{
-		ClearSniperSpots();
-		return;
-	}
-	*/
 
 	if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 	{
@@ -2179,8 +2172,8 @@ void CTFBot::SetupSniperSpotAccumulation( void )
 	if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 	{
 		// the cart is owned by the invaders
-		//bCheckForward = ( pObjective->GetTeamNumber() != iMyTeam );
-		//pObjectiveArea = (CTFNavArea *)TFNavMesh()->GetNearestNavArea( pObjectiveArea->WorldSpaceCenter(), GETNAVAREA_CHECK_GROUND, 500.0f );
+		bCheckForward = ( pObjective->GetTeamNumber() != iMyTeam );
+		pObjectiveArea = (CTFNavArea *)TFNavMesh()->GetNearestNavArea( pObjective->WorldSpaceCenter(), GETNAVAREA_CHECK_GROUND, 500.0f );
 	}
 	else
 	{
@@ -2518,7 +2511,7 @@ const char *CTFBot::GetNextSpawnClassname( void )
 	}
 	else if( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 	{
-		if( GetTeamNumber() == TF_TEAM_RED )
+		if( ( GetTeamNumber() == TF_TEAM_RED ) && !TFGameRules()->HasMultipleTrains() )
 		{
 			desiredRoster = defenseRoster;
 		}
@@ -2555,7 +2548,7 @@ const char *CTFBot::GetNextSpawnClassname( void )
 			break;
 		}
 
-		int maxLimit = desiredClassInfo->m_maxLimit[(int)clamp( tf_bot_difficulty.GetInt(), CTFBot::EASY, CTFBot::EXPERT)];
+		int maxLimit = desiredClassInfo->m_maxLimit[(int)clamp( m_iSkill, CTFBot::EASY, CTFBot::EXPERT)];
 
 		if( maxLimit > NoLimit && currentRoster.m_count[desiredClassInfo->m_class] >= maxLimit )
 		{

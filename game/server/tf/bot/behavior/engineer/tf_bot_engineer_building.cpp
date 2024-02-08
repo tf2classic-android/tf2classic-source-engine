@@ -216,7 +216,7 @@ bool CTFBotEngineerBuilding::CheckIfSentryIsOutOfPosition( CTFBot *me ) const
 	{
 		CTeamTrainWatcher *trainWatcher;
 
-		if( me->GetTeamNumber() == TF_TEAM_BLUE )
+		if( ( me->GetTeamNumber() == TF_TEAM_BLUE ) || TFGameRules()->HasMultipleTrains() )
 		{
 			trainWatcher = TFGameRules()->GetPayloadToPush( me->GetTeamNumber() );
 		}
