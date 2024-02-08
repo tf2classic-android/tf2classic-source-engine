@@ -112,6 +112,9 @@
 #include "matsys_controls/matsyscontrols.h"
 #include "gamestats.h"
 #include "particle_parse.h"
+#if defined( TF_CLASSIC_CLIENT )
+#include "engine/audio/sound.h"
+#endif
 #if defined( TF_CLIENT_DLL )
 #include "rtime.h"
 #include "tf_hud_disconnect_prompt.h"
@@ -2588,6 +2591,21 @@ void CHLClient::FileReceived( const char * fileName, unsigned int transferID )
 
 void CHLClient::ClientAdjustStartSoundParams( StartSoundParams_t& params )
 {
+#if defined( TF_CLASSIC_CLIENT )
+	CBaseEntity *pEntity = ClientEntityList().GetEnt( params.soundsource );
+	if( !pEntity )
+		return;
+
+	if( !pEntity->IsPlayer() )
+		return;
+
+	if( params.entchannel == CHAN_VOICE )
+	{
+		float flVoicePitchScale = 1.f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pEntity, flVoicePitchScale, voice_pitch_scale );
+		params.pitch *= flVoicePitchScale;
+	}
+#endif
 #ifdef TF_CLIENT_DLL
 	CBaseEntity *pEntity = ClientEntityList().GetEnt( params.soundsource );
 
