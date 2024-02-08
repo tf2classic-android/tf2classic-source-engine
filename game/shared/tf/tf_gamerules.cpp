@@ -124,6 +124,7 @@ ConVar tf_birthday( "tf_birthday", "0", FCVAR_NOTIFY | FCVAR_REPLICATED );
 // TF2C specific cvars.
 ConVar tf2c_falldamage_disablespread( "tf2c_falldamage_disablespread", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Toggles random 20% fall damage spread." );
 ConVar tf2c_allow_thirdperson( "tf2c_allow_thirdperson", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allow players to switch to third person mode." );
+ConVar tf2c_allow_civilian_class( "tf2c_allow_civilian_class", "1", FCVAR_NOTIFY, "200" );
 // TODO: RETRO GAMETYPE
 //ConVar tf2c_dm_fraglimit( "tf2c_dm_fraglimit", "50", FCVAR_NOTIFY | FCVAR_REPLICATED );
 
@@ -155,7 +156,7 @@ ConVar tf_tournament_classlimit_spy( "tf_tournament_classlimit_spy", "-1", FCVAR
 ConVar tf_tournament_classlimit_engineer( "tf_tournament_classlimit_engineer", "-1", FCVAR_NOTIFY, "Tournament mode per-team class limit for Engineers.\n" );
 ConVar tf_tournament_classchange_allowed( "tf_tournament_classchange_allowed", "1", FCVAR_NOTIFY, "Allow players to change class while the game is active?.\n" );
 ConVar tf_tournament_classchange_ready_allowed( "tf_tournament_classchange_ready_allowed", "1", FCVAR_NOTIFY, "Allow players to change class after they are READY?.\n" );
-ConVar tf_classlimit( "tf_classlimit", "0", FCVAR_NOTIFY, "Limit on how many players can be any class (i.e. tf_class_limit 2 would limit 2 players per class).\n" );
+ConVar tf_classlimit( "tf_classlimit", "0", FCVAR_NOTIFY, "Limit on how many players can be any class (i.e. tf_classlimit 2 would limit 2 players per class).\n" );
 #endif
 
 #ifdef GAME_DLL
@@ -1845,30 +1846,37 @@ int CTFGameRules::GetClassLimit( int iDesiredClassIndex, int iTeam )
 			result = -1;
 		}
 	}
-	else if (iDesiredClassIndex == TF_CLASS_CIVILIAN)
+	else if( iDesiredClassIndex == TF_CLASS_CIVILIAN )
 	{
-		if (!tf2c_allow_special_classes.GetBool())
+		if( !tf2c_allow_civilian_class.GetBool() )
+			return 0;
+
+		if( !tf2c_allow_special_classes.GetBool() )
+		{
 			return 1;
+		}
 		else
+		{
 			return -1;
+		}
 	}
-	else if ( IsInHighlanderMode() )
+	else if( IsInHighlanderMode() )
 	{
 		result = 1;
 	}
-	else if ( tf_classlimit.GetBool() )
+	else if( tf_classlimit.GetBool() )
 	{
 		result = tf_classlimit.GetInt();
 	}
-	else if (CTFClassLimits *pLimits = dynamic_cast< CTFClassLimits * > ( gEntList.FindEntityByClassname(NULL, "tf_class_limits") ))
+	else if( CTFClassLimits *pLimits = dynamic_cast<CTFClassLimits *>( gEntList.FindEntityByClassname(NULL, "tf_class_limits" ) ) )
 	{
 		do
 		{
-			if (pLimits->GetTeam() == iTeam)
+			if( pLimits->GetTeam() == iTeam )
 			{
 				result = pLimits->GetLimitForClass( iDesiredClassIndex );
 			}
-		} while (nullptr != (pLimits = dynamic_cast< CTFClassLimits * > ( gEntList.FindEntityByClassname(pLimits, "tf_class_limits") )));
+		} while( nullptr != ( pLimits = dynamic_cast<CTFClassLimits *>( gEntList.FindEntityByClassname(pLimits, "tf_class_limits" ) ) ) );
 	}
 	else
 	{
