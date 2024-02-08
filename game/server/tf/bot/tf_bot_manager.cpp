@@ -419,7 +419,7 @@ void CTFBotManager::MaintainBotQuota()
 				pBot->HandleCommand_JoinClass(szClassname);
 
 				char szName[256];
-				CreateBotName(pBot->GetTeamNumber(), pBot->GetPlayerClass()->GetClassIndex(), tf_bot_difficulty.GetInt(), szName, sizeof(szName));
+				CreateBotName(pBot->GetTeamNumber(), pBot->GetPlayerClass()->GetClassIndex(), pBot->m_iSkill, szName, sizeof(szName));
 				engine->SetFakeClientConVarValue(pBot->edict(), "name", szName);
 			}
 		}
