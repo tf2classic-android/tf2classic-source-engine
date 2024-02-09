@@ -1355,18 +1355,38 @@ void CTFPlayerShared::OnRemoveInvulnerable( void )
 //-----------------------------------------------------------------------------
 bool CTFPlayerShared::ShouldShowRecentlyTeleported( void )
 {
-	if ( m_pOuter->IsPlayerClass( TF_CLASS_SPY ) )
+	if ( IsStealthed() )
 	{
-		if ( InCond( TF_COND_STEALTHED ) )
-			return false;
+		return false;
+	}
 
-		if ( InCond( TF_COND_DISGUISED ) && ( m_pOuter->IsLocalPlayer() || m_pOuter->IsEnemyPlayer() ) )
+	if ( m_pOuter->IsPlayerClass(TF_CLASS_SPY) )
+	{
+		// disguised as an enemy
+		if ( InCond( TF_COND_DISGUISED ) && GetDisguiseTeam() != m_pOuter->GetTeamNumber() )
 		{
-			if ( GetDisguiseTeam() != m_nTeamTeleporterUsed )
+			// was this my own team's teleporter?
+			if ( GetTeamTeleporterUsed() == m_pOuter->GetTeamNumber() )
+			{
+				// don't show my trail
 				return false;
+			}
+			else
+			{
+				// it's okay to show the local player the trail, but not his team (might confuse them)
+				if ( !m_pOuter->IsLocalPlayer() && m_pOuter->GetTeamNumber() == GetLocalPlayerTeam() )
+				{
+					return false;
+				}
+			}
 		}
-		else if ( m_pOuter->GetTeamNumber() != m_nTeamTeleporterUsed )
-			return false;
+		else
+		{
+			if ( GetTeamTeleporterUsed() != m_pOuter->GetTeamNumber() )
+			{
+				return false;
+			}
+		}
 	}
 
 	return ( InCond( TF_COND_TELEPORTED ) );

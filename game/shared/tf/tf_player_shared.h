@@ -167,6 +167,7 @@ public:
 	int		GetDisguiseWeaponModelIndex( void ) { return m_iDisguiseWeaponModelIndex; }
 	CTFWeaponInfo *GetDisguiseWeaponInfo( void );
 
+	int	GetTeamTeleporterUsed( void ) { return m_nTeamTeleporterUsed; }
 	void	UpdateCritBoostEffect( bool bForceHide = false );
 	bool	SetParticleToMercColor( CNewParticleEffect *pParticle );
 #endif
