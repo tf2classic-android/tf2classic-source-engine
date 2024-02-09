@@ -230,7 +230,7 @@ bool CTFBotPrepareStickybombTrap::IsPossible( CTFBot *actor )
 
 void CTFBotPrepareStickybombTrap::InitBombTargetAreas( CTFBot *actor )
 {
-	const CUtlVector<CTFNavArea *> &invasionAreas = m_LastKnownArea->GetInvasionAreasForTeam( actor->GetTeamNumber() );
+	const CUtlVector<CTFNavArea *> &invasionAreas = m_LastKnownArea->GetEnemyInvasionAreaVector( actor->GetTeamNumber() );
 
 	/* intentional array copy */
 	CUtlVector<CTFNavArea *> areas;

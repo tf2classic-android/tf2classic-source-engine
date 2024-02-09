@@ -47,7 +47,7 @@ ActionResult<CTFBot> CTFBotSpyInfiltrate::Update( CTFBot *me, float dt )
 	if ( area == nullptr )
 		return Action<CTFBot>::Continue();
 
-	if ( !me->m_Shared.InCond( TF_COND_STEALTHED ) && !area->HasTFAttributes( RED_SPAWN_ROOM|BLUE_SPAWN_ROOM|SPAWN_ROOM_EXIT ) && area->IsInCombat() && !m_bCloaked )
+	if ( !me->m_Shared.InCond( TF_COND_STEALTHED ) && !area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED|TF_NAV_SPAWN_ROOM_BLUE|TF_NAV_SPAWN_ROOM_EXIT ) && area->IsInCombat() && !m_bCloaked )
 	{
 		m_bCloaked = true;
 		me->PressAltFireButton();
@@ -181,8 +181,8 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *actor )
 	if ( actor->GetAliveDuration() < 5.0f && TFGameRules()->InSetup() )
 		return false;
 
-	const CUtlVector<CTFNavArea *> &exits = TFNavMesh()->GetSpawnRoomExitsForTeam( GetEnemyTeam( actor ) );
-	if ( exits.IsEmpty() )
+	const CUtlVector<CTFNavArea *> *exits = TheTFNavMesh()->GetSpawnRoomExitAreas( GetEnemyTeam( actor ) );
+	if ( exits->IsEmpty() )
 	{
 		if ( tf_bot_debug_spy.GetBool() )
 			DevMsg( "%3.2f: No enemy spawn room exit areas found\n", gpGlobals->curtime );
@@ -191,10 +191,10 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *actor )
 	}
 
 	CUtlVector<CNavArea *> surrounding;
-	FOR_EACH_VEC( exits, i )
+	for( int i = 0; i < exits->Count(); ++i )
 	{
 		CUtlVector<CNavArea *> temp;
-		CollectSurroundingAreas( &temp, exits[i], 2500.0f );
+		CollectSurroundingAreas( &temp, exits->Element( i ), 2500.0f );
 
 		surrounding.AddVectorToTail( temp );
 	}
@@ -206,9 +206,9 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *actor )
 			continue;
 
 		bool visible = false;
-		FOR_EACH_VEC( exits, j )
+		for( int j = 0; j < exits->Count(); ++j )
 		{
-			if ( surrounding[i]->IsPotentiallyVisible( exits[j] ) )
+			if ( surrounding[i]->IsPotentiallyVisible( exits->Element( j ) ) )
 			{
 				visible = true;
 				break;
@@ -241,7 +241,7 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *actor )
 						"just heading to the enemy spawn and hoping...\n", gpGlobals->curtime );
 			}
 
-			m_HidingArea = exits.Random();
+			m_HidingArea = exits->Element( RandomInt( 0, exits->Count()-1 ) );
 
 			return false;
 		}

@@ -101,7 +101,7 @@ ActionResult<CTFBot> CTFBotTacticalMonitor::Update( CTFBot *me, float dt )
 			CObjectTeleporter *pTeleporter = FindNearbyTeleporter( me );
 			if ( pTeleporter )
 			{
-				CTFNavArea *pTeleArea = (CTFNavArea *)TFNavMesh()->GetNearestNavArea( pTeleporter );
+				CTFNavArea *pTeleArea = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( pTeleporter );
 				CTFNavArea *pMyArea = (CTFNavArea *)me->GetLastKnownArea();
 				if ( pTeleArea && pMyArea )
 				{
@@ -280,7 +280,7 @@ CObjectTeleporter *CTFBotTacticalMonitor::FindNearbyTeleporter( CTFBot *actor )
 	CollectSurroundingAreas( &nearby, actor->GetLastKnownArea(), 1000.0f );
 
 	CUtlVector<CBaseObject *> objects;
-	TFNavMesh()->CollectBuiltObjects( &objects, actor->GetTeamNumber() );
+	TheTFNavMesh()->CollectBuiltObjects( &objects, actor->GetTeamNumber() );
 
 	CUtlVector<CObjectTeleporter *> candidates;
 	for ( int i=0; i<objects.Count(); ++i )

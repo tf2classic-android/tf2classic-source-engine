@@ -108,10 +108,10 @@ void CTFBotHint::UpdateNavDecoration()
 
 		if ( m_isDisabled )
 		{
-			pArea->RemoveTFAttributes( bits );
+			pArea->ClearAttributeTF( bits );
 			continue;
 		}
 
-		pArea->AddTFAttributes( bits );
+		pArea->SetAttributeTF( bits );
 	}
 }

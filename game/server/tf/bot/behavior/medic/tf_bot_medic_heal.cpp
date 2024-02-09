@@ -313,7 +313,7 @@ ActionResult<CTFBot> CTFBotMedicHeal::Update( CTFBot *me, float interval )
 		float              flMinDist = FLT_MAX;
 
 		CUtlVector<CBaseObject *> objVector;
-		TFNavMesh()->CollectBuiltObjects( &objVector, me->GetTeamNumber() );
+		TheTFNavMesh()->CollectBuiltObjects( &objVector, me->GetTeamNumber() );
 
 		for ( int i=0; i<objVector.Count(); ++i )
 		{

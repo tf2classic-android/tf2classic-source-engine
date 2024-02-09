@@ -86,14 +86,14 @@ bool CTFBotLocomotion::IsAreaTraversable( const CNavArea *baseArea ) const
 		{
 			case TF_TEAM_RED:
 			{
-				if ( tfArea->HasTFAttributes( BLUE_SPAWN_ROOM ) )
+				if ( tfArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) )
 					return false;
 
 				break;
 			}
 			case TF_TEAM_BLUE:
 			{
-				if ( tfArea->HasTFAttributes( RED_SPAWN_ROOM ) )
+				if ( tfArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) )
 					return false;
 
 				break;

@@ -309,7 +309,7 @@ CTFNavArea *CTFBotDefendPoint::SelectAreaToDefendFrom( CTFBot *actor )
 	CUtlVector<CTFNavArea *> candidates;
 	CTFNavArea *pArea = nullptr;
 
-	CTFNavArea *pCPArea = TFNavMesh()->GetMainControlPointArea( pPoint->GetPointIndex() );
+	CTFNavArea *pCPArea = TheTFNavMesh()->GetControlPointCenterArea( pPoint->GetPointIndex() );
 	if ( pCPArea )
 	{
 		SelectDefenseAreaForPoint functor( pCPArea, &candidates, actor->GetTeamNumber() );

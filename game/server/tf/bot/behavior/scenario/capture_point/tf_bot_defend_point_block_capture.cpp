@@ -61,9 +61,9 @@ ActionResult<CTFBot> CTFBotDefendPointBlockCapture::Update( CTFBot *me, float dt
 	if ( !m_pPoint->CollisionProp()->IsPointInBounds( me->GetAbsOrigin() ) )
 		bNearPoint = false;
 
-	const CUtlVector<CTFNavArea *> &cpAreas = TFNavMesh()->GetControlPointAreas( m_pPoint->GetPointIndex() );
-	for ( int i=0; i<cpAreas.Count(); ++i )
-		bNearPoint &= me->GetLastKnownArea() != cpAreas[i];
+	const CUtlVector<CTFNavArea *> *cpAreas = TheTFNavMesh()->GetControlPointAreas( m_pPoint->GetPointIndex() );
+	for ( int i=0; i<cpAreas->Count(); ++i )
+		bNearPoint &= me->GetLastKnownArea() != cpAreas->Element( i );
 
 	if ( bNearPoint && CTFBotPrepareStickybombTrap::IsPossible( me ) )
 		return Action<CTFBot>::SuspendFor( new CTFBotPrepareStickybombTrap, "Placing stickies for defense" );
@@ -77,16 +77,16 @@ ActionResult<CTFBot> CTFBotDefendPointBlockCapture::Update( CTFBot *me, float dt
 	m_recomputePathTimer.Start( RandomFloat( 0.5f, 1.0f ) );
 
 	float flTotalArea = 0.0f;
-	for ( int i=0; i<cpAreas.Count(); ++i )
+	for ( int i=0; i<cpAreas->Count(); ++i )
 	{
-		CNavArea *area = cpAreas[i];
+		CNavArea *area = cpAreas->Element( i );
 		flTotalArea += area->GetSizeX() * area->GetSizeY();
 	}
 
 	float flRand = RandomFloat( 0, flTotalArea - 1.0f );
-	for ( int i=0; i<cpAreas.Count(); ++i )
+	for ( int i=0; i<cpAreas->Count(); ++i )
 	{
-		CNavArea *area = cpAreas[i];
+		CNavArea *area = cpAreas->Element( i );
 		if ( flRand - ( area->GetSizeX() * area->GetSizeY() ) <= 0.0f )
 		{
 			CTFBotPathCost cost( me );

@@ -379,10 +379,10 @@ bool CTFBotSniperLurk::FindNewHome( CTFBot *actor )
 		CTeamControlPoint *pPoint = actor->GetMyControlPoint();
 		if ( pPoint )
 		{
-			CCopyableUtlVector<CTFNavArea *> areas( (const CCopyableUtlVector<CTFNavArea *> &)TFNavMesh()->GetControlPointAreas( pPoint->GetPointIndex() ) );
+			CCopyableUtlVector<CTFNavArea *> areas( (const CCopyableUtlVector<CTFNavArea *> *)TheTFNavMesh()->GetControlPointAreas( pPoint->GetPointIndex() ) );
 			if ( areas.IsEmpty() )
 			{
-				TFNavMesh()->CollectSpawnRoomThresholdAreas( &areas, actor->GetTeamNumber() );
+				TheTFNavMesh()->CollectSpawnRoomThresholdAreas( &areas, actor->GetTeamNumber() );
 				if ( areas.IsEmpty() )
 				{
 					m_vecHome = actor->GetAbsOrigin();

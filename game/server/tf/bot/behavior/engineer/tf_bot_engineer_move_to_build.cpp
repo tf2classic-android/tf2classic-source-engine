@@ -67,7 +67,7 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 	if( zone )
 	{
 		// NOTE: Not strictly the right thing - should defend location of our team's flag
-		CTFNavArea *zoneArea = (CTFNavArea *)TFNavMesh()->GetNearestNavArea( zone->WorldSpaceCenter(), false, 500.0f, true );
+		CTFNavArea *zoneArea = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( zone->WorldSpaceCenter(), false, 500.0f, true );
 		if( zoneArea )
 		{
 			pointAreaVector.AddToTail( zoneArea );
@@ -92,7 +92,7 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 		{
 			Vector checkpointPos = trainWatcher->GetNextCheckpointPosition();
 
-			CTFNavArea *checkpointArea = (CTFNavArea *)TFNavMesh()->GetNearestNavArea( checkpointPos, false, 500.0f, true );
+			CTFNavArea *checkpointArea = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( checkpointPos, false, 500.0f, true );
 			if( checkpointArea )
 			{
 				pointAreaVector.AddToTail( checkpointArea );
@@ -108,12 +108,12 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 		if( !ctrlPoint )
 			return;
 
-		const CUtlVector< CTFNavArea * > &ctrlPointAreaVector = TFNavMesh()->GetControlPointAreas( ctrlPoint->GetPointIndex() );
+		const CUtlVector< CTFNavArea * > *ctrlPointAreaVector = TheTFNavMesh()->GetControlPointAreas( ctrlPoint->GetPointIndex() );
 
 		{
-			for( i = 0; i < ctrlPointAreaVector.Count(); ++i )
+			for( i = 0; i < ctrlPointAreaVector->Count(); ++i )
 			{
-				CTFNavArea *area = ctrlPointAreaVector.Element( i );
+				CTFNavArea *area = ctrlPointAreaVector->Element( i );
 
 				pointAreaVector.AddToTail( area );
 				pointCentroid += area->GetCenter();
@@ -354,7 +354,7 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float inte
 			CTeamControlPoint *point = me->GetMyControlPoint();
 			if( point )
 			{
-				CTFNavArea *pointArea = TFNavMesh()->GetControlPointCenterArea( point->GetPointIndex() );
+				CTFNavArea *pointArea = TheTFNavMesh()->GetControlPointCenterArea( point->GetPointIndex() );
 
 				myTeleportExit->UpdateLastKnownArea();
 				CTFNavArea *exitArea = (CTFNavArea *)myTeleportExit->GetLastKnownArea();

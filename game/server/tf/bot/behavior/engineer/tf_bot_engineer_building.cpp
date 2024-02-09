@@ -187,13 +187,13 @@ bool CTFBotEngineerBuilding::IsMetalSourceNearby( CTFBot *me ) const
 	{
 		CTFNavArea *area = (CTFNavArea *)nearbyVector[i];
 
-		if( area->HasTFAttributes( AMMO ) )
+		if( area->HasAttributeTF( TF_NAV_HAS_AMMO ) )
 			return true;
 
-		if( me->GetTeamNumber() == TF_TEAM_RED && area->HasTFAttributes( RED_SPAWN_ROOM ) )
+		if( me->GetTeamNumber() == TF_TEAM_RED && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) )
 			return true;
 
-		if( me->GetTeamNumber() == TF_TEAM_BLUE && area->HasTFAttributes( BLUE_SPAWN_ROOM ) )
+		if( me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) )
 			return true;
 	}
 
@@ -242,7 +242,7 @@ bool CTFBotEngineerBuilding::CheckIfSentryIsOutOfPosition( CTFBot *me ) const
 	CTeamControlPoint *point = me->GetMyControlPoint();
 	if( point )
 	{
-		CTFNavArea *pointArea = TFNavMesh()->GetControlPointCenterArea( point->GetPointIndex() );
+		CTFNavArea *pointArea = TheTFNavMesh()->GetControlPointCenterArea( point->GetPointIndex() );
 
 		if( sentryArea && pointArea )
 		{

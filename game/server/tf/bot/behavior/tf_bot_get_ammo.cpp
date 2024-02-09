@@ -201,10 +201,10 @@ bool CAmmoFilter::IsSelected( const CBaseEntity *ent ) const
 	// Can't use enemy teams resupply cabinet
 	if ( FClassnameIs( const_cast<CBaseEntity *>( ent ), "func_regenerate" ) )
 	{
-		if ( m_pActor->GetTeamNumber() == TF_TEAM_RED && pArea->HasTFAttributes( BLUE_SPAWN_ROOM ) )
+		if ( m_pActor->GetTeamNumber() == TF_TEAM_RED && pArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) )
 			return false;
 
-		if ( m_pActor->GetTeamNumber() == TF_TEAM_BLUE && pArea->HasTFAttributes( RED_SPAWN_ROOM ) )
+		if ( m_pActor->GetTeamNumber() == TF_TEAM_BLUE && pArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) )
 			return false;
 	}
 

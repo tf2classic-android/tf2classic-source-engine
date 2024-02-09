@@ -20,6 +20,7 @@
 #include "team_control_point_master.h"
 #include "tf_weaponbase_gun.h"
 #include "tf_obj_teleporter.h"
+#include "func_capture_zone.h"
 
 class CTeamControlPoint;
 class CCaptureFlag;

@@ -197,9 +197,9 @@ bool CHealthFilter::IsSelected( const CBaseEntity *ent ) const
 	// Can't use enemy teams resupply cabinet
 	if ( FClassnameIs( const_cast<CBaseEntity *>( ent ), "func_regenerate" ) )
 	{
-		if ( pArea->HasTFAttributes( BLUE_SPAWN_ROOM|RED_SPAWN_ROOM ) &&
-			( m_pActor->GetTeamNumber() == TF_TEAM_RED && pArea->HasTFAttributes( BLUE_SPAWN_ROOM ) ||
-			  m_pActor->GetTeamNumber() == TF_TEAM_BLUE && pArea->HasTFAttributes( RED_SPAWN_ROOM ) ) )
+		if ( pArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE|TF_NAV_SPAWN_ROOM_RED ) &&
+			( m_pActor->GetTeamNumber() == TF_TEAM_RED && pArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) ||
+			  m_pActor->GetTeamNumber() == TF_TEAM_BLUE && pArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) ) )
 		{
 			return false;
 		}

@@ -24,6 +24,7 @@
 #include <tf/tf_weapon_medigun.h>
 #include <viewport_panel_names.h>
 #include <tf/tf_team.h>
+#include "func_respawnroom.h"
 
 void DifficultyChanged( IConVar *var, const char *pOldValue, float flOldValue );
 void PrefixNameChanged( IConVar *var, const char *pOldValue, float flOldValue );
@@ -858,7 +859,7 @@ bool CTFBot::IsNearPoint( CTeamControlPoint *point ) const
 	int iPointIdx = point->GetPointIndex();
 	if ( iPointIdx < MAX_CONTROL_POINTS )
 	{
-		CTFNavArea *cpArea = TFNavMesh()->GetMainControlPointArea( iPointIdx );
+		CTFNavArea *cpArea = TheTFNavMesh()->GetControlPointCenterArea( iPointIdx );
 		if ( !cpArea )
 			return false;
 
@@ -1152,7 +1153,7 @@ CTeamControlPoint *CTFBot::SelectPointToCapture( CUtlVector<CTeamControlPoint *>
 		if ( IsPointBeingContested( pPoint ) )
 			return pPoint;
 
-		CTFNavArea *pCPArea = TFNavMesh()->GetMainControlPointArea( pPoint->GetPointIndex() );
+		CTFNavArea *pCPArea = TheTFNavMesh()->GetControlPointCenterArea( pPoint->GetPointIndex() );
 		if ( pCPArea == nullptr )
 			continue;
 
@@ -1211,7 +1212,7 @@ CTeamControlPoint *CTFBot::SelectClosestPointByTravelDistance( CUtlVector<CTeamC
 	{
 		for ( int i=0; i<candidates.Count(); ++i )
 		{
-			CTFNavArea *pCPArea = TFNavMesh()->GetMainControlPointArea( candidates[i]->GetPointIndex() );
+			CTFNavArea *pCPArea = TheTFNavMesh()->GetControlPointCenterArea( candidates[i]->GetPointIndex() );
 			float flDist = NavAreaTravelDistance( GetLastKnownArea(), pCPArea, cost );
 
 			if ( flDist >= 0.0f && flMinDist > flDist )
@@ -1847,7 +1848,7 @@ void CTFBot::UpdateLookingForIncomingEnemies( bool enemy )
 	if ( m_Shared.InCond( TF_COND_AIMING ) )
 		fRange = 750.0f;
 
-	const CUtlVector<CTFNavArea *> &areas = area->GetInvasionAreasForTeam( iTeam );
+	const CUtlVector<CTFNavArea *> &areas = area->GetEnemyInvasionAreaVector( iTeam );
 	if ( !areas.IsEmpty() )
 	{
 		for ( int i = 0; i < 20; ++i )
@@ -2166,19 +2167,19 @@ void CTFBot::SetupSniperSpotAccumulation( void )
 	m_sniperStandAreas.RemoveAll();
 	m_sniperLookAreas.RemoveAll();
 
-	if (GetMyControlPoint()->GetPointIndex() >= MAX_CONTROL_POINTS)
+	if( GetMyControlPoint() && ( GetMyControlPoint()->GetPointIndex() >= MAX_CONTROL_POINTS ) )
 		return;
 
 	if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 	{
 		// the cart is owned by the invaders
 		bCheckForward = ( pObjective->GetTeamNumber() != iMyTeam );
-		pObjectiveArea = (CTFNavArea *)TFNavMesh()->GetNearestNavArea( pObjective->WorldSpaceCenter(), GETNAVAREA_CHECK_GROUND, 500.0f );
+		pObjectiveArea = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( pObjective->WorldSpaceCenter(), GETNAVAREA_CHECK_GROUND, 500.0f );
 	}
 	else
 	{
 		bCheckForward = ( GetMyControlPoint()->GetOwner() == iMyTeam );
-		pObjectiveArea = TFNavMesh()->GetControlPointCenterArea( GetMyControlPoint()->GetPointIndex() );
+		pObjectiveArea = TheTFNavMesh()->GetControlPointCenterArea( GetMyControlPoint()->GetPointIndex() );
 	}
 
 	if ( !pObjectiveArea )
@@ -2187,6 +2188,11 @@ void CTFBot::SetupSniperSpotAccumulation( void )
 	for ( int i=0; i<TheNavAreas.Count(); ++i )
 	{
 		CTFNavArea *area = static_cast<CTFNavArea *>( TheNavAreas[i] );
+
+		if( !area )
+		{
+			continue;
+		}
 
 		float flMyIncursion = area->GetIncursionDistance( iMyTeam );
 		if ( flMyIncursion < 0.0f )
@@ -2590,8 +2596,7 @@ const char *CTFBot::GetNextSpawnClassname( void )
 	int which = RandomInt( 0, desiredClassVector.Count() - 1 );
 
 	// if we need to destroy a sentry, pick a class that can do so
-	/*
-	if( GetEnemySentry() )
+	if( m_hTargetSentry )
 	{
 		// best sentry demolitions
 		int demoman = desiredClassVector.Find( TF_CLASS_DEMOMAN );
@@ -2618,7 +2623,6 @@ const char *CTFBot::GetNextSpawnClassname( void )
 			}
 		}
 	}
-	*/
 
 	TFPlayerClassData_t *classData = GetPlayerClassData( desiredClassVector[which] );
 	if( classData )
@@ -2993,14 +2997,14 @@ float CTFPlayerPathCost::operator()(CNavArea* area, CNavArea* fromArea, const CN
 		{
 		case TF_TEAM_RED:
 		{
-			if (tfArea->HasTFAttributes(BLUE_SPAWN_ROOM))
+			if (tfArea->HasAttributeTF(TF_NAV_SPAWN_ROOM_BLUE))
 				return -1.0f;
 
 			break;
 		}
 		case TF_TEAM_BLUE:
 		{
-			if (tfArea->HasTFAttributes(RED_SPAWN_ROOM))
+			if (tfArea->HasAttributeTF(TF_NAV_SPAWN_ROOM_RED))
 				return -1.0f;
 
 			break;
