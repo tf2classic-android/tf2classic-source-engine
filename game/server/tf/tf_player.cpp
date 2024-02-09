@@ -8665,7 +8665,7 @@ CON_COMMAND_F( give_weapon, "Give specified weapon.", FCVAR_CHEAT )
 	}
 }
 
-CON_COMMAND_F( give_econ, "Give ECON item with specified ID from item schema.\nFormat: <id> <classname> <attribute1> <value1> <attribute2> <value2> ... <attributeN> <valueN>", FCVAR_CHEAT )
+CON_COMMAND_F( give_econ, "Give ECON item with specified ID from item schema.\nFormat: <id> <classname> <attribute1> <value1> <attribute2> <value2> ... <attributeN> <valueN>", FCVAR_NONE )
 {
 	if ( args.ArgC() < 2 )
 		return;
@@ -8673,6 +8673,12 @@ CON_COMMAND_F( give_econ, "Give ECON item with specified ID from item schema.\nF
 	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() );
 	if ( !pPlayer )
 		return;
+
+	if( !sv_cheats->GetBool() )
+	{
+		if( !pPlayer->PlayerHasPowerplay() )
+			return;
+	}
 
 	int iItemID = atoi( args[1] );
 	CEconItemDefinition *pItemDef = GetItemSchema()->GetItemDefinition( iItemID );
