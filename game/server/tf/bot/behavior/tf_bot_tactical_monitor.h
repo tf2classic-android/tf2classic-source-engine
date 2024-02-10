@@ -1,43 +1,47 @@
+//========= Copyright Valve Corporation, All rights reserved. ============//
+// tf_bot_tactical_monitor.h
+// Behavior layer that interrupts for ammo/health/retreat/etc
+// Michael Booth, June 2009
+
 #ifndef TF_BOT_TACTICAL_MONITOR_H
 #define TF_BOT_TACTICAL_MONITOR_H
-#ifdef _WIN32
-#pragma once
-#endif
-
-
-#include "NextBotBehavior.h"
 
 class CObjectTeleporter;
 
-class CTFBotTacticalMonitor : public Action<CTFBot>
+class CTFBotTacticalMonitor : public Action< CTFBot >
 {
-	DECLARE_CLASS( CTFBotTacticalMonitor, Action<CTFBot> );
 public:
-	virtual ~CTFBotTacticalMonitor() {}
+	virtual Action< CTFBot > *InitialContainedAction( CTFBot *me );
 
-	virtual const char *GetName( void ) const override;
+	virtual ActionResult< CTFBot >	OnStart( CTFBot *me, Action< CTFBot > *priorAction );
+	virtual ActionResult< CTFBot >	Update( CTFBot *me, float interval );
 
-	virtual ActionResult<CTFBot> OnStart( CTFBot *me, Action<CTFBot> *priorAction ) override;
-	virtual ActionResult<CTFBot> Update( CTFBot *me, float dt ) override;
+	virtual EventDesiredResult< CTFBot > OnNavAreaChanged( CTFBot *me, CNavArea *newArea, CNavArea *oldArea );
+	virtual EventDesiredResult< CTFBot > OnOtherKilled( CTFBot *me, CBaseCombatCharacter *victim, const CTakeDamageInfo &info );
 
-	virtual Action<CTFBot> *InitialContainedAction( CTFBot *actor ) override;
+	// @note Tom Bui: Currently used for the training stuff, but once we get that interface down, we will turn that
+	// into a proper API
+	virtual EventDesiredResult< CTFBot > OnCommandString( CTFBot *me, const char *command );
 
-	virtual EventDesiredResult<CTFBot> OnOtherKilled( CTFBot *me, CBaseCombatCharacter *who, const CTakeDamageInfo& info ) override;
-	virtual EventDesiredResult<CTFBot> OnNavAreaChanged( CTFBot *me, CNavArea *area1, CNavArea *area2 ) override;
-	virtual EventDesiredResult<CTFBot> OnCommandString( CTFBot *me, const char *cmd ) override;
+	virtual const char *GetName( void ) const	{ return "TacticalMonitor"; }
 
 private:
-	void AvoidBumpingEnemies( CTFBot *actor );
-	CObjectTeleporter *FindNearbyTeleporter( CTFBot *actor );
-	void MonitorArmedStickybombs( CTFBot *actor );
-	bool ShouldOpportunisticallyTeleport( CTFBot *actor ) const;
+	CountdownTimer m_maintainTimer;
 
-	CountdownTimer m_checkUseTeleportTimer;
-	// 40 CountdownTimer (related to taunting at humans)
-	// 4c CountdownTimer (related to taunting at humans)
-	// 58 CountdownTimer (related to taunting at humans)
-	CountdownTimer m_stickyMonitorDelay;
-	CountdownTimer m_takeTeleporterTimer;
+	CountdownTimer m_acknowledgeAttentionTimer;
+	CountdownTimer m_acknowledgeRetryTimer;
+	CountdownTimer m_attentionTimer;
+
+	CountdownTimer m_stickyBombCheckTimer;
+	void MonitorArmedStickyBombs( CTFBot *me );
+
+	bool ShouldOpportunisticallyTeleport( CTFBot *me ) const;
+	CObjectTeleporter *FindNearbyTeleporter( CTFBot *me );
+	CountdownTimer m_findTeleporterTimer;
+
+	void AvoidBumpingEnemies( CTFBot *me );
 };
 
-#endif
+
+
+#endif // TF_BOT_TACTICAL_MONITOR_H

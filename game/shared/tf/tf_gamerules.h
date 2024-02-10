@@ -57,6 +57,8 @@ extern ConVar	fraglimit;
 
 extern Vector g_TFClassViewVectors[];
 
+extern ConVar mp_humans_must_join_team;
+
 #ifdef GAME_DLL
 class CTFRadiusDamageInfo
 {
@@ -263,6 +265,7 @@ public:
 
 	virtual int		GetClassLimit( int iDesiredClassIndex, int iTeam );
 	virtual bool	CanPlayerChooseClass( CBasePlayer *pPlayer, int iDesiredClassIndex );
+	bool			CanBotChangeClass( CBasePlayer *pPlayer );
 	virtual bool	CanBotChooseClass( CBasePlayer *pPlayer, int iDesiredClassIndex );
 
 	void			SetTeamGoalString( int iTeam, const char *pszGoal );
@@ -284,6 +287,8 @@ public:
 
 	// populate vector with set of control points the player needs to defend from capture
 	virtual void CollectDefendPoints( CBasePlayer *player, CUtlVector< CTeamControlPoint * > *defendVector ) const;
+
+	CObjectSentrygun *FindSentryGunWithMostKills( int team = TEAM_ANY ) const;
 
 	virtual bool	ClientConnected(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 
@@ -422,9 +427,8 @@ public:
 
 	virtual const char *GetGameDescription( void );
 
-	//TF_MOD_BOT changes
-	const CUtlVector<EHANDLE>& GetAmmoEnts(void) const { Assert(m_hAmmoEntities.Count()); return m_hAmmoEntities; }
-	const CUtlVector<EHANDLE>& GetHealthEnts(void) const { Assert(m_hHealthEntities.Count()); return m_hHealthEntities; }
+	const CUtlVector< CHandle< CBaseEntity > > &GetHealthEntityVector( void );		// return vector of health entities
+	const CUtlVector< CHandle< CBaseEntity > > &GetAmmoEntityVector( void );		// return vector of ammo entities
 
 	CHandle< CTeamTrainWatcher > GetPayloadToPush( int pushingTeam ) const;			// return the train watcher for the Payload cart the given team needs to push to win, or NULL if none currently exists
 	CHandle< CTeamTrainWatcher > GetPayloadToBlock( int blockingTeam ) const;		// return the train watcher for the Payload cart the given team needs to block from advancing, or NULL if none currently exists
@@ -459,7 +463,37 @@ public:
 	void	SendHudNotification( IRecipientFilter &filter, HudNotification_t iType );
 	void	SendHudNotification( IRecipientFilter &filter, const char *pszText, const char *pszIcon, int iTeam = TEAM_UNASSIGNED );
 
+#if 0
+	void	OnNavMeshLoad( void );
+#endif
+
+	//-----------------------------------------------------------------------------
+	// Purpose: Restrict team human players can join
+	//-----------------------------------------------------------------------------
+	int CTFGameRules::GetAssignedHumanTeam( void )
+	{
+		if( FStrEq( "blue", mp_humans_must_join_team.GetString() ) )
+		{
+			return TF_TEAM_BLUE;
+		}
+		else if( FStrEq( "red", mp_humans_must_join_team.GetString() ) )
+		{
+			return TF_TEAM_RED;
+		}
+		else if( FStrEq( "spectator", mp_humans_must_join_team.GetString() ) )
+		{
+			return TEAM_SPECTATOR;
+		}
+		else
+		{
+			return TEAM_ANY;
+		}
+	}
+
 private:
+
+	void ComputeHealthAndAmmoVectors( void );               // compute internal vectors of health and ammo locations
+	bool m_areHealthAndAmmoVectorsReady;
 
 	int DefaultFOV( void ) { return 75; }
 
@@ -487,9 +521,11 @@ private:
 	int m_iCurrentMiniRoundMask;
 	float m_flTimerMayExpireAt;
 
-	//TF_MOD_BOT changes
-	CUtlVector<EHANDLE> m_hAmmoEntities;
-	CUtlVector<EHANDLE> m_hHealthEntities;
+	CUtlVector< CHandle< CBaseEntity > > m_ammoVector;		// vector of active ammo entities
+	bool m_isAmmoVectorReady;								// for lazy evaluation
+
+	CUtlVector< CHandle< CBaseEntity > > m_healthVector;	// vector of active health entities
+	bool m_isHealthVectorReady;								// for lazy evaluation
 
 	bool m_bFirstBlood;
 	int	m_iArenaTeamCount;

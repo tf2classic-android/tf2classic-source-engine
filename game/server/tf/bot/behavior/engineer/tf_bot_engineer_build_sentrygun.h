@@ -20,9 +20,7 @@ public:
 
 	virtual ActionResult< CTFBot >	OnResume( CTFBot *me, Action< CTFBot > *interruptingAction );
 
-	virtual const char *GetName( void ) const {
-		return "EngineerBuildSentryGun";
-	};
+	virtual const char *GetName( void ) const	{ return "EngineerBuildSentryGun"; };
 
 private:
 	CountdownTimer m_searchTimer;

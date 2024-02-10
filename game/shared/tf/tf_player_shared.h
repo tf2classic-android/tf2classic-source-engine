@@ -116,6 +116,8 @@ public:
 
 	bool	IsCritBoosted( void );
 	bool	IsInvulnerable( void );
+	bool    IsControlStunned( void );
+	bool    IsLoserStateStunned( void ) const;
 	bool	IsStealthed( void );
 
 	void	ConditionGameRulesThink( void );

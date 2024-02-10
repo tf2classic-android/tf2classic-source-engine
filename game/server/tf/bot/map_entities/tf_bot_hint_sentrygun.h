@@ -6,7 +6,7 @@
 #ifndef TF_BOT_HINT_SENTRYGUN_H
 #define TF_BOT_HINT_SENTRYGUN_H
 
-#include "tf_hint_entity.h"
+#include "tf_bot_hint_entity.h"
 
 class CTFPlayer;
 
@@ -32,9 +32,7 @@ public:
 
 	bool IsAvailableForSelection( CTFPlayer *pRequestingPlayer ) const;
 
-	virtual HintType GetHintType() const OVERRIDE {
-		return SENTRY_GUN;
-	}
+	virtual HintType GetHintType() const OVERRIDE { return HINT_SENTRYGUN; }
 
 private:
 	bool m_isSticky;

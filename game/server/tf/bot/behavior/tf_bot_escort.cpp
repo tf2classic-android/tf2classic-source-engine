@@ -1,106 +1,130 @@
-/* reverse engineering by sigsegv
- * based on TF2 version 20151007a
- * server/tf/bot/behavior/tf_bot_escort.cpp
- * used in MvM: TODO
- * 
- * completely unused
- */
+//========= Copyright Valve Corporation, All rights reserved. ============//
+// tf_bot_escort.cpp
+// Move near an entity and protect it
+// Michael Booth, April 2011
+
+#include "cbase.h"
+
+#include "tf_player.h"
+#include "bot/tf_bot.h"
+#include "bot/behavior/tf_bot_escort.h"
+#include "bot/behavior/tf_bot_attack.h"
+#include "bot/behavior/demoman/tf_bot_prepare_stickybomb_trap.h"
+#include "bot/behavior/tf_bot_destroy_enemy_sentry.h"
+
+#include "nav_mesh.h"
+
+extern ConVar tf_bot_path_lookahead_range;
+
+ConVar tf_bot_escort_range( "tf_bot_escort_range", "300", FCVAR_CHEAT );
 
 
-ConVar tf_bot_escort_range("tf_bot_escort_range", "300", FCVAR_CHEAT);
-
-
-CTFBotEscort::CTFBotEscort(CBaseEntity *who)
+//---------------------------------------------------------------------------------------------
+CTFBotEscort::CTFBotEscort( CBaseEntity *who )
 {
-	this->m_hWho = who;
+	SetWho( who );
 }
 
-CTFBotEscort::~CTFBotEscort()
+
+//---------------------------------------------------------------------------------------------
+void CTFBotEscort::SetWho( CBaseEntity *who )
 {
+	m_who = who;
 }
 
 
-const char *CTFBotEscort::GetName() const
+//---------------------------------------------------------------------------------------------
+CBaseEntity *CTFBotEscort::GetWho( void ) const
 {
-	return "Escort";
+	return m_who;
 }
 
 
-ActionResult<CTFBot> CTFBotEscort::OnStart(CTFBot *actor, Action<CTFBot> *action)
+//---------------------------------------------------------------------------------------------
+ActionResult< CTFBot >	CTFBotEscort::OnStart( CTFBot *me, Action< CTFBot > *priorAction )
 {
-	this->m_PathFollower.SetMinLookAheadDistance(actor->GetDesiredPathLookAheadRange());
-	
-	return ActionResult<CTFBot>::Continue();
+	m_pathToWho.SetMinLookAheadDistance( me->GetDesiredPathLookAheadRange() );
+
+	return Continue();
 }
 
-ActionResult<CTFBot> CTFBotEscort::Update(CTFBot *actor, float dt)
+
+//---------------------------------------------------------------------------------------------
+ActionResult< CTFBot >	CTFBotEscort::Update( CTFBot *me, float interval )
 {
-	const CKnownEntity *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
-	if (threat != nullptr && threat->IsVisibleInFOVNow()) {
-		return ActionResult<CTFBot>::SuspendFor(new CTFBotAttack(),
-			"Attacking nearby threat");
+	const CKnownEntity *threat = me->GetVisionInterface()->GetPrimaryKnownThreat();
+	if ( threat && threat->IsVisibleInFOVNow() )
+	{
+		return SuspendFor( new CTFBotAttack, "Attacking nearby threat" );
 	}
-	
-	if (this->m_hWho != nullptr) {
-		if (actor->IsRangeGreaterThan(this->m_hWho, tf_bot_escort_range.GetFloat())) {
-			if (this->m_ctRecomputePath.IsElapsed()) {
-				CTFBotPathCost cost_func(actor, FASTEST_ROUTE);
-				this->m_PathFollower.Compute(actor, this->m_hWho, cost_func, 0.0f, true);
-				
-				this->m_ctRecomputePath.Start(RandomFloat(2.0f, 3.0f));
+	else
+	{
+		// no enemy is visible - move near who we are escorting
+		if ( m_who != NULL )
+		{
+			if ( me->IsRangeGreaterThan( m_who, tf_bot_escort_range.GetFloat() ) )
+			{
+				if ( m_repathTimer.IsElapsed() )
+				{
+					CTFBotPathCost cost( me, FASTEST_ROUTE );
+					m_pathToWho.Compute( me, m_who->GetAbsOrigin(), cost );
+					m_repathTimer.Start( RandomFloat( 2.0f, 3.0f ) );
+				}
+
+				m_pathToWho.Update( me );
 			}
-			
-			this->m_PathFollower.Update(actor);
-		} else if (CTFBotPrepareStickybombTrap::IsPossible(actor)) {
-			return ActionResult<CTFBot>::SuspendFor(new CTFBotPrepareStickybombTrap(),
-				"Laying sticky bombs!");
+			else
+			{
+				if ( CTFBotPrepareStickybombTrap::IsPossible( me ) )
+				{
+					return SuspendFor( new CTFBotPrepareStickybombTrap, "Laying sticky bombs!" );
+				}
+			}
+		}
+
+		// destroy enemy sentry guns we've encountered
+		if ( me->GetEnemySentry() && CTFBotDestroyEnemySentry::IsPossible( me ) )
+		{
+			return SuspendFor( new CTFBotDestroyEnemySentry, "Going after an enemy sentry to destroy it" );
 		}
 	}
-	
-	if (actor->m_hTargetSentry != nullptr && CTFBotDestroyEnemySentry::IsPossible(actor)) {
-		return ActionResult<CTFBot>::SuspendFor(new CTFBotDestroyEnemySentry(),
-			"Going after an enemy sentry to destroy it");
-	}
-	
-	return ActionResult<CTFBot>::Continue();
+
+	return Continue();
 }
 
 
-EventDesiredResult<CTFBot> CTFBotEscort::OnMoveToSuccess(CTFBot *actor, const Path *path)
+//---------------------------------------------------------------------------------------------
+EventDesiredResult< CTFBot > CTFBotEscort::OnStuck( CTFBot *me )
 {
-	return EventDesiredResult<CTFBot>::Continue();
-}
+	m_repathTimer.Invalidate();
 
-EventDesiredResult<CTFBot> CTFBotEscort::OnMoveToFailure(CTFBot *actor, const Path *path, MoveToFailureType fail)
-{
-	return EventDesiredResult<CTFBot>::Continue();
-}
-
-EventDesiredResult<CTFBot> CTFBotEscort::OnStuck(CTFBot *actor)
-{
-	this->m_ctRecomputePath.Invalidate();
-	
-	return EventDesiredResult<CTFBot>::Continue();
-}
-
-EventDesiredResult<CTFBot> CTFBotEscort::OnCommandApproach(CTFBot *actor, const Vector& v1, float f1)
-{
-	return EventDesiredResult<CTFBot>::Continue();
+	return TryContinue();
 }
 
 
-QueryResponse CTFBotEscort::ShouldRetreat(const INextBot *nextbot) const
+//---------------------------------------------------------------------------------------------
+EventDesiredResult< CTFBot > CTFBotEscort::OnMoveToSuccess( CTFBot *me, const Path *path )
 {
-	return QueryResponse::NO;
+	return TryContinue();
 }
 
 
-CBaseEntity *CTFBotEscort::GetWho() const
+//---------------------------------------------------------------------------------------------
+EventDesiredResult< CTFBot > CTFBotEscort::OnMoveToFailure( CTFBot *me, const Path *path, MoveToFailureType reason )
 {
-	return this->m_hWho;
+	return TryContinue();
 }
 
-void CTFBotEscort::SetWho(CBaseEntity *who)
+
+//---------------------------------------------------------------------------------------------
+QueryResultType	CTFBotEscort::ShouldRetreat( const INextBot *me ) const
 {
-	this->m_hWho = who;
+	return ANSWER_NO;
+}
+
+
+//---------------------------------------------------------------------------------------------
+EventDesiredResult< CTFBot > CTFBotEscort::OnCommandApproach( CTFBot *me, const Vector &pos, float range )
+{
+	return TryContinue();
 }

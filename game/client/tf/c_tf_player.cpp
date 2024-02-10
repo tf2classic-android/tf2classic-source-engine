@@ -1679,7 +1679,10 @@ END_RECV_TABLE()
 
 IMPLEMENT_CLIENTCLASS_DT( C_TFPlayer, DT_TFPlayer, CTFPlayer )
 
-	RecvPropBool(RECVINFO(m_bSaveMeParity)),
+	RecvPropBool( RECVINFO( m_bSaveMeParity ) ),
+	RecvPropBool( RECVINFO( m_bIsABot ) ),
+	RecvPropInt( RECVINFO( m_nBotSkill ) ),
+
 
 	// This will create a race condition will the local player, but the data will be the same so.....
 	RecvPropInt( RECVINFO( m_nWaterLevel ) ),
@@ -1747,6 +1750,9 @@ C_TFPlayer::C_TFPlayer() :
 	m_aGibs.Purge();
 
 	m_bCigaretteSmokeActive = false;
+
+	m_nOldBotSkill = -1;
+	m_nBotSkill = -1;
 
 	m_hRagdoll.Set( NULL );
 
@@ -4105,22 +4111,6 @@ void C_TFPlayer::SetHealer( C_TFPlayer *pHealer, float flChargeLevel )
 
 	m_hHealer = pHealer;
 	m_flHealerChargeLevel = flChargeLevel;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CBaseEntity *C_TFPlayer::MedicGetHealTarget( void )
-{
-	if ( IsPlayerClass(TF_CLASS_MEDIC) )
-	{
-		CWeaponMedigun *pWeapon = dynamic_cast <CWeaponMedigun*>( GetActiveWeapon() );
-
-		if ( pWeapon )
-			return pWeapon->GetHealTarget();
-	}
-
-	return NULL;
 }
 
 //-----------------------------------------------------------------------------

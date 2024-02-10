@@ -47,7 +47,12 @@
 	#include "tf_voteissues.h"
 	#include "tf_weaponbase_grenadeproj.h"
 	#include "eventqueue.h"
+	#include "NextBot/NextBot.h"
+	#include "nav.h"
+	#include "nav_mesh.h"
 #endif
+
+ConVar mp_humans_must_join_team( "mp_humans_must_join_team", "any", FCVAR_REPLICATED, "Restricts human players to a single team {any, blue, red, spectator}" );
 
 // BUILDNUM
 #include "buildnum.h"
@@ -1917,6 +1922,22 @@ bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iDesiredClass
 	return true;
 }
 
+bool CTFGameRules::CanBotChangeClass( CBasePlayer *pPlayer )
+{
+	// if there's a roster for this bot's team, check to see if the level designer has allowed the bot to change class
+	// used when the bot dies and wants to see if it can change class
+	CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
+	if( pTFPlayer && pTFPlayer->GetPlayerClass() && pTFPlayer->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED )
+	{
+		switch( pPlayer->GetTeamNumber() )
+		{
+			case TF_TEAM_RED:  return m_hRedBotRoster ? m_hRedBotRoster->IsClassChangeAllowed() : true; break;
+			case TF_TEAM_BLUE: return m_hBlueBotRoster ? m_hBlueBotRoster->IsClassChangeAllowed() : true; break;
+		}
+	}
+	return true;
+}
+
 bool CTFGameRules::CanBotChooseClass( CBasePlayer *pPlayer, int iDesiredClassIndex )
 {
 	// if there's a roster for this bot's team, then check to see if the class the bot has requested is allowed by the roster
@@ -2125,31 +2146,8 @@ void CTFGameRules::SetupOnRoundStart( void )
 		m_iNumCaps[i] = 0;
 	}
 
-	//TF_MOD_BOT changes
-	m_hAmmoEntities.RemoveAll();
-	m_hHealthEntities.RemoveAll();
-
 	// Let all entities know that a new round is starting
 	CBaseEntity *pEnt = gEntList.FirstEnt();
-	while( pEnt )
-	{
-		variant_t emptyVariant;
-		pEnt->AcceptInput( "RoundSpawn", NULL, NULL, emptyVariant, 0 );
-
-		if (pEnt->ClassMatches("func_regenerate") || pEnt->ClassMatches("item_ammopack*"))
-		{
-			EHANDLE hndl(pEnt);
-			m_hAmmoEntities.AddToTail(hndl);
-		}
-
-		if (pEnt->ClassMatches("func_regenerate") || pEnt->ClassMatches("item_healthkit*"))
-		{
-			EHANDLE hndl(pEnt);
-			m_hHealthEntities.AddToTail(hndl);
-		}
-
-		pEnt = gEntList.NextEnt( pEnt );
-	}
 
 	// All entities have been spawned, now activate them
 	pEnt = gEntList.FirstEnt();
@@ -3098,6 +3096,24 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 		BroadcastSound( 255, pszSound );
 	}
 
+	CObjectSentrygun *CTFGameRules::FindSentryGunWithMostKills( int team ) const
+	{
+		CObjectSentrygun *dangerousSentry = NULL;
+		int dangerousSentryKills = -1;
+
+		for( int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i )
+		{
+			CBaseObject *pObj = static_cast<CBaseObject *>( IBaseObjectAutoList::AutoList()[i] );
+			if( pObj->ObjectType() == OBJ_SENTRYGUN && pObj->GetTeamNumber() == team && pObj->GetKills() >= dangerousSentryKills )
+			{
+				dangerousSentryKills = pObj->GetKills();
+				dangerousSentry = static_cast<CObjectSentrygun *>( pObj );
+			}
+		}
+
+		return dangerousSentry;
+	}
+
 	bool CTFGameRules::ClientConnected(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 	{
 #ifdef GAME_DLL
@@ -3432,6 +3448,14 @@ VoiceCommandMenuItem_t *CTFGameRules::VoiceCommand( CBaseMultiplayerPlayer *pPla
 			if ( pTFPlayer )
 			{
 				pTFPlayer->DoAnimationEvent( PLAYERANIMEVENT_VOICE_COMMAND_GESTURE, iActivity );
+
+				// Note when we call for a Medic.
+				// Hardcoding this for menu 0, item 0 is an ugly hack, but we don't have a good way to
+				// translate this at this level without plumbing a through bunch of stuff (MSB)
+				if( iMenu == 0 && iItem == 0 )
+				{
+					pTFPlayer->NoteMedicCall();
+				}
 			}
 		}
 	}
@@ -3791,7 +3815,7 @@ void CTFGameRules::CalcDominationAndRevenge( CTFPlayer *pAttacker, CTFPlayer *pV
 //-----------------------------------------------------------------------------
 CHandle< CTeamTrainWatcher > CTFGameRules::GetPayloadToPush( int pushingTeam ) const
 {
-	if ( GetGameType() != TF_GAMETYPE_ESCORT )
+	if ( TFGameRules()->GetGameType() != TF_GAMETYPE_ESCORT )
 		return nullptr;
 
 	if ( pushingTeam == TF_TEAM_BLUE )
@@ -3839,7 +3863,7 @@ CHandle< CTeamTrainWatcher > CTFGameRules::GetPayloadToPush( int pushingTeam ) c
 //-----------------------------------------------------------------------------
 CHandle< CTeamTrainWatcher > CTFGameRules::GetPayloadToBlock( int blockingTeam ) const
 {
-	if ( GetGameType() != TF_GAMETYPE_ESCORT )
+	if ( TFGameRules()->GetGameType() != TF_GAMETYPE_ESCORT )
 		return nullptr;
 
 	if ( blockingTeam == TF_TEAM_BLUE )
@@ -4937,6 +4961,63 @@ int ScramblePlayersSort( CTFPlayer* const *p1, CTFPlayer* const *p2 )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Compute internal vectors of health and ammo locations
+//-----------------------------------------------------------------------------
+void CTFGameRules::ComputeHealthAndAmmoVectors( void )
+{
+	m_ammoVector.RemoveAll();
+	m_healthVector.RemoveAll();
+
+	CBaseEntity *pEnt = gEntList.FirstEnt();
+	while( pEnt )
+	{
+		if( pEnt->ClassMatches( "func_regenerate" ) || pEnt->ClassMatches( "item_healthkit*" ) )
+		{
+			m_healthVector.AddToTail( pEnt );
+		}
+
+		if( pEnt->ClassMatches( "func_regenerate" ) || pEnt->ClassMatches( "item_ammopack*" ) )
+		{
+			m_ammoVector.AddToTail( pEnt );
+		}
+
+		pEnt = gEntList.NextEnt( pEnt );
+	}
+
+	m_areHealthAndAmmoVectorsReady = true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Return vector of health entities
+//-----------------------------------------------------------------------------
+const CUtlVector< CHandle< CBaseEntity > > &CTFGameRules::GetHealthEntityVector( void )
+{
+	// lazy-populate health and ammo vector since some maps (Dario!) move these entities around between stages
+	if( !m_areHealthAndAmmoVectorsReady )
+	{
+		ComputeHealthAndAmmoVectors();
+	}
+
+	return m_healthVector;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Return vector of ammo entities
+//-----------------------------------------------------------------------------
+const CUtlVector< CHandle< CBaseEntity > > &CTFGameRules::GetAmmoEntityVector( void )
+{
+	// lazy-populate health and ammo vector since some maps (Dario!) move these entities around between stages
+	if( !m_areHealthAndAmmoVectorsReady )
+	{
+		ComputeHealthAndAmmoVectors();
+	}
+
+	return m_ammoVector;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFGameRules::HandleScrambleTeams( void )
@@ -4990,6 +5071,16 @@ void CTFGameRules::HandleScrambleTeams( void )
 //-----------------------------------------------------------------------------
 void CTFGameRules::HandleSwitchTeams( void )
 {
+	// switch this as well
+	if( FStrEq( mp_humans_must_join_team.GetString(), "blue" ) )
+	{
+		mp_humans_must_join_team.SetValue( "red" );
+	}
+	else if( FStrEq( mp_humans_must_join_team.GetString(), "red" ) )
+	{
+		mp_humans_must_join_team.SetValue( "blue" );
+	}
+
 	int i = 0;
 
 	// respawn the players
@@ -5838,6 +5929,23 @@ void CTFGameRules::SendHudNotification( IRecipientFilter &filter, const char *ps
 		WRITE_BYTE( iTeam );
 	MessageEnd();
 }
+
+#if 0
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFGameRules::OnNavMeshLoad( void )
+{
+	if( IsDeathmatch() )
+	{
+		TheNavMesh->SetPlayerSpawnName( "info_player_deathmatch" );
+	}
+	else
+	{
+		TheNavMesh->SetPlayerSpawnName( "info_player_teamspawn" );
+	}
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Is the player past the required delays for spawning

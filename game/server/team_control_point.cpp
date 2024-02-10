@@ -1032,11 +1032,14 @@ void CTeamControlPoint::InputRoundActivate( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CTeamControlPoint::InputSetLocked( inputdata_t &inputdata )
 {
+	Msg( "START\n" );
 	// never lock/unlock the point if we're in waiting for players
 	if ( TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->IsInWaitingForPlayers() )
 		return;
 
+	Msg( "STOP\n" );
 	bool bLocked = inputdata.value.Int() > 0;
+	Msg( "bLocked = %d\n", bLocked );
 	InternalSetLocked( bLocked );
 }
  

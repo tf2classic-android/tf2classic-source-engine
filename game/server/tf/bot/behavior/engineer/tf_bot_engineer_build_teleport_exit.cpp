@@ -35,7 +35,7 @@ CTFBotEngineerBuildTeleportExit::CTFBotEngineerBuildTeleportExit( const Vector &
 //---------------------------------------------------------------------------------------------
 ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::OnStart( CTFBot *me, Action< CTFBot > *priorAction )
 {
-	if( !m_hasPreciseBuildLocation )
+	if ( !m_hasPreciseBuildLocation )
 	{
 		// if no specific build location given, just build right where we are
 		m_buildLocation = me->GetAbsOrigin();
@@ -51,13 +51,13 @@ ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::OnStart( CTFBot *me, Act
 //---------------------------------------------------------------------------------------------
 ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::Update( CTFBot *me, float interval )
 {
-	if( me->GetTimeSinceLastInjury() < 1.0f )
+	if ( me->GetTimeSinceLastInjury() < 1.0f )
 	{
 		return Done( "Ouch! I'm under attack" );
 	}
 
-	CBaseObject *myTeleportEntrance = me->GetObjectOfType( OBJ_TELEPORTER, 1 );
-	if( myTeleportEntrance )
+	CBaseObject	*myTeleportEntrance = me->GetObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT );
+	if ( myTeleportEntrance )
 	{
 		// successfully built
 		return Done( "Teleport exit built" );
@@ -65,9 +65,9 @@ ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::Update( CTFBot *me, floa
 
 
 	// collect metal as we move to our build location
-	if( me->CanBuild( OBJ_TELEPORTER, 1 ) == CB_NEED_RESOURCES )
+	if ( me->CanBuild( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT ) == CB_NEED_RESOURCES )
 	{
-		if( m_getAmmoTimer.IsElapsed() && CTFBotGetAmmo::IsPossible( me ) )
+		if ( m_getAmmoTimer.IsElapsed() && CTFBotGetAmmo::IsPossible( me ) )
 		{
 			// need more metal - get some
 			m_getAmmoTimer.Start( 1.0f );
@@ -77,10 +77,10 @@ ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::Update( CTFBot *me, floa
 
 	// move near our build position
 	const float buildRange = 50.0f;
-	if( me->IsRangeGreaterThan( m_buildLocation, buildRange ) )
+	if ( me->IsRangeGreaterThan( m_buildLocation, buildRange ) )
 	{
 		// move into position
-		if( !m_path.IsValid() || m_repathTimer.IsElapsed() )
+		if ( !m_path.IsValid() || m_repathTimer.IsElapsed() )
 		{
 			CTFBotPathCost cost( me, FASTEST_ROUTE );
 			m_path.Compute( me, m_buildLocation, cost );
@@ -97,20 +97,20 @@ ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::Update( CTFBot *me, floa
 	}
 
 	// in position to build
-	if( m_giveUpTimer.IsElapsed() )
+	if ( m_giveUpTimer.IsElapsed() )
 	{
 		return Done( "Taking too long - giving up" );
 	}
 
-	if( m_hasPreciseBuildLocation )
+	if ( m_hasPreciseBuildLocation )
 	{
 		me->GetBodyInterface()->AimHeadTowards( m_buildLocation, IBody::CRITICAL, 1.0f, NULL, "Looking toward my precise build location" );
 
 		// directly create a teleporter exit at the precise position and orientation desired
 		CObjectTeleporter *myTeleporterExit = (CObjectTeleporter *)CreateEntityByName( "obj_teleporter" );
-		if( myTeleporterExit )
+		if ( myTeleporterExit )
 		{
-			myTeleporterExit->SetObjectMode( 1 );
+			myTeleporterExit->SetObjectMode( MODE_TELEPORTER_EXIT );
 			myTeleporterExit->SetAbsOrigin( m_buildLocation );
 			myTeleporterExit->SetAbsAngles( QAngle( 0, m_buildAngle, 0 ) );
 			myTeleporterExit->Spawn();
@@ -134,17 +134,17 @@ ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::Update( CTFBot *me, floa
 
 	// build exit roughly at this spot
 	CTFWeaponBase *myGun = me->GetActiveTFWeapon();
-	if( myGun )
+	if ( myGun )
 	{
-		CTFWeaponBuilder *builder = dynamic_cast<CTFWeaponBuilder *>( myGun );
-		if( builder )
+		CTFWeaponBuilder *builder = dynamic_cast< CTFWeaponBuilder * >( myGun );
+		if ( builder )
 		{
-			if( builder->IsValidPlacement() )
+			if ( builder->IsValidPlacement() )
 			{
 				// place it down
 				me->PressFireButton();
 			}
-			else if( m_searchTimer.IsElapsed() )
+			else if ( m_searchTimer.IsElapsed() )
 			{
 				// rotate to find valid spot
 				Vector forward;
@@ -161,7 +161,7 @@ ActionResult< CTFBot >	CTFBotEngineerBuildTeleportExit::Update( CTFBot *me, floa
 		else
 		{
 			// switch to teleporter builder
-			me->StartBuildingObjectOfType( OBJ_TELEPORTER, 1 );
+			me->StartBuildingObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT );
 		}
 	}
 

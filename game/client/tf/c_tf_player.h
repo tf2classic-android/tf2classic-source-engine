@@ -199,11 +199,11 @@ public:
 public:
 	// Shared functions
 	void			TeamFortress_SetSpeed();
-	bool			HasItem( void );					// Currently can have only one item at a time.
+	bool			HasItem( void ) const;					// Currently can have only one item at a time.
 	void			SetItem( C_TFItem *pItem );
-	C_TFItem		*GetItem( void );
+	C_TFItem		*GetItem( void ) const;
 	bool			IsAllowedToPickUpFlag( void );
-	bool			HasTheFlag( void );
+	bool			HasTheFlag( void ) const;
 	float			GetCritMult( void ) { return m_Shared.GetCritMult(); }
 
 	virtual void	ItemPostFrame( void );
@@ -399,6 +399,10 @@ public:
 	int				m_iPreviousMetal;
 
 	EHANDLE			m_hOldActiveWeapon;
+
+	bool			m_bIsABot;
+	int				m_nBotSkill;
+	int				m_nOldBotSkill;
 
 	int GetNumActivePipebombs( void );
 

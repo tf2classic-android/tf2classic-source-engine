@@ -24,9 +24,7 @@ public:
 	virtual QueryResultType	ShouldHurry( const INextBot *me ) const;							// are we in a hurry?
 	virtual QueryResultType ShouldAttack( const INextBot *me, const CKnownEntity *them ) const;	// should we attack "them"?
 
-	virtual const char *GetName( void ) const {
-		return "EngineerBuild";
-	};
+	virtual const char *GetName( void ) const	{ return "EngineerBuild"; };
 };
 
 

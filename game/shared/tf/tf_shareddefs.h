@@ -1036,6 +1036,8 @@ typedef enum
 	MAX_BUILDING_DAMAGE_LEVEL
 } BuildingDamageLevel_t;
 
+int GetClassIndexFromString( const char *pClassName, int nLastClassIndex = TF_LAST_NORMAL_CLASS );
+
 //--------------
 // Scoring
 //--------------

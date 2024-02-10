@@ -22,8 +22,6 @@ BEGIN_DATADESC( CTFBotRoster )
 	DEFINE_KEYFIELD( m_bAllowedClasses[TF_CLASS_PYRO],			FIELD_BOOLEAN,	"allowPyro" ),
 	DEFINE_KEYFIELD( m_bAllowedClasses[TF_CLASS_SPY],			FIELD_BOOLEAN,	"allowSpy" ),
 	DEFINE_KEYFIELD( m_bAllowedClasses[TF_CLASS_ENGINEER],		FIELD_BOOLEAN,	"allowEngineer" ),
-	DEFINE_KEYFIELD( m_bAllowedClasses[TF_CLASS_CIVILIAN],		FIELD_BOOLEAN,	"allowCivilian" ),
-	DEFINE_KEYFIELD( m_bAllowedClasses[TF_CLASS_MERCENARY],		FIELD_BOOLEAN,	"allowMercenary" ),
 
 	DEFINE_INPUTFUNC( FIELD_STRING, "SetTeam", InputSetTeam ),
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetAllowScout", InputSetAllowScout ),
@@ -35,8 +33,6 @@ BEGIN_DATADESC( CTFBotRoster )
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetAllowPyro", InputSetAllowPyro ),
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetAllowSpy", InputSetAllowSpy ),
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetAllowEngineer", InputSetAllowEngineer ),
-	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetAllowCivilian", InputSetAllowCivilian ),
-	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetAllowMercenary", InputSetAllowMercenary ),
 
 END_DATADESC()
 
@@ -96,21 +92,11 @@ void CTFBotRoster::InputSetAllowEngineer( inputdata_t &inputdata )
 	m_bAllowedClasses[TF_CLASS_ENGINEER] = inputdata.value.Bool();
 }
 
-void CTFBotRoster::InputSetAllowCivilian( inputdata_t &inputdata )
-{
-	m_bAllowedClasses[TF_CLASS_CIVILIAN] = inputdata.value.Bool();
-}
-
-void CTFBotRoster::InputSetAllowMercenary( inputdata_t &inputdata )
-{
-	m_bAllowedClasses[TF_CLASS_MERCENARY] = inputdata.value.Bool();
-}
-
 //------------------------------------------------------------------------------
 
 bool CTFBotRoster::IsClassAllowed( int iBotClass ) const
 {
-	return iBotClass > TF_CLASS_UNDEFINED && iBotClass < TF_CLASS_COUNT_ALL && m_bAllowedClasses[iBotClass];
+	return iBotClass > TF_CLASS_UNDEFINED && iBotClass < TF_LAST_NORMAL_CLASS && m_bAllowedClasses[iBotClass];
 }
 
 //------------------------------------------------------------------------------

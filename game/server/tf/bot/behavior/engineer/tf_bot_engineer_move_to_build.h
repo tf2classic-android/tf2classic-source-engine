@@ -23,9 +23,7 @@ public:
 
 	virtual EventDesiredResult< CTFBot > OnTerritoryLost( CTFBot *me, int territoryID );
 
-	virtual const char *GetName( void ) const {
-		return "EngineerMoveToBuild";
-	};
+	virtual const char *GetName( void ) const	{ return "EngineerMoveToBuild"; };
 
 private:
 	CHandle< CTFBotHintSentrygun > m_sentryBuildHint;

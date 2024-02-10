@@ -15,6 +15,11 @@
 #include "tf_inventory.h"
 #include "tf_weapon_medigun.h"
 #include "ihasattributes.h"
+#include "trigger_area_capture.h"
+#include "tf_obj_sentrygun.h"
+
+#define SENTRY_MAX_RANGE 1100.0f
+#define TF_ROCKET_RADIUS (146)
 
 class CTFPlayer;
 class CTFTeam;
@@ -140,9 +145,9 @@ public:
 	void				ImpactWaterTrace( trace_t &trace, const Vector &vecStart );
 	void				NoteWeaponFired();
 
-	bool				HasItem( void );					// Currently can have only one item at a time.
+	bool				HasItem( void ) const;					// Currently can have only one item at a time.
 	void				SetItem( CTFItem *pItem );
-	CTFItem				*GetItem( void );
+	CTFItem				*GetItem( void ) const;
 
 	void				Regenerate( void );
 	float				GetNextRegenTime( void ){ return m_flNextRegenerateTime; }
@@ -232,9 +237,15 @@ public:
 	void RemoveAllOwnedEntitiesFromWorld( bool bSilent = true );
 	void RemoveOwnedProjectiles( void );
 
+	Vector EstimateProjectileImpactPosition( CTFWeaponBaseGun *weapon );						// estimate where a projectile fired from the given weapon will initially hit (it may bounce on from there)
+	Vector EstimateProjectileImpactPosition( float pitch, float yaw, float initVel );			// estimate where a projectile fired will initially hit (it may bounce on from there)
+	Vector EstimateStickybombProjectileImpactPosition( float pitch, float yaw, float charge );	// Estimate where a stickybomb projectile will hit, using given pitch, yaw, and weapon charge (0-1)
+
 	CTFTeamSpawn *GetSpawnPoint( void ){ return m_pSpawnPoint; }
 		
 	void SetAnimation( PLAYER_ANIM playerAnim );
+
+	bool IsAnyEnemySentryAbleToAttackMe();
 
 	bool IsPlayerClass( int iClass ) const;
 
@@ -276,13 +287,17 @@ public:
 	void DetonateOwnedObjectsOfType( int iType, int iMode = 0 );
 	void StartBuildingObjectOfType( int iType, int iMode = 0);
 
+	CTriggerAreaCapture *GetControlPointStandingOn( void );
+	bool IsCapturingPoint();
+
 	CTFTeam *GetTFTeam( void );
 	CTFTeam *GetOpposingTFTeam( void );
 
 	void TeleportEffect( void );
 	void RemoveTeleportEffect( void );
 	bool IsAllowedToPickUpFlag( void );
-	bool HasTheFlag( void );
+	bool HasTheFlag( void ) const;
+	bool IsMiniBoss() const { return false; }
 
 	// Death & Ragdolls.
 	virtual void CreateRagdollEntity( void );
@@ -319,6 +334,10 @@ public:
 	bool GetMedigunAutoHeal( void ){ return m_bMedigunAutoHeal; }
 	void SetMedigunAutoHeal( bool bMedigunAutoHeal ){ m_bMedigunAutoHeal = bMedigunAutoHeal; }
 
+	bool IsCallingForMedic( void ) const; // return true if this player has called for a Medic in the last few seconds
+	float GetTimeSinceCalledForMedic( void ) const;
+	void NoteMedicCall( void );
+
 	bool ShouldAutoRezoom( void ) { return m_bAutoRezoom; }
 	void SetAutoRezoom( bool bAutoRezoom ) { m_bAutoRezoom = bAutoRezoom; }
 
@@ -329,6 +348,9 @@ public:
 	void SetFlipViewModel( bool bFlip ) { m_bFlipViewModel = bFlip; }
 
 	virtual void	ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet );
+
+	// given a vector of points, return the point we can actually travel to the quickest (requires a nav mesh)
+	CTeamControlPoint *SelectClosestControlPointByTravelDistance( CUtlVector< CTeamControlPoint * > *pointVector ) const;
 
 	virtual bool CanHearAndReadChatFrom( CBasePlayer *pPlayer );
 
@@ -397,6 +419,8 @@ public:
 	int		no_dispenser_message;
 	
 	CNetworkVar( bool, m_bSaveMeParity );
+	CNetworkVar( bool, m_bIsABot );
+	CNetworkVar( int, m_nBotSkill );
 
 	// teleporter variables
 	int		no_entry_teleporter_message;
@@ -453,6 +477,7 @@ public:
 
 	virtual bool			WantsLagCompensationOnEntity( const CBasePlayer	*pPlayer, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits ) const;
 
+	CBaseEntity			*MedicGetHealTarget( void );
 	float				MedicGetChargeLevel( void );
 
 	CWeaponMedigun		*GetMedigun( void );
@@ -470,6 +495,8 @@ public:
 	void OnSapperPlaced(CBaseEntity* sappedObject);
 	bool IsPlacingSapper(void) const;
 
+	bool IsInCombat( void ) const;
+
 	// Client commands.
 	void				HandleCommand_JoinTeam( const char *pTeamName );
 	void				HandleCommand_JoinClass( const char *pClassName );
@@ -477,10 +504,14 @@ public:
 	void				HandleCommand_JoinTeam_NoKill( const char *pTeamName );
 	int				GetAutoTeam( void );
 
+	void				InitClass( void );
+
+	bool IsThreatAimingTowardMe( CBaseEntity *threat, float cosTolerance = 0.8f ) const;
+	bool IsThreatFiringAtMe( CBaseEntity *threat ) const;
+
 private:
 
 	// Creation/Destruction.
-	void				InitClass( void );
 	void				GiveDefaultItems();
 	bool				SelectSpawnSpot( const char *pEntClassName, CBaseEntity* &pSpot );
 	void				PrecachePlayerModels( void );
@@ -499,6 +530,7 @@ private:
 	// Sapper events
 	bool				m_bSapping;
 	CountdownTimer			m_sapperTimer;
+	IntervalTimer		m_calledForMedicTimer;
 
 	// Bots.
 	friend void			Bot_Think( CTFPlayer *pBot );
@@ -669,6 +701,27 @@ inline CTFPlayer *ToTFPlayer( CBaseEntity *pEntity )
 inline int CTFPlayer::StateGet( void ) const
 {
 	return m_Shared.m_nPlayerState;
+}
+
+inline bool CTFPlayer::IsInCombat( void ) const
+{
+	// the simplest condition is whether we've been firing our weapon very recently
+	return GetTimeSinceWeaponFired() < 2.0f;
+}
+
+inline bool CTFPlayer::IsCallingForMedic( void ) const
+{
+	return m_calledForMedicTimer.HasStarted() && m_calledForMedicTimer.IsLessThen( 5.0f );
+}
+
+inline float CTFPlayer::GetTimeSinceCalledForMedic() const
+{
+	return m_calledForMedicTimer.GetElapsedTime();
+}
+
+inline void CTFPlayer::NoteMedicCall( void )
+{
+	m_calledForMedicTimer.Start();
 }
 
 

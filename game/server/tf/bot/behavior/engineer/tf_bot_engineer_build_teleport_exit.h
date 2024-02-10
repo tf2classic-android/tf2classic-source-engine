@@ -18,9 +18,7 @@ public:
 
 	virtual EventDesiredResult< CTFBot > OnStuck( CTFBot *me );
 
-	virtual const char *GetName( void ) const {
-		return "EngineerBuildTeleportExit";
-	};
+	virtual const char *GetName( void ) const	{ return "EngineerBuildTeleportExit"; };
 
 private:
 	PathFollower m_path;

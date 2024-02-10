@@ -14,7 +14,7 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories		"$BASE;tf\vgui,.\tf,$SRCDIR\game\shared\tf,$SRCDIR\game\shared\Multiplayer,$SRCDIR\game\shared\econ"
+		$AdditionalIncludeDirectories		"$BASE;tf\vgui,.\tf,$SRCDIR\game\shared\tf,$SRCDIR\game\shared\Multiplayer,$SRCDIR\game\shared\econ,.\tf\bot"
 		$PreprocessorDefinitions			"$BASE;TF_CLASSIC_CLIENT;GLOWS_ENABLE"
 	}
 }
@@ -27,6 +27,12 @@ $Project "Client (TF)"
 		{
 			$File	"NextBot\C_NextBot.cpp"
 			$File	"NextBot\C_NextBot.h"
+		}
+
+		$Folder "MapEntities"
+		{
+			$File	"tf\bot\map_entities\c_tf_bot_hint_engineer_nest.cpp"
+			$File	"tf\bot\map_entities\c_tf_bot_hint_engineer_nest.h"
 		}
 
 		-$File	"$SRCDIR\game\shared\weapon_parse_default.cpp"

@@ -36,7 +36,7 @@ public:
 	{
 		m_builder = NULL;
 	}
-
+		
 	void SetBuilder( CTFWeaponBuilder *builder )
 	{
 		m_builder = builder;
@@ -45,10 +45,10 @@ public:
 	// invoked when process completed successfully
 	virtual void OnSuccess( INextBot *bot )
 	{
-		if( m_builder != NULL && m_builder->IsValidPlacement() )
+		if ( m_builder != NULL && m_builder->IsValidPlacement() )
 		{
-			INextBotPlayerInput *playerInput = dynamic_cast<INextBotPlayerInput *>( bot->GetEntity() );
-			if( playerInput )
+			INextBotPlayerInput *playerInput = dynamic_cast< INextBotPlayerInput * >( bot->GetEntity() );
+			if ( playerInput )
 			{
 				playerInput->PressFireButton();
 			}
@@ -62,69 +62,69 @@ public:
 //---------------------------------------------------------------------------------------------
 ActionResult< CTFBot >	CTFBotEngineerBuildDispenser::Update( CTFBot *me, float interval )
 {
-	if( me->GetTimeSinceLastInjury() < 1.0f )
+	if ( me->GetTimeSinceLastInjury() < 1.0f )
 	{
 		return Done( "Ouch! I'm under attack" );
 	}
 
 	CObjectSentrygun *mySentry = (CObjectSentrygun *)me->GetObjectOfType( OBJ_SENTRYGUN );
-	if( !mySentry )
+	if ( !mySentry )
 	{
 		return Done( "No Sentry" );
 	}
 
-	if( mySentry->GetTimeSinceLastInjury() < 1.0f || mySentry->GetHealth() < mySentry->GetMaxHealth() )
+	if ( mySentry->GetTimeSinceLastInjury() < 1.0f || mySentry->GetHealth() < mySentry->GetMaxHealth() )
 	{
 		return Done( "Need to repair my Sentry" );
 	}
 
 	CObjectDispenser *myDispenser = (CObjectDispenser *)me->GetObjectOfType( OBJ_DISPENSER );
-	if( myDispenser )
+	if ( myDispenser )
 	{
 		return Done( "Dispenser built" );
 	}
 
-	if( m_placementTriesLeft <= 0 )
+	if ( m_placementTriesLeft <= 0 )
 	{
 		return Done( "Can't find a place to build a Dispenser" );
 	}
 
-	if( me->CanBuild( OBJ_DISPENSER ) == CB_NEED_RESOURCES )
+	if ( me->CanBuild( OBJ_DISPENSER ) == CB_NEED_RESOURCES )
 	{
-		if( m_getAmmoTimer.IsElapsed() && CTFBotGetAmmo::IsPossible( me ) )
+		if ( m_getAmmoTimer.IsElapsed() && CTFBotGetAmmo::IsPossible( me ) )
 		{
 			// need more metal - get some
 			m_getAmmoTimer.Start( 1.0f );
 			return SuspendFor( new CTFBotGetAmmo, "Need more metal to build" );
 		}
-		/*
-				else
-				{
-					// work on my sentry while I wait for ammo to show up
-					me->GetBodyInterface()->AimHeadTowards( mySentry->WorldSpaceCenter(), IBody::CRITICAL, 1.0f, NULL, "Work on sentry while I wait for ammo to show up" );
-					me->PressFireButton();
-					return Continue();
-				}
-		*/
+/*
+		else
+		{
+			// work on my sentry while I wait for ammo to show up
+			me->GetBodyInterface()->AimHeadTowards( mySentry->WorldSpaceCenter(), IBody::CRITICAL, 1.0f, NULL, "Work on sentry while I wait for ammo to show up" );
+			me->PressFireButton();
+			return Continue();
+		}
+*/
 	}
 
 
-	/*
-		// if my sentry is under attack, forgo building a dispenser - focus on keeping the sentry alive
-		if ( mySentry->GetTimeSinceLastInjury() < 1.0f )
+/*
+	// if my sentry is under attack, forgo building a dispenser - focus on keeping the sentry alive
+	if ( mySentry->GetTimeSinceLastInjury() < 1.0f )
+	{
+		CBaseCombatWeapon *wrench = me->Weapon_GetSlot( TF_WPN_TYPE_MELEE );
+		if ( wrench )
 		{
-			CBaseCombatWeapon *wrench = me->Weapon_GetSlot( TF_WPN_TYPE_MELEE );
-			if ( wrench )
-			{
-				me->Weapon_Switch( wrench );
-			}
-
-			me->GetBodyInterface()->AimHeadTowards( mySentry->WorldSpaceCenter(), IBody::CRITICAL, 1.0f, NULL, "Focusing on keeping my besieged sentry alive" );
-			me->PressFireButton();
-
-			return Continue();
+			me->Weapon_Switch( wrench );
 		}
-	*/
+
+		me->GetBodyInterface()->AimHeadTowards( mySentry->WorldSpaceCenter(), IBody::CRITICAL, 1.0f, NULL, "Focusing on keeping my besieged sentry alive" );
+		me->PressFireButton();
+
+		return Continue();
+	}
+*/
 
 
 	// move behind the Sentry (our chosen build location)
@@ -134,16 +134,16 @@ ActionResult< CTFBot >	CTFBotEngineerBuildDispenser::Update( CTFBot *me, float i
 	buildSpot.z += HumanHeight;
 	TheNavMesh->GetSimpleGroundHeight( buildSpot, &buildSpot.z );
 
-	if( me->IsDistanceBetweenLessThan( buildSpot, 100.0f ) )
+	if ( me->IsDistanceBetweenLessThan( buildSpot, 100.0f ) )
 	{
 		// crouch as we get close so we slow down and hit our mark
 		me->PressCrouchButton();
 	}
 
 	// if too far away from our build location, move closer
-	if( me->IsDistanceBetweenGreaterThan( buildSpot, 25.0f ) )
+	if ( me->IsDistanceBetweenGreaterThan( buildSpot, 25.0f ) )
 	{
-		if( m_repathTimer.IsElapsed() )
+		if ( m_repathTimer.IsElapsed() )
 		{
 			m_repathTimer.Start( RandomFloat( 1.0f, 2.0f ) );
 
@@ -157,13 +157,13 @@ ActionResult< CTFBot >	CTFBotEngineerBuildDispenser::Update( CTFBot *me, float i
 	}
 
 	// we're at our build spot behind our sentry now - build a Dispenser
-	CTFWeaponBuilder *builder = dynamic_cast<CTFWeaponBuilder *>( me->GetActiveTFWeapon() );
-	if( !builder || builder->GetType() != OBJ_DISPENSER || builder->m_hObjectBeingBuilt == NULL )
+	CTFWeaponBuilder *builder = dynamic_cast< CTFWeaponBuilder * >( me->GetActiveTFWeapon() );
+	if ( !builder || builder->GetType() != OBJ_DISPENSER || builder->m_hObjectBeingBuilt == NULL )
 	{
 		// at home position, build the object
 		me->StartBuildingObjectOfType( OBJ_DISPENSER );
 	}
-	else if( m_searchTimer.IsElapsed() )
+	else if ( m_searchTimer.IsElapsed() )
 	{
 		// rotate to find valid spot
 		Vector toSentry = mySentry->GetAbsOrigin() - me->GetAbsOrigin();
@@ -171,7 +171,7 @@ ActionResult< CTFBot >	CTFBotEngineerBuildDispenser::Update( CTFBot *me, float i
 
 		Vector forward = -toSentry;
 
-		float angle = RandomFloat( -M_PI / 2.0f, M_PI / 2.0f );
+		float angle = RandomFloat( -M_PI/2.0f, M_PI/2.0f );
 		float s, c;
 		FastSinCos( angle, &s, &c );
 

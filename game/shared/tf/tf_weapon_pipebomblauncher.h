@@ -72,6 +72,8 @@ public:
 	typedef CHandle<CTFGrenadeStickybombProjectile>	PipebombHandle;
 	CUtlVector<PipebombHandle>		m_Pipebombs;
 
+	const CUtlVector< CHandle< CTFGrenadeStickybombProjectile > > &GetPipeBombVector( void ) const;
+
 	void LaunchGrenade( void );
 	bool DetonateRemotePipebombs( bool bFizzle );
 	void AddPipeBomb( CTFGrenadeStickybombProjectile *pBomb );
@@ -99,5 +101,10 @@ private:
 
 	CTFPipebombLauncher( const CTFPipebombLauncher & ) {}
 };
+
+inline const CUtlVector< CHandle< CTFGrenadeStickybombProjectile > > &CTFPipebombLauncher::GetPipeBombVector( void ) const
+{
+	return m_Pipebombs;
+}
 
 #endif // TF_WEAPON_PIPEBOMBLAUNCHER_H

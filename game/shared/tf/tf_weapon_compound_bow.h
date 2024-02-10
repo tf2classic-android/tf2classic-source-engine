@@ -51,6 +51,15 @@ public:
 
 	void			FireArrow( void );	
 
+	float GetCurrentCharge( void )
+	{
+		if( m_flChargeBeginTime == 0 )
+			return 0;
+		else
+			return MIN( gpGlobals->curtime - m_flChargeBeginTime, 1.f );
+	}
+
+
 public:
 	// ITFChargeUpWeapon
 	virtual float	GetChargeBeginTime( void ) { return m_flChargeBeginTime; }

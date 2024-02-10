@@ -23,17 +23,12 @@ ConVar tf_raid_engineer_infinte_metal( "tf_raid_engineer_infinte_metal", "1", FC
 //---------------------------------------------------------------------------------------------
 Action< CTFBot > *CTFBotEngineerBuild::InitialContainedAction( CTFBot *me )
 {
-#if 0
-	if( TFGameRules()->IsPVEModeActive() )
+	if ( TFGameRules()->IsPVEModeActive() )
 	{
 		return new CTFBotEngineerMoveToBuild;
 	}
 
 	return new CTFBotEngineerBuildTeleportEntrance;
-#else
-	// Strange bug
-	return new CTFBotEngineerMoveToBuild;
-#endif
 }
 
 
@@ -47,7 +42,7 @@ ActionResult< CTFBot >	CTFBotEngineerBuild::OnStart( CTFBot *me, Action< CTFBot 
 //---------------------------------------------------------------------------------------------
 ActionResult< CTFBot >	CTFBotEngineerBuild::Update( CTFBot *me, float interval )
 {
-	if( TFGameRules()->IsPVEModeActive() && tf_raid_engineer_infinte_metal.GetBool() )
+	if ( TFGameRules()->IsPVEModeActive() && tf_raid_engineer_infinte_metal.GetBool() )
 	{
 		// infinite ammo
 		me->GiveAmmo( 1000, TF_AMMO_METAL, true );
@@ -80,9 +75,9 @@ QueryResultType CTFBotEngineerBuild::ShouldHurry( const INextBot *meBot ) const
 	CObjectSentrygun *mySentry = (CObjectSentrygun *)me->GetObjectOfType( OBJ_SENTRYGUN );
 	CObjectDispenser *myDispenser = (CObjectDispenser *)me->GetObjectOfType( OBJ_DISPENSER );
 
-	if( mySentry && myDispenser && !mySentry->IsBuilding() && !myDispenser->IsBuilding() && me->GetActiveTFWeapon() && me->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_WRENCH )
+	if ( mySentry && myDispenser && !mySentry->IsBuilding() && !myDispenser->IsBuilding() && me->GetActiveTFWeapon() && me->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_WRENCH )
 	{
-		if( me->IsAmmoLow() && myDispenser->GetAvailableMetal() <= 0 )
+		if ( me->IsAmmoLow() && myDispenser->GetAvailableMetal() <= 0 )
 		{
 			// we're totally out of metal - collect some nearby
 			return ANSWER_NO;
@@ -104,13 +99,13 @@ QueryResultType CTFBotEngineerBuild::ShouldAttack( const INextBot *meBot, const 
 
 	CTFPlayer *themPlayer = ToTFPlayer( them->GetEntity() );
 
-	if( themPlayer && themPlayer->IsPlayerClass( TF_CLASS_SPY ) )
+	if ( themPlayer && themPlayer->IsPlayerClass( TF_CLASS_SPY ) )
 	{
 		// Engineers hate Spies
 		return ANSWER_YES;
 	}
 
-	if( mySentry && me->IsRangeLessThan( mySentry, 100.0f ) )
+	if ( mySentry && me->IsRangeLessThan( mySentry, 100.0f ) )
 	{
 		// focus on keeping our sentry alive
 		return ANSWER_NO;

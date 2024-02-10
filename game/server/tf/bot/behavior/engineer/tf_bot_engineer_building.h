@@ -24,9 +24,7 @@ public:
 	virtual EventDesiredResult< CTFBot > OnTerritoryLost( CTFBot *me, int territoryID );
 	virtual EventDesiredResult< CTFBot > OnTerritoryCaptured( CTFBot *me, int territoryID );
 
-	virtual const char *GetName( void ) const {
-		return "EngineerBuilding";
-	};
+	virtual const char *GetName( void ) const	{ return "EngineerBuilding"; };
 
 private:
 	CountdownTimer m_searchTimer;

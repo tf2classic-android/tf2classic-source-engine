@@ -6,6 +6,7 @@
 //=============================================================================
 
 #include "cbase.h"
+#include "trigger_area_capture.h"
 #include "tf_player.h"
 #include "tf_gamerules.h"
 #include "tf_gamestats.h"
@@ -59,6 +60,8 @@
 #include "tf_weapon_lunchbox.h"
 #include "player_resource.h"
 #include "tf_player_resource.h"
+#include "bot/tf_bot.h"
+#include "NextBot/NextBotUtil.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -342,6 +345,8 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayer, DT_TFPlayer )
 	SendPropExclude( "DT_BaseFlex", "m_viewtarget" ),
 
 	SendPropBool( SENDINFO( m_bSaveMeParity ) ),
+	SendPropBool( SENDINFO( m_bIsABot ) ),
+	SendPropInt( SENDINFO( m_nBotSkill ), 3, SPROP_UNSIGNED ),
 
 	// This will create a race condition will the local player, but the data will be the same so.....
 	SendPropInt( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
@@ -1043,6 +1048,17 @@ void CTFPlayer::Spawn()
 {
 	MDLCACHE_CRITICAL_SECTION();
 
+	m_bIsABot = IsBot();
+
+	if( m_bIsABot && IsBotOfType( TF_BOT_TYPE ) )
+	{
+		m_nBotSkill = ToTFBot( this )->GetDifficulty();
+	}
+	else
+	{
+		m_nBotSkill = 0;
+	}
+
 	m_flSpawnTime = gpGlobals->curtime;
 	UpdateModel();
 
@@ -1305,6 +1321,67 @@ void CTFPlayer::InitClass( void )
 	{
 		UpdatePlayerColor();
 	}
+}
+
+bool CTFPlayer::IsThreatAimingTowardMe( CBaseEntity *threat, float cosTolerance ) const
+{
+	CTFPlayer *player = ToTFPlayer( threat );
+	Vector to = GetAbsOrigin() - threat->GetAbsOrigin();
+	float threatRange = to.NormalizeInPlace();
+	Vector forward;
+
+	if( player == NULL )
+	{
+		CObjectSentrygun *sentry = dynamic_cast<CObjectSentrygun *>( threat );
+		if( sentry )
+		{
+			// are we in range?
+			if( threatRange < SENTRY_MAX_RANGE )
+			{
+				// is it pointing at us?
+				AngleVectors( sentry->GetTurretAngles(), &forward );
+
+				if( DotProduct( to, forward ) > cosTolerance )
+				{
+					return true;
+				}
+			}
+		}
+
+		// not a player, not a sentry, not a threat?
+		return false;
+	}
+
+	// is the player pointing at me?
+	player->EyeVectors( &forward );
+
+	if( DotProduct( to, forward ) > cosTolerance )
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool CTFPlayer::IsThreatFiringAtMe( CBaseEntity *threat ) const
+{
+	if( IsThreatAimingTowardMe( threat ) )
+	{
+		CTFPlayer *player = ToTFPlayer( threat );
+
+		if( player )
+		{
+			return player->IsFiringWeapon();
+		}
+
+		CObjectSentrygun *sentry = dynamic_cast<CObjectSentrygun *>( threat );
+		if( sentry )
+		{
+			return sentry->GetTimeSinceLastFired() < 1.0f;
+		}
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -6253,12 +6330,173 @@ void CTFPlayer::ForceRespawn( void )
 }
 
 //-----------------------------------------------------------------------------
+// Estimate where a projectile fired from the given weapon will initially hit (it may bounce on from there).
+// NOTE: We should be able to directly compute this knowing initial velocity, angle, gravity, etc,
+// but I have been unable to find a formula that reproduces what our physics actually
+// do.
+//-----------------------------------------------------------------------------
+Vector CTFPlayer::EstimateProjectileImpactPosition( CTFWeaponBaseGun *weapon )
+{
+	if( !weapon )
+	{
+		return GetAbsOrigin();
+	}
+
+	const QAngle &angles = EyeAngles();
+
+	float initVel = weapon->IsWeapon( TF_WEAPON_PIPEBOMBLAUNCHER ) ? 900.0f : weapon->GetProjectileSpeed();
+	CALL_ATTRIB_HOOK_FLOAT( initVel, mult_projectile_range );
+
+	return EstimateProjectileImpactPosition( angles.x, angles.y, initVel );
+}
+
+//-----------------------------------------------------------------------------
+// Estimate where a stickybomb projectile will hit,
+// using given pitch, yaw, and weapon charge (0-1)
+//-----------------------------------------------------------------------------
+Vector CTFPlayer::EstimateStickybombProjectileImpactPosition( float pitch, float yaw, float charge )
+{
+	// estimate impact spot
+	float initVel = charge * ( TF_PIPEBOMB_MAX_CHARGE_VEL - TF_PIPEBOMB_MIN_CHARGE_VEL ) + TF_PIPEBOMB_MIN_CHARGE_VEL;
+	CALL_ATTRIB_HOOK_FLOAT( initVel, mult_projectile_range );
+
+	return EstimateProjectileImpactPosition( pitch, yaw, initVel );
+}
+
+//-----------------------------------------------------------------------------
+// Estimate where a projectile fired will initially hit (it may bounce on from there),
+// using given pitch, yaw, and initial velocity.
+//-----------------------------------------------------------------------------
+Vector CTFPlayer::EstimateProjectileImpactPosition( float pitch, float yaw, float initVel )
+{
+	// copied from CTFWeaponBaseGun::FirePipeBomb()
+	Vector vecForward, vecRight, vecUp;
+	QAngle angles( pitch, yaw, 0.0f );
+	AngleVectors( angles, &vecForward, &vecRight, &vecUp );
+
+	// we will assume bots never flip viewmodels
+	float fRight = 8.f;
+	Vector vecSrc = Weapon_ShootPosition();
+	vecSrc += vecForward * 16.0f + vecRight * fRight + vecUp * -6.0f;
+
+	const float initVelScale = 0.9f;
+	Vector vecVelocity = initVelScale * ( ( vecForward * initVel ) + ( vecUp * 200.0f ) );
+
+	const float timeStep = 0.01f;
+	const float maxTime = 5.0f;
+
+	Vector pos = vecSrc;
+	Vector lastPos = pos;
+	const float g = GetGravity();//GetCurrentGravity();
+
+
+	// compute forward facing unit vector in horiz plane
+	Vector alongDir = vecForward;
+	alongDir.z = 0.0f;
+	alongDir.NormalizeInPlace();
+
+	float alongVel = FastSqrt( vecVelocity.x * vecVelocity.x + vecVelocity.y * vecVelocity.y );
+
+	trace_t trace;
+	NextBotTraceFilterIgnoreActors traceFilter( NULL, COLLISION_GROUP_NONE );
+
+	float t;
+	for( t = 0.0f; t < maxTime; t += timeStep )
+	{
+		float along = alongVel * t;
+		float height = vecVelocity.z * t - 0.5f * g * t * t;
+
+		pos.x = vecSrc.x + alongDir.x * along;
+		pos.y = vecSrc.y + alongDir.y * along;
+		pos.z = vecSrc.z + height;
+
+		UTIL_TraceHull( lastPos, pos, -Vector( 8, 8, 8 ), Vector( 8, 8, 8 ), MASK_SOLID_BRUSHONLY, &traceFilter, &trace );
+
+		if( trace.DidHit() )
+		{
+#ifdef STAGING_ONLY
+			if( tf_debug_ballistics.GetBool() )
+			{
+				NDebugOverlay::Cross3D( trace.endpos, 10.0f, 100, 255, 0, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+			}
+#endif
+			break;
+		}
+
+#ifdef STAGING_ONLY
+		if( tf_debug_ballistics.GetBool() )
+		{
+			NDebugOverlay::Line( lastPos, pos, 0, 255, 0, false, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+		}
+#endif
+
+		lastPos = pos;
+	}
+
+	return trace.endpos;
+}
+
+
+//-----------------------------------------------------------------------------
 // Purpose: Do nothing multiplayer_animstate takes care of animation.
 // Input  : playerAnim - 
 //-----------------------------------------------------------------------------
 void CTFPlayer::SetAnimation( PLAYER_ANIM playerAnim )
 {
 	return;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Return true if any enemy sentry has LOS and is facing me and is in range to attack
+//-----------------------------------------------------------------------------
+bool CTFPlayer::IsAnyEnemySentryAbleToAttackMe( void )
+{
+	if( m_Shared.InCond( TF_COND_DISGUISED ) ||
+		m_Shared.InCond( TF_COND_DISGUISING ) ||
+		m_Shared.IsStealthed() )
+	{
+		// I'm a disguised or cloaked Spy
+		return false;
+	}
+
+	for( int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i )
+	{
+		CBaseObject *pObj = static_cast<CBaseObject *>( IBaseObjectAutoList::AutoList()[i] );
+		if( pObj->ObjectType() != OBJ_SENTRYGUN )
+			continue;
+
+		if( pObj->HasSapper() )
+			continue;
+
+		//if( pObj->IsPlasmaDisabled() )
+		//	continue;
+
+		if( pObj->IsDisabled() )
+			continue;
+
+		if( pObj->IsBuilding() )
+			continue;
+
+		//if( pObj->IsCarried() )
+		//	continue;
+
+		// are we in range?
+		if( ( GetAbsOrigin() - pObj->GetAbsOrigin() ).IsLengthGreaterThan( SENTRY_MAX_RANGE ) )
+			continue;
+
+		// is the sentry aiming towards me?
+		if( !IsThreatAimingTowardMe( pObj, 0.95f ) )
+			continue;
+
+		// does the sentry have clear line of fire?
+		if( !IsLineOfSightClear( pObj, IGNORE_ACTORS ) )
+			continue;
+
+		// this sentry can attack me
+		return true;
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -6763,6 +7001,52 @@ void CTFPlayer::OnBurnOther( CTFPlayer *pTFPlayerVictim )
 		WRITE_BYTE( ACHIEVEMENT_TF_BURN_PLAYERSINMINIMIMTIME );
 		MessageEnd();
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+CTriggerAreaCapture *CTFPlayer::GetControlPointStandingOn( void )
+{
+	touchlink_t *root = (touchlink_t *)GetDataObject( TOUCHLINK );
+	if( root )
+	{
+		for( touchlink_t *link = root->nextLink; link != root; link = link->nextLink )
+		{
+			CBaseEntity *pTouch = link->entityTouched;
+			if( pTouch && pTouch->IsSolidFlagSet( FSOLID_TRIGGER ) && pTouch->IsBSPModel() )
+			{
+				CTriggerAreaCapture *pAreaTrigger = dynamic_cast<CTriggerAreaCapture *>( pTouch );
+				if( pAreaTrigger )
+					return pAreaTrigger;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Returns true if the player is capturing a point.
+//-----------------------------------------------------------------------------
+bool CTFPlayer::IsCapturingPoint()
+{
+	CTriggerAreaCapture *pAreaTrigger = GetControlPointStandingOn();
+	if( pAreaTrigger )
+	{
+		CTeamControlPoint *pCP = pAreaTrigger->GetControlPoint();
+		if( pCP )
+		{
+			if( TeamplayGameRules()->TeamMayCapturePoint( GetTeamNumber(), pCP->GetPointIndex() ) &&
+				TeamplayGameRules()->PlayerMayCapturePoint( this, pCP->GetPointIndex() ) )
+			{
+				// if we own this point, we're no longer "capturing" it
+				return pCP->GetOwner() != GetTeamNumber();
+			}
+		}
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -8082,6 +8366,135 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 		criteriaSet.AppendCriteria( "OnRedTeam", UTIL_VarArgs( "%d", bIsRedTeam ) );
 	}
 
+}
+
+//-----------------------------------------------------------------------------
+// Usable by CTFPlayers, not just CTFBots
+class CTFPlayertPathCost : public IPathCost
+{
+public:
+	CTFPlayertPathCost( const CTFPlayer *me )
+	{
+		m_me = me;
+		m_stepHeight = StepHeight;
+		m_maxJumpHeight = 72.0f;
+		m_maxDropHeight = 200.0f;
+	}
+
+	virtual float operator()( CNavArea *baseArea, CNavArea *fromArea, const CNavLadder *ladder, const CFuncElevator *elevator, float length ) const
+	{
+		VPROF_BUDGET( "CTFPlayertPathCost::operator()", "NextBot" );
+
+		CTFNavArea *area = (CTFNavArea *)baseArea;
+
+		if( fromArea == NULL )
+		{
+			// first area in path, no cost
+			return 0.0f;
+		}
+		else
+		{
+			if( !m_me->IsAreaTraversable( area ) )
+			{
+				return -1.0f;
+			}
+
+			// don't path through enemy spawn rooms
+			if( ( m_me->GetTeamNumber() == TF_TEAM_RED && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) ) ||
+				( m_me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) ) )
+			{
+				if( !TFGameRules()->RoundHasBeenWon() )
+				{
+					return -1.0f;
+				}
+			}
+
+			// compute distance traveled along path so far
+			float dist;
+
+			if( ladder )
+			{
+				dist = ladder->m_length;
+			}
+			else if( length > 0.0 )
+			{
+				dist = length;
+			}
+			else
+			{
+				dist = ( area->GetCenter() - fromArea->GetCenter() ).Length();
+			}
+
+			// check height change
+			float deltaZ = fromArea->ComputeAdjacentConnectionHeightChange( area );
+
+			if( deltaZ >= m_stepHeight )
+			{
+				if( deltaZ >= m_maxJumpHeight )
+				{
+					// too high to reach
+					return -1.0f;
+				}
+
+				// jumping is slower than flat ground
+				const float jumpPenalty = 2.0f;
+				dist *= jumpPenalty;
+			}
+			else if( deltaZ < -m_maxDropHeight )
+			{
+				// too far to drop
+				return -1.0f;
+			}
+
+			float cost = dist + fromArea->GetCostSoFar();
+
+			return cost;
+		}
+	}
+
+	const CTFPlayer *m_me;
+	float m_stepHeight;
+	float m_maxJumpHeight;
+	float m_maxDropHeight;
+};
+
+
+//-----------------------------------------------------------------------------
+// Given a vector of points, return the point we can actually travel to the quickest (requires a nav mesh)
+//-----------------------------------------------------------------------------
+CTeamControlPoint *CTFPlayer::SelectClosestControlPointByTravelDistance( CUtlVector< CTeamControlPoint * > *pointVector ) const
+{
+	if( !pointVector || pointVector->Count() == 0 )
+	{
+		return NULL;
+	}
+
+	if( GetLastKnownArea() == NULL )
+	{
+		return NULL;
+	}
+
+	CTeamControlPoint *closestPoint = NULL;
+	float closestPointTravelRange = FLT_MAX;
+	CTFPlayertPathCost cost( this );
+
+	for( int i = 0; i < pointVector->Count(); ++i )
+	{
+		CTeamControlPoint *point = pointVector->Element( i );
+
+		if( IsBot() && point->ShouldBotsIgnore() )
+			continue;
+
+		float travelRange = NavAreaTravelDistance( GetLastKnownArea(), TheTFNavMesh()->GetControlPointCenterArea( point->GetPointIndex() ), cost );
+
+		if( travelRange >= 0.0 && travelRange < closestPointTravelRange )
+		{
+			closestPoint = point;
+			closestPointTravelRange = travelRange;
+		}
+	}
+
+	return closestPoint;
 }
 
 //-----------------------------------------------------------------------------

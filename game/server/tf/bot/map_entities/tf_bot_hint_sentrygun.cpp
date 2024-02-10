@@ -5,12 +5,12 @@
 
 #include "cbase.h"
 #include "bot/tf_bot.h"
-#include "tf_hint_sentrygun.h"
+#include "tf_bot_hint_sentrygun.h"
 
 
 BEGIN_DATADESC( CTFBotHintSentrygun )
-DEFINE_KEYFIELD( m_isSticky, FIELD_BOOLEAN, "sticky" ),
-DEFINE_OUTPUT( m_outputOnSentryGunDestroyed, "OnSentryGunDestroyed" ),
+	DEFINE_KEYFIELD( m_isSticky, FIELD_BOOLEAN, "sticky" ),
+	DEFINE_OUTPUT( m_outputOnSentryGunDestroyed, "OnSentryGunDestroyed" ),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( bot_hint_sentrygun, CTFBotHintSentrygun );
@@ -33,8 +33,8 @@ bool CTFBotHintSentrygun::IsAvailableForSelection( CTFPlayer *pRequestingPlayer 
 {
 	// sentry hint is eligible as long as there is no owner (or the owner is no longer an engineer)
 	// if the hint is enabled and the hint is not in use and it is on the same team as me
-	if( ( GetPlayerOwner() == NULL || !GetPlayerOwner()->IsPlayerClass( TF_CLASS_ENGINEER ) ) &&
-		( !IsDisabled() && !IsInUse() && InSameTeam( pRequestingPlayer ) ) )
+	if ( ( GetPlayerOwner() == NULL || !GetPlayerOwner()->IsPlayerClass( TF_CLASS_ENGINEER ) ) && 
+		 ( IsEnabled() && IsInUse() == false && InSameTeam( pRequestingPlayer ) ) )
 	{
 		return true;
 	}

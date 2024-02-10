@@ -17,7 +17,6 @@
 #include "ammodef.h"
 //TF_MOD_BOT changes
 #include "tf_bot_manager.h"
-#include "bot/tf_bot.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -897,13 +896,6 @@ void CObjectSentrygun::FoundTarget( CBaseEntity *pTarget, const Vector &vecSound
 			CSingleUserRecipientFilter singleFilter( pPlayer );
 			EmitSound( singleFilter, entindex(), "Building_Sentrygun.AlertTarget" );
 			filter.RemoveRecipient( pPlayer );
-
-			CTFBot *pBot = ToTFBot( pTarget );
-			if ( pBot )
-			{
-				pBot->m_hTargetSentry = this;
-				pBot->m_vecLastHurtBySentry = GetAbsOrigin();
-			}
 		}
 
 		EmitSound( filter, entindex(), "Building_Sentrygun.Alert" );

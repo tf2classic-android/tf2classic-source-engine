@@ -14,12 +14,11 @@
 #include "bot/behavior/engineer/tf_bot_engineer_build.h"
 #include "bot/behavior/engineer/tf_bot_engineer_move_to_build.h"
 #include "bot/behavior/engineer/tf_bot_engineer_building.h"
-#include "bot/map_entities/tf_hint_sentrygun.h"
+#include "bot/map_entities/tf_bot_hint_sentrygun.h"
 #include "bot/behavior/tf_bot_get_ammo.h"
 #include "bot/behavior/tf_bot_retreat_to_cover.h"
 #include "bot/behavior/engineer/tf_bot_engineer_build_teleport_exit.h"
 #include "trigger_area_capture.h"
-
 
 extern ConVar tf_bot_path_lookahead_range;
 
@@ -30,16 +29,16 @@ ConVar tf_bot_min_teleport_travel( "tf_bot_min_teleport_travel", "3000", FCVAR_C
 //--------------------------------------------------------------------------------------------------------
 static Vector s_pointCentroid;
 
-int CompareRangeToPoint( CTFNavArea *const *area1, CTFNavArea *const *area2 )
+int CompareRangeToPoint( CTFNavArea * const *area1, CTFNavArea * const *area2 )
 {
-	float d1 = ( ( *area1 )->GetCenter() - s_pointCentroid ).LengthSqr();
-	float d2 = ( ( *area2 )->GetCenter() - s_pointCentroid ).LengthSqr();
+	float d1 = ( (*area1)->GetCenter() - s_pointCentroid ).LengthSqr();
+	float d2 = ( (*area2)->GetCenter() - s_pointCentroid ).LengthSqr();
 
 	// reversed so farthest is sorted first in the vector
-	if( d1 < d2 )
+	if ( d1 < d2 )
 		return 1;
 
-	if( d1 > d2 )
+	if ( d1 > d2 )
 		return -1;
 
 	return 0;
@@ -50,7 +49,7 @@ int CompareRangeToPoint( CTFNavArea *const *area1, CTFNavArea *const *area2 )
 void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 {
 	// if we have a predesignated build area, we're done
-	if( me->m_HomeArea )
+	if ( me->GetHomeArea() )
 		return;
 
 	m_sentryAreaVector.RemoveAll();
@@ -63,23 +62,23 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 	int myTeam = me->GetTeamNumber();
 	int enemyTeam = ( myTeam == TF_TEAM_BLUE ) ? TF_TEAM_RED : TF_TEAM_BLUE;
 
-	CBaseEntity *zone = (CBaseEntity *)me->GetFlagCaptureZone();
-	if( zone )
+	CCaptureZone *zone = me->GetFlagCaptureZone();
+	if ( zone )
 	{
 		// NOTE: Not strictly the right thing - should defend location of our team's flag
 		CTFNavArea *zoneArea = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( zone->WorldSpaceCenter(), false, 500.0f, true );
-		if( zoneArea )
+		if ( zoneArea )
 		{
 			pointAreaVector.AddToTail( zoneArea );
 			pointCentroid += zoneArea->GetCenter();
 			pointEnemyIncursion += zoneArea->GetIncursionDistance( enemyTeam );
 		}
 	}
-	else if( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
+	else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 	{
 		CTeamTrainWatcher *trainWatcher;
 
-		if( ( myTeam == TF_TEAM_BLUE ) || TFGameRules()->HasMultipleTrains() )
+		if ( myTeam == TF_TEAM_BLUE )
 		{
 			trainWatcher = TFGameRules()->GetPayloadToPush( me->GetTeamNumber() );
 		}
@@ -88,12 +87,12 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 			trainWatcher = TFGameRules()->GetPayloadToBlock( me->GetTeamNumber() );
 		}
 
-		if( trainWatcher )
+		if ( trainWatcher )
 		{
 			Vector checkpointPos = trainWatcher->GetNextCheckpointPosition();
 
 			CTFNavArea *checkpointArea = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( checkpointPos, false, 500.0f, true );
-			if( checkpointArea )
+			if ( checkpointArea )
 			{
 				pointAreaVector.AddToTail( checkpointArea );
 				pointCentroid += checkpointArea->GetCenter();
@@ -105,15 +104,16 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 	{
 		// collect all areas overlapping the point
 		CTeamControlPoint *ctrlPoint = me->GetMyControlPoint();
-		if( !ctrlPoint )
+		if ( !ctrlPoint )
 			return;
 
 		const CUtlVector< CTFNavArea * > *ctrlPointAreaVector = TheTFNavMesh()->GetControlPointAreas( ctrlPoint->GetPointIndex() );
 
+		if ( ctrlPointAreaVector )
 		{
-			for( i = 0; i < ctrlPointAreaVector->Count(); ++i )
+			for( i=0; i<ctrlPointAreaVector->Count(); ++i )
 			{
-				CTFNavArea *area = ctrlPointAreaVector->Element( i );
+				CTFNavArea *area = ctrlPointAreaVector->Element(i);
 
 				pointAreaVector.AddToTail( area );
 				pointCentroid += area->GetCenter();
@@ -122,7 +122,7 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 		}
 	}
 
-	if( pointAreaVector.Count() == 0 )
+	if ( pointAreaVector.Count() == 0 )
 		return;
 
 	pointCentroid /= pointAreaVector.Count();
@@ -131,57 +131,57 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 
 	// collect all areas that can see the point
 	CUtlVector< CTFNavArea * > exposedAreaVector;
-	for( i = 0; i < pointAreaVector.Count(); ++i )
+	for( i=0; i<pointAreaVector.Count(); ++i )
 	{
 		CTFAreaCollector collect;
 		pointAreaVector[i]->ForAllPotentiallyVisibleAreas( collect );
 
-		for( int j = 0; j < collect.m_vector.Count(); ++j )
+		for( int j=0; j<collect.m_vector.Count(); ++j )
 		{
 			CTFNavArea *visibleArea = collect.m_vector[j];
 
 
-			if( visibleArea->GetIncursionDistance( myTeam ) < 0 || visibleArea->GetIncursionDistance( enemyTeam ) < 0 )
+			if ( visibleArea->GetIncursionDistance( myTeam ) < 0 || visibleArea->GetIncursionDistance( enemyTeam ) < 0 )
 				continue;
 
-			if( TFGameRules()->IsInKothMode() )
+			if ( TFGameRules()->IsInKothMode() )
 			{
 				// ignore areas the enemy can reach first
-				if( visibleArea->GetIncursionDistance( myTeam ) >= visibleArea->GetIncursionDistance( enemyTeam ) )
+				if ( visibleArea->GetIncursionDistance( myTeam ) >= visibleArea->GetIncursionDistance( enemyTeam ) )
 					continue;
 			}
 
-			// incursion flow is badly behaved at cap #1, stage #2 in dustbowl
-			// 			else
-			// 			{
-			// 				if ( pointEnemyIncursion > visibleArea->GetIncursionDistance( enemyTeam ) )
-			// 					continue;
-			// 			}
+// incursion flow is badly behaved at cap #1, stage #2 in dustbowl
+// 			else
+// 			{
+// 				if ( pointEnemyIncursion > visibleArea->GetIncursionDistance( enemyTeam ) )
+// 					continue;
+// 			}
 
-			if( TFGameRules()->GetGameType() == TF_GAMETYPE_CP )
+			if ( TFGameRules()->GetGameType() == TF_GAMETYPE_CP )
 			{
 				// don't build directly on the point
-				//if( visibleArea->HasAttributeTF( TF_NAV_CONTROL_POINT ) )
-				//	continue;
+				if ( visibleArea->HasAttributeTF( TF_NAV_CONTROL_POINT ) )
+					continue;
 
 				// ignore areas below the point
 				const float tooFarBelow = 150.0f;
-				if( visibleArea->GetCenter().z < pointCentroid.z - tooFarBelow )
+				if ( visibleArea->GetCenter().z < pointCentroid.z - tooFarBelow )
 					continue;
 
 				// ignore areas too far from the point for the sentry gun to reach
 				const float tolerance = 1.1f;
-				if( ( visibleArea->GetCenter() - pointCentroid ).IsLengthGreaterThan( 1100.f * tolerance ) )
+				if ( ( visibleArea->GetCenter() - pointCentroid ).IsLengthGreaterThan( SENTRY_MAX_RANGE * tolerance ) )
 					continue;
 			}
 
 			// ignore areas that don't have clear line of FIRE (not sight)
 			const float sentryEyeHeight = 60.0f;
 			const float pointFlagHeight = 70.0f; // 100.0f;
-			if( !me->IsLineOfFireClear( visibleArea->GetCenter() + Vector( 0, 0, sentryEyeHeight ), pointCentroid + Vector( 0, 0, pointFlagHeight ) ) )
+			if ( !me->IsLineOfFireClear( visibleArea->GetCenter() + Vector( 0, 0, sentryEyeHeight ), pointCentroid + Vector( 0, 0, pointFlagHeight ) ) )
 				continue;
 
-			if( !exposedAreaVector.HasElement( visibleArea ) )
+			if ( !exposedAreaVector.HasElement( visibleArea ) )
 				exposedAreaVector.AddToTail( visibleArea );
 		}
 	}
@@ -191,7 +191,7 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 	s_pointCentroid = pointCentroid;
 	exposedAreaVector.Sort( CompareRangeToPoint );
 
-	for( i = 0; i < exposedAreaVector.Count() * keepRatio; ++i )
+	for( i=0; i<exposedAreaVector.Count() * keepRatio; ++i )
 	{
 		CTFNavArea *usableArea = exposedAreaVector[i];
 
@@ -202,11 +202,11 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 	m_totalSurfaceArea = 0.0f;
 	FOR_EACH_VEC( m_sentryAreaVector, it )
 	{
-		CTFNavArea *area = m_sentryAreaVector[it];
+		CTFNavArea *area = m_sentryAreaVector[ it ];
 
 		m_totalSurfaceArea += area->GetSizeX() * area->GetSizeY();
 
-		if( tf_bot_debug_sentry_placement.GetBool() )
+		if ( tf_bot_debug_sentry_placement.GetBool() )
 		{
 			TheNavMesh->AddToSelectedSet( area );
 		}
@@ -227,9 +227,9 @@ void CTFBotEngineerMoveToBuild::SelectBuildLocation( CTFBot *me )
 
 
 	// if we have a build spot, use it
-	if( me->m_HomeArea )
+	if ( me->GetHomeArea() )
 	{
-		m_sentryBuildLocation = me->m_HomeArea->GetCenter();
+		m_sentryBuildLocation = me->GetHomeArea()->GetCenter();
 		return;
 	}
 
@@ -237,26 +237,26 @@ void CTFBotEngineerMoveToBuild::SelectBuildLocation( CTFBot *me )
 	CUtlVector< CTFBotHintSentrygun * > sentryHintVector;
 
 	CTFBotHintSentrygun *sentryHint;
-	for( sentryHint = static_cast<CTFBotHintSentrygun *>( gEntList.FindEntityByClassname( NULL, "bot_hint_sentrygun" ) );
-		sentryHint;
-		sentryHint = static_cast<CTFBotHintSentrygun *>( gEntList.FindEntityByClassname( sentryHint, "bot_hint_sentrygun" ) ) )
+	for( sentryHint = static_cast< CTFBotHintSentrygun * >( gEntList.FindEntityByClassname( NULL, "bot_hint_sentrygun" ) );
+		 sentryHint;
+		 sentryHint = static_cast< CTFBotHintSentrygun * >( gEntList.FindEntityByClassname( sentryHint, "bot_hint_sentrygun" ) ) )
 	{
 		// clear the previous owner if it is us
-		if( sentryHint->GetPlayerOwner() == me )
+		if ( sentryHint->GetPlayerOwner() == me )
 		{
 			sentryHint->SetPlayerOwner( NULL );
 		}
-		if( sentryHint->IsAvailableForSelection( me ) )
+		if ( sentryHint->IsAvailableForSelection( me ) )
 		{
 			sentryHintVector.AddToTail( sentryHint );
 		}
 	}
 
-	if( sentryHintVector.Count() > 0 )
+	if ( sentryHintVector.Count() > 0 )
 	{
-		int which = RandomInt( 0, sentryHintVector.Count() - 1 );
+		int which = RandomInt( 0, sentryHintVector.Count()-1 );
 
-		m_sentryBuildHint = sentryHintVector[which];
+		m_sentryBuildHint = sentryHintVector[ which ];
 		m_sentryBuildHint->SetPlayerOwner( me );
 		m_sentryBuildLocation = m_sentryBuildHint->GetAbsOrigin();
 
@@ -272,18 +272,18 @@ void CTFBotEngineerMoveToBuild::SelectBuildLocation( CTFBot *me )
 	float soFar = 0.0f;
 	FOR_EACH_VEC( m_sentryAreaVector, sit )
 	{
-		CTFNavArea *area = m_sentryAreaVector[sit];
+		CTFNavArea *area = m_sentryAreaVector[ sit ];
 
 		soFar += area->GetSizeX() * area->GetSizeY();
 
-		if( which < soFar )
+		if ( which < soFar )
 		{
 			m_sentryBuildLocation = area->GetRandomPoint();
 			return;
 		}
 	}
 
-	if( !HushAsserts() )
+	if ( !HushAsserts() )
 	{
 		Assert( !"Failed to find a build location" );
 	}
@@ -296,6 +296,21 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::OnStart( CTFBot *me, Action< C
 {
 	m_path.SetMinLookAheadDistance( me->GetDesiredPathLookAheadRange() );
 
+#ifdef TF_RAID_MODE
+	if ( TFGameRules()->IsRaidMode() )
+	{
+		if ( me->GetHomeArea() && TFGameRules()->GetRaidLogic() )
+		{
+			// try to pick a new area
+			CTFNavArea *sentryArea = TFGameRules()->GetRaidLogic()->SelectRaidSentryArea();
+			if ( sentryArea )
+			{
+				me->SetHomeArea( sentryArea );
+			}
+		}
+	}
+#endif // TF_RAID_MODE
+
 	SelectBuildLocation( me );
 
 	return Continue();
@@ -305,11 +320,11 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::OnStart( CTFBot *me, Action< C
 //---------------------------------------------------------------------------------------------
 ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float interval )
 {
-	if( me->WasPointJustLost() )
+	if ( me->WasPointJustLost() )
 	{
-		if( m_fallBackTimer.HasStarted() )
+		if ( m_fallBackTimer.HasStarted() )
 		{
-			if( m_fallBackTimer.IsElapsed() )
+			if ( m_fallBackTimer.IsElapsed() )
 			{
 				SelectBuildLocation( me );
 				m_fallBackTimer.Invalidate();
@@ -322,18 +337,18 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float inte
 		}
 	}
 
-	CBaseObject *mySentry = me->GetObjectOfType( OBJ_SENTRYGUN );
-	if( mySentry )
+	CBaseObject	*mySentry = me->GetObjectOfType( OBJ_SENTRYGUN );
+	if ( mySentry )
 	{
 		// we already have a sentry from a previous life - continue what we were doing
 
 		// if we used a sentry hint last time, reuse it
 		CTFBotHintSentrygun *sentryHint;
-		for( sentryHint = static_cast<CTFBotHintSentrygun *>( gEntList.FindEntityByClassname( NULL, "bot_hint_sentrygun" ) );
-			sentryHint;
-			sentryHint = static_cast<CTFBotHintSentrygun *>( gEntList.FindEntityByClassname( sentryHint, "bot_hint_sentrygun" ) ) )
+		for( sentryHint = static_cast< CTFBotHintSentrygun * >( gEntList.FindEntityByClassname( NULL, "bot_hint_sentrygun" ) );
+			 sentryHint;
+			 sentryHint = static_cast< CTFBotHintSentrygun * >( gEntList.FindEntityByClassname( sentryHint, "bot_hint_sentrygun" ) ) )
 		{
-			if( sentryHint->GetPlayerOwner() == me )
+			if ( sentryHint->GetPlayerOwner() == me )
 			{
 				return ChangeTo( new CTFBotEngineerBuilding( sentryHint ), "Going back to my existing sentry nest and reusing a sentry hint" );
 			}
@@ -343,27 +358,27 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float inte
 	}
 
 	// offensive engineers need to place a forward teleporter
-	if( TFGameRules()->GetGameType() == TF_GAMETYPE_CP && !TFGameRules()->IsInKothMode() && me->GetTeamNumber() == TF_TEAM_BLUE )
+	if ( TFGameRules()->GetGameType() == TF_GAMETYPE_CP && !TFGameRules()->IsInKothMode() && me->GetTeamNumber() == TF_TEAM_BLUE )
 	{
-		CObjectTeleporter *myTeleportExit = (CObjectTeleporter *)me->GetObjectOfType( OBJ_TELEPORTER, 1 );
+		CObjectTeleporter *myTeleportExit = (CObjectTeleporter *)me->GetObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT );
 		int myTeam = me->GetTeamNumber();
 
-		if( myTeleportExit )
+		if ( myTeleportExit )
 		{
 			// if exit is too far from the point, destroy it and try again
 			CTeamControlPoint *point = me->GetMyControlPoint();
-			if( point )
+			if ( point )
 			{
 				CTFNavArea *pointArea = TheTFNavMesh()->GetControlPointCenterArea( point->GetPointIndex() );
 
 				myTeleportExit->UpdateLastKnownArea();
 				CTFNavArea *exitArea = (CTFNavArea *)myTeleportExit->GetLastKnownArea();
 
-				if( pointArea && exitArea )
+				if ( pointArea && exitArea )
 				{
 					float travelToPoint = fabs( exitArea->GetIncursionDistance( myTeam ) - pointArea->GetIncursionDistance( myTeam ) );
 
-					if( travelToPoint > tf_bot_max_teleport_exit_travel_to_point.GetFloat() )
+					if ( travelToPoint > tf_bot_max_teleport_exit_travel_to_point.GetFloat() )
 					{
 						// too far, destroy it
 						myTeleportExit->DestroyObject();
@@ -374,35 +389,35 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float inte
 		}
 		else
 		{
-			CObjectTeleporter *myTeleportEntrance = (CObjectTeleporter *)me->GetObjectOfType( OBJ_TELEPORTER, 0 );
-			CTFNavArea *myArea = ( CTFNavArea *)me->GetLastKnownArea();
+			CObjectTeleporter *myTeleportEntrance = (CObjectTeleporter *)me->GetObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_ENTRANCE );
+			CTFNavArea *myArea = me->GetLastKnownArea();
 
 			bool shouldBuildExit = true;
 
 			// if we have a teleporter entrance, don't place the exit too close to it
-			if( myTeleportEntrance && myArea )
+			if ( myTeleportEntrance && myArea )
 			{
 				myTeleportEntrance->UpdateLastKnownArea();
 				CTFNavArea *enterArea = (CTFNavArea *)myTeleportEntrance->GetLastKnownArea();
 
-				if( enterArea )
+				if ( enterArea )
 				{
 					float travelBetween = fabs( enterArea->GetIncursionDistance( myTeam ) - myArea->GetIncursionDistance( myTeam ) );
 
-					if( travelBetween < tf_bot_min_teleport_travel.GetFloat() )
+					if ( travelBetween < tf_bot_min_teleport_travel.GetFloat() )
 					{
 						shouldBuildExit = false;
 					}
 				}
 			}
 
-			if( shouldBuildExit )
+			if ( shouldBuildExit )
 			{
 				// no exit yet - need to place one
 				// when we see the enemy, retreat to cover and build the exit there
-				if( me->GetVisionInterface()->GetPrimaryKnownThreat( true ) )
+				if ( me->GetVisionInterface()->GetPrimaryKnownThreat( true ) )
 				{
-					if( !me->m_Shared.InCond( TF_COND_INVULNERABLE ) && ShouldRetreat( me ) != ANSWER_NO )
+					if ( !me->m_Shared.InCond( TF_COND_INVULNERABLE ) && ShouldRetreat( me ) != ANSWER_NO )
 					{
 						Action< CTFBot > *nextActionWhenInCover = new CTFBotEngineerBuildTeleportExit;
 						return SuspendFor( new CTFBotRetreatToCover( nextActionWhenInCover ), "Retreating to a safe place to build my teleporter exit" );
@@ -413,7 +428,7 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float inte
 	}
 
 	// move to build position
-	if( m_repathTimer.IsElapsed() )
+	if ( m_repathTimer.IsElapsed() )
 	{
 		m_repathTimer.Start( RandomFloat( 1.0f, 2.0f ) );
 
@@ -432,12 +447,12 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float inte
 	Vector toBuild = m_sentryBuildLocation - myBlueprintPosition;
 	Vector toMe = m_sentryBuildLocation - me->GetAbsOrigin();
 
-	if( me->GetLocomotionInterface()->IsOnGround() )
+	if ( me->GetLocomotionInterface()->IsOnGround() )
 	{
 		// we need to wait until we're on the ground since the Build action assumes our position OnStart is where we are going to build
-		if( toMe.AsVector2D().IsLengthLessThan( closeToHome ) || toBuild.AsVector2D().IsLengthLessThan( closeToHome ) )
+		if ( toMe.AsVector2D().IsLengthLessThan( closeToHome ) || toBuild.AsVector2D().IsLengthLessThan( closeToHome ) )
 		{
-			if( m_sentryBuildHint != NULL )
+			if ( m_sentryBuildHint != NULL )
 			{
 				return ChangeTo( new CTFBotEngineerBuilding( m_sentryBuildHint ), "Reached my precise build location" );
 			}
@@ -455,7 +470,7 @@ ActionResult< CTFBot >	CTFBotEngineerMoveToBuild::Update( CTFBot *me, float inte
 //---------------------------------------------------------------------------------------------
 EventDesiredResult< CTFBot > CTFBotEngineerMoveToBuild::OnStuck( CTFBot *me )
 {
-	//	SelectBuildLocation( me );
+//	SelectBuildLocation( me );
 	return TryContinue();
 }
 

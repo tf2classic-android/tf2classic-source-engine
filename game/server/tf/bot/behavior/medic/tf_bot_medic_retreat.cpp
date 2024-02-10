@@ -18,11 +18,11 @@ extern ConVar tf_bot_force_class;
 
 
 //---------------------------------------------------------------------------------------------
-ActionResult< CTFBot > CTFBotMedicRetreat::OnStart( CTFBot *me, Action< CTFBot > *priorAction )
+ActionResult< CTFBot >	CTFBotMedicRetreat::OnStart( CTFBot *me, Action< CTFBot > *priorAction )
 {
 	CTFNavArea *homeArea = me->GetSpawnArea();
 
-	if( homeArea == NULL )
+	if ( homeArea == NULL )
 	{
 		return Done( "No home area!" );
 	}
@@ -47,7 +47,7 @@ public:
 
 	virtual bool IsAllowed( CBaseEntity *entity ) const
 	{
-		if( entity && entity->IsPlayer() && entity->GetTeamNumber() == m_team )
+		if ( entity && entity->IsPlayer() && entity->GetTeamNumber() == m_team )
 		{
 			return !ToTFPlayer( entity )->IsPlayerClass( TF_CLASS_MEDIC ) && !ToTFPlayer( entity )->IsPlayerClass( TF_CLASS_SNIPER );
 		}
@@ -59,17 +59,17 @@ public:
 
 
 //---------------------------------------------------------------------------------------------
-ActionResult< CTFBot > CTFBotMedicRetreat::Update( CTFBot *me, float interval )
+ActionResult< CTFBot >	CTFBotMedicRetreat::Update( CTFBot *me, float interval )
 {
 	// equip the syringegun and defend ourselves!
 	CTFWeaponBase *myWeapon = me->m_Shared.GetActiveTFWeapon();
-	if( myWeapon )
+	if ( myWeapon )
 	{
-		if( myWeapon->GetWeaponID() != TF_WEAPON_SYRINGEGUN_MEDIC )
+		if ( myWeapon->GetWeaponID() != TF_WEAPON_SYRINGEGUN_MEDIC )
 		{
 			CBaseCombatWeapon *syringeGun = me->Weapon_GetSlot( TF_WPN_TYPE_PRIMARY );
 
-			if( syringeGun )
+			if ( syringeGun )
 			{
 				me->Weapon_Switch( syringeGun );
 			}
@@ -79,7 +79,7 @@ ActionResult< CTFBot > CTFBotMedicRetreat::Update( CTFBot *me, float interval )
 	m_path.Update( me );
 
 	// look around to try to spot a friend to heal
-	if( m_lookAroundTimer.IsElapsed() )
+	if ( m_lookAroundTimer.IsElapsed() )
 	{
 		m_lookAroundTimer.Start( RandomFloat( 0.33f, 1.0f ) );
 
@@ -97,7 +97,7 @@ ActionResult< CTFBot > CTFBotMedicRetreat::Update( CTFBot *me, float interval )
 	// if we see a friend, heal them
 	CUsefulHealTargetFilter filter( me->GetTeamNumber() );
 	const CKnownEntity *known = me->GetVisionInterface()->GetClosestKnown( filter );
-	if( known )
+	if ( known )
 	{
 		return Done( "I know of a teammate" );
 	}
@@ -107,7 +107,7 @@ ActionResult< CTFBot > CTFBotMedicRetreat::Update( CTFBot *me, float interval )
 
 
 //---------------------------------------------------------------------------------------------
-ActionResult< CTFBot > CTFBotMedicRetreat::OnResume( CTFBot *me, Action< CTFBot > *interruptingAction )
+ActionResult< CTFBot >	CTFBotMedicRetreat::OnResume( CTFBot *me, Action< CTFBot > *interruptingAction )
 {
 	CTFBotPathCost cost( me, FASTEST_ROUTE );
 	m_path.Compute( me, me->GetSpawnArea()->GetCenter(), cost );

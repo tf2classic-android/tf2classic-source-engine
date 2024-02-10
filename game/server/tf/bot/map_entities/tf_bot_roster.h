@@ -25,8 +25,6 @@ public:
 	void InputSetAllowPyro( inputdata_t &inputdata );
 	void InputSetAllowSpy( inputdata_t &inputdata );
 	void InputSetAllowEngineer( inputdata_t &inputdata );
-	void InputSetAllowCivilian( inputdata_t &inputdata );
-	void InputSetAllowMercenary( inputdata_t &inputdata );
 
 	// misc.
 	bool IsClassAllowed( int iBotClass ) const;
@@ -35,7 +33,7 @@ public:
 public:
 	string_t m_teamName;
 	bool m_bAllowClassChanges;
-	bool m_bAllowedClasses[TF_CLASS_COUNT_ALL];
+	bool m_bAllowedClasses[TF_LAST_NORMAL_CLASS];
 };
 
 #endif // TF_BOT_ROSTER_H

@@ -1181,7 +1181,7 @@ void CTFNavMesh::OnObjectChanged()
 			// Check all active sentries against this area.
 			FOR_EACH_VEC( ActiveSentries, oit )
 			{
-				const CBaseObject* obj = ActiveSentries[ oit ];
+				CBaseObject* obj = ActiveSentries[ oit ];
 
 				// If this area in range of this sentry?
 				Vector close;

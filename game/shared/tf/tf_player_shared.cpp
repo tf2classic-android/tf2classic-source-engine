@@ -452,6 +452,40 @@ bool CTFPlayerShared::IsInvulnerable( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Indicates that our controls are stunned.
+//-----------------------------------------------------------------------------
+bool CTFPlayerShared::IsControlStunned( void )
+{
+#if 0
+	if( GetActiveStunInfo() )
+	{
+		if( InCond( TF_COND_STUNNED ) && ( m_iStunFlags & TF_STUN_CONTROLS ) )
+			return true;
+	}
+
+	return false;
+#endif
+	return false; // InCond( TF_COND_STUNNED );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Indicates that our controls are stunned.
+//-----------------------------------------------------------------------------
+bool CTFPlayerShared::IsLoserStateStunned( void ) const
+{
+#if 0
+	if( GetActiveStunInfo() )
+	{
+		if( InCond( TF_COND_STUNNED ) && ( m_iStunFlags & TF_STUN_LOSER_STATE ) )
+			return true;
+	}
+
+	return false;
+#endif
+	return false; // InCond( TF_COND_STUNNED );
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 bool CTFPlayerShared::IsStealthed( void )
@@ -3429,7 +3463,7 @@ void CTFPlayer::TeamFortress_SetSpeed()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CTFPlayer::HasItem( void )
+bool CTFPlayer::HasItem( void ) const
 {
 	return ( m_hItem != NULL );
 }
@@ -3452,7 +3486,7 @@ void CTFPlayer::SetItem( CTFItem *pItem )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-CTFItem	*CTFPlayer::GetItem( void )
+CTFItem	*CTFPlayer::GetItem( void ) const
 {
 	return m_hItem;
 }
@@ -3460,7 +3494,7 @@ CTFItem	*CTFPlayer::GetItem( void )
 //-----------------------------------------------------------------------------
 // Purpose: Is the player allowed to use a teleporter ?
 //-----------------------------------------------------------------------------
-bool CTFPlayer::HasTheFlag( void )
+bool CTFPlayer::HasTheFlag( void ) const
 {
 	if ( HasItem() && GetItem()->GetItemID() == TF_ITEM_CAPTURE_FLAG )
 	{
@@ -3947,6 +3981,22 @@ Vector CTFPlayer::GetClassEyeHeight( void )
 		return VEC_VIEW_SCALED( this );
 
 	return ( g_TFClassViewVectors[pClass->GetClassIndex()] * GetModelScale() );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+CBaseEntity *CTFPlayer::MedicGetHealTarget( void )
+{
+	if( IsPlayerClass( TF_CLASS_MEDIC ) )
+	{
+		CWeaponMedigun *pWeapon = dynamic_cast <CWeaponMedigun *>( GetActiveWeapon() );
+
+		if( pWeapon )
+			return pWeapon->GetHealTarget();
+	}
+
+	return NULL;
 }
 
 //-----------------------------------------------------------------------------

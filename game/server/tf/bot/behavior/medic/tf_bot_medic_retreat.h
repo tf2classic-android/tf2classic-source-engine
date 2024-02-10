@@ -19,9 +19,7 @@ public:
 	virtual EventDesiredResult< CTFBot > OnMoveToFailure( CTFBot *me, const Path *path, MoveToFailureType reason );
 	virtual QueryResultType ShouldAttack( const INextBot *me, const CKnownEntity *them ) const;
 
-	virtual const char *GetName( void ) const {
-		return "Retreat";
-	};
+	virtual const char *GetName( void ) const	{ return "Retreat"; };
 
 private:
 	PathFollower m_path;
