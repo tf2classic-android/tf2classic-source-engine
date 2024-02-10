@@ -3816,12 +3816,20 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			}
 		}
 
-		float flNonBurning = info.GetDamage();
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flNonBurning, mult_dmg_vs_nonburning );
-
 		if ( !m_Shared.InCond( TF_COND_BURNING ) )
 		{
+			float flNonBurning = info.GetDamage();
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flNonBurning, mult_dmg_vs_nonburning );
 			info.SetDamage( flNonBurning );
+		}
+
+		// For when a player is on fire.
+		if ( m_Shared.InCond( TF_COND_BURNING ) )
+		{
+			float flDamageBurningPlayers = 1.0f;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, flDamageBurningPlayers, mult_dmg_vs_burning ); // mult_dmg_vs_burning also affects afterburn, but tha>
+			if ( flDamageBurningPlayers != 1.0f )
+				info.SetDamage( info.GetDamage() * flDamageBurningPlayers );
 		}
 
 		int nCritWhileAirborne = 0;
