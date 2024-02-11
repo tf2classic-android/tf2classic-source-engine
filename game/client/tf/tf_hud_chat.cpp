@@ -16,7 +16,6 @@
 #include "c_tf_playerresource.h"
 #include "c_tf_player.h"
 #include "tf_gamerules.h"
-#include "ihudlcd.h"
 #include "tf_hud_freezepanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

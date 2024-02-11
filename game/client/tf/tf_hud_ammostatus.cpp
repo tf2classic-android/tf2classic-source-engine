@@ -27,7 +27,6 @@
 #include "tf_imagepanel.h"
 #include "c_team.h"
 #include "c_tf_player.h"
-#include "ihudlcd.h"
 #include "tf_hud_ammostatus.h"
 #include "tf_gamerules.h"
 
@@ -50,11 +49,6 @@ CTFHudWeaponAmmo::CTFHudWeaponAmmo( const char *pElementName ) : CHudElement( pE
 	SetParent( pParent );
 
 	SetHiddenBits( HIDEHUD_HEALTH | HIDEHUD_PLAYERDEAD );
-
-	hudlcd->SetGlobalStat( "(ammo_primary)", "0" );
-	hudlcd->SetGlobalStat( "(ammo_secondary)", "0" );
-	hudlcd->SetGlobalStat( "(weapon_print_name)", "" );
-	hudlcd->SetGlobalStat( "(weapon_name)", "" );
 
 	m_pInClip = NULL;
 	m_pInClipShadow = NULL;
@@ -296,14 +290,8 @@ void CTFHudWeaponAmmo::OnThink()
 			}
 		}
 
-		hudlcd->SetGlobalStat( "(weapon_print_name)", pWeapon ? pWeapon->GetPrintName() : " " );
-		hudlcd->SetGlobalStat( "(weapon_name)", pWeapon ? pWeapon->GetName() : " " );
-
 		if ( !pPlayer || !pWeapon || !pWeapon->UsesPrimaryAmmo() )
 		{
-			hudlcd->SetGlobalStat( "(ammo_primary)", "n/a" );
-			hudlcd->SetGlobalStat( "(ammo_secondary)", "n/a" );
-
 			// turn off our ammo counts
 			UpdateAmmoLabels( false, false, false );
 
@@ -330,9 +318,6 @@ void CTFHudWeaponAmmo::OnThink()
 			{
 				nAmmo2 = pPlayer->GetAmmoCount( pWeapon->GetPrimaryAmmoType() );
 			}
-			
-			hudlcd->SetGlobalStat( "(ammo_primary)", VarArgs( "%d", nAmmo1 ) );
-			hudlcd->SetGlobalStat( "(ammo_secondary)", VarArgs( "%d", nAmmo2 ) );
 
 			if ( m_nAmmo != nAmmo1 || m_nAmmo2 != nAmmo2 || m_hCurrentActiveWeapon.Get() != pWeapon )
 			{
