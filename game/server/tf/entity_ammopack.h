@@ -19,8 +19,7 @@
 // CTF AmmoPack class.
 //
 
-DECLARE_AUTO_LIST( IAmmoPackAutoList )
-class CAmmoPack : public CTFPowerup, public IAmmoPackAutoList
+class CAmmoPack : public CTFPowerup
 {
 public:
 	DECLARE_CLASS( CAmmoPack, CTFPowerup );

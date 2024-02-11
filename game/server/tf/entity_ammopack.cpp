@@ -21,8 +21,6 @@ LINK_ENTITY_TO_CLASS( item_ammopack_full, CAmmoPack );
 LINK_ENTITY_TO_CLASS( item_ammopack_small, CAmmoPackSmall );
 LINK_ENTITY_TO_CLASS( item_ammopack_medium, CAmmoPackMedium );
 
-IMPLEMENT_AUTO_LIST( IAmmoPackAutoList )
-
 //=============================================================================
 //
 // CTF AmmoPack functions.

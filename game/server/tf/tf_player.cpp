@@ -5155,7 +5155,7 @@ void CTFPlayer::AmmoPackCleanUp( void )
 	// Cycle through all ammobox in the world and remove them
 	for( int i = 0; i < IAmmoPackAutoList::AutoList().Count(); ++i )
 	{
-		CAmmoPack *pThisBox = static_cast< CAmmoPack * >( IAmmoPackAutoList::AutoList()[i] );
+		CTFAmmoPack *pThisBox = static_cast< CTFAmmoPack * >( IAmmoPackAutoList::AutoList()[i] );
 		Assert( pThisBox );
 		if( pThisBox )
 		{

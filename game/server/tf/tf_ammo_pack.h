@@ -12,7 +12,8 @@
 
 #include "items.h"
 
-class CTFAmmoPack : public CItem
+DECLARE_AUTO_LIST( IAmmoPackAutoList )
+class CTFAmmoPack : public CItem, public IAmmoPackAutoList
 {
 public:
 	DECLARE_CLASS( CTFAmmoPack, CItem );

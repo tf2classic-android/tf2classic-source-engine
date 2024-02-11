@@ -30,6 +30,8 @@ END_DATADESC();
 
 LINK_ENTITY_TO_CLASS( tf_ammo_pack, CTFAmmoPack );
 
+IMPLEMENT_AUTO_LIST( IAmmoPackAutoList )
+
 PRECACHE_REGISTER( tf_ammo_pack );
 
 void CTFAmmoPack::Spawn( void )
