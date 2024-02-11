@@ -159,8 +159,10 @@ class CTFWeaponBase : public CBaseCombatWeapon
 	virtual void PrimaryAttack();
 	virtual void SecondaryAttack();
 	void CalcIsAttackCritical( void );
+	void CalcIsAttackMiniCritical( void );
 	virtual bool CalcIsAttackCriticalHelper();
 	bool IsCurrentAttackACrit() { return m_bCurrentAttackIsCrit; }
+	bool IsCurrentAttackAMiniCrit() { return m_bCurrentAttackIsMiniCrit; }
 
 	// Ammo.
 	virtual int	GetMaxClip1( void ) const;
@@ -325,6 +327,7 @@ protected:
 	bool			m_bInAttack;
 	bool			m_bInAttack2;
 	bool			m_bCurrentAttackIsCrit;
+	bool			m_bCurrentAttackIsMiniCrit;
 
 	CNetworkVar( bool, m_bLowered );
 

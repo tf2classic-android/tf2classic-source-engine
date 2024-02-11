@@ -1347,6 +1347,24 @@ public:
 				}
 			}
 		}
+		else if ( pPlayer && pPlayer->m_Shared.IsMiniCritBoosted() )
+		{
+			if ( !pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) ||
+				!pPlayer->IsEnemyPlayer() ||
+				pPlayer->GetTeamNumber() == pPlayer->m_Shared.GetDisguiseTeam() )
+			{
+				// No mini crit colors for ylw, grn.
+				switch ( pPlayer->GetTeamNumber() )
+				{
+					case TF_TEAM_RED:
+						vecColor = Vector( 237, 140, 55 );
+						break;
+					case TF_TEAM_BLUE:
+						vecColor = Vector( 28, 168, 112 );
+						break;
+				}
+			}
+		}
 
 		m_pResult->SetVecValue( vecColor.Base(), 3 );
 	}

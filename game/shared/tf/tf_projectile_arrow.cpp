@@ -724,8 +724,7 @@ int	CTFProjectile_Arrow::GetDamageType()
 	int iDmgType = BaseClass::GetDamageType();
 
 	// Buff banner mini-crit calculations
-	// TODO: We don't have minicrits yet
-	/*CTFWeaponBase *pWeapon = ( CTFWeaponBase * )m_hLauncher.Get();
+	CTFWeaponBase *pWeapon = ( CTFWeaponBase * )m_hLauncher.Get();
 	if ( pWeapon )
 	{
 		pWeapon->CalcIsAttackMiniCritical();
@@ -733,7 +732,7 @@ int	CTFProjectile_Arrow::GetDamageType()
 		{
 			iDmgType |= DMG_MINICRITICAL;
 		}
-	}*/
+	}
 
 	if ( m_iProjType == TF_PROJECTILE_HEALING_BOLT || m_iProjType == TF_PROJECTILE_FESTIVE_HEALING_BOLT || m_iProjType == TF_PROJECTILE_BUILDING_REPAIR_BOLT )
 	{
@@ -747,12 +746,10 @@ int	CTFProjectile_Arrow::GetDamageType()
 	{
 		iDmgType |= DMG_USE_HITLOCATIONS;
 	}
-
-	// TODO: We don't have minicrits yet
-	/*if ( m_iDeflected > 0 )
+	if ( m_iDeflected > 0 )
 	{
 		iDmgType |= DMG_MINICRITICAL;
-	}*/
+	}
 
 	return iDmgType;
 }

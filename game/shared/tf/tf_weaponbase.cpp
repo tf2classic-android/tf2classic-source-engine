@@ -220,6 +220,7 @@ CTFWeaponBase::CTFWeaponBase()
 	m_flLastCritCheckTime = 0;
 	m_iLastCritCheckFrame = 0;
 	m_bCurrentAttackIsCrit = false;
+	m_bCurrentAttackIsMiniCrit = false;
 	m_iCurrentSeed = -1;
 	m_flLastFireTime = 0.0f;
 }
@@ -1001,6 +1002,25 @@ void CTFWeaponBase::SecondaryAttack( void )
 
 	// Don't hook secondary for now.
 	return;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Most calls use the prediction seed
+//-----------------------------------------------------------------------------
+void CTFWeaponBase::CalcIsAttackMiniCritical( void )
+{
+	CTFPlayer *pPlayer = ToTFPlayer( GetPlayerOwner() );
+	if ( !pPlayer )
+		return;
+
+	if ( pPlayer->m_Shared.IsMiniCritBoosted() )
+	{
+		m_bCurrentAttackIsMiniCrit = true;
+	}
+	else
+	{
+		m_bCurrentAttackIsMiniCrit = false;
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -186,6 +186,7 @@ void CTFWeaponBaseMelee::SecondaryAttack()
 void CTFWeaponBaseMelee::Swing( CTFPlayer *pPlayer )
 {
 	CalcIsAttackCritical();
+	CalcIsAttackMiniCritical();
 
 	// Play the melee swing and miss (whoosh) always.
 	SendPlayerAnimEvent( pPlayer );

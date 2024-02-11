@@ -181,6 +181,22 @@ CTFGrenadePipebombProjectile *CTFGrenadePipebombProjectile::Create( const Vector
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
+int CTFGrenadePipebombProjectile::GetDamageType( void )
+{
+	int iDmgType = BaseClass::GetDamageType();
+
+	if ( m_iDeflected > 0 )
+	{
+		iDmgType |= DMG_MINICRITICAL;
+	}
+
+	return iDmgType;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 void CTFGrenadePipebombProjectile::Spawn()
 {
 	SetModel( TF_WEAPON_PIPEGRENADE_MODEL );

@@ -72,7 +72,7 @@ enum
 #define TF_DAMAGE_CRITMOD_MAXMULT			6
 
 #define TF_DAMAGE_CRIT_MULTIPLIER			3.0f
-
+#define TF_DAMAGE_MINICRIT_MULTIPLIER			1.35f
 
 //-----------------------------------------------------------------------------
 // TF-specific viewport panels
@@ -926,6 +926,7 @@ extern const char *g_pszHintMessages[];
 #define DMG_USE_HITLOCATIONS	(DMG_AIRBOAT)
 #define DMG_HALF_FALLOFF		(DMG_RADIATION)
 #define DMG_CRITICAL			(DMG_ACID)
+#define DMG_MINICRITICAL		(DMG_PHYSGUN)
 #define DMG_RADIUS_MAX			(DMG_ENERGYBEAM)
 #define DMG_IGNITE				(DMG_PLASMA)
 #define DMG_USEDISTANCEMOD		(DMG_SLOWBURN)		// NEED TO REMOVE CALTROPS

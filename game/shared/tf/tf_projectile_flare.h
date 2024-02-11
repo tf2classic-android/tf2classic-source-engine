@@ -36,6 +36,8 @@ public:
 	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_FLAREGUN; }
 	virtual float	GetRocketSpeed( void );
 
+	virtual int	GetDamageType();
+
 	// Overrides.
 	virtual void	Explode( trace_t *pTrace, CBaseEntity *pOther );
 

@@ -38,6 +38,36 @@ CTFProjectile_Rocket *CTFProjectile_Rocket::Create( CBaseEntity *pWeapon, const 
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
+int CTFProjectile_Rocket::GetDamageType()
+{
+	int iDmgType = BaseClass::GetDamageType();
+
+	// Buff banner mini-crit calculations
+	CTFWeaponBase *pWeapon = ( CTFWeaponBase * )m_hLauncher.Get();
+	if ( pWeapon )
+	{
+		pWeapon->CalcIsAttackMiniCritical();
+		if ( pWeapon->IsCurrentAttackAMiniCrit() )
+		{
+			iDmgType |= DMG_MINICRITICAL;
+		}
+	}
+
+	if ( m_bCritical )
+	{
+		iDmgType |= DMG_CRITICAL;
+	}
+	if ( m_iDeflected > 0 )
+	{
+		iDmgType |= DMG_MINICRITICAL;
+	}
+
+	return iDmgType;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 void CTFProjectile_Rocket::Spawn()
 {
 	SetModel( ROCKET_MODEL );

@@ -115,6 +115,7 @@ public:
 	float	GetConditionDuration( ETFCond nCond );
 
 	bool	IsCritBoosted( void );
+	bool	IsMiniCritBoosted( void );
 	bool	IsInvulnerable( void );
 	bool    IsControlStunned( void );
 	bool    IsLoserStateStunned( void ) const;

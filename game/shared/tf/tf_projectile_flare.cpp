@@ -82,6 +82,37 @@ float CTFProjectile_Flare::GetRocketSpeed( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+int CTFProjectile_Flare::GetDamageType()
+{
+	int iDmgType = BaseClass::GetDamageType();
+
+	// Buff banner mini-crit calculations
+	CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>( m_hLauncher.Get() );
+	if ( pWeapon )
+	{
+		pWeapon->CalcIsAttackMiniCritical();
+		if ( pWeapon->IsCurrentAttackAMiniCrit() )
+		{
+			iDmgType |= DMG_MINICRITICAL;
+		}
+	}
+
+	if ( m_bCritical )
+	{
+		iDmgType |= DMG_CRITICAL;
+	}
+
+	if ( m_iDeflected > 0 )
+	{
+		iDmgType |= DMG_MINICRITICAL;
+	}
+
+        return iDmgType;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
@@ -93,6 +124,8 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 	SetModelName( NULL_STRING );
 	AddSolidFlags( FSOLID_NOT_SOLID );
 	m_takedamage = DAMAGE_NO;
+
+	int nDamageType = GetDamageType();
 
 	// Pull out a bit.
 	if ( pTrace->fraction != 1.0 )
@@ -117,10 +150,9 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 		// Hit player, do impact sound.
 		if ( pPlayer->m_Shared.InCond( TF_COND_BURNING ) )
 		{
-			// Jeez, hardcoding this doesn't seem like a good idea.
-			m_bCritical = true;
+			nDamageType |= DMG_MINICRITICAL;
 		}
-		
+
 		CPVSFilter filter( vecOrigin );
 		EmitSound( filter, pPlayer->entindex(), "TFPlayer.FlareImpact" );
 	}
@@ -131,7 +163,7 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 		TE_TFExplosion( filter, 0.0f, vecOrigin, pTrace->plane.normal, GetWeaponID(), pOther->entindex(), ToBasePlayer( pAttacker ), GetTeamNumber(), m_bCritical );
 	}
 
-	CTakeDamageInfo info( this, pAttacker, m_hLauncher.Get(), GetDamage(), GetDamageType(), TF_DMG_CUSTOM_BURNING );
+	CTakeDamageInfo info( this, pAttacker, m_hLauncher.Get(), GetDamage(), nDamageType, TF_DMG_CUSTOM_BURNING );
 	info.SetReportedPosition( pAttacker ? pAttacker->GetAbsOrigin() : vec3_origin );
 	pOther->TakeDamage( info );
 

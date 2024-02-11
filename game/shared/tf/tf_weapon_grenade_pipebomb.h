@@ -56,6 +56,8 @@ public:
 	virtual void	Spawn();
 	virtual void	Precache();
 
+	virtual int	GetDamageType();
+
 	virtual void	BounceSound( void );
 	virtual void	Detonate();
 
