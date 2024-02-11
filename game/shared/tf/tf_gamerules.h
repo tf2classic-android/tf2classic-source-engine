@@ -427,8 +427,8 @@ public:
 
 	virtual const char *GetGameDescription( void );
 
-	const CUtlVector< CHandle< CBaseEntity > > &GetHealthEntityVector( void );		// return vector of health entities
-	const CUtlVector< CHandle< CBaseEntity > > &GetAmmoEntityVector( void );		// return vector of ammo entities
+	const CUtlVector< CHandle< CBaseEntity > > &GetHealthEntityVector( void ) { Assert(m_hAmmoEntities.Count()); return m_hAmmoEntities; }		// return vector of health entities
+	const CUtlVector< CHandle< CBaseEntity > > &GetAmmoEntityVector( void ) { Assert(m_hHealthEntities.Count()); return m_hHealthEntities; }		// return vector of ammo entities
 
 	CHandle< CTeamTrainWatcher > GetPayloadToPush( int pushingTeam ) const;			// return the train watcher for the Payload cart the given team needs to push to win, or NULL if none currently exists
 	CHandle< CTeamTrainWatcher > GetPayloadToBlock( int blockingTeam ) const;		// return the train watcher for the Payload cart the given team needs to block from advancing, or NULL if none currently exists
@@ -463,14 +463,12 @@ public:
 	void	SendHudNotification( IRecipientFilter &filter, HudNotification_t iType );
 	void	SendHudNotification( IRecipientFilter &filter, const char *pszText, const char *pszIcon, int iTeam = TEAM_UNASSIGNED );
 
-#if 0
 	void	OnNavMeshLoad( void );
-#endif
 
 	//-----------------------------------------------------------------------------
 	// Purpose: Restrict team human players can join
 	//-----------------------------------------------------------------------------
-	int CTFGameRules::GetAssignedHumanTeam( void )
+	int GetAssignedHumanTeam( void )
 	{
 		if( FStrEq( "blue", mp_humans_must_join_team.GetString() ) )
 		{
@@ -491,9 +489,6 @@ public:
 	}
 
 private:
-
-	void ComputeHealthAndAmmoVectors( void );               // compute internal vectors of health and ammo locations
-	bool m_areHealthAndAmmoVectorsReady;
 
 	int DefaultFOV( void ) { return 75; }
 
@@ -521,11 +516,8 @@ private:
 	int m_iCurrentMiniRoundMask;
 	float m_flTimerMayExpireAt;
 
-	CUtlVector< CHandle< CBaseEntity > > m_ammoVector;		// vector of active ammo entities
-	bool m_isAmmoVectorReady;								// for lazy evaluation
-
-	CUtlVector< CHandle< CBaseEntity > > m_healthVector;	// vector of active health entities
-	bool m_isHealthVectorReady;								// for lazy evaluation
+	CUtlVector< CHandle< CBaseEntity > > m_hAmmoEntities;		// vector of active ammo entities
+	CUtlVector< CHandle< CBaseEntity > > m_hHealthEntities;	// vector of active health entities
 
 	bool m_bFirstBlood;
 	int	m_iArenaTeamCount;

@@ -65,8 +65,9 @@ extern ConVar tf_bot_sniper_spot_epsilon;
 extern ConVar tf_mvm_miniboss_min_health;
 extern ConVar tf_bot_path_lookahead_range;
 
+#if defined( TF_ENABLE_MVM )
 extern ConVar tf_mvm_miniboss_scale;
-
+#endif
 
 //-----------------------------------------------------------------------------------------------------
 bool IsPlayerClassname( const char *string )
@@ -1327,10 +1328,12 @@ void CTFBot::ModifyMaxHealth( int nNewMaxHealth, bool bSetCurrentHealth /*= true
 		SetHealth( nNewMaxHealth );
 	}
 
+#if defined( TF_ENABLE_MVM )
 	if ( bAllowModelScaling && IsMiniBoss() )
 	{
 		SetModelScale( m_fModelScaleOverride > 0.0f ? m_fModelScaleOverride : tf_mvm_miniboss_scale.GetFloat() );		
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------------------------------

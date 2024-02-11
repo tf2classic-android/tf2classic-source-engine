@@ -400,10 +400,6 @@ public:
 
 	EHANDLE			m_hOldActiveWeapon;
 
-	bool			m_bIsABot;
-	int				m_nBotSkill;
-	int				m_nOldBotSkill;
-
 	int GetNumActivePipebombs( void );
 
 	bool			m_bUpdatePartyHat;

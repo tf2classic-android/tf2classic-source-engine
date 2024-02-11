@@ -722,7 +722,7 @@ inline void CTFBot::SetDifficulty( CTFBot::DifficultyType difficulty )
 {
 	m_difficulty = difficulty;
 
-	m_nBotSkill = m_difficulty;
+	//m_nBotSkill = m_difficulty;
 }
 
 inline bool CTFBot::IsDifficulty( DifficultyType skill ) const

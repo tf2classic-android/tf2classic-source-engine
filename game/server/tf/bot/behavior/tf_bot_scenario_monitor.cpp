@@ -265,8 +265,16 @@ Action< CTFBot > *CTFBotScenarioMonitor::DesiredScenarioAndClassAction( CTFBot *
 		}
 		else if ( me->GetTeamNumber() == TF_TEAM_RED )
 		{
-			// red is blocking
-			return new CTFBotPayloadGuard;
+			if( TFGameRules()->HasMultipleTrains() )
+			{
+				// red is pushing
+				return new CTFBotPayloadPush;
+			}
+			else
+			{
+				// red is blocking
+				return new CTFBotPayloadGuard;
+			}
 		}
 	}
 	else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_CP )

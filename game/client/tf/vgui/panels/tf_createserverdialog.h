@@ -25,7 +25,7 @@ public:
 	DECLARE_CLASS_SIMPLE( CTFCreateServerDialog, CTFDialogPanelBase );
 
 	CTFCreateServerDialog( vgui::Panel *pParent, const char *pszName );
-	~CTFCreateServerDialog();
+	virtual ~CTFCreateServerDialog();
 
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual void Show( void );

@@ -345,8 +345,6 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayer, DT_TFPlayer )
 	SendPropExclude( "DT_BaseFlex", "m_viewtarget" ),
 
 	SendPropBool( SENDINFO( m_bSaveMeParity ) ),
-	SendPropBool( SENDINFO( m_bIsABot ) ),
-	SendPropInt( SENDINFO( m_nBotSkill ), 3, SPROP_UNSIGNED ),
 
 	// This will create a race condition will the local player, but the data will be the same so.....
 	SendPropInt( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
@@ -1047,17 +1045,6 @@ void CTFPlayer::InitialSpawn( void )
 void CTFPlayer::Spawn()
 {
 	MDLCACHE_CRITICAL_SECTION();
-
-	m_bIsABot = IsBot();
-
-	if( m_bIsABot && IsBotOfType( TF_BOT_TYPE ) )
-	{
-		m_nBotSkill = ToTFBot( this )->GetDifficulty();
-	}
-	else
-	{
-		m_nBotSkill = 0;
-	}
 
 	m_flSpawnTime = gpGlobals->curtime;
 	UpdateModel();

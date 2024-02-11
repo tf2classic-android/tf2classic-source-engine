@@ -26,7 +26,7 @@ class CTFOptionsAdvancedPanel : public CTFDialogPanelBase
 
 public:
 	CTFOptionsAdvancedPanel(vgui::Panel *parent, const char *panelName);
-	~CTFOptionsAdvancedPanel();
+	virtual ~CTFOptionsAdvancedPanel();
 	bool Init();
 	void OnCommand(const char *command);
 	void OnKeyCodeTyped(vgui::KeyCode code);

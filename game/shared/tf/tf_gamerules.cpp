@@ -2146,8 +2146,30 @@ void CTFGameRules::SetupOnRoundStart( void )
 		m_iNumCaps[i] = 0;
 	}
 
+	//TF_MOD_BOT changes
+	m_hAmmoEntities.RemoveAll();
+	m_hHealthEntities.RemoveAll();
+
 	// Let all entities know that a new round is starting
 	CBaseEntity *pEnt = gEntList.FirstEnt();
+	while( pEnt )
+	{
+		variant_t emptyVariant;
+		pEnt->AcceptInput( "RoundSpawn", NULL, NULL, emptyVariant, 0 );
+
+		if( pEnt->ClassMatches( "func_regenerate" ) || pEnt->ClassMatches( "item_ammopack*" ) )
+		{
+			m_hAmmoEntities.AddToTail( pEnt );
+		}
+
+		if( pEnt->ClassMatches( "func_regenerate" ) || pEnt->ClassMatches( "item_healthkit*" ) )
+		{
+			m_hHealthEntities.AddToTail( pEnt );
+		}
+
+		pEnt = gEntList.NextEnt( pEnt );
+	}
+
 
 	// All entities have been spawned, now activate them
 	pEnt = gEntList.FirstEnt();
@@ -4961,63 +4983,6 @@ int ScramblePlayersSort( CTFPlayer* const *p1, CTFPlayer* const *p2 )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Compute internal vectors of health and ammo locations
-//-----------------------------------------------------------------------------
-void CTFGameRules::ComputeHealthAndAmmoVectors( void )
-{
-	m_ammoVector.RemoveAll();
-	m_healthVector.RemoveAll();
-
-	CBaseEntity *pEnt = gEntList.FirstEnt();
-	while( pEnt )
-	{
-		if( pEnt->ClassMatches( "func_regenerate" ) || pEnt->ClassMatches( "item_healthkit*" ) )
-		{
-			m_healthVector.AddToTail( pEnt );
-		}
-
-		if( pEnt->ClassMatches( "func_regenerate" ) || pEnt->ClassMatches( "item_ammopack*" ) )
-		{
-			m_ammoVector.AddToTail( pEnt );
-		}
-
-		pEnt = gEntList.NextEnt( pEnt );
-	}
-
-	m_areHealthAndAmmoVectorsReady = true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Return vector of health entities
-//-----------------------------------------------------------------------------
-const CUtlVector< CHandle< CBaseEntity > > &CTFGameRules::GetHealthEntityVector( void )
-{
-	// lazy-populate health and ammo vector since some maps (Dario!) move these entities around between stages
-	if( !m_areHealthAndAmmoVectorsReady )
-	{
-		ComputeHealthAndAmmoVectors();
-	}
-
-	return m_healthVector;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Return vector of ammo entities
-//-----------------------------------------------------------------------------
-const CUtlVector< CHandle< CBaseEntity > > &CTFGameRules::GetAmmoEntityVector( void )
-{
-	// lazy-populate health and ammo vector since some maps (Dario!) move these entities around between stages
-	if( !m_areHealthAndAmmoVectorsReady )
-	{
-		ComputeHealthAndAmmoVectors();
-	}
-
-	return m_ammoVector;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFGameRules::HandleScrambleTeams( void )
@@ -5930,7 +5895,6 @@ void CTFGameRules::SendHudNotification( IRecipientFilter &filter, const char *ps
 	MessageEnd();
 }
 
-#if 0
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -5945,7 +5909,6 @@ void CTFGameRules::OnNavMeshLoad( void )
 		TheNavMesh->SetPlayerSpawnName( "info_player_teamspawn" );
 	}
 }
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Is the player past the required delays for spawning

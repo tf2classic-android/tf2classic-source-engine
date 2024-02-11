@@ -419,8 +419,6 @@ public:
 	int		no_dispenser_message;
 	
 	CNetworkVar( bool, m_bSaveMeParity );
-	CNetworkVar( bool, m_bIsABot );
-	CNetworkVar( int, m_nBotSkill );
 
 	// teleporter variables
 	int		no_entry_teleporter_message;
