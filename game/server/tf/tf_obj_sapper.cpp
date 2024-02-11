@@ -88,7 +88,7 @@ void CObjectSapper::Spawn()
 	Vector maxs = SAPPER_MAXS;
 	CollisionProp()->SetSurroundingBoundsType( USE_SPECIFIED_BOUNDS, &mins, &maxs );
 
-    m_fObjectFlags.Set( m_fObjectFlags | OF_ALLOW_REPEAT_PLACEMENT );
+	m_fObjectFlags.Set( m_fObjectFlags | OF_ALLOW_REPEAT_PLACEMENT );
 
 	SetSolid( SOLID_NONE );
 }
