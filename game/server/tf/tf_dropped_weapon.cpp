@@ -19,6 +19,8 @@ END_SEND_TABLE()
 
 LINK_ENTITY_TO_CLASS( tf_dropped_weapon, CTFDroppedWeapon );
 
+IMPLEMENT_AUTO_LIST( ITFDroppedWeaponAutoList )
+
 CTFDroppedWeapon::CTFDroppedWeapon()
 {
 	m_iMaxAmmo = 0;

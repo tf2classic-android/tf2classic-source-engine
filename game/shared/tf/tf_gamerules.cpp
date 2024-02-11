@@ -1618,26 +1618,30 @@ bool CTFGameRules::CanChangelevelBecauseOfTimeLimit( void )
 bool CTFGameRules::CanGoToStalemate( void )
 {
 	// In CTF, don't go to stalemate if one of the flags isn't at home
-	if ( m_nGameType == TF_GAMETYPE_CTF )
+	if( m_nGameType == TF_GAMETYPE_CTF )
 	{
-		CCaptureFlag *pFlag = dynamic_cast<CCaptureFlag*> ( gEntList.FindEntityByClassname( NULL, "item_teamflag" ) );
-		while( pFlag )
+		for( int i = 0; i < ICaptureFlagAutoList::AutoList().Count(); ++i )
 		{
-			if ( pFlag->IsDropped() || pFlag->IsStolen() )
-				return false;
-
-			pFlag = dynamic_cast<CCaptureFlag*> ( gEntList.FindEntityByClassname( pFlag, "item_teamflag" ) );
+			CCaptureFlag *pFlag = static_cast< CCaptureFlag * >( ICaptureFlagAutoList::AutoList()[i] );
+			if( pFlag )
+			{
+				if( pFlag->IsDropped() || pFlag->IsStolen() )
+				{
+					return false;
+				}
+			}
 		}
 
 		// check that one team hasn't won by capping
-		if ( CheckCapsPerRound() )
+		if( CheckCapsPerRound() )
+		{
 			return false;
+		}
 	}
 
 	// In PL, we don't have a stalemate state
-	if ( m_nGameType == TF_GAMETYPE_ESCORT )
+	if( m_nGameType == TF_GAMETYPE_ESCORT )
 		return false;
-
 
 	return BaseClass::CanGoToStalemate();
 }

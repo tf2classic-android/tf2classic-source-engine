@@ -5103,27 +5103,24 @@ void CTFPlayer::AmmoPackCleanUp( void )
 	CTFAmmoPack *pOldestBox = NULL;
 
 	// Cycle through all ammobox in the world and remove them
-	CBaseEntity *pEnt = gEntList.FindEntityByClassname( NULL, "tf_ammo_pack" );
-	while ( pEnt )
+	for( int i = 0; i < IAmmoPackAutoList::AutoList().Count(); ++i )
 	{
-		CBaseEntity *pOwner = pEnt->GetOwnerEntity();
-		if (pOwner == this)
+		CAmmoPack *pThisBox = static_cast< CAmmoPack * >( IAmmoPackAutoList::AutoList()[i] );
+		Assert( pThisBox );
+		if( pThisBox )
 		{
-			CTFAmmoPack *pThisBox = dynamic_cast<CTFAmmoPack *>( pEnt );
-			Assert( pThisBox );
-			if ( pThisBox )
+			CBaseEntity *pOwner = pThisBox->GetOwnerEntity();
+			if( pOwner == this )
 			{
 				iNumPacks++;
 
 				// Find the oldest one
-				if ( pOldestBox == NULL || pOldestBox->GetCreationTime() > pThisBox->GetCreationTime() )
+				if( pOldestBox == NULL || ( pOldestBox->GetCreationTime() > pThisBox->GetCreationTime() ) )
 				{
 					pOldestBox = pThisBox;
 				}
 			}
 		}
-
-		pEnt = gEntList.FindEntityByClassname( pEnt, "tf_ammo_pack" );
 	}
 
 	// If they have more than 3 packs active, remove the oldest one
@@ -5143,27 +5140,24 @@ void CTFPlayer::DroppedWeaponCleanUp( void )
 	CTFDroppedWeapon *pOldestWeapon = NULL;
 
 	// Cycle through all weapons in the world and remove them
-	CBaseEntity *pEnt = gEntList.FindEntityByClassname( NULL, "tf_dropped_weapon" );
-	while ( pEnt )
+	for( int i = 0; i < ITFDroppedWeaponAutoList::AutoList().Count(); ++i )
 	{
-		CBaseEntity *pOwner = pEnt->GetOwnerEntity();
-		if ( pOwner == this )
+		CTFDroppedWeapon *pThisWeapon = static_cast< CTFDroppedWeapon * >( ITFDroppedWeaponAutoList::AutoList()[i] );
+		Assert( pThisWeapon );
+		if( pThisWeapon )
 		{
-			CTFDroppedWeapon *pThisWeapon = dynamic_cast<CTFDroppedWeapon *>( pEnt );
-			Assert( pThisWeapon );
-			if ( pThisWeapon )
+			CBaseEntity *pOwner = pThisWeapon->GetOwnerEntity();
+			if( pOwner == this )
 			{
 				iNumWeps++;
 
 				// Find the oldest one
-				if ( pOldestWeapon == NULL || pOldestWeapon->GetCreationTime() > pThisWeapon->GetCreationTime() )
+				if( pOldestWeapon == NULL || ( pOldestWeapon->GetCreationTime() > pThisWeapon->GetCreationTime() ) )
 				{
 					pOldestWeapon = pThisWeapon;
 				}
 			}
 		}
-
-		pEnt = gEntList.FindEntityByClassname( pEnt, "tf_dropped_weapon" );
 	}
 
 	// If they have more than 3 weapons active, remove the oldest one

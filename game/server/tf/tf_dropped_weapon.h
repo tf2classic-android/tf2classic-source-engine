@@ -14,7 +14,8 @@
 #include "items.h"
 #include "tf_weaponbase.h"
 
-class CTFDroppedWeapon : public CItem
+DECLARE_AUTO_LIST( ITFDroppedWeaponAutoList )
+class CTFDroppedWeapon : public CItem, public ITFDroppedWeaponAutoList
 {
 public:
 	DECLARE_CLASS( CTFDroppedWeapon, CItem );
