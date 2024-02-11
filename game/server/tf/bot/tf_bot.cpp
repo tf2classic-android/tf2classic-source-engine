@@ -718,6 +718,12 @@ public:
  */
 const char *CTFBot::GetNextSpawnClassname( void ) const
 {
+	// HACK for deathmatch
+	if( TFGameRules()->IsDeathmatch() )
+	{
+		return "mercenary";
+	}
+
 	struct ClassSelectionInfo
 	{
 		int m_class;
@@ -776,9 +782,9 @@ const char *CTFBot::GetNextSpawnClassname( void ) const
 	// if we are an engineer with an active sentry or teleporters, don't switch
 	if ( IsPlayerClass( TF_CLASS_ENGINEER ) )
 	{
-		if ( const_cast< CTFBot * >( this )->GetObjectOfType( OBJ_SENTRYGUN ) ||
-			 const_cast< CTFBot * >( this )->GetObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT ) )
+		if ( const_cast< CTFBot * >( this )->GetObjectOfType( OBJ_SENTRYGUN ) || const_cast< CTFBot * >( this )->GetObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT ) )
 		{
+			Msg( "QQWWEE\n" );
 			return "engineer";
 		}
 	}
@@ -789,7 +795,7 @@ const char *CTFBot::GetNextSpawnClassname( void ) const
 
 	// assume offense
 	ClassSelectionInfo *desiredRoster = offenseRoster;
-	
+
 	/*if( TFGameRules()->IsMatchTypeCompetitive() )
 	{
 		desiredRoster = compRoster;
@@ -826,7 +832,7 @@ const char *CTFBot::GetNextSpawnClassname( void ) const
 	}
 	else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 	{
-		if ( GetTeamNumber() == TF_TEAM_RED )
+		if ( ( GetTeamNumber() == TF_TEAM_RED ) && !TFGameRules()->HasMultipleTrains() )
 		{
 			desiredRoster = defenseRoster;
 		}

@@ -227,6 +227,11 @@ Action< CTFBot > *CTFBotScenarioMonitor::DesiredScenarioAndClassAction( CTFBot *
 	}
 #endif
 
+	if( TFGameRules()->IsDeathmatch() )
+	{
+		return new CTFBotSeekAndDestroy;
+	}
+
 	if ( me->IsPlayerClass( TF_CLASS_SPY ) )
 	{
 		return new CTFBotSpyInfiltrate;
