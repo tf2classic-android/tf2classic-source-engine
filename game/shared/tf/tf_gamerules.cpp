@@ -1634,6 +1634,11 @@ bool CTFGameRules::CanGoToStalemate( void )
 			return false;
 	}
 
+	// In PL, we don't have a stalemate state
+	if ( m_nGameType == TF_GAMETYPE_ESCORT )
+		return false;
+
+
 	return BaseClass::CanGoToStalemate();
 }
 
