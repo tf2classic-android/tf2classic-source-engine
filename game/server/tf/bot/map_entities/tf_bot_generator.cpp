@@ -388,6 +388,13 @@ void CTFBotGenerator::SpawnBot( void )
 			engine->SetFakeClientConVarValue( bot->edict(), "name", name );
 		}
 
+		if( TFGameRules()->IsDeathmatch() )
+		{
+			engine->SetFakeClientConVarValue( bot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+			engine->SetFakeClientConVarValue( bot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+			engine->SetFakeClientConVarValue( bot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+		}
+
 		if ( bot->IsAlive() == false )
 		{
 			bot->ForceRespawn();

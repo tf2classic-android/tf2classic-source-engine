@@ -67,6 +67,7 @@ END_SEND_TABLE()
 
 LINK_ENTITY_TO_CLASS( tf_weaponspawner, CWeaponSpawner );
 
+IMPLEMENT_AUTO_LIST( IWeaponSpawnerAutoList )
 
 CWeaponSpawner::CWeaponSpawner()
 {

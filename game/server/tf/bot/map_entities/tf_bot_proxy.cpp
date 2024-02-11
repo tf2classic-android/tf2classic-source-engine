@@ -122,6 +122,13 @@ void CTFBotProxy::InputSpawn( inputdata_t &inputdata )
 		m_bot->HandleCommand_JoinTeam( m_teamName );
 		m_bot->HandleCommand_JoinClass( m_className );
 
+		if( TFGameRules()->IsDeathmatch() )
+		{
+			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+		}
+
 		m_onSpawned.FireOutput( m_bot, m_bot );
 	}
 }

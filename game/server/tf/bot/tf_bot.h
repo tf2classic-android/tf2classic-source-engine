@@ -131,6 +131,8 @@ public:
 	virtual void PressSpecialFireButton( float duration = -1.0f ) OVERRIDE;
 
 	// INextBot
+	virtual bool			IsEnemy( const CBaseEntity *them ) const;
+	virtual bool			IsFriend( const CBaseEntity *them ) const;
 	virtual CTFBotLocomotion	*GetLocomotionInterface( void ) const	{ return m_locomotor; }
 	virtual CTFBotBody			*GetBodyInterface( void ) const			{ return m_body; }
 	virtual CTFBotVision		*GetVisionInterface( void ) const		{ return m_vision; }

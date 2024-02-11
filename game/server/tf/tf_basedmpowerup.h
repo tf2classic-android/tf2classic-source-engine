@@ -16,7 +16,8 @@
 
 //=============================================================================
 
-class CTFBaseDMPowerup : public CTFPowerup
+DECLARE_AUTO_LIST( ITFBaseDMPowerupAutoList )
+class CTFBaseDMPowerup : public CTFPowerup, public ITFBaseDMPowerupAutoList
 {
 public:
 	DECLARE_CLASS( CTFBaseDMPowerup, CTFPowerup );

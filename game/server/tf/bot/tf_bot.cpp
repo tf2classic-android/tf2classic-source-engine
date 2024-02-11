@@ -435,6 +435,13 @@ CON_COMMAND_F( tf_bot_add, "Add a bot.", FCVAR_GAMEDLL )
 				engine->SetFakeClientConVarValue( pBot->edict(), "name", name );
 			}
 
+			if( TFGameRules()->IsDeathmatch() )
+			{
+				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+			}
+
 			++iNumAdded;
 		}
 	}
@@ -671,6 +678,28 @@ void CTFBot::PressSpecialFireButton( float duration )
 	}
 
 	BaseClass::PressSpecialFireButton( duration );
+}
+
+bool CTFBot::IsEnemy( const CBaseEntity *them ) const
+{
+	if( !them || IsSelf( them ) )
+		return false;
+
+	return TFGameRules()->IsDeathmatch() || ( TFGameRules()->IsTeamplay() && const_cast< CTFBot * >( this )->GetEntity()->GetTeamNumber() != them->GetTeamNumber() );
+}
+
+bool CTFBot::IsFriend( const CBaseEntity *them ) const
+{
+	if( !them )
+		return false;
+
+	if( IsSelf( them ) )
+		return true;
+
+	if( TFGameRules()->IsDeathmatch() && !TFGameRules()->IsTeamplay() )
+		return false;
+
+	return const_cast< CTFBot * >( this )->GetEntity()->GetTeamNumber() == them->GetTeamNumber();
 }
 
 

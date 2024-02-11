@@ -228,6 +228,12 @@ $Project "Server (TF)"
 							$File	"tf\bot\behavior\scenario\capture_the_flag\tf_bot_attack_flag_defenders.cpp"
 							$File	"tf\bot\behavior\scenario\capture_the_flag\tf_bot_attack_flag_defenders.h"
 						}
+
+						$Folder	"CaptureTheFlag"
+						{
+							$File	"tf\bot\behavior\scenario\deathmatch\tf_bot_deathmatch.cpp"
+							$File	"tf\bot\behavior\scenario\deathmatch\tf_bot_deathmatch.h"
+						}
 					}
 					
 					$Folder	"Engineer"

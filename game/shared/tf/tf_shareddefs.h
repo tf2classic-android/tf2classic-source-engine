@@ -181,17 +181,17 @@ extern const char *g_aGameTypeNames[];	// localized gametype names
 // common utility
 inline int GetEnemyTeam( int team )
 {
-	if ( team == TF_TEAM_RED )
+	if ( (team == TF_TEAM_RED) || (team == TF_TEAM_GREEN) || (team == TF_TEAM_YELLOW) )
 		return TF_TEAM_BLUE;
 
-	if ( team == TF_TEAM_BLUE )
+	if ( (team == TF_TEAM_BLUE) || (team == TF_TEAM_GREEN) || (team == TF_TEAM_YELLOW) )
 		return TF_TEAM_RED;
 
-	if ( team == TF_TEAM_GREEN )
-		return TF_TEAM_YELLOW;
-
-	if ( team == TF_TEAM_YELLOW )
+	if ( (team == TF_TEAM_YELLOW) || (team == TF_TEAM_RED) || (team == TF_TEAM_BLUE) )
 		return TF_TEAM_GREEN;
+
+	if ( (team == TF_TEAM_GREEN) || (team == TF_TEAM_RED) || (team == TF_TEAM_BLUE) )
+		return TF_TEAM_YELLOW;
 
 	// no enemy team
 	return team;

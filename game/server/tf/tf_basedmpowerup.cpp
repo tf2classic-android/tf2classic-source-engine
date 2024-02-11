@@ -29,6 +29,8 @@ IMPLEMENT_SERVERCLASS_ST( CTFBaseDMPowerup, DT_TFBaseDMPowerup )
 	SendPropTime( SENDINFO( m_flRespawnAtTime ) ),
 END_SEND_TABLE()
 
+IMPLEMENT_AUTO_LIST( ITFBaseDMPowerupAutoList )
+
 //=============================================================================
 
 //-----------------------------------------------------------------------------

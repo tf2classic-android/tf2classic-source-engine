@@ -2655,7 +2655,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 	}
 
 	//TF_MOD_BOT changes
-	if ( stricmp( pClassName, "random" ) != 0 && stricmp(pClassName, "auto") != 0)
+	if ( (stricmp( pClassName, "random" ) != 0) && (stricmp( pClassName, "auto" ) != 0) )
 	{
 		// Allow players to join the mercenary and civilian class if the cvar is enabled
 		int iLastClass = tf2c_allow_special_classes.GetBool() ? TF_CLASS_COUNT : TF_LAST_NORMAL_CLASS;
@@ -8060,11 +8060,11 @@ void CTFPlayer::DoTauntAttack( void )
 				float flDamage = bStun ? 1.0f : 500.0f;
 				int nDamageType = DMG_SLASH | DMG_PREVENT_PHYSICS_FORCE;
 				int iCustomDamage = 0;
-				if ( iTauntType == TF_TAUNT_SNIPER_STUN || TF_TAUNT_SNIPER_KILL )
+				if ( (iTauntType == TF_TAUNT_SNIPER_STUN) || (iTauntType == TF_TAUNT_SNIPER_KILL) )
 				{
 					iCustomDamage = TF_DMG_TAUNT_SNIPER;
 				}
-				else if ( iTauntType == TF_TAUNT_MEDIC_STUN || TF_TAUNT_MEDIC_KILL )
+				else if ( (iTauntType == TF_TAUNT_MEDIC_STUN) || (iTauntType == TF_TAUNT_MEDIC_KILL) )
 				{
 					iCustomDamage = TF_DMG_TAUNT_MEDIC;
 				}
@@ -9344,10 +9344,6 @@ bool CTFPlayer::ShouldAnnouceAchievement( void )
 //-----------------------------------------------------------------------------
 void CTFPlayer::UpdatePlayerColor( void )
 {
-	// Bots pick colors themselves.
-	if ( IsFakeClient() )
-		return;
-
 	// Update color from their convars
 	Vector vecNewColor;
 	vecNewColor.x = V_atoi( engine->GetClientConVarValue( entindex(), "tf2c_setmerccolor_r" ) ) / 255.0f;

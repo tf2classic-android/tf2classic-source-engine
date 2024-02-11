@@ -33,6 +33,7 @@
 #include "bot/behavior/medic/tf_bot_medic_heal.h"
 #include "bot/behavior/engineer/tf_bot_engineer_build.h"
 #include "bot/map_entities/tf_bot_hint_sentrygun.h"
+#include "bot/behavior/scenario/deathmatch/tf_bot_deathmatch.h"
 
 #ifdef TF_RAID_MODE
 #include "bot/behavior/scenario/raid/tf_bot_wander.h"
@@ -229,7 +230,7 @@ Action< CTFBot > *CTFBotScenarioMonitor::DesiredScenarioAndClassAction( CTFBot *
 
 	if( TFGameRules()->IsDeathmatch() )
 	{
-		return new CTFBotSeekAndDestroy;
+		return new CTFBotDeathmatch;
 	}
 
 	if ( me->IsPlayerClass( TF_CLASS_SPY ) )

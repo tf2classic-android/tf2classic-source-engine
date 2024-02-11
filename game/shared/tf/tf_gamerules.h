@@ -478,6 +478,14 @@ public:
 		{
 			return TF_TEAM_RED;
 		}
+		else if( FStrEq( "green", mp_humans_must_join_team.GetString() ) && IsFourTeamGame() )
+		{
+			return TF_TEAM_GREEN;
+		}
+		else if( FStrEq( "yellow", mp_humans_must_join_team.GetString() ) && IsFourTeamGame() )
+		{
+			return TF_TEAM_YELLOW;
+		}
 		else if( FStrEq( "spectator", mp_humans_must_join_team.GetString() ) )
 		{
 			return TEAM_SPECTATOR;

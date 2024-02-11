@@ -484,7 +484,14 @@ void CTFBotManager::MaintainBotQuota()
 				CTFBot::DifficultyType skill = pBot->GetDifficulty();
 				CreateBotName( pBot->GetTeamNumber(), pBot->GetPlayerClass()->GetClassIndex(), skill, name, sizeof( name ) );
 				engine->SetFakeClientConVarValue( pBot->edict(), "name", name );
-				
+
+				if( TFGameRules()->IsDeathmatch() )
+				{
+					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+				}
+
 #if 0
 				// Keep track of any bots we add during a match
 				CMatchInfo *pMatchInfo = GTFGCClientSystem()->GetMatch();
