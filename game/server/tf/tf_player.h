@@ -428,7 +428,7 @@ public:
 
 	bool	m_bBlastLaunched;
 
-	bool	m_bIsPlayerADev;
+	CNetworkVar( bool, m_bIsPlayerADev );
 
 	int					StateGet( void ) const;
 

@@ -355,6 +355,8 @@ public:
 
 	CTFPlayerAnimState *m_PlayerAnimState;
 
+	bool m_bIsPlayerADev;
+
 	QAngle	m_angEyeAngles;
 	CInterpolatedVar< QAngle >	m_iv_angEyeAngles;
 
