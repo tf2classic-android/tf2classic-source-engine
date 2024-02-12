@@ -70,7 +70,7 @@ public:
 	{
 		if( pPlayer )
 		{
-			m_iVIP = pPlayer->edict();
+			m_iVIP = pPlayer->entindex();
 		}
 		else
 		{
