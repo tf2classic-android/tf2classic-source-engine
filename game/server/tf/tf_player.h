@@ -344,6 +344,9 @@ public:
 	bool ShouldAutoRezoom( void ) { return m_bAutoRezoom; }
 	void SetAutoRezoom( bool bAutoRezoom ) { m_bAutoRezoom = bAutoRezoom; }
 
+	bool ShouldHoldToZoom( void ) { return m_bHoldZoom; }
+	void SetHoldToZoom( bool bEnable ) { m_bHoldZoom = bEnable; }
+
 	bool ShouldAutoReload( void ) { return m_bAutoReload; }
 	void SetAutoReload( bool bAutoReload ) { m_bAutoReload = bAutoReload; }
 
@@ -655,6 +658,8 @@ private:
 	bool				m_bAutoRezoom;	// does the player want to re-zoom after each shot for sniper rifles
 	bool				m_bAutoReload;
 	bool				m_bFlipViewModel;
+
+	bool				m_bHoldZoom;
 
 	float				m_flTauntAttackTime;
 	int					m_iTauntAttack;

@@ -34,6 +34,7 @@ extern ConVar cl_autorezoom;
 extern ConVar cl_autoreload;
 extern ConVar cl_flipviewmodels;
 
+extern ConVar tf2c_zoom_hold;
 extern ConVar tf2c_setmerccolor_r;
 extern ConVar tf2c_setmerccolor_g;
 extern ConVar tf2c_setmerccolor_b;
@@ -206,6 +207,7 @@ public:
 	bool			ShouldAutoRezoom( void ){ return cl_autorezoom.GetBool(); }
 	bool			ShouldAutoReload( void ){ return cl_autoreload.GetBool(); }
 	bool			ShouldFlipViewModel( void ) { return cl_flipviewmodels.GetBool(); }
+	bool			ShouldHoldToZoom( void ) { return tf2c_zoom_hold.GetBool(); }
 
 public:
 	// Shared functions

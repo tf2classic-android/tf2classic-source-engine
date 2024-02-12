@@ -38,6 +38,7 @@ public:
 	CTFWeaponBaseGun();
 
 	virtual void ItemPostFrame( void );
+	virtual void ItemBusyFrame( void );
 	virtual void PrimaryAttack();
 	virtual void SecondaryAttack( void );
 	virtual bool Holster( CBaseCombatWeapon *pSwitchingTo );
@@ -49,6 +50,8 @@ public:
 	virtual void DoFireEffects();
 
 	void ToggleZoom( void );
+
+	void HandleSoftZoom( bool bZoomIn );
 
 	virtual CBaseEntity *FireProjectile( CTFPlayer *pPlayer );
 	virtual void		GetProjectileFireSetup( CTFPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward, bool bHitTeammates = true, bool bUseHitboxes = false );
@@ -78,6 +81,8 @@ private:
 	CNetworkVar( int, m_iBurstSize );
 
 	CTFWeaponBaseGun( const CTFWeaponBaseGun & );
+
+	bool m_bInSoftZoom;
 };
 
 #endif // TF_WEAPONBASE_GUN_H

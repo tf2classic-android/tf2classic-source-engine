@@ -79,6 +79,7 @@ ConVar sv_showplayerhitboxes( "sv_showplayerhitboxes", "0", FCVAR_REPLICATED, "S
 
 ConVar tf2c_building_hauling( "tf2c_building_hauling", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Toggle Engineer's building hauling ability." );
 ConVar tf2c_disable_player_shadows( "tf2c_disable_player_shadows", "0", FCVAR_REPLICATED, "Disables rendering of player shadows regardless of client's graphical settings." );
+ConVar tf2c_zoom_fov( "tf2c_zoom_fov", "65", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 
 #define TF_SPY_STEALTH_BLINKTIME   0.3f
 #define TF_SPY_STEALTH_BLINKSCALE  0.85f
@@ -771,6 +772,10 @@ void CTFPlayerShared::OnConditionAdded( ETFCond nCond )
 		OnAddSpeedBoost();
 		break;
 
+	case TF_COND_SOFTZOOM:
+		m_pOuter->SetFOV( m_pOuter, tf2c_zoom_fov.GetInt(), 0.2f );
+		break;
+
 	default:
 		break;
 	}
@@ -881,6 +886,10 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond nCond )
 
 	case TF_COND_POWERUP_SPEEDBOOST:
 		OnRemoveSpeedBoost();
+		break;
+
+	case TF_COND_SOFTZOOM:
+		m_pOuter->SetFOV( m_pOuter, 0, 0.2f );
 		break;
 
 	default:

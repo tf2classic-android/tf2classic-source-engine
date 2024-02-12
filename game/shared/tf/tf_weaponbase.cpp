@@ -796,6 +796,14 @@ bool CTFWeaponBase::Holster( CBaseCombatWeapon *pSwitchingTo )
 	}
 #endif
 
+	CTFPlayer* pOwner = GetTFPlayerOwner();
+
+	// unzoom
+	if ( pOwner && pOwner->m_Shared.InCond( TF_COND_SOFTZOOM ) )
+	{
+		pOwner->m_Shared.RemoveCond( TF_COND_SOFTZOOM );
+	}
+
 	AbortReload();
 
 	return BaseClass::Holster( pSwitchingTo );

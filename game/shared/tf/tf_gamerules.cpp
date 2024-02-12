@@ -3652,6 +3652,10 @@ void CTFGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 	// Keep track of their spawn particle.
 	pTFPlayer->m_Shared.SetRespawnParticleID( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf2c_setmercparticle" ) ) );
 
+	// keep track of their tf2c_zoom_hold value.
+	bool bHoldToZoom = Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf2c_zoom_hold" ) );
+	pTFPlayer->SetHoldToZoom( bHoldToZoom );
+
 	const char *pszFov = engine->GetClientConVarValue( pPlayer->entindex(), "fov_desired" );
 	int iFov = atoi( pszFov );
 	iFov = clamp( iFov, 75, MAX_FOV );

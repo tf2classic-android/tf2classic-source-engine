@@ -51,6 +51,7 @@ END_NETWORK_TABLE()
 
 BEGIN_PREDICTION_DATA( CTFWeaponBaseGun )
 #ifdef CLIENT_DLL
+	DEFINE_PRED_FIELD( m_bInSoftZoom, FIELD_BOOLEAN, 0 ),
 	DEFINE_PRED_FIELD( m_iBurstSize, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 #endif
 END_PREDICTION_DATA()
@@ -75,6 +76,7 @@ END_DATADESC()
 CTFWeaponBaseGun::CTFWeaponBaseGun()
 {
 	m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;
+	m_bInSoftZoom = false;
 }
 
 
@@ -94,6 +96,11 @@ void CTFWeaponBaseGun::ItemPostFrame( void )
 		}
 	}
 
+	if ( !( pOwner->m_nButtons & IN_ATTACK2 ) )
+	{
+		HandleSoftZoom( false );
+	}
+
 	BaseClass::ItemPostFrame();
 
 	// Stop burst if we run out of ammo.
@@ -107,6 +114,24 @@ void CTFWeaponBaseGun::ItemPostFrame( void )
 	{
 		// Delay the next burst.
 		m_flNextPrimaryAttack = gpGlobals->curtime + m_pWeaponInfo->GetWeaponData( TF_WEAPON_PRIMARY_MODE ).m_flBurstDelay;
+	}
+}
+
+void CTFWeaponBaseGun::ItemBusyFrame( void )
+{
+	// Call into the base ItemBusyFrame.
+	BaseClass::ItemBusyFrame();
+
+	CTFPlayer* pOwner = ToTFPlayer( GetOwner() );
+	if ( !pOwner )
+	{
+		return;
+	}
+
+	// unzoom
+	if ( !( pOwner->m_nButtons & IN_ATTACK2 ) )
+	{
+		HandleSoftZoom( false );
 	}
 }
 
@@ -186,6 +211,8 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 //-----------------------------------------------------------------------------
 void CTFWeaponBaseGun::SecondaryAttack( void )
 {
+	HandleSoftZoom( true );
+
 	// semi-auto behaviour
 	if ( m_bInAttack2 )
 		return;
@@ -761,6 +788,9 @@ bool CTFWeaponBaseGun::Holster( CBaseCombatWeapon *pSwitchingTo )
 
 #endif
 
+	// Un zoom.
+	HandleSoftZoom( false );
+
 	// Stop the burst.
 	m_iBurstSize = 0;
 
@@ -830,6 +860,68 @@ void CTFWeaponBaseGun::ToggleZoom( void )
 
 	// Get the zoom animation time.
 	m_flNextSecondaryAttack = gpGlobals->curtime + 1.2;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFWeaponBaseGun::HandleSoftZoom( bool bZoomIn )
+{
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if ( !pPlayer )
+		return;
+
+	if ( !pPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
+		return;
+
+	if ( pPlayer->ShouldHoldToZoom() )
+	{
+		if ( bZoomIn )
+		{
+			if ( !pPlayer->m_Shared.InCond( TF_COND_SOFTZOOM ) )
+			{
+				pPlayer->m_Shared.AddCond( TF_COND_SOFTZOOM );
+			}
+
+			m_bInSoftZoom = true;
+		}
+		else
+		{
+			if (pPlayer->m_Shared.InCond( TF_COND_SOFTZOOM ) )
+			{
+				pPlayer->m_Shared.RemoveCond( TF_COND_SOFTZOOM );
+			}
+
+			m_bInSoftZoom = false;
+		}
+	}
+	else
+	{
+		if ( bZoomIn )
+		{
+			if ( !m_bInSoftZoom )
+			{
+				if ( !pPlayer->m_Shared.InCond( TF_COND_SOFTZOOM ) )
+				{
+					pPlayer->m_Shared.AddCond( TF_COND_SOFTZOOM );
+				}
+				else
+				{
+					pPlayer->m_Shared.RemoveCond( TF_COND_SOFTZOOM );
+				}
+
+				m_bInSoftZoom = true;
+			}
+		}
+		else
+		{
+			m_bInSoftZoom = false;
+		}
+	}
+
+	// Add small delay.
+	if ( !bZoomIn )
+		m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f;
 }
 
 //-----------------------------------------------------------------------------
