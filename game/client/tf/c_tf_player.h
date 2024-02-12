@@ -88,6 +88,8 @@ public:
 
 	bool IsVIP() const;
 
+	void JumpSound();
+
 	void LoadInventory(void);
 	void EditInventory(int iSlot, int iWeapon);
 

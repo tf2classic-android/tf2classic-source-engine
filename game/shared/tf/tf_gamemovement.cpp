@@ -504,6 +504,7 @@ bool CTFGameMovement::CheckJumpButton()
 	// Start jump animation and player sound (specific TF animation and flags).
 	m_pTFPlayer->DoAnimationEvent( PLAYERANIMEVENT_JUMP );
 	player->PlayStepSound( (Vector &)mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true );
+	m_pTFPlayer->JumpSound();
 	m_pTFPlayer->m_Shared.SetJumping( true );
 
 	// Set the player as in the air.

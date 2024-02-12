@@ -60,6 +60,8 @@ struct TFPlayerClassData_t
 	char		m_szExplosionDeathSound[MAX_PLAYERCLASS_SOUND_LENGTH];
 #endif
 
+	char		m_szJumpSound[MAX_PLAYERCLASS_SOUND_LENGTH];
+
 	TFPlayerClassData_t();
 	const char *GetModelName() const;
 	void Parse( const char *pszClassName );

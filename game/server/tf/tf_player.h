@@ -387,6 +387,8 @@ public:
 
 	bool IsVIP() const;
 
+	void JumpSound();
+
 	virtual CAttributeManager *GetAttributeManager( void ) { return &m_AttributeManager; }
 	virtual CAttributeContainer *GetAttributeContainer( void ) { return NULL; }
 	virtual CBaseEntity *GetAttributeOwner( void ) { return NULL; }

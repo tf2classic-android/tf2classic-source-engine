@@ -4264,3 +4264,13 @@ bool CTFPlayer::IsVIP() const
 	return false;
 }
 
+void CTFPlayer::JumpSound()
+{
+	if( TFGameRules()->GetGameType() == TF_GAMETYPE_DM )
+	{
+		const char *pszJumpSound = GetPlayerClassData( GetPlayerClass()->GetClassIndex() )->m_szJumpSound;
+		CPASAttenuationFilter filter( this, pszJumpSound );
+		filter.UsePredictionRules();
+		EmitSound( filter, entindex(), pszJumpSound );
+	}
+}

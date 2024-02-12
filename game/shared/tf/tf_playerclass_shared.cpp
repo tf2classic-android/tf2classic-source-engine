@@ -66,6 +66,8 @@ TFPlayerClassData_t::TFPlayerClassData_t()
 	m_szExplosionDeathSound[0] = '\0';
 #endif
 
+	m_szJumpSound[0] = '\0';
+
 	for ( int iWeapon = 0; iWeapon < TF_PLAYER_WEAPON_COUNT; ++iWeapon )
 	{
 		m_aWeapons[iWeapon] = TF_WEAPON_NONE;
@@ -198,6 +200,8 @@ void TFPlayerClassData_t::ParseData( KeyValues *pKeyValuesData )
 	Q_strncpy( m_szExplosionDeathSound, pKeyValuesData->GetString( "sound_explosion_death", "Player.ExplosionDeath" ), MAX_PLAYERCLASS_SOUND_LENGTH );
 
 #endif
+
+	Q_strncpy( m_szJumpSound, pKeyValuesData->GetString( "sound_jump", "TFPlayer.Jump" ), MAX_PLAYERCLASS_SOUND_LENGTH );
 
 	// The file has been parsed.
 	m_bParsed = true;
