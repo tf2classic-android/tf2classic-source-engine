@@ -156,6 +156,8 @@ ConVar tf_gamemode_passtime( "tf_gamemode_passtime", "0" , FCVAR_NOTIFY | FCVAR_
 ConVar tf_gamemode_vip( "tf_gamemode_vip", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar tf_gamemode_dm( "tf_gamemode_dm", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 
+ConVar tf_bot_count( "tf_bot_count", "0", FCVAR_NOTIFY | FCVAR_DEVELOPMENTONLY );
+
 ConVar tf_teamtalk( "tf_teamtalk", "1", FCVAR_NOTIFY, "Teammates can always chat with each other whether alive or dead." );
 ConVar tf_ctf_bonus_time( "tf_ctf_bonus_time", "10", FCVAR_NOTIFY, "Length of team crit time for CTF capture." );
 
@@ -1726,6 +1728,7 @@ void CTFGameRules::Activate()
 	tf_gamemode_passtime.SetValue( 0 );
 	tf_gamemode_vip.SetValue( 0 );
 	tf_gamemode_dm.SetValue( 0 );
+	tf_bot_count.SetValue( 0 );
 
 	m_redPayloadToPush = NULL;
 	m_bluePayloadToPush = NULL;
@@ -2981,6 +2984,23 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 		if( IsInDomination() && (gpGlobals->curtime > m_flNextDominationThink) )
 		{
 			Domination_RunLogic();
+		}
+
+		// periodically count up the fake clients and set the bot_count cvar to update server tags
+		if ( m_botCountTimer.IsElapsed() )
+		{
+			m_botCountTimer.Start( 5.0f );
+
+			int botCount = 0;
+			for ( int i = 1 ; i <= gpGlobals->maxClients ; i++ )
+			{
+				CTFPlayer *player = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+
+				if ( player && player->IsFakeClient() )
+					++botCount;
+			}
+
+			tf_bot_count.SetValue( botCount );
 		}
 
 		if ( IsDeathmatch() && CountActivePlayers() > 0 && !g_fGameOver )

@@ -529,6 +529,8 @@ private:
 	int m_iCurrentMiniRoundMask;
 	float m_flTimerMayExpireAt;
 
+	CountdownTimer m_botCountTimer;
+
 	CUtlVector< CHandle< CBaseEntity > > m_hAmmoEntities;		// vector of active ammo entities
 	CUtlVector< CHandle< CBaseEntity > > m_hHealthEntities;	// vector of active health entities
 
