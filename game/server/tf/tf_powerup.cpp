@@ -27,6 +27,8 @@ float PackRatios[POWERUP_SIZES] =
 // CTF Powerup tables.
 //
 
+IMPLEMENT_AUTO_LIST( ITFPowerupAutoList )
+
 BEGIN_DATADESC( CTFPowerup )
 
 // Keyfields.
@@ -228,7 +230,7 @@ void CTFPowerup::SetDisabled( bool bDisabled )
 		// only turn it back on if we're not in the middle of respawning
 		if ( !m_bRespawning )
 		{
-            RemoveEffects( EF_NODRAW );
+			RemoveEffects( EF_NODRAW );
 		}
 	}
 }

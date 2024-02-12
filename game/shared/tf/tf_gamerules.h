@@ -373,6 +373,8 @@ public:
 	virtual bool	IsInDomination( void ) { return m_bPlayingDomination; }
 	virtual bool	IsInSpecialDeliveryMode( void ){ return m_bPlayingSpecialDeliveryMode; };
 
+	virtual bool	IsInstagib( void ) { return m_bInstagib; }
+
 	int		GetFragLimit();
 
 #ifdef CLIENT_DLL
@@ -558,6 +560,7 @@ private:
 	CNetworkVar( CHandle<CTeamRoundTimer>, m_hRedKothTimer );
 	CNetworkVar( CHandle<CTeamRoundTimer>, m_hGreenKothTimer );
 	CNetworkVar( CHandle<CTeamRoundTimer>, m_hYellowKothTimer );
+	CNetworkVar( bool, m_bInstagib );
 
 public:
 

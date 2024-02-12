@@ -50,6 +50,8 @@
 	#include "NextBot/NextBot.h"
 	#include "nav.h"
 	#include "nav_mesh.h"
+	#include "entity_weaponspawn.h"
+	#include "tf_basedmpowerup.h"
 	#include "tf_ammo_pack.h"
 #endif
 
@@ -132,8 +134,12 @@ ConVar tf2c_falldamage_disablespread( "tf2c_falldamage_disablespread", "0", FCVA
 ConVar tf2c_allow_thirdperson( "tf2c_allow_thirdperson", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allow players to switch to third person mode." );
 ConVar tf2c_allow_civilian_class( "tf2c_allow_civilian_class", "1", FCVAR_NOTIFY, "200" );
 ConVar tf2c_domination_points_per_round( "tf2c_domination_points_per_round", "200", FCVAR_REPLICATED | FCVAR_NOTIFY, "Amount of points required to win a Domination round.", true, 1.f, false, 0.f );
+
+ConVar tf_infinite_ammo( "tf_infinite_ammo", "0", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED );
+
 // TODO: RETRO GAMETYPE
 //ConVar tf2c_dm_fraglimit( "tf2c_dm_fraglimit", "50", FCVAR_NOTIFY | FCVAR_REPLICATED );
+ConVar tf2c_dm_instagib( "tf2c_dm_instagib", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Enables Instagib mutator. Takes effect after map restart." );
 
 #ifdef GAME_DLL
 // TF overrides the default value of this convar
@@ -263,7 +269,8 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	RecvPropEHandle( RECVINFO( m_hRedKothTimer ) ), 
 	RecvPropEHandle( RECVINFO( m_hBlueKothTimer ) ),
 	RecvPropEHandle( RECVINFO( m_hGreenKothTimer ) ), 
-	RecvPropEHandle( RECVINFO( m_hYellowKothTimer ) )
+	RecvPropEHandle( RECVINFO( m_hYellowKothTimer ) ),
+	RecvPropBool( RECVINFO( m_bInstagib ) )
 
 #else
 
@@ -287,7 +294,8 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	SendPropEHandle( SENDINFO( m_hRedKothTimer ) ), 
 	SendPropEHandle( SENDINFO( m_hBlueKothTimer ) ),
 	SendPropEHandle( SENDINFO( m_hGreenKothTimer ) ), 
-	SendPropEHandle( SENDINFO( m_hYellowKothTimer ) )
+	SendPropEHandle( SENDINFO( m_hYellowKothTimer ) ),
+	SendPropBool( SENDINFO( m_bInstagib ) )
 
 #endif
 END_NETWORK_TABLE()
@@ -1706,6 +1714,7 @@ void CTFGameRules::Activate()
 	m_iBirthdayMode = BIRTHDAY_RECALCULATE;
 
 	m_nGameType.Set( TF_GAMETYPE_UNDEFINED );
+	m_bInstagib = false;
 
 	tf_gamemode_arena.SetValue( 0 );
 	tf_gamemode_cp.SetValue( 0 );
@@ -1764,15 +1773,10 @@ void CTFGameRules::Activate()
       &this->m_nRetroModeType.m_Value,
       &this->m_bTeamPlay.m_Value,
       &this->m_bAllowStalemateAtTimelimit);
-    v25 = this->m_bInstagib.m_Value;
-    v26 = tf2c_dm_instagib.m_pParent->m_nValue != 0;
-    val = v26;
-    if ( v25 != v26 )
-    {
-      CGameRulesProxy::NotifyNetworkStateChanged();
-      this->m_bInstagib.m_Value = v26;
-    }
 		*/
+
+		m_bInstagib = tf2c_dm_instagib.GetBool();
+
 		Msg( "Executing server deathmatch config file\n" );
 		engine->ServerCommand( "exec config_deathmatch.cfg \n" );
 		engine->ServerExecute();
@@ -2259,6 +2263,19 @@ void CTFGameRules::SetupOnRoundStart( void )
 
 		SetRoundOverlayDetails();
 	}
+
+	if( m_bInstagib )
+	{
+		for( int i = 0; i < ITFPowerupAutoList::AutoList().Count(); ++i )
+		{
+			CTFPowerup* pObj = static_cast< CTFPowerup * >( ITFPowerupAutoList::AutoList()[i] );
+			if( pObj )
+			{
+				pObj->SetDisabled( !pObj->IsDisabled() );
+			}
+		}
+	}
+
 #ifdef GAME_DLL
 	m_szMostRecentCappers[0] = 0;
 #endif

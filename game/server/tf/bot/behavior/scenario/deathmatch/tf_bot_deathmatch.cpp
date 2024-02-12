@@ -104,7 +104,10 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 		if( !pObj )
 			continue;
 
-		if( !pObj->IsDisabled() && !pObj->m_bRespawning && pObj->ValidTouch( me ) && TheNavMesh->GetNearestNavArea( pObj ) )
+		if( (pObj->IsDisabled() || pObj->m_bRespawning || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
+			continue;
+
+		if( TheNavMesh->GetNearestNavArea( pObj ) )
 			goalVector.AddToTail( pObj );
 	}
 
@@ -115,7 +118,10 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 		if( !pObj )
 			continue;
 
-		if( !pObj->IsDisabled() && !pObj->m_bRespawning && pObj->ValidTouch( me ) && TheNavMesh->GetNearestNavArea( pObj ) )
+		if( (pObj->IsDisabled() || pObj->m_bRespawning || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
+			continue;
+
+		if( TheNavMesh->GetNearestNavArea( pObj ) )
 			goalVector.AddToTail( pObj );
 	}
 

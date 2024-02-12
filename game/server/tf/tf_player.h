@@ -204,6 +204,9 @@ public:
 	virtual int			GiveAmmo( int iCount, int iAmmoIndex, bool bSuppressSound, EAmmoSource ammosource );
 	int				GetMaxAmmo( int iAmmoIndex, int iClassNumber = -1 );
 	virtual void			RemoveAmmo( int iCount, int iAmmoIndex );
+	virtual int			GetAmmoCount( int iAmmoIndex ) const;
+
+	bool				HasInfiniteAmmo() const;
 
 	bool				CanAttack( void );
 
@@ -447,6 +450,7 @@ public:
 	void				ValidateWearables( void );
 	void				ManageRegularWeapons( TFPlayerClassData_t *pData );
 	void				ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData );
+	void				ManageInstagibWeapons( TFPlayerClassData_t *pData );
 	void				ManageRandomWeapons( TFPlayerClassData_t *pData );
 	void				ManageBuilderWeapons( TFPlayerClassData_t *pData );
 	void				ManageGrenades(TFPlayerClassData_t *pData);

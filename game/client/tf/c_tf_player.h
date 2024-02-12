@@ -168,7 +168,12 @@ public:
 	void ClientPlayerRespawn( void );
 
 	void CreateSaveMeEffect( void );
-	
+
+	virtual void	RemoveAmmo( int iCount, int iAmmoIndex );
+	virtual int	GetAmmoCount( int iAmmoIndex ) const;
+
+	bool		HasInfiniteAmmo() const;
+
 	virtual bool	IsOverridingViewmodel( void );
 	virtual int		DrawOverriddenViewmodel( C_BaseViewModel *pViewmodel, int flags );
 

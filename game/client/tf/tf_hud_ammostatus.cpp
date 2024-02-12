@@ -256,7 +256,7 @@ void CTFHudWeaponAmmo::HideLowAmmoIndicator( void )
 void CTFHudWeaponAmmo::OnThink()
 {
 	// Get the player and active weapon.
-	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
 	C_BaseCombatWeapon *pWeapon = GetActiveWeapon();
 
 	if ( m_flNextThink < gpGlobals->curtime )
@@ -325,17 +325,35 @@ void CTFHudWeaponAmmo::OnThink()
 				m_nAmmo2 = nAmmo2;
 				m_hCurrentActiveWeapon = pWeapon;
 
-				if ( m_hCurrentActiveWeapon.Get()->UsesClipsForAmmo1() )
+				if( !pPlayer->HasInfiniteAmmo() )
 				{
-					UpdateAmmoLabels( true, true, false );
+					if ( m_hCurrentActiveWeapon.Get()->UsesClipsForAmmo1() )
+					{
+						UpdateAmmoLabels( true, true, false );
 
-					SetDialogVariable( "Ammo", m_nAmmo );
-					SetDialogVariable( "AmmoInReserve", m_nAmmo2 );
+						SetDialogVariable( "Ammo", m_nAmmo );
+						SetDialogVariable( "AmmoInReserve", m_nAmmo2 );
+					}
+					else
+					{
+						UpdateAmmoLabels( false, false, true );
+						SetDialogVariable( "Ammo", m_nAmmo );
+					}
 				}
 				else
 				{
-					UpdateAmmoLabels( false, false, true );
-					SetDialogVariable( "Ammo", m_nAmmo );
+					if ( m_hCurrentActiveWeapon.Get()->UsesClipsForAmmo1() )
+					{
+						UpdateAmmoLabels( true, true, false );
+
+						SetDialogVariable( "Ammo", m_nAmmo );
+						SetDialogVariable( "AmmoInReserve", L"\u221E" );
+					}
+					else
+					{
+						UpdateAmmoLabels( false, false, true );
+						SetDialogVariable( "Ammo", L"\u221E" );
+					}
 				}
 			}
 

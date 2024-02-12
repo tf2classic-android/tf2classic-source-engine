@@ -101,8 +101,6 @@ ConVar tf_damage_range( "tf_damage_range", "0.5", FCVAR_DEVELOPMENTONLY );
 
 ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_NOTIFY, "Max time after a voice command until player can do another one" );
 
-ConVar tf_infinite_ammo( "tf_infinite_ammo", "0", FCVAR_CHEAT | FCVAR_NOTIFY );
-
 ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow players to execute + use while playing." );
 
 ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "0", 0, "Allow player to slide for a bit after taunting." );
@@ -1462,7 +1460,9 @@ void CTFPlayer::GiveDefaultItems()
 	}
 
 	// Give weapons.
-	if ( tf2c_random_weapons.GetBool() )
+	if( TFGameRules()->IsInstagib() ) // TODO: Rewrite it as in TF2C 2017!
+		ManageInstagibWeapons( pData );
+	else if ( tf2c_random_weapons.GetBool() )
 		ManageRandomWeapons( pData );
 	else if ( tf2c_legacy_weapons.GetBool() )
 		ManageRegularWeaponsLegacy( pData );
@@ -1499,19 +1499,6 @@ void CTFPlayer::GiveDefaultItems()
 	// We may have swapped away our current weapon at resupply locker.
 	if ( GetActiveWeapon() == NULL )
 		SwitchToNextBestWeapon( NULL );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CTFPlayer::RemoveAmmo( int iCount, int iAmmoIndex )
-{
-	if ( tf_infinite_ammo.GetBool() )
-	{
-		return;
-	}
-
-	CBaseCombatCharacter::RemoveAmmo( iCount, iAmmoIndex );
 }
 
 //-----------------------------------------------------------------------------
@@ -1746,6 +1733,49 @@ void CTFPlayer::ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData )
 			if ( pCarriedWeapon && pCarriedWeapon->GetWeaponID() != TF_WEAPON_BUILDER )
 			{
 				pCarriedWeapon->UnEquip( this );
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::ManageInstagibWeapons( TFPlayerClassData_t *pData )
+{
+	// FIXME: HARDCODED WEAPON IDS FROM ITEMS_GAME.TXT
+	int gTFInstagibWeapons[2] =
+	{
+		14,
+		9010
+	};
+
+	for( int i = 0; i < ARRAYSIZE( gTFInstagibWeapons ); i++ )
+	{
+		int iWeaponID = gTFInstagibWeapons[i];
+
+		CEconItemDefinition *pItemDef = GetItemSchema()->GetItemDefinition( iWeaponID );
+		if( !pItemDef )
+		{
+			Warning( "Unknown iWeaponID: %d\n", iWeaponID );
+			return;
+		}
+
+		CEconItemView econItem( iWeaponID );
+		econItem.SkipBaseAttributes( false );
+
+		const char *pszClassname = pItemDef->item_class;
+		CEconEntity *pEconEnt = dynamic_cast<CEconEntity *>( GiveNamedItem( pszClassname, 0, &econItem ) );
+		if( pEconEnt )
+		{
+			pEconEnt->GiveTo( this );
+
+			CBaseCombatWeapon *pWeapon = pEconEnt->MyCombatWeaponPointer();
+			if ( pWeapon )
+			{
+				// Give full ammo for this weapon.
+				int iAmmoType = pWeapon->GetPrimaryAmmoType();
+				SetAmmoCount( GetMaxAmmo( iAmmoType ), iAmmoType );
 			}
 		}
 	}
@@ -3820,6 +3850,13 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	m_vecTotalBulletForce.y = clamp( m_vecTotalBulletForce.y, -15000.0f, 15000.0f );
 	m_vecTotalBulletForce.z = clamp( m_vecTotalBulletForce.z, -15000.0f, 15000.0f );
 
+	if( TFGameRules()->IsInstagib() && pAttacker->IsPlayer() && pAttacker != this )
+	{
+		// All players die in one hit in instagib.
+		info.SetDamage( 1000 );
+		info.AddDamageType( DMG_ALWAYSGIB );
+	}
+
 	int bTookDamage = 0;
  
 	int bitsDamage = inputInfo.GetDamageType();
@@ -5422,6 +5459,9 @@ void CTFPlayer::DropFakeWeapon( CTFWeaponBase *pWeapon )
 //-----------------------------------------------------------------------------
 void CTFPlayer::DropWeapon( CTFWeaponBase *pWeapon, bool bKilled /*= false*/ )
 {
+	if( TFGameRules()->IsInstagib() )
+		return;
+
 	// Since weapon is hidden in loser state don't drop ammo pack.
 	if ( m_Shared.IsLoser() )
 		return;

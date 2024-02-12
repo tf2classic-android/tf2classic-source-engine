@@ -30,7 +30,8 @@ extern float PackRatios[POWERUP_SIZES];
 // CTF Powerup class.
 //
 
-class CTFPowerup : public CItem
+DECLARE_AUTO_LIST( ITFPowerupAutoList )
+class CTFPowerup : public CItem, public ITFPowerupAutoList
 {
 public:
 	DECLARE_CLASS( CTFPowerup, CItem );

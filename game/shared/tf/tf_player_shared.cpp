@@ -87,6 +87,8 @@ ConVar tf2c_disable_player_shadows( "tf2c_disable_player_shadows", "0", FCVAR_RE
 
 #define MAX_DAMAGE_EVENTS		128
 
+extern ConVar tf_infinite_ammo;
+
 const char *g_pszBDayGibs[22] =
 {
 	"models/effects/bday_gib01.mdl",
@@ -3528,6 +3530,32 @@ bool CTFPlayer::IsAllowedToPickUpFlag( void )
 		return false;
 
 	return true;
+}
+
+bool CTFPlayer::HasInfiniteAmmo( void ) const
+{
+	if( tf_infinite_ammo.GetBool() || TFGameRules()->IsInstagib() /*|| m_Shared.InCond( TF_COND_LASTSTANDING )*/ )
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void CTFPlayer::RemoveAmmo( int iCount, int iAmmoIndex )
+{
+	if( HasInfiniteAmmo() )
+		return;
+
+	BaseClass::RemoveAmmo( iCount, iAmmoIndex );
+}
+
+int CTFPlayer::GetAmmoCount( int iAmmoIndex ) const
+{
+	if( HasInfiniteAmmo() )
+		return 999;
+
+	return BaseClass::GetAmmoCount( iAmmoIndex );
 }
 
 //-----------------------------------------------------------------------------
