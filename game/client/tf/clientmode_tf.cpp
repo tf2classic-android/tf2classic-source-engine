@@ -520,3 +520,23 @@ int ClientModeTFNormal::HandleSpectatorKeyInput( int down, ButtonCode_t keynum, 
 
 	return BaseClass::HandleSpectatorKeyInput( down, keynum, pszCurrentBinding );
 }
+
+// Sent when when map is *actually* completely loaded on the client, i.e. all the entities have been spawned.
+class CPostEntityHudInitSystem : public CAutoGameSystem
+{
+public:
+	CPostEntityHudInitSystem() : CAutoGameSystem( "PostEntityHudInit" )
+	{
+	}
+
+	virtual void LevelInitPostEntity()
+	{
+		IGameEvent *event = gameeventmanager->CreateEvent( "game_maploaded" );
+		if( event )
+		{
+			gameeventmanager->FireEventClientSide( event );
+		}
+	}
+};
+
+static CPostEntityHudInitSystem g_pPostEntityHudInit;

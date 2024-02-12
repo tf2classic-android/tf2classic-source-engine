@@ -38,6 +38,8 @@ IMPLEMENT_CLIENTCLASS_DT( C_TFTeam, DT_TFTeam, CTFTeam )
 
 	RecvPropInt( RECVINFO( m_nFlagCaptures ) ),
 	RecvPropInt( RECVINFO( m_iRole ) ),
+	RecvPropBool( RECVINFO( m_bEscorting ) ),
+	RecvPropInt( RECVINFO( m_iRoundScore ) ),
 
 	RecvPropArray2( 
 	RecvProxyArrayLength_TeamObjects,
@@ -54,6 +56,8 @@ END_RECV_TABLE()
 C_TFTeam::C_TFTeam()
 {
 	m_nFlagCaptures = 0;
+	m_bEscorting = false;
+	m_iRoundScore = 0;
 }
 
 //-----------------------------------------------------------------------------

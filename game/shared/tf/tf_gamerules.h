@@ -370,6 +370,7 @@ public:
 	virtual bool	IsPVEModeActive( void ) { return false; };
 	virtual bool	IsCompetitiveMode( void ){ return m_bCompetitiveMode; };
 	virtual bool	IsInHybridCTF_CPMode( void ){ return m_bPlayingHybrid_CTF_CP; };
+	virtual bool	IsInDomination( void ) { return m_bPlayingDomination; }
 	virtual bool	IsInSpecialDeliveryMode( void ){ return m_bPlayingSpecialDeliveryMode; };
 
 	int		GetFragLimit();
@@ -465,6 +466,8 @@ public:
 
 	void	OnNavMeshLoad( void );
 
+	bool	Domination_RunLogic();
+
 	//-----------------------------------------------------------------------------
 	// Purpose: Restrict team human players can join
 	//-----------------------------------------------------------------------------
@@ -533,6 +536,8 @@ private:
 	KeyValues *m_pAuthData;
 #endif
 
+	float m_flNextDominationThink;
+
 	CNetworkVar( int, m_nGameType ); // Type of game this map is (CTF, CP)
 	CNetworkString( m_pszTeamGoalStringRed, MAX_TEAMGOAL_STRING );
 	CNetworkString( m_pszTeamGoalStringBlue, MAX_TEAMGOAL_STRING );
@@ -545,6 +550,7 @@ private:
 	CNetworkVar( bool, m_bPlayingSpecialDeliveryMode );
 	CNetworkVar( bool, m_bPlayingRobotDestructionMode );
 	CNetworkVar( bool, m_bPlayingMannVsMachine );
+	CNetworkVar( bool, m_bPlayingDomination );
 	CNetworkVar( bool, m_bPlayingHybrid_CTF_CP );
 	CNetworkVar( bool, m_bCompetitiveMode );
 	CNetworkVar( bool, m_bPowerupMode );

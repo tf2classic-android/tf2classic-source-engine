@@ -487,6 +487,7 @@ static s_MapTypeInfo s_MapTypes[] = {
 	"dm_",		3, "#Gametype_Deathmatch",
 	"vip_",		4, "#Gametype_VIP",
 	"esp_",		4, "#Gametype_Espionage",
+	"dom_",		4, "#Gametype_Domination",
 };
 
 //-----------------------------------------------------------------------------

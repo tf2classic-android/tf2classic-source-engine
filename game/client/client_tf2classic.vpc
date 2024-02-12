@@ -95,6 +95,10 @@ $Project "Client (TF)"
 
 		$Folder	"TF"
 		{
+			$File	"tf\tf_hud_domination.cpp"
+			$File	"tf\tf_hud_domination.h"
+			$File	"tf\tf_hud_vip.cpp"
+			$File	"tf\tf_hud_vip.h"
 			$File	"tf\tf_hud_screenoverlays.cpp"
 			$File	"tf\tf_hud_screenoverlays.h"
 			$File	"tf\c_baseobject.cpp"

@@ -24,6 +24,7 @@
 #include "tf_weapon_medigun.h"
 #include "ihasattributes.h"
 #include "c_tf_spymask.h"
+#include "c_tf_team.h"
 
 class C_MuzzleFlashModel;
 class C_BaseObject;
@@ -82,7 +83,10 @@ public:
 
 	virtual void Simulate( void );
 	virtual void FireEvent( const Vector& origin, const QAngle& angles, int event, const char *options );
+	C_TFTeam *GetTFTeam( void );
 	virtual void PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
+
+	bool IsVIP() const;
 
 	void LoadInventory(void);
 	void EditInventory(int iSlot, int iWeapon);

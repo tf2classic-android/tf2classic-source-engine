@@ -50,6 +50,7 @@
 	#include "NextBot/NextBot.h"
 	#include "nav.h"
 	#include "nav_mesh.h"
+	#include "tf_ammo_pack.h"
 #endif
 
 ConVar mp_humans_must_join_team( "mp_humans_must_join_team", "any", FCVAR_REPLICATED, "Restricts human players to a single team {any, blue, red, spectator}" );
@@ -130,6 +131,7 @@ ConVar tf_birthday( "tf_birthday", "0", FCVAR_NOTIFY | FCVAR_REPLICATED );
 ConVar tf2c_falldamage_disablespread( "tf2c_falldamage_disablespread", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Toggles random 20% fall damage spread." );
 ConVar tf2c_allow_thirdperson( "tf2c_allow_thirdperson", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allow players to switch to third person mode." );
 ConVar tf2c_allow_civilian_class( "tf2c_allow_civilian_class", "1", FCVAR_NOTIFY, "200" );
+ConVar tf2c_domination_points_per_round( "tf2c_domination_points_per_round", "200", FCVAR_REPLICATED | FCVAR_NOTIFY, "Amount of points required to win a Domination round.", true, 1.f, false, 0.f );
 // TODO: RETRO GAMETYPE
 //ConVar tf2c_dm_fraglimit( "tf2c_dm_fraglimit", "50", FCVAR_NOTIFY | FCVAR_REPLICATED );
 
@@ -145,6 +147,7 @@ ConVar tf_gamemode_rd( "tf_gamemode_rd", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED |
 ConVar tf_gamemode_payload( "tf_gamemode_payload", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar tf_gamemode_mvm( "tf_gamemode_mvm", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar tf_gamemode_passtime( "tf_gamemode_passtime", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
+ConVar tf_gamemode_vip( "tf_gamemode_vip", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar tf_gamemode_dm( "tf_gamemode_dm", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 
 ConVar tf_teamtalk( "tf_teamtalk", "1", FCVAR_NOTIFY, "Teammates can always chat with each other whether alive or dead." );
@@ -253,6 +256,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	RecvPropBool( RECVINFO( m_bPlayingSpecialDeliveryMode ) ),
 	RecvPropBool( RECVINFO( m_bPlayingRobotDestructionMode ) ),
 	RecvPropBool( RECVINFO( m_bPlayingMannVsMachine ) ),
+	RecvPropBool( RECVINFO( m_bPlayingDomination ) ),
 	RecvPropBool( RECVINFO( m_bCompetitiveMode ) ),
 	RecvPropBool( RECVINFO( m_bPowerupMode ) ),
 	RecvPropBool( RECVINFO( m_bFourTeamMode ) ),
@@ -276,6 +280,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	SendPropBool( SENDINFO( m_bPlayingSpecialDeliveryMode ) ),
 	SendPropBool( SENDINFO( m_bPlayingRobotDestructionMode ) ),
 	SendPropBool( SENDINFO( m_bPlayingMannVsMachine ) ),
+	SendPropBool( SENDINFO( m_bPlayingDomination ) ),
 	SendPropBool( SENDINFO( m_bCompetitiveMode ) ),
 	SendPropBool( SENDINFO( m_bPowerupMode ) ),
 	SendPropBool( SENDINFO( m_bFourTeamMode ) ),
@@ -1176,6 +1181,14 @@ void CHybridMap_CTF_CP::Spawn( void )
 	BaseClass::Spawn();
 }
 
+class CTFLogicDomination : public CPointEntity
+{
+public:
+	DECLARE_CLASS( CTFLogicDomination, CPointEntity );
+};
+
+LINK_ENTITY_TO_CLASS( tf_logic_domination, CTFLogicDomination );
+
 class CCPTimerLogic : public CPointEntity
 {
 public:
@@ -1444,6 +1457,8 @@ CTFGameRules::CTFGameRules()
 	m_iArenaTeamCount = 0;
 	m_flCTFBonusTime = -1;
 
+	m_flNextDominationThink = 0.f;
+
 	// Lets execute a map specific cfg file
 	// ** execute this after server.cfg!
 	char szCommand[32];
@@ -1700,53 +1715,13 @@ void CTFGameRules::Activate()
 	tf_gamemode_mvm.SetValue( 0 );
 	tf_gamemode_rd.SetValue( 0 );
 	tf_gamemode_passtime.SetValue( 0 );
+	tf_gamemode_vip.SetValue( 0 );
 	tf_gamemode_dm.SetValue( 0 );
 
-	SetMultipleTrains( false );
-
-	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_deathmatch" ) || !Q_strncmp( STRING( gpGlobals->mapname ), "dm_", 3 ) )
-	{
-		m_nGameType.Set( TF_GAMETYPE_DM );
-		tf_gamemode_dm.SetValue( 1 );
-		Msg( "Executing server deathmatch config file\n", 1 );
-		engine->ServerCommand( "exec config_deathmatch.cfg \n" );
-		engine->ServerExecute();
-		return;
-	}
-
-	CArenaLogic *pArena = dynamic_cast<CArenaLogic*>( gEntList.FindEntityByClassname( NULL, "tf_logic_arena" ) );
-	if ( pArena )
-	{
-		m_nGameType.Set( TF_GAMETYPE_ARENA );
-		tf_gamemode_arena.SetValue( 1 );
-		Msg( "Executing server arena config file\n", 1 );
-		engine->ServerCommand( "exec config_arena.cfg \n" );
-		engine->ServerExecute();
-		return;
-	}
-
-	CKothLogic *pKoth = dynamic_cast<CKothLogic*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_koth" ) );
-	if ( pKoth )
-	{
-		m_nGameType.Set( TF_GAMETYPE_CP );
-		m_bPlayingKoth = true;
-		return;
-	}
-
-	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_vip" ) )
-	{
-		// TODO: make a global pointer to this and access its settings
-		m_nGameType.Set( TF_GAMETYPE_VIP );
-		return;
-	}
-
-	CHybridMap_CTF_CP *pHybridEnt = dynamic_cast<CHybridMap_CTF_CP*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_hybrid_ctf_cp" ) );
-	if ( pHybridEnt )
-	{
-		m_nGameType.Set( TF_GAMETYPE_CP );
-		m_bPlayingHybrid_CTF_CP = true;
-		return;
-	}
+	m_redPayloadToPush = NULL;
+	m_bluePayloadToPush = NULL;
+	m_redPayloadToBlock = NULL;
+	m_bluePayloadToBlock = NULL;
 
 	// bot roster
 	m_hBlueBotRoster = NULL;
@@ -1777,6 +1752,79 @@ void CTFGameRules::Activate()
 		hBotRoster = dynamic_cast<CTFBotRoster *>( gEntList.FindEntityByClassname( hBotRoster, "bot_roster" ) );
 	}
 
+	SetMultipleTrains( false );
+
+	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_deathmatch" ) || !Q_strncmp( STRING( gpGlobals->mapname ), "dm_", 3 ) )
+	{
+		m_nGameType.Set( TF_GAMETYPE_DM );
+		tf_gamemode_dm.SetValue( 1 );
+		/*
+    CTFLogicDeathmatch::SelectGameTypeFromCvar(
+      v23,
+      &this->m_nRetroModeType.m_Value,
+      &this->m_bTeamPlay.m_Value,
+      &this->m_bAllowStalemateAtTimelimit);
+    v25 = this->m_bInstagib.m_Value;
+    v26 = tf2c_dm_instagib.m_pParent->m_nValue != 0;
+    val = v26;
+    if ( v25 != v26 )
+    {
+      CGameRulesProxy::NotifyNetworkStateChanged();
+      this->m_bInstagib.m_Value = v26;
+    }
+		*/
+		Msg( "Executing server deathmatch config file\n" );
+		engine->ServerCommand( "exec config_deathmatch.cfg \n" );
+		engine->ServerExecute();
+		return;
+	}
+
+	CArenaLogic *pArena = dynamic_cast<CArenaLogic*>( gEntList.FindEntityByClassname( NULL, "tf_logic_arena" ) );
+	if ( pArena )
+	{
+		m_nGameType.Set( TF_GAMETYPE_ARENA );
+		tf_gamemode_arena.SetValue( 1 );
+		Msg( "Executing server arena config file\n" );
+		engine->ServerCommand( "exec config_arena.cfg \n" );
+		engine->ServerExecute();
+		return;
+	}
+
+	CKothLogic *pKoth = dynamic_cast<CKothLogic*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_koth" ) );
+	if ( pKoth )
+	{
+		m_nGameType.Set( TF_GAMETYPE_CP );
+		tf_gamemode_cp.SetValue( 1 );
+		m_bPlayingKoth = true;
+		return;
+	}
+
+	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_vip" ) )
+	{
+		// TODO: make a global pointer to this and access its settings
+		m_nGameType.Set( TF_GAMETYPE_VIP );
+		tf_gamemode_vip.SetValue( 1 );
+		return;
+	}
+
+	CHybridMap_CTF_CP *pHybridEnt = dynamic_cast<CHybridMap_CTF_CP*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_hybrid_ctf_cp" ) );
+	if ( pHybridEnt )
+	{
+		m_nGameType.Set( TF_GAMETYPE_CP );
+		tf_gamemode_cp.SetValue( 1 );
+		m_bPlayingHybrid_CTF_CP = true;
+		return;
+	}
+
+	CTFLogicDomination *pLogicDomination =  dynamic_cast< CTFLogicDomination * >( gEntList.FindEntityByClassname( NULL, "tf_logic_domination" ) );
+	if( pLogicDomination )
+	{
+		m_nGameType.Set( TF_GAMETYPE_CP );
+		tf_gamemode_cp.SetValue( 1 );
+		m_bPlayingDomination = true;
+		return;
+	}
+
 	CCaptureFlag *pFlag = dynamic_cast<CCaptureFlag*> ( gEntList.FindEntityByClassname( NULL, "item_teamflag" ) );
 	if ( pFlag )
 	{
@@ -1784,11 +1832,6 @@ void CTFGameRules::Activate()
 		tf_gamemode_ctf.SetValue( 1 );
 		return;
 	}
-
-	m_redPayloadToPush = NULL;
-	m_bluePayloadToPush = NULL;
-	m_redPayloadToBlock = NULL;
-	m_bluePayloadToBlock = NULL;
 
 	CTeamTrainWatcher *pTrain = dynamic_cast<CTeamTrainWatcher*> ( gEntList.FindEntityByClassname( NULL, "team_train_watcher" ) );
 	if ( pTrain )
@@ -2909,14 +2952,18 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 	{
 		if ( !g_fGameOver )
 		{
-			if ( gpGlobals->curtime > m_flNextPeriodicThink )
+			if( gpGlobals->curtime > m_flNextPeriodicThink )
 			{
-				if ( State_Get() != GR_STATE_TEAM_WIN )
+				if( (State_Get() != GR_STATE_TEAM_WIN) && CheckCapsPerRound() )
 				{
-					if ( CheckCapsPerRound() )
-						return;
+					return;
 				}
 			}
+		}
+
+		if( IsInDomination() && (gpGlobals->curtime > m_flNextDominationThink) )
+		{
+			Domination_RunLogic();
 		}
 
 		if ( IsDeathmatch() && CountActivePlayers() > 0 && !g_fGameOver )
@@ -3658,6 +3705,9 @@ static const char *g_aTaggedConVars[] =
 
 	"tf_gamemode_passtime",
 	"passtime",
+
+	"tf_gamemode_vip",
+	"vip",
 
 	"tf_gamemode_dm",
 	"dm",
@@ -4905,6 +4955,7 @@ void CTFGameRules::RoundRespawn( void )
 			continue;
 
 		pTeam->SetFlagCaptures( 0 );
+		pTeam->SetRoundScore( 0 );
 	}
 	
 	// NickNine: Fixed per-round player stats not being reset
@@ -5927,6 +5978,48 @@ void CTFGameRules::OnNavMeshLoad( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFGameRules::Domination_RunLogic()
+{
+	if( !PointsMayBeCaptured() || !ObjectiveResource() || (ObjectiveResource()->GetNumControlPoints() <= 0) )
+	{
+		m_flNextDominationThink = gpGlobals->curtime + 5.f;
+		return false;
+	}
+
+	for( int i = 0; i < ObjectiveResource()->GetNumControlPoints(); i++ )
+	{
+		if( ObjectiveResource()->IsInMiniRound( i ) )
+		{
+			int iOwningTeam = ObjectiveResource()->GetOwningTeam( i );
+			CTFTeam *pGlobalTFTeam = GetGlobalTFTeam( iOwningTeam );
+			if( pGlobalTFTeam )
+			{
+				if( pGlobalTFTeam->GetTeamNumber() != 0 ) // != 0 ????
+				{
+					int nValue = tf2c_domination_points_per_round.GetInt();
+
+					pGlobalTFTeam->AddRoundScore( 1 );
+
+					Msg( "pGlobalTFTeam->GetRoundScore() = CONTROLPOINT: %d | SCORE: %d\n", i, pGlobalTFTeam->GetRoundScore() );
+
+					if( (nValue > 0) && (pGlobalTFTeam->GetRoundScore() >= nValue) )
+					{
+						// FIXME WINREASON_FLAG_CAPTURE_LIMIT
+						SetWinningTeam( pGlobalTFTeam->GetTeamNumber(), WINREASON_FLAG_CAPTURE_LIMIT, true );
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	m_flNextDominationThink = gpGlobals->curtime + 5.f;
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Is the player past the required delays for spawning
 //-----------------------------------------------------------------------------
 bool CTFGameRules::HasPassedMinRespawnTime( CBasePlayer *pPlayer )
@@ -5954,6 +6047,9 @@ const char *CTFGameRules::GetGameDescription(void)
 		case TF_GAMETYPE_CP:
 			if ( IsInKothMode() )
 				return "TF2C (Koth)";
+
+			if ( IsInDomination() )
+				return "TF2C (Domination)";
 
 			return "TF2C (CP)";
 			break;

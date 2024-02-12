@@ -4213,3 +4213,26 @@ void CTFPlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float
 
 	BaseClass::PlayStepSound( vecOrigin, psurface, fvol, force );
 }
+
+#if defined( CLIENT_DLL )
+C_TFTeam *CTFPlayer::GetTFTeam()
+#else
+CTFTeam *CTFPlayer::GetTFTeam()
+#endif
+{
+#if defined( CLIENT_DLL )
+	C_TFTeam *pTFTeam = dynamic_cast<C_TFTeam *>( GetTeam() );
+#else
+	CTFTeam *pTFTeam = dynamic_cast<CTFTeam *>( GetTeam() );
+#endif
+	Assert( pTFTeam );
+	return pTFTeam;
+}
+
+bool CTFPlayer::IsVIP() const
+{
+	if( (TFGameRules() && (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP)) && (GetTFTeam() && GetTFTeam()->IsEscorting()) && IsPlayerClass( TF_CLASS_CIVILIAN ) )
+		return true;
+	return false;
+}
+

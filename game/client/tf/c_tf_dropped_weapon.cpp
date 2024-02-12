@@ -91,7 +91,7 @@ void C_TFDroppedWeapon::ClientThink()
 		if ( tr.fraction == 1.0f )
 		{
 			// draw glow outline if its deathmatch or we're a mercenary.
-			if( TFGameRules() && TFGameRules()->IsDeathmatch() || pPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
+			if( (TFGameRules() && TFGameRules()->IsDeathmatch()) || pPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
 			{
 				bShouldGlow = true;
 			}

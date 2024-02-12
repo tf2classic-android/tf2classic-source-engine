@@ -7085,16 +7085,6 @@ bool CTFPlayer::IsCapturingPoint()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CTFTeam *CTFPlayer::GetTFTeam( void )
-{
-	CTFTeam *pTeam = dynamic_cast<CTFTeam *>( GetTeam() );
-	Assert( pTeam );
-	return pTeam;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 CTFTeam *CTFPlayer::GetOpposingTFTeam( void )
 {
 	int iTeam = GetTeamNumber();

@@ -10,6 +10,7 @@
 #include "utlvector.h"
 #include "team.h"
 #include "tf_shareddefs.h"
+#include "tf_player.h"
 
 class CBaseObject;
 
@@ -51,16 +52,43 @@ public:
 	// Roles
 	void			SetRole( int iTeamRole ) { m_iRole = iTeamRole; }
 	int				GetRole( void ) { return m_iRole; }
-	
+
 	void 			GetOpposingTFTeamList( CUtlVector<CTFTeam *> *pTeamList );
 
+	bool			IsEscorting() const { return m_bEscorting; }
+
+	void			AddRoundScore( int iScore ) { m_iRoundScore += iScore; }
+	void			SetRoundScore( int iScore ) { m_iRoundScore = iScore; }
+	int			GetRoundScore() const { return m_iRoundScore; }
+
+	CTFPlayer		*GetVIP() const
+	{
+		CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( m_iVIP ) );
+		return pPlayer ? pPlayer : NULL;
+	}
+	void			SetVIP( CTFPlayer *pPlayer )
+	{
+		if( pPlayer )
+		{
+			m_iVIP = pPlayer->edict();
+		}
+		else
+		{
+			m_iVIP = 0;
+		}
+	}
+
 private:
-	
 	color32						m_TeamColor;
 	CUtlVector< CHandle<CBaseObject> >	m_aObjects;			// List of team objects.
 
 	CNetworkVar( int, m_nFlagCaptures );
 	CNetworkVar( int, m_iRole );
+	CNetworkVar( int, m_bEscorting );
+	CNetworkVar( int, m_iRoundScore );
+
+	int m_iVIP;
+	int m_iWins;
 };
 
 class CTFTeamManager

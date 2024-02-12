@@ -39,12 +39,17 @@ public:
 	int				GetNumObjects( int iObjectType = -1 );
 	CBaseObject		*GetObject( int num );
 
+	bool			IsEscorting() const { return m_bEscorting; }
+	int			GetRoundScore() const { return m_iRoundScore; }
+
 	CUtlVector< CHandle<C_BaseObject> > m_aObjects;
 
 private:
 
 	int		m_nFlagCaptures;
 	int		m_iRole;
+	bool		m_bEscorting;
+	int		m_iRoundScore;
 };
 
 C_TFTeam *GetGlobalTFTeam( int iTeamNumber );

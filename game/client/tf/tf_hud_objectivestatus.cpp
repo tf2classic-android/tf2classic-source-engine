@@ -730,6 +730,8 @@ CTFHudObjectiveStatus::CTFHudObjectiveStatus( const char *pElementName ) : CHudE
 	//m_pTrainingPanel = new CTFHudTraining( this, "ObjectiveStatusTraining" );
 	//m_pRobotDestructionPanel = new CTFHUDRobotDestruction( this, "ObjectiveStatusRobotDestruction" );
 	m_pDMPanel = new CTFHudDeathMatchObjectives( this, "ObjectiveStatusDeathMatchPanel" );
+	m_pVIPPanel = new CTFHudVIP( this, "ObjectiveStatisVIP" );
+	m_pDominationPanel = new CTFHudDomination( this, "ObjectiveStatusDomination" );
 
 	SetHiddenBits( 0 );
 
@@ -853,6 +855,14 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 			return;
 			break;
 
+		case TF_GAMETYPE_VIP:
+			if( m_pVIPPanel && !m_pVIPPanel->IsVisible() )
+			{
+				m_pVIPPanel->SetVisible( true );
+			}
+			return;
+			break;
+
 		default:
 			break;
 		}
@@ -884,6 +894,15 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 					m_pFlagPanel->SetVisible( true );
 				}
 			}
+
+			if( TFGameRules() && TFGameRules()->IsInDomination() )
+			{
+				if( m_pDominationPanel && !m_pDominationPanel->IsVisible() )
+				{
+					m_pDominationPanel->SetVisible( true );
+				}
+			}
+
 			break;
 
 		case TF_GAMETYPE_ESCORT:
@@ -912,9 +931,15 @@ void CTFHudObjectiveStatus::SetVisiblePanels( void )
 			}
 			break;
 
-		default:
+		case TF_GAMETYPE_VIP:
+			if( m_pVIPPanel && !m_pVIPPanel->IsVisible() )
+			{
+				m_pVIPPanel->SetVisible( true );
+			}
 			break;
 
+		default:
+			break;
 	}
 }
 
@@ -949,6 +974,16 @@ void CTFHudObjectiveStatus::TurnOffPanels()
 	if ( m_pEscortRacePanel && m_pEscortRacePanel->IsVisible() )
 	{
 		m_pEscortRacePanel->SetVisible( false );
+	}
+
+	if ( m_pVIPPanel && m_pVIPPanel->IsVisible() )
+	{
+		m_pVIPPanel->SetVisible( false );
+	}
+
+	if ( m_pDominationPanel && m_pDominationPanel->IsVisible() )
+	{
+		m_pDominationPanel->SetVisible( false );
 	}
 }
 

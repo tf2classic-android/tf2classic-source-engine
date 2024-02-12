@@ -4134,7 +4134,19 @@ void C_TFPlayer::SetHealer( C_TFPlayer *pHealer, float flChargeLevel )
 //-----------------------------------------------------------------------------
 bool C_TFPlayer::CanShowClassMenu( void )
 {
-	return ( GetTeamNumber() > LAST_SHARED_TEAM );
+	// TODO: Arena check
+
+	if( GetTeamNumber() > LAST_SHARED_TEAM );
+		return false;
+
+	if( !TFGameRules() )
+		return false;
+
+	if( ((TFGameRules()->GetGameType() == TF_GAMETYPE_DM) /*&& !tf2c_dm_allow_normal_classes.GetBool()*/) ||
+		( (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP) && (GetTFTeam() && GetTFTeam()->IsEscorting()) && IsPlayerClass( TF_CLASS_CIVILIAN )) )
+		return false;
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

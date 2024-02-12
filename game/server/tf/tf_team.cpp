@@ -45,6 +45,8 @@ IMPLEMENT_SERVERCLASS_ST( CTFTeam, DT_TFTeam )
 
 	SendPropInt( SENDINFO( m_nFlagCaptures ), 8 ),
 	SendPropInt( SENDINFO( m_iRole ), 4, SPROP_UNSIGNED ),
+	SendPropBool( SENDINFO( m_bEscorting ) ),
+	SendPropInt( SENDINFO( m_iRoundScore ) ),
 
 	SendPropArray2( 
 	SendProxyArrayLength_TeamObjects,
@@ -276,6 +278,11 @@ CTFTeam::CTFTeam()
 	m_TeamColor.a = 0;
 
 	m_nFlagCaptures = 0;
+	m_bEscorting = false;
+	m_iRoundScore = 0;
+
+	m_iVIP = 0;
+	m_iWins = 0;
 }
 
 //-----------------------------------------------------------------------------

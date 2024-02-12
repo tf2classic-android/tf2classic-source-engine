@@ -19,6 +19,8 @@
 #include "hud_controlpointicons.h"
 #include "GameEventListener.h"
 #include "c_tf_player.h"
+#include "tf_hud_domination.h"
+#include "tf_hud_vip.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -209,6 +211,8 @@ private:
 	CControlPointProgressBar *m_pControlPointProgressBar;
 	CTFHudEscort			*m_pEscortPanel;
 	CTFHudMultipleEscort	*m_pEscortRacePanel;
+	CTFHudVIP		*m_pVIPPanel;
+	CTFHudDomination	*m_pDominationPanel;
 };
 
 #endif	// TF_HUD_OBJECTIVESTATUS_H
