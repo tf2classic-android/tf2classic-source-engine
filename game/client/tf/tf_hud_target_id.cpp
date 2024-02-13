@@ -13,6 +13,8 @@
 #include "c_team.h"
 #include "tf_gamerules.h"
 #include "tf_hud_statpanel.h"
+// for material proxy
+#include "functionproxy.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -296,7 +298,8 @@ void CTargetID::UpdateID( void )
 			}
 
 			// Get team color.
-			iColorNum = pPlayer->GetTeamNumber();
+			if( TFGameRules() && !TFGameRules()->IsDeathmatch() )
+				iColorNum = pPlayer->GetTeamNumber();
 
 			// Get the avatar.
 			if ( tf_hud_target_id_show_avatars.GetBool() )
@@ -606,3 +609,26 @@ int	CSpectatorTargetID::CalculateTargetIndex( C_TFPlayer *pLocalTFPlayer )
 
 	return iIndex;
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: Gets custom color of Target ID entity.
+//-----------------------------------------------------------------------------
+class CTargetIDTintColor : public CResultProxy
+{
+public:
+	void OnBind( void *pC_BaseEntity )
+	{
+		C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+		if ( pPlayer )
+		{
+			C_TFPlayer *pTarget = ToTFPlayer( UTIL_PlayerByIndex( pPlayer->GetIDTarget() ) );
+			if ( pTarget )
+			{
+				m_pResult->SetVecValue( pTarget->m_vecPlayerColor.Base(), 3 );
+				return;
+			}
+		}
+	}
+};
+
+EXPOSE_INTERFACE( CTargetIDTintColor, IMaterialProxy, "TargetIDTintColor" IMATERIAL_PROXY_INTERFACE_VERSION );
