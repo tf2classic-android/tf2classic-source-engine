@@ -4268,7 +4268,7 @@ CTFTeam *CTFPlayer::GetTFTeam()
 
 bool CTFPlayer::IsVIP() const
 {
-	if( (TFGameRules() && (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP)) && (GetTFTeam() && GetTFTeam()->IsEscorting()) && IsPlayerClass( TF_CLASS_CIVILIAN ) )
+	if( (TFGameRules() && (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP)) && (const_cast< CTFPlayer * >( this )->GetTFTeam() && const_cast< CTFPlayer * >( this )->GetTFTeam()->IsEscorting()) && const_cast< CTFPlayer * >( this )->IsPlayerClass( TF_CLASS_CIVILIAN ) )
 		return true;
 	return false;
 }
