@@ -993,7 +993,7 @@ class CPlayerTintColor : public CResultProxy
 			// TODO(SanyaSho): Implement CTFPlayerModelPanel
 			if ( !pEntity )
 			{
-				if ( pC_BaseEntity )
+				if ( pC_BaseEntity || !engine->IsConnected() )
 				{
 					/*CTFPlayerModelPanel *pPanel = dynamic_cast<CTFPlayerModelPanel *>( (IClientRenderable *)pC_BaseEntity );
 					if( pPanel )
@@ -1001,15 +1001,20 @@ class CPlayerTintColor : public CResultProxy
 						m_pResult->SetVecValue( pPanel->GetModelTintColor().Base(), 3 );
 						return;
 					}*/
-					Vector vecColor = Vector( tf2c_setmerccolor_r.GetFloat(), tf2c_setmerccolor_g.GetFloat(), tf2c_setmerccolor_b.GetFloat() );
-					m_pResult->SetVecValue( vecColor.Base(), 3 );
+					// Assuming we're at the menus... Use cvar values.
+					float r = floorf( tf2c_setmerccolor_r.GetFloat() ) / 255.0f;
+					float g = floorf( tf2c_setmerccolor_g.GetFloat() ) / 255.0f;
+					float b = floorf( tf2c_setmerccolor_b.GetFloat() ) / 255.0f;
+
+					m_pResult->SetVecValue( r, g, b );
+					return;
 				}
 
 				m_pResult->SetVecValue( 0, 0, 0 );
 				return;
 			}
 
-			if( TFGameRules()->IsDeathmatch() )
+			if( TFGameRules() && TFGameRules()->IsDeathmatch() )
 			{
 				C_TFPlayer *pPlayer = ToTFPlayer( pEntity );
 				if( pPlayer )
