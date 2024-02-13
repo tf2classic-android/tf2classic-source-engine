@@ -1843,9 +1843,7 @@ bool CTFWeaponBase::ReloadOrSwitchWeapons( void )
 		// Also auto-reload if owner has auto-reload enabled.
 		if ( UsesClipsForAmmo1() && !AutoFiresFullClip() &&
 			( m_iClip1 == 0 || ( pOwner && pOwner->ShouldAutoReload() && m_iClip1 < GetMaxClip1() && CanAutoReload() ) ) &&
-			( GetWeaponFlags() & ITEM_FLAG_NOAUTORELOAD ) == false &&
-			m_flNextPrimaryAttack < gpGlobals->curtime &&
-			m_flNextSecondaryAttack < gpGlobals->curtime )
+			( GetWeaponFlags() & ITEM_FLAG_NOAUTORELOAD ) == false )
 		{
 			// if we're successfully reloading, we're done
 			if ( Reload() )
