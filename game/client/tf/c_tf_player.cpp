@@ -1016,7 +1016,12 @@ class CPlayerTintColor : public CResultProxy
 
 			if( TFGameRules() && TFGameRules()->IsDeathmatch() )
 			{
+				C_BaseViewModel* pVM = dynamic_cast<C_BaseViewModel*>( pEntity );
 				C_TFPlayer *pPlayer = ToTFPlayer( pEntity );
+
+				if ( pVM )
+					pPlayer = ToTFPlayer( pVM->GetOwner() );
+
 				if( pPlayer )
 				{
 					m_pResult->SetVecValue( pPlayer->m_vecPlayerColor.Base(), 3 );
