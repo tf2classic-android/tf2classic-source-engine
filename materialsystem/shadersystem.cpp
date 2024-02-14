@@ -437,7 +437,8 @@ bool CShaderSystem::LoadShaderDLL( const char *pFullPath )
 }
 
 // HACKHACK: remove me when VAC2 is online.
-#if defined( _WIN32 ) && !defined( _X360 )
+//#if defined( _WIN32 ) && !defined( _X360 )
+#if 0
 // Instead of including windows.h
 extern "C"
 {

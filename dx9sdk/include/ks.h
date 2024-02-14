@@ -35,7 +35,7 @@ Abstract:
 #endif // !defined(SIZEOF_ARRAY)
 
 #if defined(__cplusplus) && _MSC_VER >= 1100
-#define DEFINE_GUIDSTRUCT(g, n) struct __declspec(uuid(g)) n
+#define DEFINE_GUIDSTRUCT(g, n) //struct __declspec(uuid(g)) n // FIXME
 #define DEFINE_GUIDNAMED(n) __uuidof(struct n)
 #else // !defined(__cplusplus)
 #define DEFINE_GUIDSTRUCT(g, n) DEFINE_GUIDEX(n)
