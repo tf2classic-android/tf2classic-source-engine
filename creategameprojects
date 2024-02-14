@@ -1,0 +1,2 @@
+#!/bin/bash
+cmake -S . -B build -G "Unix Makefiles" -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic $@
