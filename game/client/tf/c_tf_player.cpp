@@ -1468,6 +1468,28 @@ public:
 
 EXPOSE_INTERFACE( CProxyAnimatedWeaponSheen, IMaterialProxy, "AnimatedWeaponSheen" IMATERIAL_PROXY_INTERFACE_VERSION );
 
+class CDesaturationProxy : public CResultProxy
+{
+public:
+	void OnBind( void* pC_BaseEntity )
+	{
+		C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
+
+		if ( pPlayer && pPlayer->GetObserverMode() == OBS_MODE_IN_EYE &&
+			pPlayer->GetObserverTarget() && pPlayer->GetObserverTarget()->IsPlayer() )
+		{
+			pPlayer = assert_cast<C_TFPlayer*>( pPlayer->GetObserverTarget() );
+		}
+
+		if( pPlayer )
+		{
+			m_pResult->SetFloatValue( pPlayer->GetDesaturationAmount() );
+		}
+	}
+};
+
+EXPOSE_INTERFACE( CDesaturationProxy, IMaterialProxy, "DesaturationAmount" IMATERIAL_PROXY_INTERFACE_VERSION );
+
 //-----------------------------------------------------------------------------
 // Purpose: Universal proxy from live tf2 used for spy invisiblity material
 //			Its' purpose is to replace weapon_invis, vm_invis and spy_invis
@@ -2308,6 +2330,28 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 			*r = 0.76f; *g = 0.76f; *b = 0.76f;
 			break;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+float C_TFPlayer::GetDesaturationAmount()
+{
+	if ( !TFGameRules() )
+		return 0.0f;
+
+	// Only mercenary gets desaturation effect.
+	if ( !IsPlayerClass( TF_CLASS_MERCENARY ) )
+		return;
+
+	if ( TFGameRules()->State_Get() == GR_STATE_PREROUND && !TFGameRules()->IsInWaitingForPlayers() )
+	{
+		// Do a fade in during freeze time.
+		float flTimeLeft = ( TFGameRules()->GetStateTransitionTime() - gpGlobals->curtime ) + 0.05f;
+		return RemapValClamped( flTimeLeft, 3.0f, 0.0f, 1.0f, 0.0f );
+	}
+
+	return 0.0f;
 }
 
 //-----------------------------------------------------------------------------

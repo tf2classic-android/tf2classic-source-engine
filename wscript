@@ -70,6 +70,7 @@ projects={
 		'materialsystem/shaderapidx9',
 		'materialsystem/shaderlib',
 		'materialsystem/stdshaders',
+		'materialsystem/stdshaders/tf2classic',
 		'mathlib',
 		'particles',
 		'scenefilecache',

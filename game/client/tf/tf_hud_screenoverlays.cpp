@@ -31,6 +31,7 @@ ScreenOverlayData_t g_aScreenOverlays[TF_OVERLAY_COUNT] =
 	{ "effects/dodge_overlay",		false	},
 	{ "effects/imcookin",			false	},
 	{ "effects/invuln_overlay_%s",		true	},
+	{ "effects/desaturate",		false	},
 };
 
 CHudScreenOverlays::CHudScreenOverlays()
@@ -114,9 +115,14 @@ void CHudScreenOverlays::DrawOverlays( const CViewSetup &view )
 			nOverlaysToDraw |= MAKEFLAG( TF_OVERLAY_BURNING );
 		}
 
-		if ( pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_SPAWN_PROTECT ) )
+		if ( pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_SPAWN_PROTECT ) && pPlayer->GetDesaturationAmount() <= 0.0f )
 		{
 			nOverlaysToDraw |= MAKEFLAG( TF_OVERLAY_INVULN );
+		}
+
+		if ( pPlayer->GetDesaturationAmount() != 0.0f )
+		{
+			nOverlaysToDraw |= MAKEFLAG( TF_OVERLAY_DESATURATE );
 		}
 	}
 
