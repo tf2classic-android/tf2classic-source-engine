@@ -5,6 +5,7 @@
 #=============================================================================
 
 include( "${CMAKE_CURRENT_LIST_DIR}/client_base.cmake" )
+include( "${SRCDIR}/cmake/misc/vpc_groups.cmake" )
 
 set( CLIENT_TF2CLASSIC_DIR ${CMAKE_CURRENT_LIST_DIR} )
 
@@ -527,6 +528,10 @@ set(
 add_library(
 	client_tf2classic MODULE
 	${CLIENT_TF2CLASSIC_SOURCE_FILES}
+)
+
+target_group_sources(
+	client_tf2classic
 )
 
 set_install_properties(

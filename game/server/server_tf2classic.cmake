@@ -5,8 +5,8 @@
 #=============================================================================
 
 include( "${CMAKE_CURRENT_LIST_DIR}/server_base.cmake" )
-
 include( "${CMAKE_CURRENT_LIST_DIR}/nav_mesh.cmake" )
+include( "${SRCDIR}/cmake/misc/vpc_groups.cmake" )
 
 set( SERVER_TF2CLASSIC_DIR ${CMAKE_CURRENT_LIST_DIR} )
 
@@ -647,129 +647,6 @@ set(
 	#}
 )
 
-source_group(
-	"Source Files/NextBot"
-	FILES
-		#$Folder "NextBot"
-		#{
-			"${SERVER_BASE_DIR}/NextBot/NextBot.cpp"
-			"${SERVER_BASE_DIR}/NextBot/NextBot.h"
-			"${SERVER_BASE_DIR}/NextBot/NextBotBehavior.h"
-			"${SERVER_BASE_DIR}/NextBot/NextBotManager.cpp"
-			"${SERVER_BASE_DIR}/NextBot/NextBotManager.h"
-			"${SERVER_BASE_DIR}/NextBot/NextBotUtil.h"
-			"${SERVER_BASE_DIR}/NextBot/NextBotKnownEntity.h"
-			"${SERVER_BASE_DIR}/NextBot/NextBotGroundLocomotion.cpp"
-			"${SERVER_BASE_DIR}/NextBot/NextBotGroundLocomotion.h"
-			"${SERVER_BASE_DIR}/NextBot/simple_bot.cpp"
-			"${SERVER_BASE_DIR}/NextBot/simple_bot.h"
-		#}
-)
-
-source_group(
-	"Source Files/NextBot/NextBotInterfaces"
-	FILES
-			#$Folder "NextBotInterfaces"
-			#{
-				"${SERVER_BASE_DIR}/NextBot/NextBotBodyInterface.cpp"
-				"${SERVER_BASE_DIR}/NextBot/NextBotBodyInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotComponentInterface.cpp"
-				"${SERVER_BASE_DIR}/NextBot/NextBotComponentInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotEventResponderInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotHearingInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotIntentionInterface.cpp"
-				"${SERVER_BASE_DIR}/NextBot/NextBotIntentionInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotInterface.cpp"
-				"${SERVER_BASE_DIR}/NextBot/NextBotInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotLocomotionInterface.cpp"
-				"${SERVER_BASE_DIR}/NextBot/NextBotLocomotionInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotVisionInterface.cpp"
-				"${SERVER_BASE_DIR}/NextBot/NextBotVisionInterface.h"
-				"${SERVER_BASE_DIR}/NextBot/NextBotContextualQueryInterface.h"
-			#}
-)
-
-source_group(
-	"Source Files/NextBot/NextBotPath"
-	FILES
-			#$Folder "NextBotPath"
-			#{
-				"${SERVER_BASE_DIR}/NextBot/Path/NextBotChasePath.cpp"
-				"${SERVER_BASE_DIR}/NextBot/Path/NextBotChasePath.h"
-				"${SERVER_BASE_DIR}/NextBot/Path/NextBotRetreatPath.h"
-				"${SERVER_BASE_DIR}/NextBot/Path/NextBotPath.cpp"
-				"${SERVER_BASE_DIR}/NextBot/Path/NextBotPath.h"
-				"${SERVER_BASE_DIR}/NextBot/Path/NextBotPathFollow.cpp"
-				"${SERVER_BASE_DIR}/NextBot/Path/NextBotPathFollow.h"
-			#}
-)
-
-source_group(
-	"Source Files/NextBot/NextBotPlayer"
-	FILES
-			#$Folder "NextBotPlayer"
-			#{
-				"${SERVER_BASE_DIR}/NextBot/Player/NextBotPlayerBody.cpp"
-				"${SERVER_BASE_DIR}/NextBot/Player/NextBotPlayerBody.h"
-				"${SERVER_BASE_DIR}/NextBot/Player/NextBotPlayerLocomotion.cpp"
-				"${SERVER_BASE_DIR}/NextBot/Player/NextBotPlayerLocomotion.h"
-				"${SERVER_BASE_DIR}/NextBot/Player/NextBotPlayer.cpp"
-				"${SERVER_BASE_DIR}/NextBot/Player/NextBotPlayer.h"
-			#}
-)
-
-source_group(
-	"Source Files/NextBot/NextBotCommonBehaviors"
-	FILES
-			#$Folder "NextBotCommonBehaviors"
-			#{
-				"${SERVER_BASE_DIR}/NextBot/Behavior/BehaviorBackUp.h"
-				"${SERVER_BASE_DIR}/NextBot/Behavior/BehaviorMoveTo.h"
-			#}
-)
-
-source_group(
-	"Source Files/NextBot/NextBotNavMeshEntities"
-	FILES
-			#$Folder "NextBotNavMeshEntities"
-			#{
-				"${SERVER_BASE_DIR}/NextBot/NavMeshEntities/func_nav_prerequisite.cpp"
-				"${SERVER_BASE_DIR}/NextBot/NavMeshEntities/func_nav_prerequisite.h"
-			#}
-)
-
-source_group(
-	"Source Files/Multiplayer"
-	FILES
-		#$Folder	"Multiplayer"
-		#{
-			"${SHARED_BASE_DIR}/Multiplayer/multiplayer_animstate.cpp"
-			"${SHARED_BASE_DIR}/Multiplayer/multiplayer_animstate.h"
-		#}
-)
-
-source_group(
-	"Source Files/Econ"
-	FILES
-		#$Folder	"Econ"
-		#{
-			"${SHARED_BASE_DIR}/econ/attribute_manager.cpp"
-			"${SHARED_BASE_DIR}/econ/attribute_manager.h"
-			"${SHARED_BASE_DIR}/econ/econ_entity.cpp"
-			"${SHARED_BASE_DIR}/econ/econ_entity.h"
-			"${SHARED_BASE_DIR}/econ/econ_item_schema.cpp"
-			"${SHARED_BASE_DIR}/econ/econ_item_schema.h"
-			"${SHARED_BASE_DIR}/econ/econ_item_system.cpp"
-			"${SHARED_BASE_DIR}/econ/econ_item_system.h"
-			"${SHARED_BASE_DIR}/econ/econ_wearable.cpp"
-			"${SHARED_BASE_DIR}/econ/econ_wearable.h"
-			"${SHARED_BASE_DIR}/econ/econ_item_view.cpp"
-			"${SHARED_BASE_DIR}/econ/econ_item_view.h"
-			"${SHARED_BASE_DIR}/econ/game_item_schema.h"
-			"${SHARED_BASE_DIR}/econ/ihasattributes.h"
-		#}
-)
-
 set(
 	SERVER_TF2CLASSIC_EXCLUDE_SOURCES
 )
@@ -777,6 +654,10 @@ set(
 add_library(
 	server_tf2classic MODULE
 	${SERVER_TF2CLASSIC_SOURCE_FILES}
+)
+
+target_group_sources(
+	server_tf2classic
 )
 
 set_install_properties(
