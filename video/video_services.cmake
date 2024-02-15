@@ -41,7 +41,7 @@ target_include_directories(
 	video_services PRIVATE
 
 	"${SRCDIR}/public/video"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_link_libraries(

@@ -107,7 +107,7 @@ set_install_properties(
 target_include_directories(
 	vgui_dll PRIVATE
 
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 	"$<${IS_WINDOWS}:${THIRDPARTYDIR}/freetype-2.13.2/include>"
 	"$<${IS_WINDOWS}:${THIRDPARTYDIR}/fontconfig-2.15.0/include>"
 )

@@ -44,7 +44,7 @@ set_property(
 target_include_directories(
 	appframework PRIVATE
 
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_link_libraries(

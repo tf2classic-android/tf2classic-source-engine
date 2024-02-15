@@ -198,7 +198,7 @@ target_include_directories(
 	"${SRCDIR}/tier0"
 	"${SRCDIR}/public"
 	"${SRCDIR}/public/tier0"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_compile_definitions(

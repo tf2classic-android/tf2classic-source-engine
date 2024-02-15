@@ -1065,7 +1065,7 @@ target_include_directories(
 	"${SRCDIR}/vgui2/include"
 	"${SRCDIR}/vgui2/controls"
 	"$<${IS_WINDOWS}:${DX9SDKDIR}/Include>"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 	"$<${ENGINE_GPROFILER}:${THIRDPARTYDIR}/gperftools-2.0/src>"
 	"${THIRDPARTYDIR}/libjpeg-turbo-3.0.1"
 )
@@ -1124,7 +1124,8 @@ target_link_libraries(
 	bitmap
 	bz2
 	#"${LIBCOMMON}/libbz2${STATIC_LIB_EXT}"
-	"$<$<NOT:${IS_DEDICATED}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
+	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_WINDOWS}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
+	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:jpeg>"
 
 	dmxloader
 	mathlib

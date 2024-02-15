@@ -38,8 +38,8 @@ set(
 		"${GAMEUI_DIR}/gameui_util.h"
 		"${GAMEUI_DIR}/HapticControlBox.cpp"
 		"${GAMEUI_DIR}/HapticControlBox.h"
-		"${GAMEUI_DIR}/ChangeGameDialog.cpp"
-		"${GAMEUI_DIR}/ChangeGameDialog.h"
+		"$<$<NOT:${IS_POSIX}>:${GAMEUI_DIR}/ChangeGameDialog.cpp>"
+		"$<$<NOT:${IS_POSIX}>:${GAMEUI_DIR}/ChangeGameDialog.h>"
 	#}
 
 	#$Folder	"Header Files"
@@ -457,7 +457,7 @@ target_include_directories(
 	"${SRCDIR}/vgui2/include"
 	"${SRCDIR}/vgui2/controls"
 	"${SRCDIR}/common/GameUI"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 	"${THIRDPARTYDIR}/libjpeg-turbo-3.0.1"
 )
 
@@ -488,10 +488,12 @@ target_link_libraries(
 	vgui_controls
 	vtf
 	mathlib
-	"$<$<NOT:${IS_DEDICATED}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
+	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_WINDOWS}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
+	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:jpeg>"
 	# steam_api
-	"$<$<NOT:${IS_DEDICATED}>:${LIBPUBLIC}/libpng${STATIC_LIB_EXT}>"
+	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_WINDOWS}>:${LIBCOMMON}/libpng${STATIC_LIB_EXT}>"
 	"$<$<NOT:${IS_DEDICATED}>:libz${STATIC_LIB_EXT}>"
+	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:png>"
 )
 
 target_use_steamapi(

@@ -12,7 +12,7 @@ set(
 	# Source Files
 	"${STDSHADER_DBG_DIR}/BaseVSShader.cpp"
 	"${STDSHADER_DBG_DIR}/debugdepth.cpp"
-	"${STDSHADER_DBG_DIR}/debugdrawenvmapmask.cpp"
+	"${STDSHADER_DBG_DIR}/DebugDrawEnvmapMask.cpp"
 	"${STDSHADER_DBG_DIR}/debugluxel.cpp"
 	"${STDSHADER_DBG_DIR}/debugnormalmap.cpp"
 	"${STDSHADER_DBG_DIR}/debugtangentspace.cpp"
@@ -44,7 +44,7 @@ target_include_directories(
 	"${SRCDIR}/materialsystem/stdshaders/fxctmp9"
 	"${SRCDIR}/materialsystem/stdshaders/vshtmp9"
 	"$<${IS_WINDOWS}:${DX9SDKDIR}/Include>"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_compile_definitions(

@@ -18,7 +18,7 @@ set(
 	"${SRCDIR}/public/kevvaluescompiler.cpp"
 	"${SRCDIR}/public/zip_utils.cpp"
 	"${FILESYSTEM_STDIO_DIR}/QueuedLoader.cpp"
-	"$<${IS_POSIX}:${FILESYSTEM_STDIO_DIR}/posix_support.cpp>"
+	"$<${IS_POSIX}:${FILESYSTEM_STDIO_DIR}/linux_support.cpp>"
 
 	# Header Files
 	"${FILESYSTEM_STDIO_DIR}/basefilesystem.h"
@@ -71,7 +71,7 @@ target_include_directories(
 	filesystem_stdio PRIVATE
 
 	"${SRCDIR}/tier0"
-	"$<${USE_SDL}:${THIRDPARTYDIR}/SDL2>"
+	"$<${USE_SDL}:${THIRDPARTYDIR}/SDL>"
 )
 
 target_compile_definitions(

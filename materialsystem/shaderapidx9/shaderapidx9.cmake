@@ -115,7 +115,7 @@ target_include_directories(
 
 	"${SRCDIR}/materialsystem"
 	"<$<${IS_WINDOWS}:${DX9SDKDIR}/Include>"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_compile_definitions(

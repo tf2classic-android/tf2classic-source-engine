@@ -32,6 +32,16 @@ add_compile_options(
 	$<$<AND:${IS_GCC},$<COMPILE_LANGUAGE:CXX>,$<NOT:$<BOOL:${DISABLE_WARNINGS}>>>:-Wno-invalid-offsetof> # Mr0maks: suppress invalid offsetof because of non standart classes. (All project work on it).
 	$<$<AND:${IS_GCC},$<COMPILE_LANGUAGE:CXX>,$<NOT:$<BOOL:${DISABLE_WARNINGS}>>>:-Wno-ignored-attributes> # Mr0maks: suppress ignored attributes because of useing int128 in templates.
 	#$<$<AND:${IS_LINUX},$<COMPILE_LANGUAGE:CXX>>:-fabi-compat-version=2> # FIXME(SanyaSho): I think we've don't need it anymore, because we're using GCC 10 from Sniper Steam Runtime
+
+	# Bald flags
+	-fno-strict-aliasing # vphysics error *fix*
+
+	"$<$<CONFIG:Release>:-funsafe-math-optimizations>"
+	"$<$<CONFIG:Release>:-ftree-vectorize>"
+	"$<$<CONFIG:Release>:-ffast-math>"
+	"$<$<CONFIG:Release>:-Wno-narrowing>"
+
+	"$<$<CONFIG:Debug>:-Wno-narrowing>"
 )
 
 if( ${IS_64BIT} )

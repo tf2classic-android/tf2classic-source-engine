@@ -77,7 +77,7 @@ set_install_properties(
 target_include_directories(
 	togl PRIVATE
 
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_compile_definitions(

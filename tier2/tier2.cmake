@@ -58,5 +58,5 @@ target_include_directories(
 
 	"${SRCDIR}/public/tier2"
 	"$<${IS_WINDOWS}:${DX9SDKDIR}/Include>"
-	"$<${USE_SDL}:${THIRDPARTYDIR}/SDL2>"
+	"$<${USE_SDL}:${THIRDPARTYDIR}/SDL>"
 )

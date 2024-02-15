@@ -149,8 +149,8 @@ target_link_libraries(
 	"$<${IS_OSX}:iconv>"
 
 	havana_constraints
-	hk_base
 	hk_math
+	hk_base
 	ivp_compactbuilder
 	ivp_physics
 

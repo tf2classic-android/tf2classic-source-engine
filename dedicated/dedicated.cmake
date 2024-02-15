@@ -114,7 +114,7 @@ target_include_directories(
 
 	"${SRCDIR}/public"
 	"${SRCDIR}/common"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 	"${DEDICATED_DIR}"
 	"$<${IS_LINUX}:${THIRDPARTYDIR}/libedit-20221030-3.1/src>"
 )

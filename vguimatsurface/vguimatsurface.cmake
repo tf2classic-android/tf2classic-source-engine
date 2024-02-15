@@ -76,7 +76,7 @@ set_install_properties(
 target_include_directories(
 	vguimatsurface PRIVATE
 
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 	"$<${IS_POSIX}:/usr/include/freetype2>"
 	"$<${IS_OSX}:/usr/local/include>"
 	"$<${IS_OSX}:/usr/local/include/freetype2>"

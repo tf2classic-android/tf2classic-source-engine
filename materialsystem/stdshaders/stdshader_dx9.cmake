@@ -184,7 +184,7 @@ target_include_directories(
 	"$<${IS_WINDOWS}:${DX9SDKDIR}/Include>"
 	"$<${IS_X360}:${SRCDIR}/materialsystem/stdshaders/fxctmp9_360>"
 	"$<${IS_X360}:${SRCDIR}/materialsystem/stdshaders/vshtmp9_360>"
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_link_libraries(

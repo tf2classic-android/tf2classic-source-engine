@@ -149,7 +149,7 @@ target_precompile_headers(
 target_include_directories(
 	materialsystem PRIVATE
 
-	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL2>"
+	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
 )
 
 target_compile_definitions(

@@ -16,7 +16,7 @@ set(
 	"${INPUTSYSTEM_DIR}/key_translation.cpp"
 	"${INPUTSYSTEM_DIR}/key_translation.h"
 	"${INPUTSYSTEM_DIR}/steamcontroller.cpp"
-	"${INPUTSYSTEM_DIR}/novint.cpp"
+	"$<${IS_WINDOWS}:${INPUTSYSTEM_DIR}/novint.cpp>"
 	"${INPUTSYSTEM_DIR}/touch_sdl.cpp"
 
 	# Header Files
@@ -45,7 +45,7 @@ set_install_properties(
 target_include_directories(
 	inputsystem PRIVATE
 
-	"${THIRDPARTYDIR}/SDL2"
+	"${THIRDPARTYDIR}/SDL"
 )
 
 target_compile_definitions(
