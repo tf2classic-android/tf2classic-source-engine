@@ -145,6 +145,8 @@ public:
 
 	virtual void	GetGlowEffectColor( float *r, float *g, float *b );
 
+	float GetDesaturationAmount();
+
 	// Gibs.
 	void InitPlayerGibs( void );
 	void CreatePlayerGibs( const Vector &vecOrigin, const Vector &vecVelocity, float flImpactScale, bool bBurning = false );

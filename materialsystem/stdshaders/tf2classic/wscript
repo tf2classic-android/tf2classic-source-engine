@@ -1,0 +1,59 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'game_shader_dx9'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.env.append_unique('DEFINES',[
+		'STDSHADER_DX9_DLL_EXPORT',
+		'FAST_MATERIALVAR_ACCESS',
+        'GAME_SHADER_DLL'
+	])
+
+def build(bld):
+	source = [
+		'../BaseVSShader.cpp',
+        'desaturate.cpp',
+		'../../../public/tier0/memoverride.cpp'
+	]
+
+	includes = [
+		'.',
+        '..',
+		'../../../public',
+		'../../../public/tier0',
+		'../../../public/tier1',
+		'../fxctmp9',
+		'../vshtmp9'
+	] + bld.env.INCLUDES_SDL2
+
+	defines = []
+
+	libs = ['tier0','shaderlib','tier1','mathlib']
+
+	if bld.env.DEST_OS == 'android':
+		libs += ['ANDROID_SUPPORT']
+
+	install_path = bld.env.LIBDIR
+
+	bld.shlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

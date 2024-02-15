@@ -251,6 +251,8 @@ public:
 
 	virtual int		GetBonusRoundTime( bool bFinal = false );
 
+	float GetStateTransitionTime( void ) { return m_flStateTransitionTime; }
+
 #if defined(TF_CLIENT_DLL) || defined(TF_DLL)
 
 	// Get list of all the players, including those in the lobby but who have
@@ -491,7 +493,6 @@ protected:
 
 protected:
 	CGameRulesRoundStateInfo	*m_pCurStateInfo;			// Per-state data 
-	float						m_flStateTransitionTime;	// Timer for round states
 
 	float						m_flWaitingForPlayersTimeEnds;
 	CHandle<CTeamRoundTimer>	m_hWaitingForPlayersTimer;
@@ -573,6 +574,7 @@ protected:
 	CNetworkVar( int,			m_iWinReason );
 	CNetworkVar( bool,			m_bInWaitingForPlayers );
 	CNetworkVar( bool,			m_bAwaitingReadyRestart );
+	CNetworkVar( float,			m_flStateTransitionTime ); // timer for round states
 	CNetworkVar( float,			m_flRestartRoundTime );
 	CNetworkVar( float,			m_flMapResetTime );						// Time that the map was reset
 	CNetworkArray( float,		m_flNextRespawnWave, MAX_TEAMS );		// Minor waste, but cleaner code
