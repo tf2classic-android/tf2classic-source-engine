@@ -20,16 +20,33 @@ set( IS_LINUX		0 )
 set( IS_OSX		0 )
 set( IS_X360		0 ) # SanyaSho: never
 set( IS_XCODE 		0 )
+set( IS_ANDROID		0 )
+set( IS_ANDROID32	0 )
+set( IS_ANDROID64	0 )
 
 if( WIN32 )
 	set( IS_WINDOWS	1 )
 endif()
+
+option( BUILD_ANDROID "Build for android" OFF )
 
 if( UNIX )
 	set( IS_POSIX 1 )
 
 	if( NOT APPLE )
 		set( IS_LINUX 1 )
+		#if( ${CMAKE_SYSTEM_NAME} STREQUAL "Android" )
+		if( ${BUILD_ANDROID} )
+			set( IS_ANDROID 1 )
+
+			if( ${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a" )
+				set( IS_ANDROID64 1 )
+			elseif( ${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a" )
+				set( IS_ANDROID32 1 )
+			else()
+				message( FATAL_ERROR "Unsupported android arch abi" )
+			endif()
+		endif()
 	elseif( APPLE )
 		set( IS_OSX 1 )
 		if( ${CMAKE_GENERATOR} STREQUAL "Xcode" )
@@ -206,6 +223,9 @@ add_compile_definitions(
 	$<$<BOOL:${RELEASEASSERTS}>:RELEASEASSERTS>
 	RAD_TELEMETRY_DISABLED
 	FRAME_POINTER_OMISSION_DISABLED
+
+	WAF_CFLAGS="UNSUPPORTED"
+	WAF_LDFLAGS="UNSUPPORTED"
 )
 
 add_compile_definitions(
@@ -228,8 +248,6 @@ set( IS_GAME_${GAME_DEFINITION} 1 )
 
 add_compile_definitions(
 	GAME_${GAME_DEFINITION}
-	WAF_CFLAGS="baldisis"
-	WAF_LDFLAGS="beheadwaf"
 )
 
 message( STATUS "Current game prepocessor definition: \"GAME_${GAME_DEFINITION}\"" )
