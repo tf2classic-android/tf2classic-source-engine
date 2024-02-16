@@ -25,26 +25,31 @@ public:
 	CItemModelPanel( Panel *parent, const char* name );
 
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void PerformLayout( void );
 
 	virtual void SetWeapon( C_BaseCombatWeapon *pWeapon, int iBorderStyle = -1, int ID = -1 );
 	virtual void SetWeapon( CEconItemDefinition *pItemDefinition, int iBorderStyle = -1, int ID = -1 );
 
+	void SetShowQuality( bool bShow ) { m_bShowQuality = bShow; }
 private:
-	C_BaseCombatWeapon	*m_pWeapon;
+	C_BaseCombatWeapon		*m_pWeapon;
 	vgui::Label			*m_pWeaponName;
 	vgui::Label			*m_pSlotID;
-	vgui::ImagePanel	*m_pWeaponImage;
+	vgui::ImagePanel		*m_pWeaponImage;
 	vgui::HFont			m_pDefaultFont;
 	vgui::HFont			m_pSelectedFont;
 	vgui::HFont			m_pNumberDefaultFont;
 	vgui::HFont			m_pNumberSelectedFont;
-	vgui::IBorder		*m_pDefaultBorder;
-	vgui::IBorder		*m_pSelectedRedBorder;
-	vgui::IBorder		*m_pSelectedBlueBorder;
-	int					m_iBorderStyle;
-	int					m_ID;
+	vgui::IBorder			*m_pDefaultBorder;
+	vgui::IBorder			*m_pSelectedRedBorder;
+	vgui::IBorder			*m_pSelectedBlueBorder;
+	int				m_iBorderStyle;
+	int				m_ID;
 	bool				m_bOldStyleIcon;
+	CEconItemDefinition		*m_pItemDef;
+	bool				m_bModelOnly;
+	bool				m_bShowQuality;
 };
 
 //-----------------------------------------------------------------------------
