@@ -1,7 +1,7 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-// tf_bot_seek_and_destroy.h
-// Roam the environment, attacking victims
-// Michael Booth, January 2010
+// tf_bot_deathmatch.h
+// Run. Think. Shoot. Live
+// SanyaSho, February 2024
+
 
 #ifndef TF_BOT_DEATHMATCH_H
 #define TF_BOT_DEATHMATCH_H

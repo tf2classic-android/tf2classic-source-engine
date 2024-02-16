@@ -1,7 +1,6 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-// tf_bot_seek_and_destroy.h
-// Roam the environment, attacking victims
-// Michael Booth, January 2010
+// tf_bot_deathmatch.cpp
+// Run. Think. Shoot. Live
+// SanyaSho, February 2024
 
 #include "cbase.h"
 #include "tf_player.h"
@@ -13,6 +12,7 @@
 #include "nav_mesh.h"
 #include "entity_weaponspawn.h"
 #include "tf_basedmpowerup.h"
+#include "tf_dropped_weapon.h"
 
 ConVar tf_bot_debug_deathmatch( "tf_bot_debug_deathmatch", "0", FCVAR_CHEAT );
 
@@ -97,9 +97,10 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 {
 	CUtlVector< CBaseEntity * > goalVector;
 
+	// Find weaponspawners
 	for( int i = 0; i < IWeaponSpawnerAutoList::AutoList().Count(); ++i )
 	{
-		CWeaponSpawner* pObj = static_cast< CWeaponSpawner * >( IWeaponSpawnerAutoList::AutoList()[i] );
+		CWeaponSpawner *pObj = static_cast< CWeaponSpawner * >( IWeaponSpawnerAutoList::AutoList()[i] );
 
 		if( !pObj )
 			continue;
@@ -111,9 +112,10 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 			goalVector.AddToTail( pObj );
 	}
 
+	// Find powerups
 	for( int i = 0; i < ITFBaseDMPowerupAutoList::AutoList().Count(); ++i )
 	{
-		CTFBaseDMPowerup* pObj = static_cast< CTFBaseDMPowerup * >( ITFBaseDMPowerupAutoList::AutoList()[i] );
+		CTFBaseDMPowerup *pObj = static_cast< CTFBaseDMPowerup * >( ITFBaseDMPowerupAutoList::AutoList()[i] );
 
 		if( !pObj )
 			continue;
@@ -123,6 +125,18 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 
 		if( TheNavMesh->GetNearestNavArea( pObj ) )
 			goalVector.AddToTail( pObj );
+	}
+	
+	// NEW: Find some dropped weapons on floor
+	for( int i = 0; i < ITFDroppedWeaponAutoList::AutoList().Count(); ++i )
+	{
+		CTFDroppedWeapon *pWeapon = static_cast< CTFDroppedWeapon * >( ITFDroppedWeaponAutoList::AutoList()[i] );
+		
+		if( !pWeapon )
+			continue;
+
+		if( TheNavMesh->GetNearestNavArea( pWeapon ) )
+			goalVector.AddToTail( pWeapon );
 	}
 
 	if( tf_bot_debug_deathmatch.GetBool() )
