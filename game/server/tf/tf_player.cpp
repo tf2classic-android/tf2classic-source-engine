@@ -1746,8 +1746,8 @@ void CTFPlayer::ManageInstagibWeapons( TFPlayerClassData_t *pData )
 	// FIXME: HARDCODED WEAPON IDS FROM ITEMS_GAME.TXT
 	int gTFInstagibWeapons[2] =
 	{
-		14,
-		9010
+		9010,		// TF_WEAPON_CROWBAR
+		9021		// TF_WEAPON_LEVERRIFLE
 	};
 
 	for( int i = 0; i < ARRAYSIZE( gTFInstagibWeapons ); i++ )

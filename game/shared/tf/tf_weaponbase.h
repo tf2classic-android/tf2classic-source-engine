@@ -43,6 +43,44 @@
 CTFWeaponInfo *GetTFWeaponInfo(ETFWeaponID iWeapon);
 CTFWeaponInfo *GetTFWeaponInfoForItem( CEconItemView *pItem, int iClass );
 
+class CTraceFilterIgnoreFriendlyCombatItems : public CTraceFilterSimple
+{
+public:
+	DECLARE_CLASS( CTraceFilterIgnoreFriendlyCombatItems, CTraceFilterSimple );
+
+	CTraceFilterIgnoreFriendlyCombatItems( const IHandleEntity *passentity, int collisionGroup, int iIgnoreTeam, bool bIsProjectile = false )
+		: CTraceFilterSimple( passentity, collisionGroup ), m_iIgnoreTeam( iIgnoreTeam )
+	{
+		m_bCallerIsProjectile = bIsProjectile;
+	}
+
+	virtual bool ShouldHitEntity( IHandleEntity *pServerEntity, int contentsMask )
+	{
+		CBaseEntity *pEntity = EntityFromEntityHandle( pServerEntity );
+
+		//              if ( ( pEntity->MyCombatCharacterPointer() || pEntity->MyCombatWeaponPointer() ) && pEntity->GetTeamNumber() == m_iIgnoreTeam )
+		//                      return false;
+		//
+		//              if ( pEntity->IsPlayer() && pEntity->GetTeamNumber() == m_iIgnoreTeam )
+		//                      return false;
+
+		if( pEntity->IsCombatItem() )
+		{
+			if( pEntity->GetTeamNumber() == m_iIgnoreTeam )
+				return false;
+
+			// If source is a enemy projectile, be explicit, otherwise we fail a "IsTransparent" test downstream
+			if( m_bCallerIsProjectile )
+				return true;
+		}
+
+		return BaseClass::ShouldHitEntity( pServerEntity, contentsMask );
+	}
+
+	int m_iIgnoreTeam;
+	bool m_bCallerIsProjectile;
+};
+
 class CTFPlayer;
 class CBaseObject;
 class CTFWeaponBaseGrenadeProj;

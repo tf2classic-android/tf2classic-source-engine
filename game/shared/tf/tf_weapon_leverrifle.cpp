@@ -1,13 +1,9 @@
 ﻿#include "cbase.h"
 #include "tf_weapon_leverrifle.h"
-#include "in_buttons.h"
-#include "tf_gamerules.h"
 
 // Client specific.
 #ifdef CLIENT_DLL
-#include <vgui/ILocalize.h>
 #include "c_tf_player.h"
-#include "c_tf_playerresource.h"
 #else
 #include "tf_player.h"
 #endif

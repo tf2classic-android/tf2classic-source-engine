@@ -51,10 +51,10 @@ public:
 
 	// Rendering.
 	virtual bool			IsTransparent( void )		{ return true; }
-	virtual RenderGroup_t	GetRenderGroup( void )		{ return RENDER_GROUP_TRANSLUCENT_ENTITY; }
-	virtual int				DrawModel( int flags );
+	virtual RenderGroup_t		GetRenderGroup( void )		{ return RENDER_GROUP_TRANSLUCENT_ENTITY; }
+	virtual int			DrawModel( int flags );
 	virtual bool			ShouldDraw( void );
-
+	
 	//
 	virtual void			OnDataChanged( DataUpdateType_t updateType );
 
@@ -69,6 +69,9 @@ protected:
 
 	CNetworkVar( float, m_flChargeStartTime );
 };
+
+#define TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC		50.0
+#define TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC		75.0
 
 //=============================================================================
 //
@@ -99,7 +102,6 @@ public:
 	virtual void ItemPostFrame( void );
 	virtual bool Lower( void );
 	virtual float GetProjectileDamage( void );
-	virtual int	GetDamageType() const;
 
 	virtual void WeaponReset( void );
 
@@ -112,6 +114,9 @@ public:
 	bool IsZoomed( void );
 	
 	bool CanHeadshot();
+	
+	virtual float GetChargeSpeed() { return TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC; }
+	virtual float GetUnchargeSpeed() { return TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC; }
 
 	float GetChargedDamage() const { return m_flChargedDamage; }
 private:
