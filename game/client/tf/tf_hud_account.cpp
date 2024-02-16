@@ -124,13 +124,25 @@ void CAccountPanel::LevelInit( void )
 //-----------------------------------------------------------------------------
 void CAccountPanel::OnAccountValueChanged( int iOldValue, int iNewValue )
 {
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if( !pPlayer )
+	{
+		return;
+	}
+
 	// update the account value
-	SetDialogVariable( "metal", iNewValue );
+	if( pPlayer->HasInfiniteAmmo() )
+	{
+		SetDialogVariable( "metal", L"\u221E" );
+	}
+	else
+	{
+		SetDialogVariable( "metal", iNewValue );
+	}
 
 	int iDelta = iNewValue - iOldValue;
 
-	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( iDelta != 0 && pPlayer && pPlayer->IsAlive() )
+	if ( iDelta != 0 && pPlayer->IsAlive() )
 	{
 		// create a delta item that floats off the top
 		account_delta_t *pNewDeltaItem = &m_AccountDeltaItems[iAccountDeltaHead];
