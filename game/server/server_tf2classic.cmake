@@ -658,9 +658,11 @@ add_library(
 	${SERVER_TF2CLASSIC_SOURCE_FILES}
 )
 
+if( ${IS_WINDOWS} )
 target_group_sources(
 	server_tf2classic
 )
+endif()
 
 set_install_properties(
 	server_tf2classic

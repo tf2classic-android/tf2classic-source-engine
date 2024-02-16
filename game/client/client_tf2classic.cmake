@@ -532,9 +532,11 @@ add_library(
 	${CLIENT_TF2CLASSIC_SOURCE_FILES}
 )
 
+if( ${IS_WINDOWS} )
 target_group_sources(
 	client_tf2classic
 )
+endif()
 
 set_install_properties(
 	client_tf2classic
