@@ -4189,6 +4189,7 @@ void C_TFPlayer::SetHealer( C_TFPlayer *pHealer, float flChargeLevel )
 //-----------------------------------------------------------------------------
 bool C_TFPlayer::CanShowClassMenu( void )
 {
+#if 0
 	// TODO: Arena check
 
 	if( GetTeamNumber() > LAST_SHARED_TEAM );
@@ -4202,6 +4203,10 @@ bool C_TFPlayer::CanShowClassMenu( void )
 		return false;
 
 	return true;
+#else
+	// FIXME
+	return ( GetTeamNumber() > LAST_SHARED_TEAM );
+#endif
 }
 
 //-----------------------------------------------------------------------------
