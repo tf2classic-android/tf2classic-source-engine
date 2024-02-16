@@ -538,7 +538,9 @@ set(
 						"${SHARED_BASE_DIR}/tf/tf_weapon_sixshooter.cpp"
 						"${SHARED_BASE_DIR}/tf/tf_weapon_sixshooter.h"
 						"${SHARED_BASE_DIR}/tf/tf_weapon_stengun.cpp"
-						"${SHARED_BASE_DIR}/tf/tf_weapon_stengun.h"						
+						"${SHARED_BASE_DIR}/tf/tf_weapon_stengun.h"
+						"${SHARED_BASE_DIR}/tf/tf_weapon_leverrifle.cpp"
+						"${SHARED_BASE_DIR}/tf/tf_weapon_leverrifle.h"
 					#}
 					"${SHARED_BASE_DIR}/tf/tf_weapon_bat.cpp"
 					"${SHARED_BASE_DIR}/tf/tf_weapon_bat.h"

@@ -248,14 +248,14 @@ public:
 	virtual void	StartUpgrading( void );
 	virtual void	FinishUpgrading( void );
 	virtual void	UpgradeThink( void );
-	virtual int		GetMaxUpgradeLevel( void ) { return 1; }
+	virtual int	GetMaxUpgradeLevel( void ) { return 1; }
 
-	virtual char	*GetPlacementModel( void ) { return ""; }
+	virtual const char	*GetPlacementModel( void ) { return ""; }
 
 	virtual void	MakeCarriedObject( CTFPlayer *pPlayer );
 	virtual void	DropCarriedObject( CTFPlayer *pPlayer );
 
-	virtual int		GetBaseHealth( void ) { return 0; }
+	virtual int	GetBaseHealth( void ) { return 0; }
 
 public:		
 

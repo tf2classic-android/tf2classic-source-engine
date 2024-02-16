@@ -886,7 +886,7 @@ bool CObjectTeleporter::IsUpgrading( void ) const
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
-char *CObjectTeleporter::GetPlacementModel( void )
+const char *CObjectTeleporter::GetPlacementModel( void )
 {
 	if ( GetObjectMode() == TELEPORTER_TYPE_ENTRANCE )
 		return TELEPORTER_MODEL_ENTRANCE_PLACEMENT;

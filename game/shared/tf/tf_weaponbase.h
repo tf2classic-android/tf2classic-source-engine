@@ -108,6 +108,7 @@ class CTFWeaponBase : public CBaseCombatWeapon
 	DECLARE_DATADESC();
 #endif
 
+public:
 	// Setup.
 	CTFWeaponBase();
 
@@ -193,6 +194,10 @@ class CTFWeaponBase : public CBaseCombatWeapon
 	virtual void SetWeaponVisible( bool visible );
 
 	virtual int GetActivityWeaponRole( void );
+	
+	void MakeTracer( const Vector &vecTracerSrc, const trace_t &tr );
+	
+	virtual bool CanHeadshot( void ) { return true; }
 
 	virtual acttable_t *ActivityList( int &iActivityCount );
 	static acttable_t s_acttablePrimary[];

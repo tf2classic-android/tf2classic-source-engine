@@ -45,7 +45,7 @@ public:
 	// Targeting.
 	void        Update( CBaseEntity *pTarget, const Vector &vecOrigin, const Vector &vecNormal );
 	CBaseEntity	*GetTargetEntity( void )				{ return m_hTargetEnt; }
-
+	
 // Client specific.
 #ifdef CLIENT_DLL
 
@@ -110,7 +110,10 @@ public:
 #endif
 
 	bool IsZoomed( void );
+	
+	bool CanHeadshot();
 
+	float GetChargedDamage() const { return m_flChargedDamage; }
 private:
 
 	void CreateSniperDot( void );

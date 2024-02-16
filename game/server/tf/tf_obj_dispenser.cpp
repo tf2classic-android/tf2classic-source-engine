@@ -406,7 +406,7 @@ bool CObjectDispenser::IsUpgrading( void ) const
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
-char *CObjectDispenser::GetPlacementModel( void )
+const char *CObjectDispenser::GetPlacementModel( void )
 {
 	return DISPENSER_MODEL_PLACEMENT;
 }

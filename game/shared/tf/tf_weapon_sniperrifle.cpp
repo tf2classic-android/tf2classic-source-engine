@@ -480,6 +480,16 @@ bool CTFSniperRifle::IsZoomed( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFSniperRifle::CanHeadshot()
+{
+	CTFPlayer *pPlayer = GetTFPlayerOwner();
+	
+	return !pPlayer || pPlayer->m_Shared.InCond( TF_COND_ZOOMED ) && (float)(gpGlobals->curtime - pPlayer->GetFOVTime()) >= TF_WEAPON_SNIPERRIFLE_NO_CRIT_AFTER_ZOOM_TIME;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFSniperRifle::ZoomOut( void )
 {
 	BaseClass::ZoomOut();

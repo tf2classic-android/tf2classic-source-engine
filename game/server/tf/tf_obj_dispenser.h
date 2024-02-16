@@ -89,7 +89,7 @@ public:
 
 	virtual bool	IsUpgrading( void ) const;
 	virtual int		GetMaxUpgradeLevel( void );
-	virtual char	*GetPlacementModel( void );
+	virtual const char	*GetPlacementModel( void );
 
 	virtual void	MakeCarriedObject( CTFPlayer *pPlayer );
 	virtual void	DropCarriedObject( CTFPlayer *pPlayer );

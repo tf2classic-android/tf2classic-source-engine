@@ -228,6 +228,10 @@ void FX_FireBullets( int iPlayer, const Vector &vecOrigin, const QAngle &vecAngl
 		{
 			nDamageType |= DMG_CRITICAL;
 		}
+		if ( pWeapon->CanHeadshot() )
+		{
+			nDamageType |= DMG_USE_HITLOCATIONS;
+		}
 		if ( pWeapon->IsCurrentAttackAMiniCrit() )
 		{
 			nDamageType |= DMG_MINICRITICAL;
@@ -278,9 +282,9 @@ void FX_FireBullets( int iPlayer, const Vector &vecOrigin, const QAngle &vecAngl
 		}
 
 		/*
-			const Vector2D v23;
+            const Vector2D v23;
 
-			if ( v55 )
+            if ( v55 )
             {
               v23 = g_vecFixedWpnSpreadPellets;
               v24 = 10;
@@ -300,6 +304,7 @@ void FX_FireBullets( int iPlayer, const Vector &vecOrigin, const QAngle &vecAngl
               v27 = v23[v25].y;
             }
 		*/
+
 		// See if we're using pre-determined spread pattern.
 		if( bFixedSpread )
 		{

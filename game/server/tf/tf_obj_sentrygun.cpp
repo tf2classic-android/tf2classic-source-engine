@@ -1189,7 +1189,7 @@ void CObjectSentrygun::MakeTracer( const Vector &vecTracerSrc, const trace_t &tr
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
-char *CObjectSentrygun::GetPlacementModel(void)
+const char *CObjectSentrygun::GetPlacementModel(void)
 {
 	return SENTRY_MODEL_PLACEMENT;
 }

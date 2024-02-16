@@ -4404,6 +4404,7 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 		event->SetInt( "assister", pAssister ? pAssister->GetUserID() : -1 );
 		event->SetString( "weapon", killer_weapon_name );
 		event->SetString( "weapon_logclassname", killer_weapon_log_name );
+		event->SetInt( "weaponid", iWeaponID );
 		event->SetInt( "playerpenetratecount", info.GetPlayerPenetrationCount() );
 		event->SetInt( "damagebits", info.GetDamageType() );
 		event->SetInt( "customkill", info.GetDamageCustom() );

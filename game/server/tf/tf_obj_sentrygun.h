@@ -75,7 +75,7 @@ public:
 
 	virtual int		GetBaseHealth( void );
 	virtual int		GetMaxUpgradeLevel( void );
-	virtual char	*GetPlacementModel( void );
+	virtual const char	*GetPlacementModel( void );
 
 	virtual void	MakeCarriedObject( CTFPlayer *pPlayer );
 

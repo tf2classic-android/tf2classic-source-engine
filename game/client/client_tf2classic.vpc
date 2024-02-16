@@ -421,6 +421,8 @@ $Project "Client (TF)"
 						$File	"$SRCDIR\game\shared\tf\tf_weapon_sixshooter.h"
 						$File	"$SRCDIR\game\shared\tf\tf_weapon_stengun.cpp"
 						$File	"$SRCDIR\game\shared\tf\tf_weapon_stengun.h"						
+						$File	"$SRCDIR\game\shared\tf\tf_weapon_leverrifle.cpp"
+						$File	"$SRCDIR\game\shared\tf\tf_weapon_leverrifle.h"
 					}
 					$File	"$SRCDIR\game\shared\tf\tf_weapon_bat.cpp"
 					$File	"$SRCDIR\game\shared\tf\tf_weapon_bat.h"

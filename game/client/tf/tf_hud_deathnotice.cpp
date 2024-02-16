@@ -655,7 +655,19 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 			break;
 		case TF_DMG_CUSTOM_HEADSHOT:
 		{
-			m_DeathNotices[iMsg].iconHeadshot = GetIcon( "d_headshot", bLocalPlayerInvolved );
+			const char *pszIcon = "d_headshot";
+
+			switch( event->GetInt( "weaponid" ) )
+			{
+				case TF_WEAPON_COMPOUND_BOW:
+					pszIcon = "d_headshot_huntsman";
+					break;
+				case TF_WEAPON_LEVERRIFLE:
+					pszIcon = "d_headshot_leverrifle";
+					break;
+			};
+
+			m_DeathNotices[iMsg].iconHeadshot = GetIcon( pszIcon, bLocalPlayerInvolved );
 			break;
 		}
 		case TF_DMG_CUSTOM_SUICIDE:

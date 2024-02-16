@@ -5,16 +5,19 @@
 //=============================================================================
 #include "cbase.h"
 #include "in_buttons.h"
+#include "shared_classnames.h"
 #include "takedamageinfo.h"
 #include "tf_weaponbase.h"
 #include "ammodef.h"
 #include "tf_gamerules.h"
 #include "eventlist.h"
 #include "tf_viewmodel.h"
+#include "effect_dispatch_data.h"
 
 // Server specific.
 #if !defined( CLIENT_DLL )
 #include "tf_player.h"
+#include "te_effect_dispatch.h"
 // Client specific.
 #else
 #include "vgui/ISurface.h"
@@ -1938,6 +1941,50 @@ int CTFWeaponBase::GetActivityWeaponRole( void )
 #endif
 
 	return iWeaponRole;
+}
+
+// -----------------------------------------------------------------------------
+// Purpose:
+// -----------------------------------------------------------------------------
+void CTFWeaponBase::MakeTracer( const Vector &vecTracerSrc, const trace_t &tr )
+{
+	CTFPlayer *pOwner = GetTFPlayerOwner();
+	if( !pOwner )
+	{
+		return;
+	}
+	
+	const char *pszTracer = GetTracerType();
+	if( pszTracer && pszTracer[0] )
+	{
+		int iAttachment = GetTracerAttachment();
+		
+		CEffectData data;
+		data.m_vStart = vecTracerSrc;
+		data.m_vOrigin = tr.endpos;
+
+#ifdef CLIENT_DLL
+		data.m_hEntity = this;
+#else
+		data.m_nEntIndex = entindex();
+#endif
+
+		data.m_nHitBox = GetParticleSystemIndex( pszTracer );
+		
+		// Flags
+		data.m_fFlags |= TRACER_FLAG_WHIZ;
+
+		if ( iAttachment != TRACER_DONT_USE_ATTACHMENT )
+		{
+			data.m_fFlags |= TRACER_FLAG_USEATTACHMENT;
+			data.m_nAttachmentIndex = iAttachment;
+		}
+		
+		data.m_bCustomColors = TFGameRules()->IsDeathmatch();
+		data.m_CustomColors.m_vecColor1 = pOwner->m_vecPlayerColor;
+
+		DispatchEffect( "TFParticleTracer", data );
+	}
 }
 
 // -----------------------------------------------------------------------------
