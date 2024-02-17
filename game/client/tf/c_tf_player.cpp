@@ -2342,7 +2342,7 @@ float C_TFPlayer::GetDesaturationAmount()
 
 	// Only mercenary gets desaturation effect.
 	if ( !IsPlayerClass( TF_CLASS_MERCENARY ) )
-		return;
+		return 0.0f;
 
 	if ( TFGameRules()->State_Get() == GR_STATE_PREROUND && !TFGameRules()->IsInWaitingForPlayers() )
 	{
