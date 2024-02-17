@@ -222,6 +222,9 @@ void VGui_CreateGlobalPanels( void )
 #ifdef TF_CLASSIC_CLIENT
 	if ( CommandLine()->CheckParm( "-nonewmenu" ) == NULL )
 	{
+		// Disable BG music played in the original GameUI
+		CommandLine()->AppendParm( "-nostartupsound", NULL );
+
 		MainMenu->Create( NULL );
 		OverrideMainMenu();
 	}
