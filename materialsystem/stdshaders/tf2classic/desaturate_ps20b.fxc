@@ -1,0 +1,19 @@
+#include "common_ps_fxc.h"
+
+sampler base_sampler			: register( s0 );
+float amount					: register( c0 );
+
+struct PS_INPUT
+{
+	HALF2 vTexCoord			:	TEXCOORD0;
+};
+
+float4 main( PS_INPUT i ) : COLOR
+{
+	float4 base_color = tex2D(base_sampler, i.vTexCoord);
+
+	float3 luminance_coefficients = { 0.3, 0.59, 0.11 };
+	float3 out_color = lerp(base_color.rgb, dot(base_color.rgb, luminance_coefficients.rgb).rrr, amount);
+
+	return float4(out_color.rgb, base_color.a);
+}
