@@ -154,6 +154,11 @@ $Project "Server (TF)"
 		
 		$Folder	"TF"
 		{
+			$File	"$SRCDIR\game\shared\tf\tf_cues_manager.cpp"
+			$File	"$SRCDIR\game\shared\tf\tf_cues_manager.h"
+			$File	"$SRCDIR\game\shared\tf\tf_music_controller.cpp"
+			$File	"$SRCDIR\game\shared\tf\tf_music_controller.h"
+
 			$Folder	"Bot"
 			{
 				$Folder	"Behavior"

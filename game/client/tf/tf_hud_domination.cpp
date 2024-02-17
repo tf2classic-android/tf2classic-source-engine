@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "iclientmode.h"
 #include "tf_hud_domination.h"
 #include "vgui/IScheme.h"
 #include "tf_gamerules.h"
@@ -9,6 +10,9 @@ extern ConVar tf2c_domination_points_per_round;
 
 CTFHudDomination::CTFHudDomination( vgui::Panel *pParent, const char *pszName ) : vgui::EditablePanel( pParent, pszName )
 {
+	vgui::Panel *pViewport = g_pClientMode->GetViewport();
+	SetParent( pViewport );
+	
 	vgui::ivgui()->AddTickSignal( GetVPanel() );
 
 	ListenForGameEvent( "game_maploaded" );

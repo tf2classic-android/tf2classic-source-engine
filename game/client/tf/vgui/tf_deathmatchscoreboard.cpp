@@ -42,7 +42,7 @@
 #include "engine/IEngineSound.h"
 #include "in_buttons.h"
 #include "voice_status.h"
-#include "tf_music_manager.h"
+#include "tf_music_controller.h"
 
 #if defined ( _X360 )
 #include "engine/imatchmaking.h"
@@ -815,7 +815,7 @@ void CTFDeathMatchScoreBoardDialog::FireGameEvent( IGameEvent *event )
 		}
 		ShowPanel( true );
 
-		if ( !GetTFMusicManager()->IsPlayingMusic() )
+		if ( !g_pMusicController->IsPlaying() )
 		{
 			CLocalPlayerFilter filter;
 			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, ( bPlayerFirst ? "music.dm_winpanel_first" : "music.dm_winpanel" ) );

@@ -143,6 +143,11 @@ set(
 		
 		#$Folder	"TF"
 		#{
+			"${SHARED_BASE_DIR}/tf/tf_cues_manager.cpp"
+			"${SHARED_BASE_DIR}/tf/tf_cues_manager.h"
+			"${SHARED_BASE_DIR}/tf/tf_music_controller.cpp"
+			"${SHARED_BASE_DIR}/tf/tf_music_controller.h"
+
 			#$Folder	"Bot"
 			#{
 				#$Folder	"Behavior"

@@ -1705,6 +1705,7 @@ static const char *s_PreserveEnts[] =
 	"info_ladder",
 	"info_player_deathmatch",
 	"prop_vehicle_jeep",
+	"tf_music_controller",
 	"", // END Marker
 };
 

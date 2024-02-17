@@ -17,6 +17,9 @@
 #if defined( TF_CLIENT_DLL ) || defined ( TF_CLASSIC_CLIENT )
 #include "tf_gamerules.h"
 #include "c_tf_player.h"
+#if defined( TF_CLASSIC_CLIENT )
+#include "tf_cues_manager.h"
+#endif
 #endif // TF_CLIENT_DLL
 #else
 #include "team.h"
@@ -774,7 +777,15 @@ void CTeamRoundTimer::SendTimeWarning( int nWarning )
 #if defined( TF_CLIENT_DLL ) || defined( TF_CLASSIC_CLIENT )
 				if ( bShouldPlaySound == true )
 				{
-					pPlayer->EmitSound( GetTimeWarningSound( nWarning ) );
+					const char *pszMessage = GetTimeWarningSound( nWarning );
+					pPlayer->EmitSound( pszMessage );
+#if defined( TF_CLASSIC_CLIENT )
+					//g_TFAnnouncer->Speak( pszMessage );
+					if( (nWarning == RT_WARNING_30SECS) && (m_nState == RT_STATE_SETUP) )
+					{
+						g_TFCuesManager.PlayCue( 0 );
+					}
+#endif
 				}
 #endif // TF_CLIENT_DLL
 			}

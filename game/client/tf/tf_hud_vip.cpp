@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "iclientmode.h"
 #include "tf_hud_vip.h"
 #include "vgui/IScheme.h"
 #include "tf_gamerules.h"
@@ -7,6 +8,9 @@
 
 CTFHudVIP::CTFHudVIP( vgui::Panel *pParent, const char *pszName ) : vgui::EditablePanel( pParent, pszName )
 {
+	vgui::Panel *pViewport = g_pClientMode->GetViewport();
+	SetParent( pViewport );
+	
 	m_flPreviousProgress = 0.f;
 
 	m_pLevelBar = new vgui::ImagePanel( this, "LevelBar" );
