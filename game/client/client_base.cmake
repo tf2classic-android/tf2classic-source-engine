@@ -1141,7 +1141,7 @@ function( target_use_client_base target EXCLUDE_SOURCES )
 		${target} PRIVATE
 
 		"$<${IS_OSX}:-framework Carbon>"
-		$<${IS_LINUX}:rt>
+		$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:rt>
 		$<${IS_WINDOWS}:winmm>
 		particles
 

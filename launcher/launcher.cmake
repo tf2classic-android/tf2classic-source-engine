@@ -13,6 +13,8 @@ set(
 	"${SRCDIR}/public/filesystem_init.cpp"
 	"${LAUNCHER_DIR}/launcher.cpp"
 	"${LAUNCHER_DIR}/reslistgenerator.cpp"
+	"$<${IS_ANDROID}:${LAUNCHER_DIR}/android/main.cpp>"
+	"$<${IS_ANDROID}:${LAUNCHER_DIR}/android/crashhandler.cpp>"
 
 	# Header Files
 	"${SRCDIR}/public/tier0/basetypes.h"
@@ -61,6 +63,7 @@ target_include_directories(
 	launcher PRIVATE
 
 	"$<$<OR:${USE_SDL},${IS_DEDICATED}>:${THIRDPARTYDIR}/SDL>"
+	"$<${IS_ANDROID}:${LAUNCHER_DIR}/android/libunwind>"
 )
 
 target_compile_definitions(
@@ -91,7 +94,9 @@ target_link_libraries(
 	appframework
 	tier2
 	tier3
-	"$<${USE_GL}:togl>"
+	"$<$<AND:${USE_GL},$<NOT:${IS_TOGLES}>>:togl>"
+	"$<$<BOOL:${ENABLE_TOGLES}>:togles>"
+	"$<${IS_ANDROID}:unwind>"
 )
 
 target_use_steamapi(

@@ -114,8 +114,10 @@ target_link_libraries(
 	tier2
 	tier3
 	vgui_surfacelib
-	"$<${IS_POSIX}:fontconfig>"
-	"$<${IS_POSIX}:freetype>"
+	"$<$<AND:${IS_POSIX},$<NOT:${IS_ANDROID}>>:fontconfig>"
+	"$<$<AND:${IS_POSIX},$<NOT:${IS_ANDROID}>>:freetype>"
+	"$<${IS_ANDROID}:freetype2>"
+	"$<${IS_ANDROID}:expat>"
 )
 
 if( ${USE_SDL} )

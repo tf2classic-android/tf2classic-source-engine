@@ -79,7 +79,7 @@
 #endif
 #include "tier0/memdbgon.h"
 
-#ifdef ANDROID
+#if defined( ANDROID ) && !defined( GAME_TF2CLASSIC )
 #include "common/android/iconv.h"
 #elif POSIX
 #include <iconv.h>

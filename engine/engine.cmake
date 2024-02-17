@@ -4,7 +4,7 @@
 #	Project Script
 #=============================================================================
 
-if( ${IS_LINUX} )
+if( ${IS_LINUX} AND NOT ${IS_ANDROID} )
 	# Check for system cURL
 	find_package( CURL REQUIRED )
 endif()
@@ -1136,15 +1136,19 @@ target_link_libraries(
 
 	"$<${IS_OSX}:${LIBCOMMON}/curl${IMPLIB_EXT}>"
 
-	libz${STATIC_LIB_EXT}
+	#libz${STATIC_LIB_EXT}
+	z
 	# libcrypto
 
 	"$<${ENGINE_GPROFILER}:${THIRDPARTYDIR}/gperftools-2.0/.libs/libprofiler${SHARED_LIB_EXT}>"
 	"$<${IS_WINDOWS}:dsound>"
 	"$<${IS_WINDOWS}:dxguid>"
 
-	"$<${IS_LINUX}:openal>"
-	"$<${IS_LINUX}:${CURL_LIBRARIES}>"
+	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:openal>"
+	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:${CURL_LIBRARIES}>"
+	"$<${IS_ANDROID}:ssl>"
+	"$<${IS_ANDROID}:crypto>"
+	"$<${IS_ANDROID}:curl>"
 )
 
 target_include_crypto(

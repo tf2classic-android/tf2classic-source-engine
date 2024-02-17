@@ -147,5 +147,6 @@ target_link_libraries(
 	tier2
 	bz2
 	#"${LIBCOMMON}/libbz2${STATIC_LIB_EXT}"
-	"$<${USE_GL}:togl>" # [!$IS_LIB_PROJECT && $GL]
+	"$<$<AND:${USE_GL},$<NOT:${IS_TOGLES}>>:togl>" # [!$IS_LIB_PROJECT && $GL]
+	"$<${IS_TOGLES}:togles>"
 )

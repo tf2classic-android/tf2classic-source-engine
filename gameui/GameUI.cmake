@@ -187,6 +187,8 @@ set(
 		"${GAMEUI_DIR}/OptionsSubKeyboard.h"
 		"${GAMEUI_DIR}/OptionsSubMouse.cpp"
 		"${GAMEUI_DIR}/OptionsSubMouse.h"
+		"${GAMEUI_DIR}/OptionsSubTouch.cpp"
+		"${GAMEUI_DIR}/OptionsSubTouch.h"
 		"${GAMEUI_DIR}/OptionsSubMultiplayer.cpp"
 		"${GAMEUI_DIR}/OptionsSubMultiplayer.h"
 		"${GAMEUI_DIR}/OptionsSubPortal.cpp"
@@ -423,6 +425,8 @@ source_group(
 		"${GAMEUI_DIR}/OptionsSubKeyboard.h"
 		"${GAMEUI_DIR}/OptionsSubMouse.cpp"
 		"${GAMEUI_DIR}/OptionsSubMouse.h"
+		"${GAMEUI_DIR}/OptionsSubTouch.cpp"
+		"${GAMEUI_DIR}/OptionsSubTouch.h"
 		"${GAMEUI_DIR}/OptionsSubMultiplayer.cpp"
 		"${GAMEUI_DIR}/OptionsSubMultiplayer.h"
 		"${GAMEUI_DIR}/OptionsSubPortal.cpp"
@@ -479,7 +483,7 @@ target_link_libraries(
 	#"$<${IS_OSX}:iconv>" # SanyaSho: iconv is linked with tier1
 	"$<${IS_OSX}:z>"
 
-	"$<$<AND:${IS_LINUX},$<NOT:${IS_DEDICATED}>>:rt>"
+	"$<$<AND:${IS_LINUX},$<NOT:${IS_DEDICATED}>,$<NOT:${IS_ANDROID}>>:rt>"
 
 	bitmap
 	matsys_controls

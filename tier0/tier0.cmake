@@ -220,7 +220,7 @@ target_link_libraries(
 
 	"$<${IS_WINDOWS}:ws2_32>"
 
-	"$<${IS_LINUX}:rt>"
+	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:rt>"
 )
 
 if( ${USE_SDL} )

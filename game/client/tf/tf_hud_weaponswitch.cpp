@@ -196,7 +196,7 @@ void CItemModelPanel::SetWeapon( CEconItemDefinition *pItemDefinition, int iBord
 	m_ID = ID;
 	m_iBorderStyle = iBorderStyle;
 
-	wchar_t *pText = NULL;
+	const wchar_t *pText = NULL;
 	if ( pItemDefinition )
 	{
 		pText = pItemDefinition->GenerateLocalizedFullItemName();

@@ -12,6 +12,7 @@ set( IS_GAME_TF2CLASSIC	0 )
 
 set( IS_64BIT		0 )
 set( IS_DEDICATED	0 )
+set( IS_TOGLES		0 )
 
 # Platforms
 set( IS_WINDOWS		0 )
@@ -28,15 +29,12 @@ if( WIN32 )
 	set( IS_WINDOWS	1 )
 endif()
 
-option( BUILD_ANDROID "Build for android" OFF )
-
 if( UNIX )
 	set( IS_POSIX 1 )
 
 	if( NOT APPLE )
 		set( IS_LINUX 1 )
-		#if( ${CMAKE_SYSTEM_NAME} STREQUAL "Android" )
-		if( ${BUILD_ANDROID} )
+		if( ${CMAKE_SYSTEM_NAME} STREQUAL "Android" )
 			set( IS_ANDROID 1 )
 
 			if( ${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a" )
@@ -162,6 +160,12 @@ else()
 	message( STATUS "Build arch: x86" )
 endif()
 
+option( ENABLE_TOGLES "Enable ToGLES" OFF )
+message( STATUS "ENABLE_TOGLES: ${ENABLE_TOGLES}" )
+if( ENABLE_TOGLES )
+	set( IS_TOGLES 1 )
+endif()
+
 message( "=============================================================================" )
 
 # CMAKETODO(SanyaSho): windows support
@@ -233,7 +237,7 @@ add_compile_definitions(
 	HAVE_PNG
 	HAVE_CURL
 	HAVE_ZLIB
-	HAVE_FC
+	$<$<NOT:${IS_ANDROID}>:HAVE_FC>
 
 	USE_ZLIB
 )

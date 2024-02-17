@@ -77,7 +77,7 @@ extern void longjmp( jmp_buf, int ) __attribute__((noreturn));
 #if HAVE_PNG
 
 #if ANDROID || WIN32
-#include "libpng/png.h"
+#include "../public/libpng/png.h"
 #else
 #include <png.h>
 #endif

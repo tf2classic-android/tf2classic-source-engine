@@ -42,60 +42,28 @@ add_compile_options(
 	"$<$<CONFIG:Release>:-Wno-narrowing>"
 
 	"$<$<CONFIG:Debug>:-Wno-narrowing>"
+
+	"$<${IS_ANDROID}:-Wno-format-security>"
 )
 
 if( ${IS_ANDROID} )
 
-if( ${IS_ANDROID32} )
-set( CMAKE_C_COMPILER_TARGET "armv7a-linux-androideabi24" )
-set( CMAKE_CXX_COMPILER_TARGET "armv7a-linux-androideabi24" )
-elseif( ${IS_ANDROID64} )
-set( CMAKE_C_COMPILER_TARGET "aarch64-linux-android24" )
-set( CMAKE_CXX_COMPILER_TARGET "aarch64-linux-android24" )
-else()
-message( FATAL_ERROR "Unsupported android arch abi" )
-endif()
-
 add_compile_definitions(
-	"$<${IS_ANDROID32}:HAVE_EFFICIENT_UNALIGNED_ACCESS>"
-	"$<${IS_ANDROID32}:VECTORIZE_SINCOS>"
-	"$<${IS_ANDROID32}:_NDK_MATH_NO_SOFTFP=1>"
-	"$<${IS_ANDROID32}:LOAD_HARDFP>"
-	"$<${IS_ANDROID32}:SOFTFP_LINK>"
-
 	"ANDROID"
 	"_ANDROID"
-	"__ANDROID__"
 )
 
-add_compile_options(
-	"$<$<AND:${IS_CLANG},${IS_ANDROID32}>:--sysroot=${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm>"
-	"$<$<AND:${IS_CLANG},${IS_ANDROID64}>:--sysroot=${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm64>"
-	"$<$<AND:${IS_CLANG},${IS_ANDROID32}>:-isystem ${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm/usr/include>"
-	"$<$<AND:${IS_CLANG},${IS_ANDROID64}>:-isystem ${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm64/usr/include>"
+link_libraries(
+	log
+	z
+)
 
-#	"$<$<AND:,${IS_CLANG},${IS_ANDROID}>:>"
-
-	"$<${IS_ANDROID32}:-mfpu=neon-vfpv4>"
-	"$<${IS_ANDROID32}:-mcpu=cortex-a7>"
-	"$<${IS_ANDROID32}:-mtune=cortex-a7>"
-	"$<${IS_ANDROID32}:-mfloat-abi=hard>"
-	"$<${IS_ANDROID32}:-fno-builtin-strtod>"
-	"$<${IS_ANDROID32}:-fno-builtin-strtof>"
-	"$<${IS_ANDROID32}:-fno-builtin-strtold>"
-#	"$<${IS_ANDROID32}:>"
-#	"$<${IS_ANDROID32}:>"
-#	"$<${IS_ANDROID32}:>"
-
-	-funwind-tables
+add_link_options(
+	-static-libstdc++
 )
 
 include_directories(
-	"${CMAKE_ANDROID_NDK}/sources/android/support/include"
-	"${CMAKE_ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.9/include"
-	"$<${IS_ANDROID32}:${CMAKE_ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a-hard/include>"
-	"$<${IS_ANDROID64}:${CMAKE_ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.9/libs/arm64-v8a/include>"
-
+	"${THIRDPARTYDIR}"
 	"${THIRDPARTYDIR}/curl/include"
 	"${THIRDPARTYDIR}/SDL"
 	"${THIRDPARTYDIR}/openal-soft/include"
@@ -103,34 +71,6 @@ include_directories(
 	"${THIRDPARTYDIR}/freetype/include"
 )
 
-add_link_options(
-	"--gcc-toolchain=\"${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64\""
-	"$<$<AND:${IS_CLANG},${IS_ANDROID32}>:--sysroot=\"${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm\">"
-	"$<$<AND:${IS_CLANG},${IS_ANDROID64}>:--sysroot=\"${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm64\">"
-
-	-fuse-ld=lld
-
-	-no-canonical-prefixes
-
-	-stdlib=libstdc++
-	"$<${IS_ANDROID32}:-march=armv7-a>"
-	"$<${IS_ANDROID32}:-Wl,--no-warn-mismatch>"
-	"$<${IS_ANDROID32}:-lm_hard>"
-
-	-funwind-tables
-
-	-nodefaultlibs
-)
-
-link_directories(
-	"$<${IS_ANDROID32}:${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm/usr/lib>"
-	"$<${IS_ANDROID64}:${CMAKE_ANDROID_NDK}/platforms/android-24/arch-arm64/usr/lib>"
-)
-
-link_libraries(
-	log
-	z
-)
 endif()
 
 if( NOT ${IS_ANDROID} )
@@ -158,6 +98,7 @@ add_compile_definitions(
 	$<${IS_OSX}:OSX>
 	$<${IS_OSX}:_DARWIN_UNLIMITED_SELECT>
 	$<${IS_OSX}:FD_SETSIZE=10240>
+	$<${IS_TOGLES}:TOGLES>
 )
 
 if( ${IS_LINUX} )
@@ -175,6 +116,7 @@ link_libraries(
 )
 
 if( NOT ${IS_ANDROID} )
+
 if( ${IS_LINUX} )
 	add_link_options(
 		-static-libgcc
@@ -188,6 +130,7 @@ add_compile_options(
 	-mfpmath=sse
 	-mtune=core2
 )
+
 endif()
 
 list(
