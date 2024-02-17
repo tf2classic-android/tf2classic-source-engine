@@ -959,6 +959,8 @@ void CHudVote::LevelInit( void )
 	m_flVoteResultCycleTime = -1;
 	m_flHideTime = -1;
 	m_flPostVotedHideTime = -1;
+	m_bPlayerVoted = false;
+	m_bShowVoteActivePanel = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1259,6 +1261,7 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 
 	m_bIsYesNoVote = msg.ReadByte();
 
+	m_flVoteResultCycleTime = -1.f;
 	m_bVotingActive = true;
 	m_pVoteFailed->SetVisible( false );
 	m_pVotePassed->SetVisible( false );
