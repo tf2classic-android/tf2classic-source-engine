@@ -42,7 +42,7 @@ set(
 	"${SRCDIR}/filesystem/filesystem_stdio.cpp"
 	"${SRCDIR}/filesystem/QueuedLoader.cpp"
 	"${SRCDIR}/public/zip_utils.cpp"
-	"$<${IS_POSIX}:${SRCDIR}/filesystem/posix_support.cpp>"
+	"$<${IS_POSIX}:${SRCDIR}/filesystem/linux_support.cpp>"
 
 	# Header Files
 	"${SRCDIR}/filesystem/filetracker.h"
@@ -152,7 +152,7 @@ target_link_libraries(
 	tier2
 	tier3
 	#"$<${IS_WINDOWS}:vgui_controls>"
-	"$<${IS_LINUX}:${LIBCOMMON}/libedit${STATIC_LIB_EXT}>"
+	"$<${IS_LINUX}:edit>"
 )
 
 target_include_crypto(

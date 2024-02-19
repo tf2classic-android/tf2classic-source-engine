@@ -10,11 +10,17 @@ set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 function( set_install_properties target outputnameprefix outputname install_dir )
 
+	set( _LIB_PREFIX "${outputnameprefix}" )
+	if( ${IS_ANDROID} )
+	set( _LIB_PREFIX "lib" ) # force "lib-" prefix for android only
+	endif()
+
 	set_target_properties(
 		${target} PROPERTIES
-		PREFIX "${outputnameprefix}"
+		PREFIX "${_LIB_PREFIX}"
 		OUTPUT_NAME "${outputname}"
 	)
+
 
 	if( NOT MSVC )
 		install(
@@ -27,7 +33,7 @@ function( set_install_properties target outputnameprefix outputname install_dir 
 				    WORLD_READ WORLD_EXECUTE			#
 		)
 
-		if( ${IS_LINUX} )
+		if( ${IS_LINUX} AND NOT ${IS_ANDROID} )
 
 			# Check for executable
 			get_target_property( mytarget_type ${target} TYPE )

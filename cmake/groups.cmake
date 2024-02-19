@@ -106,6 +106,9 @@ elseif( ${BUILD_GROUP} STREQUAL "dedicated" )
 	include( "${SRCDIR}/scenefilecache/scenefilecache.cmake" )
 	include( "${SRCDIR}/materialsystem/shaderapiempty/shaderapiempty.cmake" )
 	include( "${SRCDIR}/materialsystem/shaderlib/shaderlib.cmake" )
+	include( "${SRCDIR}/materialsystem/stdshaders/stdshader_dbg.cmake" ) # ???
+	include( "${SRCDIR}/materialsystem/stdshaders/stdshader_dx9.cmake" ) # ???
+	include( "${SRCDIR}/materialsystem/stdshaders/game_shader_dx9_tf2classic.cmake" ) # ???
 	include( "${SRCDIR}/soundemittersystem/soundemittersystem.cmake" )
 	include( "${SRCDIR}/studiorender/studiorender.cmake" )
 	include( "${SRCDIR}/tier0/tier0.cmake" )

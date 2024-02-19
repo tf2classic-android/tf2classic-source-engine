@@ -51,6 +51,10 @@ if( ${IS_ANDROID} )
 add_compile_definitions(
 	"ANDROID"
 	"_ANDROID"
+
+	HAVE_EFFICIENT_UNALIGNED_ACCESS
+	VECTORIZE_SINCOS
+	NO_MEMOVERRIDE_NEW_DELETE
 )
 
 link_libraries(
@@ -60,6 +64,15 @@ link_libraries(
 
 add_link_options(
 	-static-libstdc++
+
+	$<${IS_ANDROID32}:-march=armv7-a>
+	$<${IS_ANDROID64}:-march=armv8-a>
+
+	-mfpu=neon-vfpv4
+	#-mcpu=cortex-a7
+	-mtune=cortex-a53
+	-fsigned-char
+	-funwind-tables
 )
 
 include_directories(
@@ -69,6 +82,17 @@ include_directories(
 	"${THIRDPARTYDIR}/openal-soft/include"
 	"${THIRDPARTYDIR}/fontconfig"
 	"${THIRDPARTYDIR}/freetype/include"
+)
+
+add_compile_options(
+	$<${IS_ANDROID32}:-march=armv7-a>
+	$<${IS_ANDROID64}:-march=armv8-a>
+
+	-mfpu=neon-vfpv4
+	#-mcpu=cortex-a7
+	-mtune=cortex-a53
+	-fsigned-char
+	-funwind-tables
 )
 
 endif()

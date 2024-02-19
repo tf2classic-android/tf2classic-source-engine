@@ -239,7 +239,7 @@ add_compile_definitions(
 	HAVE_ZLIB
 	$<$<NOT:${IS_ANDROID}>:HAVE_FC>
 
-	USE_ZLIB
+	$<${IS_WINDOWS}:USE_ZLIB>
 )
 
 string( TOUPPER ${BUILD_FOLDER} GAME_DEFINITION )
