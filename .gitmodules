@@ -1,9 +1,9 @@
 [submodule "thirdparty"]
 	path = thirdparty
-	url = https://github.com/nillerusr/source-thirdparty
+	url = ../source-thirdparty.git
 [submodule "ivp"]
 	path = ivp
-	url = https://github.com/nillerusr/source-physics
+	url = ../source-physics.git
 [submodule "lib"]
 	path = lib
-	url = https://github.com/nillerusr/source-engine-libs.git
+	url = ../source-engine-libs.git
