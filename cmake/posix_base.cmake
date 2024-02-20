@@ -149,10 +149,9 @@ if( ${IS_LINUX} )
 endif()
 
 add_compile_options(
-	$<${IS_LINUX}:-march=core2>
-	-msse2
+	$<${IS_LINUX}:-march=x86-64-v2>
 	-mfpmath=sse
-	-mtune=core2
+	-mtune=generic
 )
 
 endif()
