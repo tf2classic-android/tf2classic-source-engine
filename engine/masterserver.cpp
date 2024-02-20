@@ -30,8 +30,7 @@ extern ConVar sv_lan;
 
 static char g_MasterServers[][64] =
 {
-	"185.192.97.130:27010",
-	"168.138.92.21:27016"
+	"ms.tyabus.co.uk:27011"
 };
 
 #ifdef DEDICATED
@@ -75,6 +74,7 @@ public:
 	void ShutdownConnection(void);
 	void SendHeartbeat( struct adrlist_s *p );
 	void AddServer( struct netadr_s *adr );
+	void RemoveServer( struct netadr_s *adr );
 	void UseDefault ( void );
 	void CheckHeartbeat (void);
 	void RespondToHeartbeatChallenge( netadr_t &from, bf_read &msg );
@@ -82,7 +82,7 @@ public:
 
 	void ProcessConnectionlessPacket( netpacket_t *packet );
 
-	void AddMaster_f( const CCommand &args );
+	void SetMaster_f( const CCommand &args );
 	void Heartbeat_f( void );
 
 	void RunFrame();
@@ -531,6 +531,11 @@ void CMaster::AddServer( netadr_t *adr )
 	m_pMasterAddresses = n;
 }
 
+void CMaster::RemoveServer( netadr_s *adr )
+{
+
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Add built-in default master if woncomm.lst doesn't parse
 //-----------------------------------------------------------------------------
@@ -594,19 +599,133 @@ void CMaster::RespondToHeartbeatChallenge( netadr_t &from, bf_read &msg )
 //-----------------------------------------------------------------------------
 // Purpose: Add/remove master servers
 //-----------------------------------------------------------------------------
-void CMaster::AddMaster_f ( const CCommand &args )
+void CMaster::SetMaster_f( const CCommand &args )
 {
-	CUtlString cmd( ( args.ArgC() > 1 ) ? args[ 1 ] : "" );
-
+	char   szMasterAddress[128]; // IP:Port string of master
+	const char *pszCmd = NULL;
 	netadr_t adr;
+	
+	int count = args.ArgC();
 
-	if( !NET_StringToAdr(cmd.String(), &adr) )
+	// Usage help
+	if ( count < 2 )
 	{
-		Warning("Invalid address\n");
+		//ConMsg("Usage:\nsetmaster <add | remove | enable | disable> <IP:port>\n");
+		ConMsg("Usage:\nsetmaster <add | enable | disable> <IP:port>\n");
+		
+		ConMsg("Current:\n");
+		adrlist_t *p = m_pMasterAddresses;
+		int i = 0;
+		while ( p )
+		{
+			ConMsg("  %i:  %s\n", i+1, p->adr.ToString() );
+			
+			p = p->next;
+			i++;
+		}
+		
+		/*
+		if ( m_MasterServers.Count() == 0 )
+		{
+			ConMsg("Current:  None\n");
+		}
+		else
+		{
+			ConMsg("Current:\n");
+
+			for ( int i=0; i<m_MasterServers.Count();i++)
+			{
+				ConMsg("  %i:  %s\n", i+1, m_MasterServers[i].addr.ToString() );
+			}
+		}
+		*/
 		return;
 	}
 
-	this->AddServer(&adr);
+	pszCmd = args[1];
+
+	if ( !pszCmd || !pszCmd[0] )
+		return;
+
+	// build master address
+	szMasterAddress[0] = 0;
+	adr.Clear();
+
+	for ( int i= 2; i<count; i++ )
+	{
+		Q_strcat( szMasterAddress, args[i], sizeof( szMasterAddress ) );
+	}
+
+	if ( Q_strlen( szMasterAddress ) > 0 )
+	{
+		// Convert to a valid address
+		if ( !NET_StringToAdr ( szMasterAddress, &adr ) )
+		{
+			ConMsg(" Invalid address \"%s\", setmaster command ignored\n", szMasterAddress );
+			return;
+		}
+
+		// set to default port if no port was given
+		if ( adr.GetPort() == 0 )
+		{
+			adr.SetPort( PORT_MASTER );
+		}
+	}
+
+	
+	// Check for disabling...
+	if ( !Q_stricmp( pszCmd, "disable") )
+	{
+		m_bNoMasters = true;
+	}
+	else if (!Q_stricmp( pszCmd, "enable") )
+	{
+		m_bNoMasters = false;
+	}
+	else if ( !Q_stricmp( pszCmd, "add" ) )
+	{
+		AddServer( &adr );
+		ConMsg( "Adding master at %s\n", adr.ToString() );
+		/*
+		if ( AddServer( &adr ) )
+		{
+			ConMsg ( "Adding master at %s\n", adr.ToString() );
+		}
+		else
+		{
+			ConMsg ( "Master at %s already in list\n", adr.ToString() );
+		}
+		*/
+
+		// If we get here, masters are definitely being used.
+		//m_bNoMasters = false;
+	}
+	/*
+	else if ( !Q_stricmp( pszCmd, "remove" ) )
+	{
+		RemoveServer( &adr );
+		
+		// Find master server
+		/*
+		if ( !RemoveServer( &adr ) )
+		{
+			ConMsg( "Can't remove master %s, not in list\n", adr.ToString() );
+		}
+		*/
+	}
+	*/
+	else
+	{
+		ConMsg( "Invalid setmaster command\n" );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CON_COMMAND( setmaster, "" )
+{
+	master->SetMaster_f( args );
 }
 
 
@@ -630,21 +749,10 @@ void CMaster::Heartbeat_f (void)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void AddMaster_f( const CCommand &args )
-{
-	master->AddMaster_f( args );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void Heartbeat1_f( void )
+CON_COMMAND( heartbeat, "Force heartbeat of master servers" )
 {
 	master->Heartbeat_f();
 }
-
-static ConCommand setmaster("addmaster", AddMaster_f );
-static ConCommand heartbeat("heartbeat", Heartbeat1_f, "Force heartbeat of master servers" ); 
 
 //-----------------------------------------------------------------------------
 // Purpose: Adds master server console commands
