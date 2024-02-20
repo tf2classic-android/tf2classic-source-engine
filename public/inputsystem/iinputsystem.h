@@ -112,11 +112,6 @@ public:
 	// Sets the cursor position
 	virtual void SetCursorPosition( int x, int y ) = 0;
 
-	// NVNT get address to haptics interface
-	virtual void *GetHapticsInterfaceAddress() const = 0;
-
-	virtual void SetNovintPure( bool bPure ) = 0;
-
 	// read and clear accumulated raw input values
 	virtual bool GetRawMouseAccumulators( int& accumX, int& accumY ) = 0;
 	virtual bool GetTouchAccumulators( int fingerId, float &dx, float &dy ) = 0;

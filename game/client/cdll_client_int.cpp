@@ -125,12 +125,6 @@
 #include "mouthinfo.h"
 #include "mumble.h"
 
-// NVNT includes
-#include "hud_macros.h"
-#include "haptics/ihaptics.h"
-#include "haptics/haptic_utils.h"
-#include "haptics/haptic_msgs.h"
-
 #if defined( TF_CLIENT_DLL )
 #include "abuse_report.h"
 #endif
@@ -148,8 +142,6 @@
 #endif
 
 #include "touch.h"
-
-extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
 // HPE_BEGIN
@@ -216,8 +208,6 @@ IEngineReplay *g_pEngineReplay = NULL;
 IEngineClientReplay *g_pEngineClientReplay = NULL;
 IReplaySystem *g_pReplay = NULL;
 #endif
-
-IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
 //=============================================================================
 // HPE_BEGIN
@@ -1111,14 +1101,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 
 	C_BaseAnimating::InitBoneSetupThreadPool();
 
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT connect haptics sytem
-	ConnectHaptics(appSystemFactory);
-#endif
-#ifndef _X360
-	HookHapticMessages(); // Always hook the messages
-#endif
-
 	return true;
 }
 
@@ -1250,11 +1232,6 @@ void CHLClient::Shutdown( void )
 	DisconnectTier1Libraries( );
 
 	gameeventmanager = NULL;
-
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT Disconnect haptics system
-	DisconnectHaptics();
-#endif
 }
 
 

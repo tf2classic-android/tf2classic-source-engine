@@ -13,12 +13,9 @@
 #include "datacache/imdlcache.h"
 #include "activitylist.h"
 
-// NVNT start extra includes
-#include "haptics/haptic_utils.h"
 #ifdef CLIENT_DLL
 	#include "prediction.h"
 #endif
-// NVNT end extra includes
 
 #if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL ) || defined ( TF_CLASSIC ) || defined ( TF_CLASSIC_CLIENT )
 #include "tf_shareddefs.h"
@@ -1197,15 +1194,7 @@ bool CBaseCombatWeapon::SendWeaponAnim( int iActivity )
 #if defined( USES_ECON_ITEMS ) || defined ( TF_CLASSIC ) || defined ( TF_CLASSIC_CLIENT )
 	iActivity = TranslateViewmodelHandActivity( (Activity)iActivity );
 #endif		
-	// NVNT notify the haptics system of this weapons new activity
-#ifdef WIN32
-#ifdef CLIENT_DLL
-	if ( prediction->InPrediction() && prediction->IsFirstTimePredicted() )
-#endif
-#ifndef _X360
-		HapticSendWeaponAnim(this,iActivity);
-#endif
-#endif
+
 	//For now, just set the ideal activity and be done with it
 	return SetIdealActivity( (Activity) iActivity );
 }

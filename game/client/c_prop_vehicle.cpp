@@ -17,8 +17,6 @@
 #include "iviewrender.h"
 #include "vgui/ISurface.h"
 #include "../hud_crosshair.h"
-// NVNT haptic utils
-#include "haptics/haptic_utils.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -374,18 +372,14 @@ void C_PropVehicleDriveable::UpdateViewAngles( C_BasePlayer *pLocalPlayer, CUser
 //-----------------------------------------------------------------------------
 void C_PropVehicleDriveable::OnEnteredVehicle( C_BaseCombatCharacter *pPassenger )
 {
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT notify haptics system of navigation change
-	HapticsEnteredVehicle(this,pPassenger);
-#endif
+
 }
 
-// NVNT - added function
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void C_PropVehicleDriveable::OnExitedVehicle( C_BaseCombatCharacter *pPassenger )
 {
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT notify haptics system of navigation exit
-	HapticsExitedVehicle(this,pPassenger);
-#endif
+
 }
 

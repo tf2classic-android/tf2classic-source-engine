@@ -16,7 +16,6 @@ set(
 	"${INPUTSYSTEM_DIR}/key_translation.cpp"
 	"${INPUTSYSTEM_DIR}/key_translation.h"
 	"${INPUTSYSTEM_DIR}/steamcontroller.cpp"
-	"$<${IS_WINDOWS}:${INPUTSYSTEM_DIR}/novint.cpp>"
 	"${INPUTSYSTEM_DIR}/touch_sdl.cpp"
 
 	# Header Files

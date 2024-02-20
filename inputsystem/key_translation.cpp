@@ -307,15 +307,6 @@ static const char *s_pButtonCodeName[ ] =
 	"U AXIS NEG",		
 	"V AXIS POS",
 	"V AXIS NEG",	// JOYSTICK_LAST_AXIS_BUTTON
-	"FALCON_NULL", // NVNT temp Fix for unaligned joystick enumeration
-	"FALCON_1",	// NOVINT_FIRST
-	"FALCON_2",
-	"FALCON_3",
-	"FALCON_4",
-	"FALCON2_1",
-	"FALCON2_2",
-	"FALCON2_3",
-	"FALCON2_4", // NOVINT_LAST
 #endif
 
 	SCONTROLLERBUTTONS_BUTTONS( 0 ),

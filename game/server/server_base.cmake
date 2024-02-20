@@ -603,9 +603,6 @@ set(
 		"${SRCDIR}/game/server/vote_controller.h"
 		"${SRCDIR}/game/server/vote_controller.cpp"
 
-		"${SRCDIR}/public/haptics/haptic_msgs.cpp"
-		"$<${IS_WINDOWS}:${SRCDIR}/public/haptics/haptic_utils.cpp>"
-
 		# Not using precompiled header cbase.h
 
 		"${SRCDIR}/public/bone_setup.cpp"					#/

@@ -97,11 +97,6 @@ public:
 	virtual void SleepUntilInput( int nMaxSleepTimeMS );
 	virtual int GetPollCount() const;
 	virtual void SetCursorPosition( int x, int y );
-#if defined( WIN32 ) && !defined ( _X360 )
-	virtual void *GetHapticsInterfaceAddress() const;
-#else
-	virtual void *GetHapticsInterfaceAddress() const { return NULL;}	
-#endif
 	bool GetRawMouseAccumulators( int& accumX, int& accumY );
 	virtual bool GetTouchAccumulators( int fingerId, float &dx, float &dy );
 
@@ -251,31 +246,6 @@ public:
 	// Shut down touch	
 	void ShutdownTouch( void );
 	
-
-#if defined( WIN32 ) && !defined ( _X360 )
-	// NVNT attaches window to novint devices
-	void AttachWindowToNovintDevices( void * hWnd );
-
-	// NVNT detaches window from novint input
-	void DetachWindowFromNovintDevices( void );
-
-	// NVNT Initializes novint devices
-	void InitializeNovintDevices( void );
-
-	// NVNT Samples a novint device
-	void PollNovintDevices( void );
-
-	// NVNT Update the novint device button state
-	void UpdateNovintDeviceButtonState( int nDevice );
-
-	// NVNT Record button state and post the event
-	void NovintDeviceButtonEvent( ButtonCode_t button, int sample );
-
-	//Added called and set to true when binding input and set to false once bound
-	void SetNovintPure( bool bPure );
-#else
-	void SetNovintPure( bool bPure ) {} // to satify the IInput virtual interface	
-#endif
 	// Chains the window message to the previous wndproc
 	LRESULT ChainWindowMessage( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
@@ -445,12 +415,6 @@ public:
 	bool m_bSteamControllerActionsInitialized;		// true if our action sets and handles were successfully initialized (this doesn't mean a controller is necessarily connected, or that in-game client actions were initialized)
 	bool m_bSteamControllerActive;					// true if our action sets and handles were successfully initialized *and* that at least one controller is actually connected and switched on.
 
-#if defined( WIN32 ) && !defined ( _X360 )
-	// NVNT Novint device info
-	int m_nNovintDeviceCount;
-	bool m_bNovintDevices;
-#endif
-
 	// Xbox controller info
 	appKey_t	m_appXKeys[ XUSER_MAX_COUNT ][ XK_MAX_KEYS ];
 	xdevice_t	m_XDevices[ XUSER_MAX_COUNT ];
@@ -467,11 +431,6 @@ public:
 
 	CSysModule   *m_pXInputDLL;
 	CSysModule   *m_pRawInputDLL;
-	
-#if defined( WIN32 ) && !defined ( _X360 )
-	// NVNT falcon module
-	CSysModule	 *m_pNovintDLL;
-#endif
 
 	bool m_bConsoleTextMode;
 

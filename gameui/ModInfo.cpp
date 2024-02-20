@@ -240,12 +240,3 @@ bool CModInfo::UseBots()
 {
 	return ( Q_stricmp( m_pModData->GetString( "bots", "0" ), "1" ) == 0 );
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: data accessor
-//-----------------------------------------------------------------------------
-bool CModInfo::SupportsVR()
-{
-	return (m_pModData->GetInt( "supportsvr" ) > 0);
-}

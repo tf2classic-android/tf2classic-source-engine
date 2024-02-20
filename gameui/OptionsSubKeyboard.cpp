@@ -405,14 +405,6 @@ void COptionsSubKeyboard::FillInCurrentBindings( void )
 		bJoystick = var.GetBool();
 	}
 
-	// NVNT see if we have a falcon connected.
-	bool bFalcon = false;
-	ConVarRef falconVar("hap_HasDevice");
-	if ( var.IsValid() )
-	{
-		bFalcon = var.GetBool();
-	}
-
 	for ( int i = 0; i < BUTTON_CODE_LAST; i++ )
 	{
 		// Look up binding
@@ -435,9 +427,6 @@ void COptionsSubKeyboard::FillInCurrentBindings( void )
 
 				// If we're using a joystick, joystick bindings override keyboard ones
 				bool bShouldOverride = bJoystick && IsJoystickCode((ButtonCode_t)i) && !IsJoystickCode(currentBC);
-				// NVNT If we're not using a joystick, falcon bindings override keyboard ones
-				if( !bShouldOverride && bFalcon && IsNovintCode((ButtonCode_t)i) && !IsNovintCode(currentBC) )
-					bShouldOverride = true;
 
 				if ( !bShouldOverride )
 					continue;

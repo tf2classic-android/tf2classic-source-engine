@@ -83,12 +83,6 @@ CInputSystem::CInputSystem()
 
 	m_pXInputDLL = NULL;
 	m_pRawInputDLL = NULL;
-
-#if defined ( _WIN32 ) && !defined ( _X360 )
-	// NVNT DLL
-	m_pNovintDLL = NULL;
-#endif
-
 	m_bConsoleTextMode = false;
 	m_bSkipControllerInitialization = false;
 
@@ -111,15 +105,6 @@ CInputSystem::~CInputSystem()
 		Sys_UnloadModule( m_pRawInputDLL );
 		m_pRawInputDLL = NULL;
 	}
-
-#if defined ( _WIN32 ) && !defined ( _X360 )
-	// NVNT DLL unload
-	if ( m_pNovintDLL )
-	{
-		Sys_UnloadModule( m_pNovintDLL );
-		m_pNovintDLL = NULL;
-	}
-#endif
 }
 
 
@@ -175,22 +160,6 @@ InitReturnVal_t CInputSystem::Init()
 		InitializeJoysticks();
 		if ( m_bXController )
 			joy_xcontroller_found.SetValue( 1 );
-
-
-#if defined( PLATFORM_WINDOWS_PC )
-		// NVNT try and load and initialize through the haptic dll, but only if the drivers are installed
-		HMODULE hdl = LoadLibraryEx( "hdl.dll", NULL, LOAD_LIBRARY_AS_DATAFILE );
-
-		if ( hdl )
-		{
-			m_pNovintDLL = Sys_LoadModule( "haptics.dll" );
-			if ( m_pNovintDLL )
-			{
-				InitializeNovintDevices();
-			}
-			FreeLibrary( hdl );
-		}
-#endif
 	}
 
 #if defined( _X360 )
@@ -310,9 +279,6 @@ void CInputSystem::AttachToWindow( void* hWnd )
 	m_hAttachedHWnd = (HWND)hWnd;
 
 #if defined( PLATFORM_WINDOWS_PC ) && !defined( USE_SDL )
-	// NVNT inform novint devices of window
-	AttachWindowToNovintDevices( hWnd );
-
 	// register to read raw mouse input
 
 #if !defined(HID_USAGE_PAGE_GENERIC)
@@ -356,10 +322,6 @@ void CInputSystem::DetachFromWindow( )
 	}
 #endif
 
-#if defined( PLATFORM_WINDOWS_PC )
-	// NVNT inform novint devices loss of window
-	DetachWindowFromNovintDevices( );
-#endif
 	m_hAttachedHWnd = 0;
 }
 
@@ -939,14 +901,6 @@ void CInputSystem::SampleDevices( void )
 	m_nLastSampleTick = ComputeSampleTick();
 
 	PollJoystick();
-
-#if defined( PLATFORM_WINDOWS_PC )
-	// NVNT if we have device/s poll them.
-	if ( m_bNovintDevices )
-	{
-		PollNovintDevices();
-	}
-#endif
 
 	PollSteamControllers();
 }

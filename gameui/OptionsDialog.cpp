@@ -29,10 +29,6 @@
 #include "OptionsSubMultiplayer.h"
 #include "OptionsSubDifficulty.h"
 #include "OptionsSubPortal.h"
-#ifdef WIN32
-// NVNT haptic configuration dialog
-#include "OptionsSubHaptics.h"
-#endif
 #include "ModInfo.h"
 
 using namespace vgui;
@@ -64,16 +60,6 @@ COptionsDialog::COptionsDialog(vgui::Panel *parent) : PropertyDialog(parent, "Op
 	// debug timing code, this function takes too long
 //	double s4 = system()->GetCurrentTime();
 
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT START see if the user has a haptic device via convar. if so create haptics dialog.
-	ConVarRef checkHap("hap_HasDevice");
-	checkHap.Init("hap_HasDevice",true);
-	if(checkHap.GetBool())
-	{
-		AddPage(new COptionsSubHaptics(this), "#GameUI_Haptics_TabTitle");
-	}
-	// NVNT END
-#endif
 	if (ModInfo().IsSinglePlayerOnly() && !ModInfo().NoDifficulty())
 	{
 		AddPage(new COptionsSubDifficulty(this), "#GameUI_Difficulty");

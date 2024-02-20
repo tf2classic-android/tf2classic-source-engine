@@ -192,23 +192,7 @@ enum ButtonCode_t
 
 	JOYSTICK_LAST = JOYSTICK_LAST_AXIS_BUTTON,
 
-#if !defined ( _X360 )
-	NOVINT_FIRST = JOYSTICK_LAST + 2, // plus 1 missing key. +1 seems to cause issues on the first button.
-	
-	NOVINT_LOGO_0 = NOVINT_FIRST,
-	NOVINT_TRIANGLE_0,
-	NOVINT_BOLT_0,
-	NOVINT_PLUS_0,
-	NOVINT_LOGO_1,
-	NOVINT_TRIANGLE_1,
-	NOVINT_BOLT_1,
-	NOVINT_PLUS_1,
-	
-	NOVINT_LAST = NOVINT_PLUS_1,
-	STEAMCONTROLLER_FIRST = NOVINT_LAST + 1,
-#else
-	STEAMCONTROLLER_FIRST = JOYSTICK_LAST + 1
-#endif
+	STEAMCONTROLLER_FIRST = JOYSTICK_LAST + 1,
 
 	// Steam Controller
 	STEAMCONTROLLER_FIRST_BUTTON = STEAMCONTROLLER_FIRST,
@@ -328,24 +312,6 @@ inline bool IsMouseCode( ButtonCode_t code )
 	return ( code >= MOUSE_FIRST ) && ( code <= MOUSE_LAST );
 }
 
-inline bool IsNovintCode( ButtonCode_t code )
-{
-#if !defined ( _X360 )
-	return ( ( code >= NOVINT_FIRST ) && ( code <= NOVINT_LAST ) );
-#else
-	return false;
-#endif
-}
-
-inline bool IsNovintButtonCode( ButtonCode_t code )
-{
-#if !defined ( _X360 )
-	return IsNovintCode( code );
-#else
-	return false;
-#endif
-}
-
 inline bool IsJoystickCode( ButtonCode_t code )
 {
 	return ( (( code >= JOYSTICK_FIRST ) && ( code <= JOYSTICK_LAST )) || ((code >= STEAMCONTROLLER_FIRST_BUTTON) && (code <= STEAMCONTROLLER_LAST_BUTTON)) );
@@ -353,7 +319,7 @@ inline bool IsJoystickCode( ButtonCode_t code )
 
 inline bool IsJoystickButtonCode( ButtonCode_t code )
 {
-	return ( ( ( code >= JOYSTICK_FIRST_BUTTON ) && ( code <= JOYSTICK_LAST_BUTTON ) ) || IsNovintButtonCode( code ) );
+	return ( ( ( code >= JOYSTICK_FIRST_BUTTON ) && ( code <= JOYSTICK_LAST_BUTTON ) ) );
 }
 
 inline bool IsJoystickPOVCode( ButtonCode_t code )

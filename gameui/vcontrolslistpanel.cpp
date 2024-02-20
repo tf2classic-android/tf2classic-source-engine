@@ -107,9 +107,6 @@ void VControlsListPanel::StartCaptureMode( HCursor hCursor )
 	EnterEditMode(m_nClickRow, 1, m_pInlineEditPanel);
 	input()->SetMouseFocus(m_pInlineEditPanel->GetVPanel());
 	input()->SetMouseCapture(m_pInlineEditPanel->GetVPanel());
-	// NVNT tell the input system that novint devices
-	// should be set unable to do menu mouse emulation.
-	g_pInputSystem->SetNovintPure(true);
 
 	engine->StartKeyTrapMode();
 
@@ -132,9 +129,7 @@ void VControlsListPanel::EndCaptureMode( HCursor hCursor )
 	LeaveEditMode();
 	RequestFocus();
 	input()->SetMouseFocus(GetVPanel());
-	// NVNT tell the input system that novint devices
-	// should be allowed to do menu mouse emulation.
-	g_pInputSystem->SetNovintPure(false);
+
 	if (hCursor)
 	{
 		m_pInlineEditPanel->SetCursor(hCursor);

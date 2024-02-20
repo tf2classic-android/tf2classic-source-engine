@@ -9,9 +9,6 @@
 #include "shake.h"
 #include "voice_gamemgr.h"
 
-// NVNT include to register in haptic user messages
-#include "haptics/haptic_msgs.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -105,9 +102,5 @@ void RegisterUserMessages()
 	usermessages->Register("EOTLDuckEvent", 7);
 	usermessages->Register("PlayerPickupWeapon", -1);
 	usermessages->Register("QuestObjectiveCompleted", 14);
-#ifndef _X360
-	// NVNT register haptic user messages
-	RegisterHapticMessages();
-#endif
 }
 

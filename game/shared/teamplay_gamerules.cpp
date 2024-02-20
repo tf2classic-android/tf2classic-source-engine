@@ -288,14 +288,6 @@ void CTeamplayRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 		
 		pPlayer->SetPlayerName( pszName );
 	}
-
-	// NVNT see if this user is still or has began using a haptic device
-	const char *pszHH = engine->GetClientConVarValue( pPlayer->entindex(), "hap_HasDevice" );
-	if(pszHH)
-	{
-		int iHH = atoi(pszHH);
-		pPlayer->SetHaptics(iHH!=0);
-	}
 }
 
 //=========================================================

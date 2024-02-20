@@ -1821,13 +1821,6 @@ ConVarRef suitcharger( "sk_suitcharger" );
 
 	void CMultiplayRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 	{
-		// NVNT see if this user is still or has began using a haptic device
-		const char *pszHH = engine->GetClientConVarValue( pPlayer->entindex(), "hap_HasDevice" );
-		if( pszHH )
-		{
-			int iHH = atoi( pszHH );
-			pPlayer->SetHaptics( iHH != 0 );
-		}
 
 	}
 	void CMultiplayRules::GetTaggedConVarList( KeyValues *pCvarTagList )

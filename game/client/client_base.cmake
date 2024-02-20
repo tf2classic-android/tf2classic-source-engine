@@ -337,9 +337,6 @@ set(
 		"${SRCDIR}/game/client/c_vote_controller.h"
 		"${SRCDIR}/game/client/c_vote_controller.cpp"
 
-		"${SRCDIR}/public/haptics/haptic_msgs.cpp"
-		"$<${IS_WINDOWS}:${SRCDIR}/public/haptics/haptic_utils.cpp>"
-
 		"${SRCDIR}/game/client/touch.cpp"
 		"${SRCDIR}/game/client/in_touch.cpp"
 

@@ -51,7 +51,6 @@ public:
 	bool UseGameLogo();
 	bool UseBots();
 	bool HasHDContent();
-	bool SupportsVR();
 
 	KeyValues *GetHiddenMaps();
 
