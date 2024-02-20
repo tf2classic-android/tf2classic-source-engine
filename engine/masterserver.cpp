@@ -706,12 +706,12 @@ void CMaster::SetMaster_f( const CCommand &args )
 		RemoveServer( &adr );
 		
 		// Find master server
-		/*
+		
 		if ( !RemoveServer( &adr ) )
 		{
 			ConMsg( "Can't remove master %s, not in list\n", adr.ToString() );
 		}
-		*/
+		
 	}
 	*/
 	else
