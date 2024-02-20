@@ -1136,10 +1136,11 @@ target_link_libraries(
 
 	"$<${IS_OSX}:${LIBCOMMON}/curl${IMPLIB_EXT}>"
 
-	#libz${STATIC_LIB_EXT}
-	z
-	# libcrypto
+	# libz
+	"$<$<NOT:${IS_POSIX}>:libz${STATIC_LIB_EXT}>"
+	"$<${IS_POSIX}:z>"
 
+	# libcrypto
 	"$<${ENGINE_GPROFILER}:${THIRDPARTYDIR}/gperftools-2.0/.libs/libprofiler${SHARED_LIB_EXT}>"
 	"$<${IS_WINDOWS}:dsound>"
 	"$<${IS_WINDOWS}:dxguid>"
