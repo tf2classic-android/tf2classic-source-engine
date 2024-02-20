@@ -79,8 +79,8 @@
 #endif
 #include "tier0/memdbgon.h"
 
-#if defined( ANDROID ) && !defined( GAME_TF2CLASSIC )
-#include "common/android/iconv.h"
+#if defined( ANDROID )
+#include "libiconv-1.17/include/iconv.h"
 #elif POSIX
 #include <iconv.h>
 #endif
