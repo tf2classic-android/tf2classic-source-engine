@@ -28,6 +28,7 @@ Release_*/
 ValveETWProviderEvents.h
 game/client/*/client.lib
 game/server/*/server.lib
+game_tf2classic/
 .DS_Store
 build*/
 .cache/
