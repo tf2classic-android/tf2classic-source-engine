@@ -24,7 +24,7 @@
 #include "AmbientLight.h"
 #endif
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( TF_CLASSIC )
 #include "tf_player.h"
 #include "bot/tf_bot.h"
 #endif
@@ -177,7 +177,7 @@ bool CFuncNavCost::IsApplicableTo( CBaseCombatCharacter *who ) const
 		}
 	}
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( TF_CLASSIC )
 	// TODO: Make group comparison efficient and move to base combat character
 	CTFBot *bot = ToTFBot( who );
 	if ( bot )

@@ -31,6 +31,13 @@ enum
 	TF_TEAM_COUNT
 };
 
+// WINREASON ENUM
+enum
+{
+	TF_WINREASON_VIPESCAPED = 12,
+	TF_WINREASON_DOMINATION
+};
+
 #define TF_TEAM_AUTOASSIGN (TF_TEAM_COUNT + 1 )
 
 extern const char *g_aTeamNames[TF_TEAM_COUNT];

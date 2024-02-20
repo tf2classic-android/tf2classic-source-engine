@@ -6,8 +6,10 @@
 //=============================================================================//
 
 #include "cbase.h"
+#include "strtools.h"
 #include "tf_hud_winpanel.h"
 #include "tf_hud_statpanel.h"
+#include "tf_shareddefs.h"
 #include "tf_spectatorgui.h"
 #include "vgui_controls/AnimationController.h"
 #include "iclientmode.h"
@@ -26,6 +28,8 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+extern ConVar tf2c_domination_points_per_round;
 
 vgui::IImage* GetDefaultAvatarImage( C_BasePlayer *pPlayer );
 
@@ -195,7 +199,7 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 		SetDialogVariable( bRoundComplete ? "WinningTeamLabel" : "AdvancingTeamLabel", g_pVGuiLocalize->Find( pTeamLabel ) );
 		SetDialogVariable( "TopPlayersLabel", g_pVGuiLocalize->Find( pTopPlayersLabel ) );
 
-		wchar_t wzWinReason[256]=L"";
+		wchar_t wzWinReason[512]=L"";
 		switch ( iWinReason )
 		{
 		case WINREASON_ALL_POINTS_CAPTURED:
@@ -217,7 +221,17 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 			break;
 		case WINREASON_STALEMATE:
 			g_pVGuiLocalize->ConstructString( wzWinReason, sizeof( wzWinReason ), g_pVGuiLocalize->Find( "#Winreason_Stalemate" ), 0 );
-			break;	
+			break;
+		case TF_WINREASON_VIPESCAPED:
+			g_pVGuiLocalize->ConstructString( wzWinReason, sizeof( wzWinReason ), g_pVGuiLocalize->Find( "#Winreason_VIP_Escaped" ), 1, pLocalizedTeamName );
+			break;
+		case TF_WINREASON_DOMINATION:
+			{
+				wchar_t wsPoints[32] = L"";
+				_snwprintf( wsPoints, ARRAYSIZE( wsPoints ), L"%d", tf2c_domination_points_per_round.GetInt() );
+				g_pVGuiLocalize->ConstructString( wzWinReason, sizeof( wzWinReason ), g_pVGuiLocalize->Find( "#Winreason_RoundScoreLimit" ), 2, pLocalizedTeamName, wsPoints );
+			}
+			break;
 		default:
 			Assert( false );
 			break;

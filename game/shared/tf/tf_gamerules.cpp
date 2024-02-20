@@ -6045,12 +6045,11 @@ bool CTFGameRules::Domination_RunLogic()
 
 					pGlobalTFTeam->AddRoundScore( 1 );
 
-					Msg( "pGlobalTFTeam->GetRoundScore() = CONTROLPOINT: %d | SCORE: %d\n", i, pGlobalTFTeam->GetRoundScore() );
+					//Msg( "pGlobalTFTeam->GetRoundScore() = CONTROLPOINT: %d | SCORE: %d\n", i, pGlobalTFTeam->GetRoundScore() );
 
 					if( (nValue > 0) && (pGlobalTFTeam->GetRoundScore() >= nValue) )
 					{
-						// FIXME WINREASON_FLAG_CAPTURE_LIMIT
-						SetWinningTeam( pGlobalTFTeam->GetTeamNumber(), WINREASON_FLAG_CAPTURE_LIMIT, true );
+						SetWinningTeam( pGlobalTFTeam->GetTeamNumber(), TF_WINREASON_DOMINATION, true );
 						return true;
 					}
 				}
