@@ -65,6 +65,6 @@ target_link_libraries(
 	"$<${IS_WINDOWS}:${LIBCOMMON}/libz${STATIC_LIB_EXT}>"
 	"$<${IS_WINDOWS}:${LIBCOMMON}/libpng${STATIC_LIB_EXT}>"
 	"$<${IS_POSIX}:jpeg>"
-	"$<${IS_POSIX}:z>"
 	"$<${IS_POSIX}:png>"
+	"$<${IS_POSIX}:z>"
 )

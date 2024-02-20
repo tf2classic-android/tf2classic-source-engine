@@ -490,8 +490,8 @@ target_link_libraries(
 	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:jpeg>"
 	# steam_api
 	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_WINDOWS}>:${LIBCOMMON}/libpng${STATIC_LIB_EXT}>"
-	"$<$<NOT:${IS_DEDICATED}>:libz${STATIC_LIB_EXT}>"
 	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:png>"
+	"$<$<NOT:${IS_DEDICATED}>:libz${STATIC_LIB_EXT}>"
 )
 
 target_use_steamapi(
