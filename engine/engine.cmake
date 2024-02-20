@@ -1146,8 +1146,8 @@ target_link_libraries(
 
 	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:openal>"
 	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:${CURL_LIBRARIES}>"
-	"$<${IS_ANDROID}:ssl>"
-	"$<${IS_ANDROID}:crypto>"
+	"$<$<AND:${IS_ANDROID},$<NOT:${IS_64BIT}>>:ssl>"
+	"$<$<AND:${IS_ANDROID},$<NOT:${IS_64BIT}>>:crypto>"
 	"$<${IS_ANDROID}:curl>"
 )
 
