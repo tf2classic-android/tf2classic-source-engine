@@ -48,7 +48,6 @@ typedef void *HDC;
 #include "sys_dll.h"
 #include "materialsystem/imaterial.h"
 #include "IHammer.h"
-#include "sourcevr/isourcevirtualreality.h"
 #include "tier2/tier2.h"
 #include "tier2/renderutils.h"
 #include "tier0/etwprof.h"
@@ -204,15 +203,12 @@ protected:
     int                 m_nStereoHeight;
     int                 m_nUIWidth;
     int                 m_nUIHeight;
-	int					m_nVROverrideX;
-	int					m_nVROverrideY;
 #if defined( USE_SDL )
 	int					m_nRenderWidth;
 	int					m_nRenderHeight;
 #endif
     bool                m_bWindowed;
     bool                m_bSetModeOnce;
-	bool				m_bVROverride;
 
     // Client view rectangle
     vrect_t             m_ClientViewRect;
@@ -262,7 +258,6 @@ CVideoMode_Common::CVideoMode_Common( void )
     m_bWindowed            = false;
     m_nModeWidth           = IsPC() ? 1024 : 640;
     m_nModeHeight          = IsPC() ? 768 : 480;
-	m_bVROverride = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -528,54 +523,6 @@ void CVideoMode_Common::ResetCurrentModeForNewResolution( int nWidth, int nHeigh
 	m_nUIHeight = pMode->height;
 	m_nStereoWidth = pMode->width;
 	m_nStereoHeight = pMode->height;
-
-	// assume we won't be overriding the position
-	m_bVROverride = false;
-
-	if ( UseVR() || ShouldForceVRActive() )
-	{
-		g_pSourceVR->GetViewportBounds( ISourceVirtualReality::VREye_Left, NULL, NULL, &m_nStereoWidth, &m_nStereoHeight );
-		VRRect_t vrBounds;
-		if( g_pSourceVR->GetDisplayBounds( &vrBounds ) )
-		{
-			ConVarRef vr_force_windowed( "vr_force_windowed" );
-
-			RequestedWindowVideoMode().width = m_nModeWidth = vrBounds.nWidth;
-			RequestedWindowVideoMode().height = m_nModeHeight = vrBounds.nHeight;
-			m_bVROverride = true;
-			m_bWindowed = vr_force_windowed.GetBool();
-
-
-			// This is the smallest size the the UI in source games can handle.
-			m_nUIWidth =	640;
-			m_nUIHeight =	480;
-
-#if defined( WIN32 ) && !defined( USE_SDL )
-			m_nVROverrideX = vrBounds.nX;
-			m_nVROverrideY = vrBounds.nY;
-#elif defined( USE_SDL )
-			for ( int i = 0; i < SDL_GetNumVideoDisplays(); i++ )
-			{
-				SDL_Rect sdlRect;
-				SDL_GetDisplayBounds( i, &sdlRect );
-
-				if( sdlRect.x == vrBounds.nX && sdlRect.y == vrBounds.nY 
-					&& sdlRect.w == vrBounds.nWidth && sdlRect.h == vrBounds.nHeight )
-				{
-					static ConVarRef sdl_displayindex( "sdl_displayindex" );
-					sdl_displayindex.SetValue( i );
-					break;
-				}
-			}
-#endif
-		}
-	}
-	else if( materials->GetCurrentConfigForVideoCard().m_nVRModeAdapter == materials->GetCurrentAdapter() )
-	{
-		// if we aren't in VR mode but we do have a VR mode adapter set, we must not be full
-		// screen because that would show up on the HMD
-		m_bWindowed = true;
-	}
 }
 
 
@@ -585,29 +532,6 @@ void CVideoMode_Common::ResetCurrentModeForNewResolution( int nWidth, int nHeigh
 bool CVideoMode_Common::CreateGameWindow( int nWidth, int nHeight, bool bWindowed )
 {
     COM_TimestampedLog( "CVideoMode_Common::Init  CreateGameWindow" );
-
-	if ( ShouldForceVRActive() )
-	{
-		// First make sure we're running a compatible version of DirectX
-		ConVarRef mat_dxlevel( "mat_dxlevel" );
-		if ( mat_dxlevel.IsValid() )
-		{
-			if ( mat_dxlevel.GetInt() < 90 )
-			{
-				Msg( "VR mode does not work with DirectX8.\nPlease use at least \"-dxlevel 90\" or higher.\n" );
-				return false;
-			}
-		}
-
-		VRRect_t bounds;
-		g_pSourceVR->GetDisplayBounds( &bounds );
-
-		nWidth = bounds.nWidth;
-		nHeight = bounds.nHeight;
-
-		m_nVROverrideX = bounds.nX;
-		m_nVROverrideY = bounds.nY;
-	}
 
 	// This allows you to have a window of any size.
     // Requires you to set both width and height for the window and
@@ -842,7 +766,7 @@ void CVideoMode_Common::DrawStartupVideo()
 	CETWScope timer( "CVideoMode_Common::DrawStartupGraphic" );
 
     // render an avi, if we have one
-	if ( !m_bPlayedStartupVideo && !InEditMode() && !ShouldForceVRActive() )
+	if ( !m_bPlayedStartupVideo && !InEditMode() )
     {
         game->PlayStartupVideos();
         m_bPlayedStartupVideo = true;
@@ -1385,7 +1309,7 @@ void CVideoMode_Common::AdjustWindow( int nWidth, int nHeight, int nBPP, bool bW
 	{
 		// Give it a frame (pretty much WS_OVERLAPPEDWINDOW except for we do not modify the
 		// flags corresponding to resizing-frame and maximize-box)
-		if( !CommandLine()->FindParm( "-noborder" ) && !m_bVROverride )
+		if( !CommandLine()->FindParm( "-noborder" ) )
 		{
 			style |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 		}
@@ -1619,12 +1543,6 @@ void CVideoMode_Common::CenterEngineWindow( void *hWndCenter, int width, int hei
         CenterX = 0;
         CenterY = 0;
     }
-
-	if( m_bVROverride )
-	{
-		CenterX = m_nVROverrideX;
-		CenterY = m_nVROverrideY;
-	}
 
     // tweak the x and w positions if the user species them on the command-line
     CenterX = CommandLine()->ParmValue( "-x", CenterX );
@@ -2331,24 +2249,11 @@ bool CVideoMode_MaterialSystem::Init( )
         {
             if ( info.m_Width == m_rgModeList[ j ].width && info.m_Height == m_rgModeList[ j ].height )
             {
-
-				// in VR mode we want the highest refresh rate, without regard for the desktop refresh rate
-				if ( UseVR() || ShouldForceVRActive() )
+				// choose the highest refresh rate available for each mode up to the desktop rate
+				// if the new mode is valid and current is invalid or not as high, choose the new one
+				if ( info.m_RefreshRate <= nDesktopRefresh && (m_rgModeList[j].refreshRate > nDesktopRefresh || m_rgModeList[j].refreshRate < info.m_RefreshRate) )
 				{
-					if ( info.m_RefreshRate > m_rgModeList[j].refreshRate )
-					{
-						m_rgModeList[j].refreshRate = info.m_RefreshRate;
-					}
-				}
-				else
-				{
-					// choose the highest refresh rate available for each mode up to the desktop rate
-
-					// if the new mode is valid and current is invalid or not as high, choose the new one
-					if ( info.m_RefreshRate <= nDesktopRefresh && (m_rgModeList[j].refreshRate > nDesktopRefresh || m_rgModeList[j].refreshRate < info.m_RefreshRate) )
-					{
-						m_rgModeList[j].refreshRate = info.m_RefreshRate;
-					}
+					m_rgModeList[j].refreshRate = info.m_RefreshRate;
 				}
 
                 bAlreadyInList = true;
@@ -2402,14 +2307,6 @@ bool CVideoMode_MaterialSystem::SetMode( int nWidth, int nHeight, bool bWindowed
     MaterialSystem_Config_t config = *g_pMaterialSystemConfig;
     config.m_VideoMode.m_Width = pMode->width;
     config.m_VideoMode.m_Height = pMode->height;
-
-	// make sure VR mode is up to date
-	config.SetFlag( MATSYS_VIDCFG_FLAGS_VR_MODE, UseVR() || ShouldForceVRActive() );
-
-	if ( ShouldForceVRActive() )
-	{
-		config.m_nVRModeAdapter = materials->GetCurrentAdapter();
-	}
 
 #ifdef SWDS
     config.m_VideoMode.m_RefreshRate = 60;

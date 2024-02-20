@@ -27,7 +27,6 @@
 #include "tier1/convar.h"
 #include "ModInfo.h"
 #include "vgui_controls/Tooltip.h"
-#include "sourcevr/isourcevirtualreality.h"
 
 #if defined( USE_SDL )
 #include "SDL.h"
@@ -1024,13 +1023,11 @@ COptionsSubVideo::COptionsSubVideo(vgui::Panel *parent) : PropertyPage(parent, N
 {
 	m_bRequireRestart = false;
 
-	m_bDisplayedVRModeMessage = false;
-
 	m_pGammaButton = new Button( this, "GammaButton", "#GameUI_AdjustGamma" );
 	m_pGammaButton->SetCommand(new KeyValues("OpenGammaDialog"));
 	m_pMode = new ComboBox(this, "Resolution", 8, false);
 	m_pAspectRatio = new ComboBox( this, "AspectRatio", 6, false );
-	m_pVRMode = new ComboBox( this, "VRMode", 2, false );
+	//m_pVRMode = new ComboBox( this, "VRMode", 2, false );
 	m_pAdvanced = new Button( this, "AdvancedButton", "#GameUI_AdvancedEllipsis" );
 	m_pAdvanced->SetCommand(new KeyValues("OpenAdvanced"));
 	m_pBenchmark = new Button( this, "BenchmarkButton", "#GameUI_LaunchBenchmark" );
@@ -1075,15 +1072,6 @@ COptionsSubVideo::COptionsSubVideo(vgui::Panel *parent) : PropertyPage(parent, N
 
 	m_pGammaButton->SetEnabled(false);
 #endif
-
-	char pszVRModeName[2][64];
-	unicodeText = g_pVGuiLocalize->Find("#GameUI_Disabled");
-	g_pVGuiLocalize->ConvertUnicodeToANSI(unicodeText, pszVRModeName[0], 32);
-	unicodeText = g_pVGuiLocalize->Find("#GameUI_Enabled");
-	g_pVGuiLocalize->ConvertUnicodeToANSI(unicodeText, pszVRModeName[1], 32);
-
-	m_pVRMode->AddItem( pszVRModeName[0], NULL );
-	m_pVRMode->AddItem( pszVRModeName[1], NULL );
 
 	// Multimonitor under Direct3D requires you to destroy and recreate the device, 
 	// which is an operation we don't support as it currently stands. The user can 
@@ -1143,25 +1131,6 @@ COptionsSubVideo::COptionsSubVideo(vgui::Panel *parent) : PropertyPage(parent, N
 	if ( ModInfo().HasHDContent() )
 	{
 		m_pHDContent->SetVisible( true );
-	}
-	
-	// if VR mode isn't available, disable the dropdown
-	if( !g_pSourceVR )
-	{
-		// if sourcevr.dll is missing entirely that means VR mode is not
-		// supported in this game. Hide the mode dropdown and its label 
-		m_pVRMode->SetVisible( false );
-
-		Panel *label = FindChildByName( "VRModeLabel" );
-		if( label )
-			label->SetVisible( false );
-	}
-	else if( !g_pSourceVR->IsHmdConnected() )
-	{
-		m_pVRMode->ActivateItem( 0 );
-		m_pVRMode->SetEnabled( false );
-		m_pVRMode->GetTooltip()->SetText( "#GameUI_NoVRTooltip" );
-		EnableOrDisableWindowedForVR();
 	}
 }
 
@@ -1416,11 +1385,6 @@ void COptionsSubVideo::OnResetData()
 	m_pHDContent->SetSelected( BUseHDContent() );
 
     SetCurrentResolutionComboItem();
-
-	bool bVREnabled = config.m_nVRModeAdapter != -1;
-	m_pVRMode->ActivateItem( bVREnabled ? 1 : 0 );
-	EnableOrDisableWindowedForVR();
-
 }
 
 //-----------------------------------------------------------------------------
@@ -1522,19 +1486,6 @@ void COptionsSubVideo::OnApplyChanges()
 	bool bConfigChanged = false;
 	bool windowed = ( m_pWindowed->GetActiveItem() == ( m_pWindowed->GetItemCount() - 1 ) ) ? true : false;
 	const MaterialSystem_Config_t &config = materials->GetCurrentConfigForVideoCard();
-
-	bool bVRMode = m_pVRMode->GetActiveItem() != 0;
-	if( ( -1 != config.m_nVRModeAdapter ) != bVRMode )
-	{
-		// let engine fill in mat_vrmode_adapter 
-		char szCmd[256];
-		Q_snprintf( szCmd, sizeof(szCmd), "mat_enable_vrmode %d\n", bVRMode ? 1 : 0 );
-		engine->ClientCmd_Unrestricted( szCmd );
-
-		// force windowed. VR mode ignores this flag and desktop mode needs to be in a window always
-		windowed = bVRMode;
-	}
-
 
 	// make sure there is a change
 	if ( config.m_VideoMode.m_Width != width
@@ -1649,51 +1600,7 @@ void COptionsSubVideo::OnTextChanged(Panel *pPanel, const char *pszText)
 		PrepareResolutionList();
 		OnDataChanged();
 	}
-	else if ( pPanel == m_pVRMode )
-	{
-		if ( !m_bDisplayedVRModeMessage )
-		{
-			bool bVRNowEnabled = m_pVRMode->GetActiveItem() == 1;
-			bool bVRWasEnabled = materials->GetCurrentConfigForVideoCard().m_nVRModeAdapter != -1;
-			if( bVRWasEnabled != bVRNowEnabled )
-			{
-				m_bDisplayedVRModeMessage = true;
-				MessageBox *box = new MessageBox( "#GameUI_VRMode", "#GameUI_VRModeRelaunchMsg", this );
-				box->MoveToFront();
-				box->DoModal();
-			}
-		}
-
-		EnableOrDisableWindowedForVR();
-	}
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: enables windowed combo box
-//-----------------------------------------------------------------------------
-void		COptionsSubVideo::EnableOrDisableWindowedForVR()
-{
-	bool bCanBeEnabled = g_pSourceVR && g_pSourceVR->IsHmdConnected();
-	bool bVRNowEnabled = m_pVRMode->GetActiveItem() == 1;
-	bool bVRWasEnabled = materials->GetCurrentConfigForVideoCard().m_nVRModeAdapter != -1;
-	if( bCanBeEnabled && ( bVRNowEnabled || bVRWasEnabled ) )
-	{
-		m_pWindowed->SetEnabled( false );
-		m_pWindowed->ActivateItem( m_pWindowed->GetItemCount() - 1 );
-		m_pWindowed->GetTooltip()->SetText( "#GameUI_WindowedTooltip" );
-	}
-	else
-	{
-#ifdef ANDROID
-		m_pWindowed->SetEnabled( false );
-#else
-		m_pWindowed->SetEnabled( true );
-#endif
-	}
-
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: enables apply button

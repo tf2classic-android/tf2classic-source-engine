@@ -1281,12 +1281,6 @@ bool CMaterialSystem::SetMode( void* hwnd, const MaterialSystem_Config_t &config
 	ConvertModeStruct( &info, config );
 
 	bool bPreviouslyUsingGraphics = g_pShaderDevice->IsUsingGraphics();
-	if( config.m_nVRModeAdapter != -1 && config.m_nVRModeAdapter < GetDisplayAdapterCount() && !bPreviouslyUsingGraphics )
-	{
-		// if this is init-time, we need to override the adapter with the
-		// VR mode adapter
-		m_nAdapter = config.m_nVRModeAdapter;
-	}
 
 	bool bOk = g_pShaderAPI->SetMode( hwnd, m_nAdapter, info );
 	if ( !bOk )
@@ -1302,6 +1296,7 @@ bool CMaterialSystem::SetMode( void* hwnd, const MaterialSystem_Config_t &config
 	TextureManager()->AllocateStandardRenderTargets();
 
 	// FIXME: There's gotta be a better way of doing this?
+	// After the first mode set, make sure to download any textures created
 	// After the first mode set, make sure to download any textures created
 	// before the first mode set. After the first mode set, all textures
 	// will be reloaded via the reaquireresources call. Same goes for procedural materials
@@ -1339,7 +1334,6 @@ bool CMaterialSystem::SetMode( void* hwnd, const MaterialSystem_Config_t &config
 	g_config.m_VideoMode = config.m_VideoMode;
 	g_config.SetFlag( MATSYS_VIDCFG_FLAGS_WINDOWED, config.Windowed() );
 	g_config.SetFlag( MATSYS_VIDCFG_FLAGS_STENCIL, config.Stencil() );
-	g_config.SetFlag( MATSYS_VIDCFG_FLAGS_VR_MODE, config.VRMode() );
 	WriteConfigIntoConVars( config );
 
 	extern void SetupDirtyDiskReportFunc(); 
@@ -1753,7 +1747,6 @@ static ConVar mat_trilinear(		"mat_trilinear", "0", FCVAR_ALLOWED_IN_COMPETITIVE
 static ConVar mat_filterlightmaps(	"mat_filterlightmaps", "1" );
 static ConVar mat_filtertextures(	"mat_filtertextures", "1" );
 static ConVar mat_mipmaptextures(	"mat_mipmaptextures", "1" );
-static ConVar mat_vrmode_adapter(	"mat_vrmode_adapter", "-1" );
 
 static void mat_showmiplevels_Callback_f( IConVar *var, const char *pOldValue, float flOldValue )
 {
@@ -1919,17 +1912,6 @@ void CMaterialSystem::ReadConfigFromConVars( MaterialSystem_Config_t *pConfig )
 		pConfig->m_bShadowDepthTexture = false;
 		pConfig->m_bMotionBlur = false;
 		pConfig->SetFlag( MATSYS_VIDCFG_FLAGS_ENABLE_HDR, false );
-	}
-
-	// VR mode adapter will generally be -1 if VR mode is not disabled
-	pConfig->m_nVRModeAdapter = mat_vrmode_adapter.GetInt();
-	if( pConfig->m_nVRModeAdapter != -1 )
-	{
-		// we must always be windowed in the config in VR mode
-		// so that we will start up on the main display. Once
-		// VR overrides the adapter the only place we can go
-		// full screen is on the HMD.
-		pConfig->SetFlag( MATSYS_VIDCFG_FLAGS_WINDOWED, true );
 	}
 }
 
@@ -2246,11 +2228,6 @@ bool CMaterialSystem::OverrideConfig( const MaterialSystem_Config_t &_config, bo
 		forceUpdate = true;
 		bReloadMaterials = true;
 		recomputeSnapshots = true;
-	}
-
-	if ( config.VRMode() != g_config.VRMode() || config.m_nVRModeAdapter != g_config.m_nVRModeAdapter )
-	{
-		bVideoModeChange = true;
 	}
 
 	// Don't use compressed textures for the moment if we don't support them

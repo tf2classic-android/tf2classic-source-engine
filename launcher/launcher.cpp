@@ -55,7 +55,6 @@
 #include "filesystem/IQueuedLoader.h"
 #include "reslistgenerator.h"
 #include "tier1/fmtstr.h"
-#include "sourcevr/isourcevirtualreality.h"
 
 #define VERSION_SAFE_STEAM_API_INTERFACES
 #include "steam/steam_api.h"
@@ -691,13 +690,6 @@ bool CSourceAppSystemGroup::Create()
 
 	if ( !AddSystems( appSystems ) ) 
 		return false;
-	
-	// This will be NULL for games that don't support VR. That's ok. Just don't load the DLL
-	AppModule_t sourceVRModule = LoadModule( "sourcevr" DLL_EXT_STRING );
-	if( sourceVRModule != APP_MODULE_INVALID )
-	{
-		AddSystem( sourceVRModule, SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION );
-	}
 
 	// pull in our filesystem dll to pull the queued loader from it, we need to do it this way due to the 
 	// steam/stdio split for our steam filesystem

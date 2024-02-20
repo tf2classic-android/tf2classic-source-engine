@@ -50,7 +50,6 @@
 #include "vgui_texturebudgetpanel.h"
 #include "vgui_budgetpanel.h"
 #include "ivideomode.h"
-#include "sourcevr/isourcevirtualreality.h"
 #include "cl_pluginhelpers.h"
 #include "cl_main.h" // CL_IsHL2Demo()
 #include "cl_steamauth.h"

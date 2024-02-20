@@ -51,8 +51,6 @@
 #include "studio_stats.h"
 #include "con_nprint.h"
 #include "clientmode_shared.h"
-#include "sourcevr/isourcevirtualreality.h"
-#include "client_virtualreality.h"
 
 #ifdef PORTAL
 //#include "C_Portal_Player.h"
@@ -1053,13 +1051,9 @@ void CViewRender::DrawViewModels( const CViewSetup &view, bool drawViewmodel )
 	viewModelSetup.fov = view.fovViewmodel;
 	viewModelSetup.m_flAspectRatio = engine->GetScreenAspectRatio();
 
+	// These variables were used for sourcevr
 	ITexture *pRTColor = NULL;
 	ITexture *pRTDepth = NULL;
-	if( view.m_eStereoEye != STEREO_EYE_MONO )
-	{
-		pRTColor = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye-1), ISourceVirtualReality::RT_Color );
-		pRTDepth = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye-1), ISourceVirtualReality::RT_Depth );
-	}
 
 	render->Push3DView( viewModelSetup, 0, pRTColor, GetFrustum(), pRTDepth );
 
@@ -1828,13 +1822,9 @@ void CViewRender::SetupMain3DView( const CViewSetup &view, int &nClearFlags )
 	}
 	else
 	{
+		// These variables were used for sourcevr
 		ITexture *pRTColor = NULL;
 		ITexture *pRTDepth = NULL;
-		if( view.m_eStereoEye != STEREO_EYE_MONO )
-		{
-			pRTColor = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye-1), ISourceVirtualReality::RT_Color );
-			pRTDepth = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye-1), ISourceVirtualReality::RT_Depth );
-		}
 
 		render->Push3DView( view, nClearFlags, pRTColor, GetFrustum(), pRTDepth );
 	}
@@ -2169,12 +2159,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		pCopyMaterial->DecrementReferenceCount();
 	}
 
-	// if we're in VR mode we might need to override the render target
-	if( UseVR() )
-	{
-		saveRenderTarget = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye - 1), ISourceVirtualReality::RT_Color );
-	}
-
 	// Draw the 2D graphics
 	render->Push2DView( view, 0, saveRenderTarget, GetFrustum() );
 
@@ -2189,72 +2173,14 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		int viewActualHeight = view.m_nUnscaledHeight;
 		int viewX = view.m_nUnscaledX;
 		int viewY = view.m_nUnscaledY;
-		int viewFramebufferX = 0;
-		int viewFramebufferY = 0;
-		int viewFramebufferWidth = viewWidth;
-		int viewFramebufferHeight = viewHeight;
-		bool bClear = false;
-		bool bPaintMainMenu = false;
-		ITexture *pTexture = NULL;
-		if( UseVR() )
-		{
-			if( g_ClientVirtualReality.ShouldRenderHUDInWorld() )
-			{
-				pTexture = materials->FindTexture( "_rt_gui", NULL, false );
-				if( pTexture )
-				{
-					bPaintMainMenu = true;
-					bClear = true;
-					viewX = 0;
-					viewY = 0;
-					viewActualWidth = pTexture->GetActualWidth();
-					viewActualHeight = pTexture->GetActualHeight();
-
-					vgui::surface()->GetScreenSize( viewWidth, viewHeight );
-
-					viewFramebufferX = 0;
-					if( view.m_eStereoEye == STEREO_EYE_RIGHT && !saveRenderTarget )
-						viewFramebufferX = viewFramebufferWidth;
-					viewFramebufferY = 0;
-				}
-			}
-			else
-			{
-				viewFramebufferX = view.m_eStereoEye == STEREO_EYE_RIGHT ? viewWidth : 0;
-				viewFramebufferY = 0;
-			}
-		}
 
 		// Get the render context out of materials to avoid some debug stuff.
 		// WARNING THIS REQUIRES THE .SafeRelease below or it'll never release the ref
 		pRenderContext = materials->GetRenderContext();
 
-		// clear depth in the backbuffer before we push the render target
-		if( bClear )
-		{
-			pRenderContext->ClearBuffers( false, true, true );
-		}
-
 		// constrain where VGUI can render to the view
-		pRenderContext->PushRenderTargetAndViewport( pTexture, NULL, viewX, viewY, viewActualWidth, viewActualHeight );
-		// If drawing off-screen, force alpha for that pass
-		if (pTexture)
-		{
-			pRenderContext->OverrideAlphaWriteEnable( true, true );
-		}
+		pRenderContext->PushRenderTargetAndViewport( NULL, NULL, viewX, viewY, viewActualWidth, viewActualHeight );
 
-		// let vgui know where to render stuff for the forced-to-framebuffer panels
-		if( UseVR() )
-		{
-			g_pMatSystemSurface->SetFullscreenViewportAndRenderTarget( viewFramebufferX, viewFramebufferY, viewFramebufferWidth, viewFramebufferHeight, saveRenderTarget );
-		}
-
-		// clear the render target if we need to
-		if( bClear )
-		{
-			pRenderContext->ClearColor4ub( 0, 0, 0, 0 );
-			pRenderContext->ClearBuffers( true, false );
-		}
 		pRenderContext.SafeRelease();
 
 		tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "VGui_DrawHud", __FUNCTION__ );
@@ -2281,43 +2207,13 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		// Draw the in-game stuff based on the actual viewport being used
 		render->VGui_Paint( PAINT_INGAMEPANELS );
 
-		// maybe paint the main menu and cursor too if we're in stereo hud mode
-		if( bPaintMainMenu )
-			render->VGui_Paint( PAINT_UIPANELS | PAINT_CURSOR );
-
 		AllowCurrentViewAccess( false );
 
 		VGui_PostRender();
 
 		g_pClientMode->PostRenderVGui();
 		pRenderContext = materials->GetRenderContext();
-		if (pTexture)
-		{
-			pRenderContext->OverrideAlphaWriteEnable( false, true );
-		}
 		pRenderContext->PopRenderTargetAndViewport();
-
-		if ( UseVR() )
-		{
-			// figure out if we really want to draw the HUD based on freeze cam
-			C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-			bool bInFreezeCam = ( pPlayer && pPlayer->GetObserverMode() == OBS_MODE_FREEZECAM );
-
-			// draw the HUD after the view model so its "I'm closer" depth queues work right.
-			if( !bInFreezeCam && g_ClientVirtualReality.ShouldRenderHUDInWorld() )
-			{
-				// Now we've rendered the HUD to its texture, actually get it on the screen.
-				// Since we're drawing it as a 3D object, we need correctly set up frustum, etc.
-				int ClearFlags = 0;
-				SetupMain3DView( view, ClearFlags );
-
-				// TODO - a bit of a shonky test - basically trying to catch the main menu, the briefing screen, the loadout screen, etc.
-				bool bTranslucent = !g_pMatSystemSurface->IsCursorVisible();
-				g_ClientVirtualReality.RenderHUDQuad( g_pClientMode->ShouldBlackoutAroundHUD(), bTranslucent );
-				CleanupMain3DView( view );
-			}
-		}
-
 		pRenderContext->Flush();
 		pRenderContext.SafeRelease();
 	}
@@ -4858,13 +4754,9 @@ void CSkyboxView::Draw()
 {
 	VPROF_BUDGET( "CViewRender::Draw3dSkyboxworld", "3D Skybox" );
 
+	// These variables were used for sourcevr
 	ITexture *pRTColor = NULL;
 	ITexture *pRTDepth = NULL;
-	if( m_eStereoEye != STEREO_EYE_MONO )
-	{
-		pRTColor = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(m_eStereoEye-1), ISourceVirtualReality::RT_Color );
-		pRTDepth = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(m_eStereoEye-1), ISourceVirtualReality::RT_Depth );
-	}
 
 	DrawInternal(VIEW_3DSKY, true, pRTColor, pRTDepth );
 }

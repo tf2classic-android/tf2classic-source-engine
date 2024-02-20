@@ -38,10 +38,8 @@
 #include "toolframework/itoolframework.h"
 #include "icommandline.h"
 #include "VGuiMatSurface/IMatSystemSurface.h"
-#include "sourcevr/isourcevirtualreality.h"
 #include "materialsystem/itexture.h"
 #include "render.h"
-#include "iclientvirtualreality.h"
 
 #if defined( REPLAY_ENABLED )
 #include "replay/iclientreplay.h"
@@ -134,19 +132,11 @@ void V_RenderVGuiOnly_NoSwap()
 	// the loading screen.
 	UpdateMaterialSystemConfig();
 
-	if( UseVR() && g_pClientVR )
-	{
-		g_pClientVR->DrawMainMenu();
-	}
-	else
-	{
-		CMatRenderContextPtr pRenderContext( materials );
+	CMatRenderContextPtr pRenderContext( materials );
 		   
-		pRenderContext->ClearBuffers( true, true );
+	pRenderContext->ClearBuffers( true, true );
 
-
-		EngineVGui()->Paint( (PaintMode_t)(PAINT_UIPANELS | PAINT_CURSOR ));
-	}
+	EngineVGui()->Paint( (PaintMode_t)(PAINT_UIPANELS | PAINT_CURSOR ));
 }
 
 //-----------------------------------------------------------------------------

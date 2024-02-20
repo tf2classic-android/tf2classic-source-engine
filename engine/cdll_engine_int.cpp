@@ -86,8 +86,6 @@
 #include "replay/iclientreplay.h"
 #include "demofile.h"
 #include "igame.h"
-#include "iclientvirtualreality.h"
-#include "sourcevr/isourcevirtualreality.h"
 #include "cl_check_process.h"
 #include "enginethreads.h"
 
@@ -1659,7 +1657,6 @@ void CEngineClient::DisconnectInternal( void )
 // The client DLL serves out this interface
 //-----------------------------------------------------------------------------
 IBaseClientDLL *g_ClientDLL = NULL;
-IClientVirtualReality *g_pClientVR = NULL;
 IPrediction	*g_pClientSidePrediction = NULL;
 IClientRenderTargets *g_pClientRenderTargets = NULL;
 IClientEntityList *entitylist = NULL;
@@ -1737,15 +1734,6 @@ bool ClientDLL_Load()
 			if ( !g_ClientDLL )
 			{
 				Sys_Error( "Could not get client.dll interface from library client" );
-			}
-
-			if( g_pSourceVR )
-			{
-				g_pClientVR = (IClientVirtualReality *)g_ClientFactory( CLIENTVIRTUALREALITY_INTERFACE_VERSION, NULL );
-				if( !g_pClientVR )
-				{
-					Msg( "client.dll is not VR-compatible.\n" );
-				}
 			}
 		}
 		else

@@ -39,7 +39,6 @@ public:
 
 private:
     void        SetCurrentResolutionComboItem();
-	void		EnableOrDisableWindowedForVR();
 
     MESSAGE_FUNC( OnDataChanged, "ControlModified" );
 	MESSAGE_FUNC_PTR_CHARPTR( OnTextChanged, "TextChanged", panel, text );
@@ -55,12 +54,9 @@ private:
 
 	int m_nSelectedMode; // -1 if we are running in a nonstandard mode
 
-	bool m_bDisplayedVRModeMessage;
-
 	vgui::ComboBox		*m_pMode;
 	vgui::ComboBox		*m_pWindowed;
 	vgui::ComboBox		*m_pAspectRatio;
-	vgui::ComboBox		*m_pVRMode;
 	vgui::Button		*m_pGammaButton;
 	vgui::Button		*m_pAdvanced;
 	vgui::Button		*m_pBenchmark;

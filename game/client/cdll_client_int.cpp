@@ -123,8 +123,6 @@
 #include "clientsteamcontext.h"
 #include "renamed_recvtable_compat.h"
 #include "mouthinfo.h"
-#include "sourcevr/isourcevirtualreality.h"
-#include "client_virtualreality.h"
 #include "mumble.h"
 
 // NVNT includes
@@ -887,8 +885,6 @@ char pszGoal[] =
 #endif
 
 //-----------------------------------------------------------------------------
-ISourceVirtualReality *g_pSourceVR = NULL;
-
 // Purpose: Called when the DLL is first loaded.
 // Input  : engineFactory - 
 // Output : int
@@ -986,9 +982,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 		return false;
 	InitFbx();
 #endif
-
-	// it's ok if this is NULL. That just means the sourcevr.dll wasn't found
-	g_pSourceVR = (ISourceVirtualReality *)appSystemFactory(SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION, NULL);
 
 	factorylist_t factories;
 	factories.appSystemFactory = appSystemFactory;
@@ -1175,8 +1168,6 @@ void CHLClient::PostInit()
 	// allow sixnese input to perform post-init operations
 	g_pSixenseInput->PostInit();
 #endif
-
-	g_ClientVirtualReality.StartupComplete();
 
 #ifdef HL1MP_CLIENT_DLL
 	if ( s_cl_load_hl1_content.GetBool() && steamapicontext && steamapicontext->SteamApps() )

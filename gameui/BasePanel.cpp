@@ -26,7 +26,6 @@
 #include "vgui_controls/PropertySheet.h"
 #include "materialsystem/materialsystem_config.h"
 #include "materialsystem/imaterialsystem.h"
-#include "sourcevr/isourcevirtualreality.h"
 #include "VGuiMatSurface/IMatSystemSurface.h"
 
 using namespace vgui;
@@ -608,7 +607,7 @@ public:
 		}
 	}
 
-	void UpdateMenuItemState( bool isInGame, bool isMultiplayer, bool isInReplay, bool isVREnabled, bool isVRActive )
+	void UpdateMenuItemState( bool isInGame, bool isMultiplayer, bool isInReplay )
 	{
 		bool isSteam = IsPC() && ( CommandLine()->FindParm("-steam") != 0 );
 		bool bIsConsoleUI = GameUI().IsConsoleUI();
@@ -634,15 +633,15 @@ public:
 				{
 					shouldBeVisible = false;
 				}
-				else if (!isVREnabled && kv->GetInt("OnlyWhenVREnabled") )
+				else if ( kv->GetInt("OnlyWhenVREnabled") )
 				{
 					shouldBeVisible = false;
 				}
-				else if ( ( !isVRActive || ShouldForceVRActive() ) && kv->GetInt( "OnlyWhenVRActive" ) )
+				else if ( kv->GetInt( "OnlyWhenVRActive" ) ) // always false
 				{
 					shouldBeVisible = false;
 				}
-				else if (isVRActive && kv->GetInt("OnlyWhenVRInactive") )
+				else if ( kv->GetInt( "OnlyWhenVRInactive" ) ) // always false
 				{
 					shouldBeVisible = false;
 				}
@@ -1578,11 +1577,9 @@ void CBasePanel::UpdateGameMenus()
 	bool isInGame = GameUI().IsInLevel();
 	bool isMulti = isInGame && (engine->GetMaxClients() > 1);
 	bool isInReplay = GameUI().IsInReplay();
-	bool isVREnabled = materials->GetCurrentConfigForVideoCard().m_nVRModeAdapter == materials->GetCurrentAdapter();
-	bool isVRActive = UseVR();
 
 	// iterate all the menu items
-	m_pGameMenu->UpdateMenuItemState( isInGame, isMulti, isInReplay, isVREnabled, isVRActive );
+	m_pGameMenu->UpdateMenuItemState( isInGame, isMulti, isInReplay );
 
 	if ( m_hMainMenuOverridePanel )
 	{

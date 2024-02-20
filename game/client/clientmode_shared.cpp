@@ -36,7 +36,6 @@
 #include <vgui/ILocalize.h>
 #include "hud_vote.h"
 #include "ienginevgui.h"
-#include "sourcevr/isourcevirtualreality.h"
 #if defined( _X360 )
 #include "xbox/xbox_console.h"
 #endif
@@ -332,10 +331,7 @@ void ClientModeShared::ReloadScheme( bool flushLowLevel )
 //-----------------------------------------------------------------------------
 void	ClientModeShared::ComputeVguiResConditions( KeyValues *pkvConditions ) 
 {
-	if ( UseVR() )
-	{
-		pkvConditions->FindKey( "if_vr", true );
-	}
+
 }
 
 
@@ -536,26 +532,6 @@ bool ClientModeShared::ShouldDrawDetailObjects( )
 {
 	return true;
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns true if VR mode should black out everything outside the HUD.
-//			This is used for things like sniper scopes and full screen UI
-//-----------------------------------------------------------------------------
-bool ClientModeShared::ShouldBlackoutAroundHUD()
-{
-	return enginevgui->IsGameUIVisible();
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Allows the client mode to override mouse control stuff in sourcevr
-//-----------------------------------------------------------------------------
-HeadtrackMovementMode_t ClientModeShared::ShouldOverrideHeadtrackControl() 
-{
-	return HMM_NOOVERRIDE;
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 

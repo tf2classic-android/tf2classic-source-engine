@@ -48,7 +48,6 @@
 #include "tier3/tier3.h"
 #include "MapReslistGenerator.h"
 #include "toolframework/itoolframework.h"
-#include "sourcevr/isourcevirtualreality.h"
 #include "DevShotGenerator.h"
 #include "gl_shader.h"
 #include "l_studio.h"
@@ -110,7 +109,6 @@ IDedicatedExports *dedicated = NULL;
 extern CreateInterfaceFn g_AppSystemFactory;
 IHammer *g_pHammer = NULL;
 IPhysics *g_pPhysics = NULL;
-ISourceVirtualReality *g_pSourceVR = NULL;
 #if defined( USE_SDL )
 ILauncherMgr *g_pLauncherMgr = NULL;
 #endif
@@ -973,10 +971,6 @@ private:
 	// Handles there being an error setting up the video mode
 	InitReturnVal_t HandleSetModeError();
 
-	// Initializes, shuts down VR
-	bool InitVR();
-	void ShutdownVR();
-
 	// Purpose: Message pump when running stand-alone
 	void PumpMessages();
 
@@ -989,7 +983,6 @@ private:
 private:
 	void *m_hEditorHWnd;
 	bool m_bRunningSimulation;
-	bool m_bSupportsVR;
 	StartupInfo_t m_StartupInfo;
 };
 
@@ -1115,7 +1108,6 @@ void CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 		}
 	}
 
-	m_bSupportsVR = false;
 	if ( IsPC() )
 	{
 		KeyValues *modinfo = new KeyValues("ModInfo");
@@ -1134,27 +1126,6 @@ void CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 				DevMsg( "Enabling whitelist file tracking in filesystem...\n" );
 				g_pFileSystem->EnableWhitelistFileTracking( true, false, false );
 			}
-
-			m_bSupportsVR = modinfo->GetInt( "supportsvr" ) > 0 && CommandLine()->CheckParm( "-vr" );
-			if ( m_bSupportsVR )
-			{
-				// This also has to happen before CreateGameWindow to know where to put
-				// the window and how big to make it
-				if ( InitVR() )
-				{
-					if ( Steam3Client().SteamUtils() )
-					{
-						if ( Steam3Client().SteamUtils()->IsSteamRunningInVR() && g_pSourceVR->IsHmdConnected() )
-						{
-							int nForceVRAdapterIndex = g_pSourceVR->GetVRModeAdapter();
-							materials->SetAdapter( nForceVRAdapterIndex, 0 );
-
-							g_pSourceVR->SetShouldForceVRMode();
-						}
-					}
-				}
-			}
-
 		}
 		modinfo->deleteThis();
 	}
@@ -1572,35 +1543,6 @@ void CEngineAPI::ShutdownRegistry( )
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// Initializes, shuts down VR (via sourcevr.dll)
-//-----------------------------------------------------------------------------
-bool CEngineAPI::InitVR()
-{
-	if ( m_bSupportsVR )
-	{
-		g_pSourceVR = (ISourceVirtualReality *)g_AppSystemFactory( SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION, NULL );
-		if ( g_pSourceVR )
-		{
-			// make sure that the sourcevr DLL we loaded is secure. If not, don't 
-			// let this client connect to secure servers.
-			if ( !Host_AllowLoadModule( "sourcevr" DLL_EXT_STRING, "EXECUTABLE_PATH", false ) )
-			{
-				Warning( "Preventing connections to secure servers because sourcevr.dll is not signed.\n" );
-				Host_DisallowSecureServers();
-			}
-		}
-	}
-	return true;
-}
-
-
-void CEngineAPI::ShutdownVR()
-{
-}
-
-
 //-----------------------------------------------------------------------------
 // One-time setup, based on the initially selected mod
 // FIXME: This should move into the launcher!
@@ -1682,8 +1624,6 @@ void CEngineAPI::OnShutdown()
 		videomode->Shutdown();
 	}
 
-	ShutdownVR();
-
 	// Shut down the game
 	game->Shutdown();
 
@@ -1728,11 +1668,6 @@ bool CEngineAPI::ModInit( const char *pModName, const char *pGameDir )
 	Host_ReadPreStartupConfiguration();
 
 	bool bWindowed = g_pMaterialSystemConfig->Windowed();
-	if( g_pMaterialSystemConfig->m_nVRModeAdapter != -1 )
-	{
-		// at init time we never want to start up full screen
-		bWindowed = true;
-	}
 
 	// Create the game window now that we have a search path
 	// FIXME: Deal with initial window width + height better

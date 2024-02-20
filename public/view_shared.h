@@ -32,8 +32,8 @@ enum ClearFlags_t
 enum StereoEye_t
 {
 	STEREO_EYE_MONO = 0,
-	STEREO_EYE_LEFT = 1,
-	STEREO_EYE_RIGHT = 2,
+	STEREO_EYE_LEFT = 1, // sourcevr
+	STEREO_EYE_RIGHT = 2, // sourcevr
 	STEREO_EYE_MAX = 3,
 };
 

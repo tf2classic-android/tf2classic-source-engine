@@ -15,8 +15,6 @@
 #include "ivrenderview.h"
 #include "materialsystem/imaterialsystem.h"
 #include "VGuiMatSurface/IMatSystemSurface.h"
-#include "client_virtualreality.h"
-#include "sourcevr/isourcevirtualreality.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -168,18 +166,6 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
 		
 		Vector vecStart;
 		Vector vecEnd;
-
-		if ( UseVR() )
-		{
-			// These are the correct values to use, but they lag the high-speed view data...
-			vecStart = pPlayer->Weapon_ShootPosition();
-			Vector vecAimDirection = pPlayer->GetAutoaimVector( 1.0f );
-			// ...so in some aim modes, they get zapped by something completely up-to-date.
-			g_ClientVirtualReality.OverrideWeaponHudAimVectors ( &vecStart, &vecAimDirection );
-			vecEnd = vecStart + vecAimDirection * MAX_TRACE_LENGTH;
-
-			bUseOffset = true;
-		}
 
 #ifdef SIXENSE
 		// TODO: actually test this Sixsense code interaction with things like HMDs & stereo.

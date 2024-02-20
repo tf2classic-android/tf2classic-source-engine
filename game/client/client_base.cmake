@@ -136,8 +136,6 @@ set(
 		"${CLIENT_BASE_DIR}/classmap.cpp"
 		"${CLIENT_BASE_DIR}/client_factorylist.cpp"
 		"${CLIENT_BASE_DIR}/client_thinklist.cpp"
-		"${CLIENT_BASE_DIR}/client_virtualreality.cpp"
-		"${CLIENT_BASE_DIR}/client_virtualreality.h"
 		"${CLIENT_BASE_DIR}/clienteffectprecachesystem.cpp"
 		"${CLIENT_BASE_DIR}/cliententitylist.cpp"
 		"${CLIENT_BASE_DIR}/clientleafsystem.cpp"

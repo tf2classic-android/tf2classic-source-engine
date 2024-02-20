@@ -38,7 +38,6 @@
 #include "tier2/tier2.h"
 #include "LoadScreenUpdate.h"
 #include "client.h"
-#include "sourcevr/isourcevirtualreality.h"
 #if defined( _X360 )
 #include "xbox/xbox_launch.h"
 #endif
@@ -512,19 +511,6 @@ static void ReadMaterialSystemConfigFromRegistry( MaterialSystem_Config_t &confi
 		}
 	}
 
-	nValue = ReadVideoConfigInt( "VRModeAdapter", -1 );
-	if ( nValue != -1 )
-	{
-		nValue = OverrideVideoConfigFromCommandLine( "mat_vrmode_adapter", nValue );
-
-		ConVarRef conVar( "mat_vrmode_adapter" );
-		if ( conVar.IsValid() )
-		{
-			conVar.SetValue( nValue );
-			config.m_nVRModeAdapter = ReadVideoConfigInt( "VRModeAdapter", -1 );
-		}
-	}
-
 #endif	
 }
 
@@ -552,7 +538,6 @@ static void WriteMaterialSystemConfigToRegistry( const MaterialSystem_Config_t &
 	WriteVideoConfigInt( "ScreenMSAAQuality", config.m_nAAQuality );
 	WriteVideoConfigInt( "MotionBlur", config.m_bMotionBlur ? 1 : 0 );
 	WriteVideoConfigInt( "ShadowDepthTexture", config.m_bShadowDepthTexture ? 1 : 0 );
-	WriteVideoConfigInt( "VRModeAdapter", config.m_nVRModeAdapter );
 
 	// Registry only stores ints, so divide/multiply by 100 when reading/writing.
 	WriteVideoConfigString( "ScreenMonitorGamma", mat_monitorgamma.GetString() );
@@ -714,14 +699,6 @@ void OverrideMaterialSystemConfig( MaterialSystem_Config_t &config )
 	if ( bLightmapsNeedReloading )
 	{
 		s_bConfigLightingChanged = true;
-	}
-
-	// if VRModeAdapter is set, don't let things come up full screen
-	// They will be on the HMD display and that's BAD.
-	if( config.m_nVRModeAdapter != -1 )
-	{
-		WriteVideoConfigInt( "ScreenWindowed", 1 );
-		config.SetFlag( MATSYS_VIDCFG_FLAGS_WINDOWED, true );
 	}
 #endif
 }
@@ -936,36 +913,6 @@ CON_COMMAND( mat_setvideomode, "sets the width, height, windowed state of the ma
 }
 #endif
 
-CON_COMMAND( mat_enable_vrmode, "Switches the material system to VR mode (after restart)" )
-{
-	if( args.ArgC() != 2 )
-		return;
-
-	if( !g_pSourceVR )
-		return;
-
-	ConVarRef mat_vrmode_adapter( "mat_vrmode_adapter" );
-	bool bVRMode = Q_atoi( args[1] ) != 0;
-	if( bVRMode )
-	{
-#if defined( _WIN32 )
-		int32 nVRModeAdapter = g_pSourceVR->GetVRModeAdapter();
-		if( nVRModeAdapter == -1 )
-		{
-			Warning( "Unable to get VRModeAdapter from OpenVR. VR mode will not be enabled. Try restarting and then enabling VR again.\n" );
-		}
-		mat_vrmode_adapter.SetValue( nVRModeAdapter );
-#else
-		mat_vrmode_adapter.SetValue( 0 ); // This convar isn't actually used on other platforms so just use 0 to indicate that it's set
-#endif
-	}
-	else
-	{
-		mat_vrmode_adapter.SetValue( -1 );
-	}
-}
-
-
 CON_COMMAND( mat_savechanges, "saves current video configuration to the registry" )
 {
 	// if the user has got to the point where they can adjust and apply video changes, then we can clear safe mode
@@ -1173,18 +1120,7 @@ void InitWellKnownRenderTargets( void )
 	// JasonM - 
 	// Do we put logic in here to determine which of these to create, based upon DX level, HDR enable etc?
 	// YES! DX Level should gate these
-
-	// before we create anything, see if VR mode wants to override the "framebuffer" size
-	if( UseVR() )
-	{
-		int nWidth, nHeight;
-		g_pSourceVR->GetRenderTargetFrameBufferDimensions( nWidth, nHeight );
-		g_pMaterialSystem->SetRenderTargetFrameBufferSizeOverrides( nWidth, nHeight );
-	}
-	else
-	{
-		g_pMaterialSystem->SetRenderTargetFrameBufferSizeOverrides( 0, 0 );
-	}
+	g_pMaterialSystem->SetRenderTargetFrameBufferSizeOverrides( 0, 0 );
 
 	// Create the render targets upon which mods may rely
 
@@ -1229,12 +1165,6 @@ void InitWellKnownRenderTargets( void )
 
 	g_FullFrameDepth.Init( CreateFullFrameDepthTexture() );
 	g_ResolvedFullFrameDepth.Init( CreateResolvedFullFrameDepthTexture() );
-
-	// if we're in stereo mode init a render target for VGUI
-	if( UseVR() )
-	{
-		g_pSourceVR->CreateRenderTargets( materials );
-	}
 
 	// Allow the client to init their own mod-specific render targets
 	if ( g_pClientRenderTargets )
@@ -1305,10 +1235,6 @@ void ShutdownWellKnownRenderTargets( void )
 	{
 		materials->RemoveTextureAlias( "_rt_FullFrameDepth" );
 	}
-
-	if( g_pSourceVR )
-		g_pSourceVR->ShutdownRenderTargets();
-
 
 	// Shutdown client render targets
 	if ( g_pClientRenderTargets )

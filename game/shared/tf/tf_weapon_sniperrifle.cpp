@@ -22,8 +22,6 @@
 #include "materialsystem/imaterialvar.h"
 #include "toolframework_client.h"
 #include "input.h"
-#include "client_virtualreality.h"
-#include "sourcevr/isourcevirtualreality.h"
 
 // For Player resources
 #include "c_tf_playerresource.h"
