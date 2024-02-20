@@ -429,7 +429,7 @@ void CPixelVisibilityQuery::IssueQuery( IMatRenderContext *pRenderContext, float
 		}
 	}
 #ifndef PORTAL // FIXME: In portal we query visibility multiple times per frame because of portal renders!
-	Assert ( ( m_frameIssued != gpGlobals->framecount ) || UseVR() );
+	Assert ( ( m_frameIssued != gpGlobals->framecount ) );
 #endif
 
 	m_frameIssued = gpGlobals->framecount;

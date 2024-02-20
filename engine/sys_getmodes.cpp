@@ -1379,7 +1379,7 @@ void CVideoMode_Common::AdjustWindow( int nWidth, int nHeight, int nBPP, bool bW
 	if( bWindowed )
 	{
 		SDL_Window* win = (SDL_Window*)g_pLauncherMgr->GetWindowRef();
-		if ( m_bVROverride || CommandLine()->FindParm( "-noborder" ) )
+		if ( CommandLine()->FindParm( "-noborder" ) )
 			SDL_SetWindowBordered( win, SDL_FALSE );
 		else
 			SDL_SetWindowBordered( win, SDL_TRUE );

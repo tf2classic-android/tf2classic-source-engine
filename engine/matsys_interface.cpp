@@ -526,7 +526,7 @@ static void WriteMaterialSystemConfigToRegistry( const MaterialSystem_Config_t &
 #if defined( USE_SDL ) && !defined( SWDS )
 	// Save sdl_displayindex out to ScreenDisplayIndex.
 	ConVarRef conVar( "sdl_displayindex" );
-	if ( conVar.IsValid() && !UseVR() )
+	if ( conVar.IsValid() )
 	{
 		WriteVideoConfigInt( "ScreenDisplayIndex", conVar.GetInt() );
 	}
