@@ -116,7 +116,7 @@ target_link_libraries(
 	vgui_surfacelib
 	"$<$<AND:${IS_POSIX},$<NOT:${IS_ANDROID}>>:fontconfig>"
 	"$<${IS_POSIX}:freetype>"
-	"$<${IS_ANDROID}:expat>"
+	"$<$<AND:${IS_ANDROID},$<NOT:${IS_64BIT}>>:expat>"
 )
 
 if( ${USE_SDL} )
