@@ -3606,7 +3606,7 @@ bool C_BaseAnimating::DispatchMuzzleEffect( const char *options, bool isFirstPer
 	p = nexttoken( token, p, ' ' );
 
 	// Find the weapon type
-	if ( token ) 
+	if ( token[0] )
 	{
 		//TODO: Parse the type from a list instead
 		if ( Q_stricmp( token, "COMBINE" ) == 0 )
@@ -3652,7 +3652,7 @@ bool C_BaseAnimating::DispatchMuzzleEffect( const char *options, bool isFirstPer
 	int	attachmentIndex = -1;
 
 	// Find the attachment name
-	if ( token ) 
+	if ( token[0] )
 	{
 		attachmentIndex = LookupAttachment( token );
 
