@@ -1,6 +1,8 @@
 // tf_bot_deathmatch.cpp
 // Run. Think. Shoot. Live
 // SanyaSho, February 2024
+// IDA Pro 8.3 + TF2C 2017
+// Used for TF2C Android port
 
 #include "cbase.h"
 #include "tf_player.h"
@@ -35,12 +37,22 @@ ActionResult< CTFBot > CTFBotDeathmatch::Update( CTFBot *me, float interval )
 	const CKnownEntity *threat = me->GetVisionInterface()->GetPrimaryKnownThreat();
 	if( threat )
 	{
-		const float engageRange = 1000.0f;
-		if( me->GetEntityForLoadoutSlot( TF_LOADOUT_SLOT_PRIMARY ) && me->IsRangeLessThan( threat->GetLastKnownPosition(), engageRange ) )
+		CBaseEntity *pEntity = threat->GetEntity();
+		if( pEntity )
+		{
+			float flRangeTo = me->GetRangeTo( pEntity );
+
+			DevMsg( "CTFBotDeathmatch: primary known threat #%d \"%s\" @ dist %.0f\n", pEntity->entindex(), pEntity->GetClassname(), flRangeTo );
+		}
+
+		if( me->GetEntityForLoadoutSlot( TF_LOADOUT_SLOT_PRIMARY ) && me->IsRangeLessThan( threat->GetLastKnownPosition(), 1000.0f ) )
 		{
 			return SuspendFor( new CTFBotAttack, "Going after an enemy" );
 		}
 	}
+
+	// SanyaSho: always try to change our weapon (weapon spawner only)
+	me->PressUseButton( 0.2f );
 
 	// move towards our seek goal
 	m_PathFollower.Update( me );

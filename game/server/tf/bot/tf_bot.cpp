@@ -2348,13 +2348,13 @@ bool CTFBot::IsAmmoLow( void ) const
 			}
 		}
 
-		float ratio = (float)GetAmmoCount( TF_AMMO_PRIMARY ) / (float)( const_cast< CTFBot * >( this )->GetMaxAmmo( TF_AMMO_PRIMARY ) );
+		float flPrimaryRatio = (float)GetAmmoCount( TF_AMMO_PRIMARY ) / (float)( const_cast< CTFBot * >( this )->GetMaxAmmo( TF_AMMO_PRIMARY ) );
+		float flSecondaryRatio = (float)GetAmmoCount( TF_AMMO_SECONDARY ) / (float)( const_cast< CTFBot * >( this )->GetMaxAmmo( TF_AMMO_SECONDARY ) );
 
-		if ( ratio < 0.2f )
+		if ( (flPrimaryRatio < 0.2f) || (flSecondaryRatio < 0.2f) )
 		{
 			return true;
 		}
-		//if ( !myWeapon->HasPrimaryAmmo() && myWeapon->GetWeaponID() != TF_WEAPON_BUILDER && myWeapon->GetWeaponID() != TF_WEAPON_MEDIGUN )
 	}
 
 	return false;
@@ -2374,47 +2374,6 @@ bool CTFBot::IsAmmoFull( void ) const
 	}
 
 	return isPrimaryFull && isSecondaryFull;
-
-/*
-	CTFWeaponBase *myWeapon = m_Shared.GetActiveTFWeapon();
-	if ( myWeapon )
-	{
-		if ( IsPlayerClass( TF_CLASS_ENGINEER ) )
-		{
-			// wrench is special. it's a melee weapon that wants ammo - metal
-			return ( GetAmmoCount( TF_AMMO_METAL ) >= 200 );
-		}
-
-		if ( myWeapon->IsMeleeWeapon() )
-		{
-			// we never run out of ammo with a melee weapon
-			return true;
-		}
-
-		// no projectile, no ammo needed
-		const char *weaponAlias = WeaponIdToAlias( myWeapon->GetWeaponID() );
-		if ( weaponAlias )
-		{
-			WEAPON_FILE_INFO_HANDLE	weaponInfoHandle = LookupWeaponInfoSlot( weaponAlias );
-			if ( weaponInfoHandle != GetInvalidWeaponInfoHandle() )
-			{
-				CTFWeaponInfo *weaponInfo = static_cast< CTFWeaponInfo * >( GetFileWeaponInfoFromHandle( weaponInfoHandle ) );
-				if ( weaponInfo && weaponInfo->GetWeaponData( TF_WEAPON_PRIMARY_MODE ).m_iProjectile == TF_PROJECTILE_NONE )
-				{
-					// we don't shoot anything, so we don't need ammo
-					return true;
-				}
-			}
-		}
-
-		bool isPrimaryFull = GetAmmoCount( TF_AMMO_PRIMARY ) >= const_cast< CTFBot * >( this )->GetMaxAmmo( TF_AMMO_PRIMARY );
-		bool isSecondaryFull = GetAmmoCount( TF_AMMO_SECONDARY ) >= const_cast< CTFBot * >( this )->GetMaxAmmo( TF_AMMO_SECONDARY );
-
-		return isPrimaryFull && isSecondaryFull;
-	}
-
-	return false;
-*/
 }
 
 
