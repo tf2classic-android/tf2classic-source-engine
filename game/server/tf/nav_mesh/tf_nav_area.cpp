@@ -420,10 +420,10 @@ NavErrorType CTFNavArea::Load( CUtlBuffer &fileBuffer, unsigned int version, uns
 		return NAV_OK;
 	}
 
-	m_attributeFlags = fileBuffer.GetUnsignedInt();
+	m_attributeFlags = fileBuffer.GetUnsignedInt64();
 	if ( !fileBuffer.IsValid() )
 	{
-		Warning( "Can't read TF-specific attributes\n" );
+		Warning( "Can't read TF2C-specific attributes\n" );
 		return NAV_INVALID_FILE;
 	}
 
