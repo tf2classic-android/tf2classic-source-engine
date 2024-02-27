@@ -112,7 +112,7 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 {
 	VPROF_BUDGET( "CTFBotMainAction::Update", "NextBot" );
 
-	if ( me->GetTeamNumber() != TF_TEAM_BLUE && me->GetTeamNumber() != TF_TEAM_RED )
+	if ( me->GetTeamNumber() < FIRST_GAME_TEAM )
 	{
 		// not on a team - do nothing
 		return Done( "Not on a playing team" );

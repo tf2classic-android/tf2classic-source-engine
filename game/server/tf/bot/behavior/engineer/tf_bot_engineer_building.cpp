@@ -192,12 +192,7 @@ bool CTFBotEngineerBuilding::IsMetalSourceNearby( CTFBot *me ) const
 		}
 
 		// this assumes all spawn rooms have resupply cabinets
-		if ( me->GetTeamNumber() == TF_TEAM_RED && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) )
-		{
-			return true;
-		}
-
-		if ( me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) )
+		if ( area->HasAttributeTF( area->GetAttr_SpawnRoom( me->GetTeamNumber() ) ) )
 		{
 			return true;
 		}

@@ -60,7 +60,7 @@ void CTFBotEngineerMoveToBuild::CollectBuildAreas( CTFBot *me )
 	int i;
 
 	int myTeam = me->GetTeamNumber();
-	int enemyTeam = ( myTeam == TF_TEAM_BLUE ) ? TF_TEAM_RED : TF_TEAM_BLUE;
+	int enemyTeam = GetEnemyTeam( myTeam ); //( myTeam == TF_TEAM_BLUE ) ? TF_TEAM_RED : TF_TEAM_BLUE;
 
 	CCaptureZone *zone = me->GetFlagCaptureZone();
 	if ( zone )

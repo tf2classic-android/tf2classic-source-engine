@@ -10,6 +10,10 @@
 #include "tf_nav_area.h"
 #include "tf_obj_teleporter.h"
 
+// little-endian "TF2C"
+#define TF2CHEADER (('C'<<24)+('2'<<16)+('F'<<8)+'T')
+
+
 #define SENTRY_MAX_RANGE 1100.0f
 
 #define TF_PLAYER_JUMP_HEIGHT	45.0f			// non crouch-jumping
@@ -45,7 +49,10 @@ public:
 
 	virtual unsigned int GetSubVersionNumber( void ) const;									// returns sub-version number of data format used by derived classes
 	virtual void SaveCustomData( CUtlBuffer &fileBuffer ) const;							// store custom mesh data for derived classes
-	virtual void LoadCustomData( CUtlBuffer &fileBuffer, unsigned int subVersion );			// load custom mesh data for derived classes
+	virtual NavErrorType LoadCustomData( CUtlBuffer &fileBuffer, unsigned int subVersion );			// load custom mesh data for derived classes
+
+	virtual void SaveCustomDataPreArea( CUtlBuffer &fileBuffer ) const;							// store custom mesh data for derived classes
+	virtual NavErrorType LoadCustomDataPreArea( CUtlBuffer &fileBuffer, unsigned int subVersion );			// load custom mesh data for derived classes
 
 	virtual void OnServerActivate( void );								// (EXTEND) invoked when server loads a new map
 	virtual void OnRoundRestart( void );								// invoked when a game round restarts

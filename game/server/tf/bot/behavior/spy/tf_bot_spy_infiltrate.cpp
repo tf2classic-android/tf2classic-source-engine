@@ -46,7 +46,7 @@ ActionResult< CTFBot >	CTFBotSpyInfiltrate::Update( CTFBot *me, float interval )
 		return Continue();
 	}
 
-	bool isInMySpawn = myArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_SPAWN_ROOM_RED );
+	bool isInMySpawn = myArea->HasAttributeTF( TF_NAV_MASK_SPAWN_ROOM );
 	if ( myArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_EXIT ) )
 	{
 		// don't count exits so we cloak as we leave

@@ -47,7 +47,7 @@ public:
 		// resupply cabinets (not assigned a team)
 		if ( candidate->ClassMatches( "func_regenerate" ) )
 		{
-			if ( !area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_SPAWN_ROOM_RED ) )
+			if ( !area->HasAttributeTF( TF_NAV_MASK_SPAWN_ROOM ) )
 			{
 				// Assume any resupply cabinets not in a teamed spawn room are inaccessible.
 				// Ex: pl_upward has forward spawn rooms that neither team can use until 
@@ -56,7 +56,9 @@ public:
 			}
 
 			if ( ( m_me->GetTeamNumber() == TF_TEAM_RED && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) ) ||
-				 ( m_me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) ) )
+				 ( m_me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) ) ||
+				( m_me->GetTeamNumber() == TF_TEAM_GREEN && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_GREEN ) ) ||
+				( m_me->GetTeamNumber() == TF_TEAM_YELLOW && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_YELLOW ) ) )
 			{
 				// the supply cabinet is in my spawn room
 				return true;

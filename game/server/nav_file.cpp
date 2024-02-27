@@ -1492,7 +1492,11 @@ NavErrorType CNavMesh::Load( void )
 		placeDirectory.Load( fileBuffer, version );
 	}
 
-	LoadCustomDataPreArea( fileBuffer, subVersion );
+	NavErrorType navCustomPreData = LoadCustomDataPreArea( fileBuffer, subVersion );
+	if( navCustomPreData != NAV_OK )
+	{
+		return navCustomPreData;
+	}
 
 	// get number of areas
 	unsigned int count = fileBuffer.GetUnsignedInt();
@@ -1566,7 +1570,11 @@ NavErrorType CNavMesh::Load( void )
 	//
 	// Load derived class mesh info
 	//
-	LoadCustomData( fileBuffer, subVersion );
+	NavErrorType navCustomData = LoadCustomData( fileBuffer, subVersion );
+	if( navCustomData != NAV_OK )
+	{
+		return navCustomData;
+	}
 
 	//
 	// Bind pointers, etc

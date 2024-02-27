@@ -405,14 +405,14 @@ void CTFBotManager::MaintainBotQuota()
 		if ( pBot && pBot->HasAttribute( CTFBot::QUOTA_MANANGED ) )
 		{
 			nTFBots++;
-			if ( pPlayer->GetTeamNumber() == TF_TEAM_RED || pPlayer->GetTeamNumber() == TF_TEAM_BLUE )
+			if ( pPlayer->GetTeamNumber() >= TF_TEAM_RED )
 			{
 				nTFBotsOnGameTeams++;
 			}
 		}
 		else
 		{
-			if ( pPlayer->GetTeamNumber() == TF_TEAM_RED || pPlayer->GetTeamNumber() == TF_TEAM_BLUE )
+			if ( pPlayer->GetTeamNumber() >= TF_TEAM_RED )
 			{
 				nNonTFBotsOnGameTeams++;
 			}
@@ -462,7 +462,9 @@ void CTFBotManager::MaintainBotQuota()
 	{
 		// don't try to add a bot if it would unbalance
 		if ( !TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_BLUE, TEAM_UNASSIGNED ) ||
-			 !TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_RED, TEAM_UNASSIGNED ) )
+			 !TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_RED, TEAM_UNASSIGNED ) ||
+			!TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_GREEN, TEAM_UNASSIGNED ) ||
+			!TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_YELLOW, TEAM_UNASSIGNED ) )
 		{
 			CTFBot *pBot = GetAvailableBotFromPool();
 			if ( pBot == NULL )
@@ -505,6 +507,8 @@ void CTFBotManager::MaintainBotQuota()
 	}
 	else if ( desiredBotCount < nTFBotsOnGameTeams )
 	{
+		// FIXME 4TEAM SUPPORT
+
 		// kick a bot to maintain quota
 		
 		// first remove any unassigned bots

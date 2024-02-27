@@ -914,8 +914,8 @@ public:
 			}
 
 			// don't path through enemy spawn rooms
-			if ( ( m_me->GetTeamNumber() == TF_TEAM_RED && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) ) ||
-				 ( m_me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) ) )
+			uint64 mask = area->GetAttr_SpawnRoom( m_me->GetTeamNumber() );
+			if( area->HasAttributeTF( mask ) || area->HasAttributeTF( mask ^ TF_NAV_MASK_SPAWN_ROOM ) )
 			{
 				if ( !TFGameRules()->RoundHasBeenWon() )
 				{
@@ -983,8 +983,8 @@ public:
 
 				// if this area exposes us to enemy sentry fire, avoid it
 				const float sentryDangerCost = 5.0f;
-				if ( ( m_me->GetTeamNumber() == TF_TEAM_RED && area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER ) ) ||
-					 ( m_me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_RED_SENTRY_DANGER ) ) )
+				uint64 mask = area->GetAttr_Sentry( m_me->GetTeamNumber() );
+				if( area->HasAttributeTF( mask ) || area->HasAttributeTF( mask ^ TF_NAV_MASK_SENTRY_DANGER ) )
 				{
 					dist *= sentryDangerCost;
 				}
@@ -1067,7 +1067,7 @@ public:
 		if ( !player->IsAlive() )
 			return true;
 
-		if ( player->GetTeamNumber() != TF_TEAM_RED && player->GetTeamNumber() != TF_TEAM_BLUE )
+		if ( player->GetTeamNumber() != TF_TEAM_RED && player->GetTeamNumber() != TF_TEAM_BLUE && player->GetTeamNumber() != TF_TEAM_GREEN && player->GetTeamNumber() != TF_TEAM_YELLOW )
 			return true;
 
 		if ( m_team != TEAM_ANY && player->GetTeamNumber() != m_team )

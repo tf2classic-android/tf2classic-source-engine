@@ -85,12 +85,8 @@ bool CTFBotLocomotion::IsAreaTraversable( const CNavArea *baseArea ) const
 
 	if ( !TFGameRules()->RoundHasBeenWon() || TFGameRules()->GetWinningTeam() != me->GetTeamNumber() )
 	{
-		if ( area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) && me->GetTeamNumber() == TF_TEAM_BLUE )
-		{
-			return false;
-		}
-
-		if ( area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) && me->GetTeamNumber() == TF_TEAM_RED )
+		uint64 mask = area->GetAttr_SpawnRoom( me->GetTeamNumber() );
+		if( area->HasAttributeTF( mask ) || area->HasAttributeTF( mask ^ TF_NAV_MASK_SPAWN_ROOM ) )
 		{
 			return false;
 		}

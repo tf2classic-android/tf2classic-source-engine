@@ -388,6 +388,14 @@ CON_COMMAND_F( tf_bot_add, "Add a bot.", FCVAR_GAMEDLL )
 	{
 		iTeam = TF_TEAM_BLUE;
 	}
+	else if( FStrEq( teamname, "green" ) )
+	{
+		iTeam = TF_TEAM_GREEN;
+	}
+	else if( FStrEq( teamname, "yellow" ) )
+	{
+		iTeam = TF_TEAM_YELLOW;
+	}
 
 	if ( TFGameRules()->IsInTraining() )
 	{
@@ -481,6 +489,14 @@ CON_COMMAND_F( tf_bot_kick, "Remove a TFBot by name, or all bots (\"all\").", FC
 		{
 			iTeam = TF_TEAM_BLUE;
 		}
+		else if( FStrEq( args.Arg( i ), "green" ) )
+		{
+			iTeam = TF_TEAM_GREEN;
+		}
+		else if( FStrEq( args.Arg( i ), "yellow" ) )
+		{
+			iTeam = TF_TEAM_YELLOW;
+		}
 		else if ( FStrEq( args.Arg(i), "all" ) )
 		{
 			iTeam = TEAM_ANY;
@@ -559,6 +575,14 @@ CON_COMMAND_F( tf_bot_kill, "Kill a TFBot by name, or all bots (\"all\").", FCVA
 		else if ( FStrEq( args.Arg(i), "blue" ) )
 		{
 			iTeam = TF_TEAM_BLUE;
+		}
+		else if( FStrEq( args.Arg( i ), "green" ) )
+		{
+			iTeam = TF_TEAM_GREEN;
+		}
+		else if( FStrEq( args.Arg( i ), "yellow" ) )
+		{
+			iTeam = TF_TEAM_YELLOW;
 		}
 		else if ( FStrEq( args.Arg(i), "all" ) )
 		{
@@ -2061,7 +2085,7 @@ void CTFBot::SetupSniperSpotAccumulation( void )
 	ClearSniperSpots();
 
 	int myTeam = GetTeamNumber();
-	int enemyTeam = ( myTeam == TF_TEAM_BLUE ) ? TF_TEAM_RED : TF_TEAM_BLUE;
+	int enemyTeam = GetEnemyTeam( myTeam ); //( myTeam == TF_TEAM_BLUE ) ? TF_TEAM_RED : TF_TEAM_BLUE;
 
 	bool isDefendingPoint = false;
 	CTFNavArea *goalEntityArea = NULL;
@@ -2716,7 +2740,7 @@ public:
 // Return a nearby area where we can see a member of the enemy team
 CTFNavArea *CTFBot::FindVantagePoint( float maxTravelDistance ) const
 {
-	CFindVantagePoint find( GetTeamNumber() == TF_TEAM_BLUE ? TF_TEAM_RED : TF_TEAM_BLUE );
+	CFindVantagePoint find( GetEnemyTeam( GetTeamNumber() ) ); //find( GetTeamNumber() == TF_TEAM_BLUE ? TF_TEAM_RED : TF_TEAM_BLUE );
 	SearchSurroundingAreas( GetLastKnownArea(), find, maxTravelDistance );
 	return find.m_vantageArea;
 }

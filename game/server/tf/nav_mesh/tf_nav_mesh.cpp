@@ -908,7 +908,7 @@ void CTFNavMesh::ComputeLegalBombDropAreas( void )
 				continue;
 			}
 
-			if ( !adjArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_SPAWN_ROOM_RED ) )
+			if ( !adjArea->HasAttributeTF( TF_NAV_MASK_SPAWN_ROOM ) )
 			{
 				// this area can be reached by walking from the spawn, so it's legal to drop the bomb here
 				adjArea->SetAttributeTF( TF_NAV_BOMB_CAN_DROP_HERE );
@@ -1193,11 +1193,11 @@ void CTFNavMesh::OnObjectChanged()
 					if ( area->IsPartiallyVisible( obj->GetAbsOrigin() + Vector( 0, 0, 30.0f ), obj ) )
 					{
 						// If this area wasn't already added to m_sentryAreas, do it now.
-						if ( !area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER | TF_NAV_RED_SENTRY_DANGER ) )
+						if ( !area->HasAttributeTF( TF_NAV_MASK_SENTRY_DANGER ) )
 							m_sentryAreas.AddToTail( area );
 
 						// Mark this area as being potentially dangerous.
-						area->SetAttributeTF( ( obj->GetTeamNumber() == TF_TEAM_RED ) ? TF_NAV_RED_SENTRY_DANGER : TF_NAV_BLUE_SENTRY_DANGER );
+						area->SetAttributeTF( area->GetAttr_Sentry( obj->GetTeamNumber() ) );
 					}
 				}
 			}
@@ -1217,7 +1217,7 @@ bool CTFNavMesh::IsSentryGunHere( CTFNavArea *area ) const
 {
 	// Check to see if the area is on the highway to the danger zone.
 	//  If it isn't then there shouldn't be a sentry gun here.
-	if ( area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER | TF_NAV_RED_SENTRY_DANGER ) )
+	if ( area->HasAttributeTF( TF_NAV_MASK_SENTRY_DANGER ) )
 	{
 		// Walk through all the objects built by players
 		for ( int oit = 0; oit < IBaseObjectAutoList::AutoList().Count(); ++oit )
@@ -1329,7 +1329,8 @@ unsigned int CTFNavMesh::GetSubVersionNumber( void ) const
 {
 	// 1: initial implementation
 	// 2: added TF-specific attribute flags
-	return 2;
+	// 256: TF2C 2017
+	return 256;
 }
 
 
@@ -1347,9 +1348,63 @@ void CTFNavMesh::SaveCustomData( CUtlBuffer &fileBuffer ) const
 /**
  * Load custom mesh data for derived classes
  */
-void CTFNavMesh::LoadCustomData( CUtlBuffer &fileBuffer, unsigned int subVersion )
+NavErrorType CTFNavMesh::LoadCustomData( CUtlBuffer &fileBuffer, unsigned int subVersion )
 {
+	return NAV_OK;
+}
 
+
+void CTFNavMesh::SaveCustomDataPreArea( CUtlBuffer &fileBuffer ) const
+{
+	fileBuffer.PutUnsignedInt( TF2CHEADER );
+}
+
+NavErrorType CTFNavMesh::LoadCustomDataPreArea( CUtlBuffer &fileBuffer, unsigned int subVersion )
+{
+	if( !fileBuffer.IsValid() )
+	{
+		Warning( "Can't read nav file magic number!\n" );
+		return NAV_INVALID_FILE;
+	}
+
+	unsigned int magic = fileBuffer.GetUnsignedInt();
+
+	if( magic == TF2CHEADER )
+	{
+		if( subVersion >= 256 )
+		{
+			if( subVersion <= 256 )
+			{
+				return NAV_OK;
+			}
+			else
+			{
+				Warning(
+					"The NavMesh sub-version number is too new for this game version!\n"
+					"[Game version: %04x] [File version: %04x]\n",
+					GetSubVersionNumber(),
+					subVersion );
+				return NAV_BAD_FILE_VERSION;
+			}
+		}
+		else
+		{
+			Warning(
+				"The NavMesh sub-version number is invalid!\n[Game version: %04x] [File version: %04x]\n",
+				GetSubVersionNumber(),
+				subVersion );
+			return NAV_BAD_FILE_VERSION;
+		}
+	}
+	else
+	{
+		Warning(
+			"This nav file was not built for TF2Classic!\n"
+			"(If you are trying to use a nav file from live TF2, you need to convert if with tf2c_convert_nav_file.)\n" );
+		return NAV_INVALID_FILE;
+	}
+
+	return NAV_OK;
 }
 
 
@@ -1511,7 +1566,7 @@ void CTFNavMesh::ComputeIncursionDistances( CTFNavArea *spawnArea, int team )
 		{
 			// ignore spawn room exits, since they presumably will be open
 			// ignore setup gates, since they will be open after the setup time
-			if ( !area->HasAttributeTF( TF_NAV_SPAWN_ROOM_EXIT | TF_NAV_BLUE_SETUP_GATE | TF_NAV_RED_SETUP_GATE ) && area->IsBlocked( team ) )
+			if ( !area->HasAttributeTF( TF_NAV_SPAWN_ROOM_EXIT | TF_NAV_MASK_SETUP_GATE ) && area->IsBlocked( team ) )
 			{
 				// don't pass through blocked areas
 				continue;
@@ -1617,7 +1672,7 @@ public:
 		{
 			CTFNavArea *area = (CTFNavArea *)baseArea;
 
-			area->SetAttributeTF( ( m_team == TF_TEAM_RED ) ? TF_NAV_SPAWN_ROOM_RED : TF_NAV_SPAWN_ROOM_BLUE );
+			area->SetAttributeTF( area->GetAttr_SpawnRoom( m_team ) );
 
 			m_areaVector->AddToTail( area );
 		}
@@ -1629,7 +1684,6 @@ public:
 	int m_team;
 	CUtlVector< CTFNavArea * > *m_areaVector;
 };
-
 
 //--------------------------------------------------------------------------------------------------------
 void CTFNavMesh::CollectAndMarkSpawnRoomExits( CTFNavArea *area, CUtlVector< CTFNavArea * > *exitAreaVector )
@@ -1643,7 +1697,7 @@ void CTFNavMesh::CollectAndMarkSpawnRoomExits( CTFNavArea *area, CUtlVector< CTF
 			{
 				CTFNavArea *adjArea = (CTFNavArea *)connect->Element(cit).area;
 
-				if ( !adjArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_SPAWN_ROOM_RED ) )
+				if ( !adjArea->HasAttributeTF( TF_NAV_MASK_SPAWN_ROOM ) )
 				{
 					// adjacent area leads out of spawn room - this is an exit
 					area->SetAttributeTF( TF_NAV_SPAWN_ROOM_EXIT );
@@ -1741,6 +1795,28 @@ void CTFNavMesh::DecorateMesh( void )
 		}
 	}
 
+	// mark DM weapons
+	entity = NULL;
+	while( ( entity = gEntList.FindEntityByClassname( entity, "tf_weaponspawner" ) ) != NULL )
+	{
+		CTFNavArea *area = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( entity->GetAbsOrigin() );
+		if( area )
+		{
+			area->SetAttributeTF( TF_NAV_HAS_DM_WEAPON );
+		}
+	}
+
+	// mark DM powerups
+	entity = NULL;
+	while( ( entity = gEntList.FindEntityByClassname( entity, "item_powerup*" ) ) != NULL )
+	{
+		CTFNavArea *area = (CTFNavArea *)TheTFNavMesh()->GetNearestNavArea( entity->GetAbsOrigin() );
+		if( area )
+		{
+			area->SetAttributeTF( TF_NAV_HAS_DM_POWERUP );
+		}
+	}
+
 	// mark control points
 	for( int p=0; p<MAX_CONTROL_POINTS; ++p )
 	{
@@ -1778,8 +1854,8 @@ void CTFNavMesh::ResetMeshAttributes( bool bScheduleRecomputation )
 	FOR_EACH_VEC( m_sentryAreas, nit )
 	{
 		// One of the sentry danger attributes should be set.
-		Assert( bScheduleRecomputation || m_sentryAreas[ nit ]->HasAttributeTF(  TF_NAV_BLUE_SENTRY_DANGER | TF_NAV_RED_SENTRY_DANGER ) );
-		m_sentryAreas[ nit ]->ClearAttributeTF( TF_NAV_BLUE_SENTRY_DANGER | TF_NAV_RED_SENTRY_DANGER );
+		Assert( bScheduleRecomputation || m_sentryAreas[ nit ]->HasAttributeTF(  TF_NAV_MASK_SENTRY_DANGER ) );
+		m_sentryAreas[ nit ]->ClearAttributeTF( TF_NAV_MASK_SENTRY_DANGER );
 	}
 	m_sentryAreas.RemoveAll();
 
@@ -1788,7 +1864,7 @@ void CTFNavMesh::ResetMeshAttributes( bool bScheduleRecomputation )
 	{
 		// Sentry danger attributes should not be set anywhere.
 		CTFNavArea *area = static_cast< CTFNavArea * >( TheNavAreas[ it ] );
-		Assert( !area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER | TF_NAV_RED_SENTRY_DANGER ) );
+		Assert( !area->HasAttributeTF( TF_NAV_MASK_SENTRY_DANGER ) );
 	}
 #endif
 
@@ -2088,6 +2164,76 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 				}
 			}
 		}
+
+		areaVector = GetSpawnRoomAreas( TF_TEAM_GREEN );
+		if( areaVector )
+		{
+			for( i = 0; i < areaVector->Count(); ++i )
+			{
+				CTFNavArea *area = areaVector->Element( i );
+
+				if( !area->HasAttributeTF( TF_NAV_SPAWN_ROOM_EXIT ) )
+				{
+					area->DrawFilled( 0, 255, 0, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+
+					if( TheNavMesh->GetSelectedArea() == area )
+					{
+						NDebugOverlay::Text( area->GetCenter(), "Green Spawn Room", false, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+					}
+				}
+			}
+		}
+
+		areaVector = GetSpawnRoomExitAreas( TF_TEAM_GREEN );
+		if( areaVector )
+		{
+			for( i = 0; i < areaVector->Count(); ++i )
+			{
+				CTFNavArea *area = areaVector->Element( i );
+
+				area->DrawFilled( 150, 255, 150, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+
+				if( TheNavMesh->GetSelectedArea() == area )
+				{
+					NDebugOverlay::Text( area->GetCenter(), "Green Spawn Exit", false, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+				}
+			}
+		}
+
+		areaVector = GetSpawnRoomAreas( TF_TEAM_YELLOW );
+		if( areaVector )
+		{
+			for( i = 0; i < areaVector->Count(); ++i )
+			{
+				CTFNavArea *area = areaVector->Element( i );
+
+				if( !area->HasAttributeTF( TF_NAV_SPAWN_ROOM_EXIT ) )
+				{
+					area->DrawFilled( 255, 255, 0, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+
+					if( TheNavMesh->GetSelectedArea() == area )
+					{
+						NDebugOverlay::Text( area->GetCenter(), "Yellow Spawn Room", false, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+					}
+				}
+			}
+		}
+
+		areaVector = GetSpawnRoomExitAreas( TF_TEAM_YELLOW );
+		if( areaVector )
+		{
+			for( i = 0; i < areaVector->Count(); ++i )
+			{
+				CTFNavArea *area = areaVector->Element( i );
+
+				area->DrawFilled( 255, 255, 150, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+
+				if( TheNavMesh->GetSelectedArea() == area )
+				{
+					NDebugOverlay::Text( area->GetCenter(), "Yellow Spawn Exit", false, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+				}
+			}
+		}
 	}
 
 
@@ -2119,6 +2265,25 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 					}
 				}
 
+				if( area->HasAttributeTF( TF_NAV_HAS_DM_WEAPON ) && area->HasAttributeTF( TF_NAV_HAS_DM_POWERUP ) )
+				{
+					area->DrawFilled( 255, 0, 255, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+					describe = "DM Weapon & DM Powerup";
+				}
+				else
+				{
+					if( area->HasAttributeTF( TF_NAV_HAS_DM_WEAPON ) )
+					{
+						area->DrawFilled( 255, 255, 0, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+						describe = "DM Weapon";
+					}
+					else if( area->HasAttributeTF( TF_NAV_HAS_DM_POWERUP ) )
+					{
+						area->DrawFilled( 100, 255, 0, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+						describe = "DM Powerup";
+					}
+				}
+
 				if ( area->HasAttributeTF( TF_NAV_CONTROL_POINT ) )
 				{
 					area->DrawFilled( 0, 255, 0, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
@@ -2133,6 +2298,16 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 				if ( area->HasAttributeTF( TF_NAV_RED_ONE_WAY_DOOR ) )
 				{
 					area->DrawFilled( 255, 100, 100, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+				}
+
+				if( area->HasAttributeTF( TF_NAV_GREEN_ONE_WAY_DOOR ) )
+				{
+					area->DrawFilled( 100, 255, 100, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+				}
+
+				if( area->HasAttributeTF( TF_NAV_YELLOW_ONE_WAY_DOOR ) )
+				{
+					area->DrawFilled( 255, 255, 100, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
 				}
 			}
 
@@ -2224,6 +2399,18 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 				describe = "Red Setup Gate";
 			}
 
+			if ( area->HasAttributeTF( TF_NAV_GREEN_SETUP_GATE ) )
+			{
+				area->DrawFilled( 0, 100, 0, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+				describe = "Green Setup Gate";
+			}
+
+			if ( area->HasAttributeTF( TF_NAV_YELLOW_SETUP_GATE ) )
+			{
+				area->DrawFilled( 100, 100, 0, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+				describe = "Yellow Setup Gate";
+			}
+
 			if ( area->HasAttributeTF( TF_NAV_DOOR_ALWAYS_BLOCKS ) )
 			{
 				area->DrawFilled( 100, 0, 100, 255, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
@@ -2258,12 +2445,35 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 			FOR_EACH_VEC( TheNavAreas, it )
 			{
 				const CTFNavArea *area = static_cast< CTFNavArea * >( TheNavAreas[ it ] );
-				int r = area->HasAttributeTF( TF_NAV_RED_SENTRY_DANGER ) * 255;
-				int b = area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER ) * 255;
-
-				if ( r || b )
+				int r = 0, g = 0, b = 0;
+				if( area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER ) )
 				{
-					area->DrawFilled( r, 0, b, 80, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+					r = 0;
+					g = 0;
+					b = 255;
+				}
+				else if( area->HasAttributeTF( TF_NAV_RED_SENTRY_DANGER ) )
+				{
+					r = 255;
+					g = 0;
+					b = 0;
+				}
+				else if( area->HasAttributeTF( TF_NAV_GREEN_SENTRY_DANGER ) )
+				{
+					r = 0;
+					g = 255;
+					b = 0;
+				}
+				else if( area->HasAttributeTF( TF_NAV_YELLOW_SENTRY_DANGER ) )
+				{
+					r = 255;
+					g = 255;
+					b = 0;
+				}
+
+				if( r || g || b )
+				{
+					area->DrawFilled( r, g, b, 80, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
 				}
 			}
 		}
@@ -2274,12 +2484,35 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 			FOR_EACH_VEC( m_sentryAreas, nit )
 			{
 				const CTFNavArea *area = m_sentryAreas[ nit ];
-				int r = area->HasAttributeTF( TF_NAV_RED_SENTRY_DANGER ) * 255;
-				int b = area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER ) * 255;
-
-				if ( r || b )
+				int r = 0, g = 0, b = 0;
+				if( area->HasAttributeTF( TF_NAV_BLUE_SENTRY_DANGER ) )
 				{
-					area->DrawFilled( r, 0, b, 80, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
+					r = 0;
+					g = 0;
+					b = 255;
+				}
+				else if( area->HasAttributeTF( TF_NAV_RED_SENTRY_DANGER ) )
+				{
+					r = 255;
+					g = 0;
+					b = 0;
+				}
+				else if( area->HasAttributeTF( TF_NAV_GREEN_SENTRY_DANGER ) )
+				{
+					r = 0;
+					g = 255;
+					b = 0;
+				}
+				else if( area->HasAttributeTF( TF_NAV_YELLOW_SENTRY_DANGER ) )
+				{
+					r = 255;
+					g = 255;
+					b = 0;
+				}
+
+				if( r || g || b )
+				{
+					area->DrawFilled( r, g, b, 80, NDEBUG_PERSIST_TILL_NEXT_SERVER, true );
 				}
 			}
 		}
@@ -2407,7 +2640,7 @@ void CTFNavMesh::CollectSpawnRoomThresholdAreas( CUtlVector< CTFNavArea * > *spa
 			{
 				CTFNavArea *adjArea = (CTFNavArea *)adjConnect->Element(j).area;
 
-				if ( !adjArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED | TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_SPAWN_ROOM_EXIT ) )
+				if ( !adjArea->HasAttributeTF( TF_NAV_MASK_SPAWN_ROOM | TF_NAV_SPAWN_ROOM_EXIT ) )
 				{
 					// this area is outside of the spawn room
 					float size = adjArea->GetSizeX() * adjArea->GetSizeY();

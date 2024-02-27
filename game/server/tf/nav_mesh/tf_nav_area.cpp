@@ -378,6 +378,8 @@ bool CTFNavArea::IsBlocked( int teamID, bool ignoreNavBlockers ) const
 	if ( HasAttributeTF( TF_NAV_BLOCKED ) )
 		return true;
 
+	// FIXME 4TEAM SUPPORT
+
 	// temporary fix:
 	if ( teamID == TF_TEAM_RED && HasAttributeTF( TF_NAV_BLUE_ONE_WAY_DOOR ) )
 		return true;
@@ -464,7 +466,7 @@ void CTFNavArea::TFMark( void )
 //--------------------------------------------------------------------------------------------------------
 bool CTFNavArea::IsValidForWanderingPopulation( void ) const
 {
-	if ( HasAttributeTF( TF_NAV_BLOCKED | TF_NAV_SPAWN_ROOM_RED | TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_NO_SPAWNING | TF_NAV_RESCUE_CLOSET ) )
+	if ( HasAttributeTF( TF_NAV_BLOCKED | TF_NAV_MASK_SPAWN_ROOM | TF_NAV_NO_SPAWNING | TF_NAV_RESCUE_CLOSET ) )
 		return false;
 		
 	return true;
@@ -507,6 +509,48 @@ float CTFNavArea::GetCombatIntensity( void ) const
 	}
 
 	return actualIntensity;
+}
+
+uint64 CTFNavArea::GetAttr_SpawnRoom( int iTeam ) const
+{
+	switch( iTeam )
+	{
+		case TF_TEAM_RED:
+			return TF_NAV_SPAWN_ROOM_RED;
+			break;
+		case TF_TEAM_BLUE:
+			return TF_NAV_SPAWN_ROOM_BLUE;
+			break;
+		case TF_TEAM_GREEN:
+			return TF_NAV_SPAWN_ROOM_GREEN;
+			break;
+		case TF_TEAM_YELLOW:
+			return TF_NAV_SPAWN_ROOM_YELLOW;
+			break;
+	}
+
+	return TF_NAV_INVALID;
+}
+
+uint64 CTFNavArea::GetAttr_Sentry( int iTeam ) const
+{
+	switch( iTeam )
+	{
+		case TF_TEAM_RED:
+			return TF_NAV_RED_SENTRY_DANGER;
+			break;
+		case TF_TEAM_BLUE:
+			return TF_NAV_BLUE_SENTRY_DANGER;
+			break;
+		case TF_TEAM_GREEN:
+			return TF_NAV_GREEN_SENTRY_DANGER;
+			break;
+		case TF_TEAM_YELLOW:
+			return TF_NAV_YELLOW_SENTRY_DANGER;
+			break;
+	}
+
+	return TF_NAV_INVALID;
 }
 
 

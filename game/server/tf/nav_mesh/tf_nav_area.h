@@ -9,53 +9,82 @@
 #include "nav_area.h"
 #include "tf_shareddefs.h"
 
-enum TFNavAttributeType
+enum TFNavAttributeType : uint64
 {
-	TF_NAV_INVALID						= 0x00000000,
+	TF_NAV_INVALID						= 0x000000000,
 
 	// Also look for NAV_MESH_NAV_BLOCKER (w/ nav_debug_blocked ConVar).
-	TF_NAV_BLOCKED						= 0x00000001,			// blocked for some TF-specific reason
-	TF_NAV_SPAWN_ROOM_RED				= 0x00000002,
-	TF_NAV_SPAWN_ROOM_BLUE				= 0x00000004,
-	TF_NAV_SPAWN_ROOM_EXIT				= 0x00000008,
-	TF_NAV_HAS_AMMO						= 0x00000010,
-	TF_NAV_HAS_HEALTH					= 0x00000020,
-	TF_NAV_CONTROL_POINT				= 0x00000040,
+	TF_NAV_BLOCKED						= ( 1ull << 0 ),			// blocked for some TF-specific reason
+	TF_NAV_SPAWN_ROOM_RED				= ( 1ull << 1 ),
+	TF_NAV_SPAWN_ROOM_BLUE				= ( 1ull << 2 ),
+	TF_NAV_SPAWN_ROOM_EXIT				= ( 1ull << 3 ),
+	TF_NAV_HAS_AMMO						= ( 1ull << 4 ),
+	TF_NAV_HAS_HEALTH					= ( 1ull << 5 ),
+	TF_NAV_CONTROL_POINT				= ( 1ull << 6 ),
 
-	TF_NAV_BLUE_SENTRY_DANGER			= 0x00000080,			// sentry can potentially fire upon enemies in this area
-	TF_NAV_RED_SENTRY_DANGER			= 0x00000100,
+	TF_NAV_BLUE_SENTRY_DANGER			= ( 1ull << 7 ),			// sentry can potentially fire upon enemies in this area
+	TF_NAV_RED_SENTRY_DANGER			= ( 1ull << 8 ),
 
-	TF_NAV_BLUE_SETUP_GATE				= 0x00000800,			// this area is blocked until the setup period is over
-	TF_NAV_RED_SETUP_GATE				= 0x00001000,			// this area is blocked until the setup period is over
-	TF_NAV_BLOCKED_AFTER_POINT_CAPTURE	= 0x00002000,			// this area becomes blocked after the first point is capped
-	TF_NAV_BLOCKED_UNTIL_POINT_CAPTURE  = 0x00004000,			// this area is blocked until the first point is capped, then is unblocked
-	TF_NAV_BLUE_ONE_WAY_DOOR			= 0x00008000,
-	TF_NAV_RED_ONE_WAY_DOOR				= 0x00010000,
+	TF_NAV_BLUE_SETUP_GATE				= ( 1ull << 9 ),			// this area is blocked until the setup period is over
+	TF_NAV_RED_SETUP_GATE				= ( 1ull << 10 ),			// this area is blocked until the setup period is over
+	TF_NAV_BLOCKED_AFTER_POINT_CAPTURE	= ( 1ull << 11 ),			// this area becomes blocked after the first point is capped
+	TF_NAV_BLOCKED_UNTIL_POINT_CAPTURE  = ( 1ull << 12 ),			// this area is blocked until the first point is capped, then is unblocked
+	TF_NAV_BLUE_ONE_WAY_DOOR			= ( 1ull << 13 ),
+	TF_NAV_RED_ONE_WAY_DOOR				= ( 1ull << 14 ),
 
- 	TF_NAV_WITH_SECOND_POINT			= 0x00020000,			// modifier for BLOCKED_*_POINT_CAPTURE
- 	TF_NAV_WITH_THIRD_POINT				= 0x00040000,			// modifier for BLOCKED_*_POINT_CAPTURE
-  	TF_NAV_WITH_FOURTH_POINT			= 0x00080000,			// modifier for BLOCKED_*_POINT_CAPTURE
- 	TF_NAV_WITH_FIFTH_POINT				= 0x00100000,			// modifier for BLOCKED_*_POINT_CAPTURE
+ 	TF_NAV_WITH_SECOND_POINT			= ( 1ull << 15 ),			// modifier for BLOCKED_*_POINT_CAPTURE
+ 	TF_NAV_WITH_THIRD_POINT				= ( 1ull << 16 ),			// modifier for BLOCKED_*_POINT_CAPTURE
+  	TF_NAV_WITH_FOURTH_POINT			= ( 1ull << 17 ),			// modifier for BLOCKED_*_POINT_CAPTURE
+ 	TF_NAV_WITH_FIFTH_POINT				= ( 1ull << 18 ),			// modifier for BLOCKED_*_POINT_CAPTURE
 
-	TF_NAV_SNIPER_SPOT					= 0x00200000,			// this is a good place for a sniper to lurk
-	TF_NAV_SENTRY_SPOT					= 0x00400000,			// this is a good place to build a sentry
+	TF_NAV_SNIPER_SPOT					= ( 1ull << 19 ),			// this is a good place for a sniper to lurk
+	TF_NAV_SENTRY_SPOT					= ( 1ull << 20 ),			// this is a good place to build a sentry
 
-	TF_NAV_ESCAPE_ROUTE					= 0x00800000,			// for Raid mode
-	TF_NAV_ESCAPE_ROUTE_VISIBLE			= 0x01000000,			// all areas that have visibility to the escape route
+	TF_NAV_ESCAPE_ROUTE					= ( 1ull << 21 ),			// for Raid mode
+	TF_NAV_ESCAPE_ROUTE_VISIBLE			= ( 1ull << 22 ),			// all areas that have visibility to the escape route
 
-	TF_NAV_NO_SPAWNING					= 0x02000000,			// don't spawn bots in this area
+	TF_NAV_NO_SPAWNING					= ( 1ull << 23 ),			// don't spawn bots in this area
 
- 	TF_NAV_RESCUE_CLOSET				= 0x04000000,			// for respawning friends in Raid mode
+ 	TF_NAV_RESCUE_CLOSET				= ( 1ull << 24 ),			// for respawning friends in Raid mode
 
- 	TF_NAV_BOMB_CAN_DROP_HERE			= 0x08000000,			// the bomb can be dropped here and reached by the invaders in MvM
+ 	TF_NAV_BOMB_CAN_DROP_HERE			= ( 1ull << 25 ),			// the bomb can be dropped here and reached by the invaders in MvM
 
-	TF_NAV_DOOR_NEVER_BLOCKS			= 0x10000000,
-	TF_NAV_DOOR_ALWAYS_BLOCKS			= 0x20000000,
+	TF_NAV_DOOR_NEVER_BLOCKS			= ( 1ull << 26 ),
+	TF_NAV_DOOR_ALWAYS_BLOCKS			= ( 1ull << 27 ),
 
-	TF_NAV_UNBLOCKABLE					= 0x40000000,			// this area cannot be blocked
+	TF_NAV_UNBLOCKABLE					= ( 1ull << 28 ),			// this area cannot be blocked
+
+	// TF2C
+	TF_NAV_SPAWN_ROOM_GREEN				= ( 1ull << 29 ),
+	TF_NAV_SPAWN_ROOM_YELLOW			= ( 1ull << 30 ),
+	TF_NAV_GREEN_SENTRY_DANGER			= ( 1ull << 31 ),
+	TF_NAV_YELLOW_SENTRY_DANGER			= ( 1ull << 32 ),
+	TF_NAV_GREEN_SETUP_GATE				= ( 1ull << 33 ),
+	TF_NAV_YELLOW_SETUP_GATE			= ( 1ull << 34 ),
+	TF_NAV_GREEN_ONE_WAY_DOOR			= ( 1ull << 35 ),
+	TF_NAV_YELLOW_ONE_WAY_DOOR			= ( 1ull << 36 ),
+
+	TF_NAV_HAS_DM_WEAPON				= ( 1ull << 37 ),
+	TF_NAV_HAS_DM_POWERUP				= ( 1ull << 38 ),
+
+	TF_NAV_MASK_SPAWN_ROOM				= ( TF_NAV_SPAWN_ROOM_RED | TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_SPAWN_ROOM_GREEN | TF_NAV_SPAWN_ROOM_YELLOW ),
+	TF_NAV_MASK_SENTRY_DANGER			= ( TF_NAV_RED_SENTRY_DANGER | TF_NAV_BLUE_SENTRY_DANGER | TF_NAV_GREEN_SENTRY_DANGER | TF_NAV_YELLOW_SENTRY_DANGER ),
+	TF_NAV_MASK_SETUP_GATE				= ( TF_NAV_BLUE_SETUP_GATE | TF_NAV_RED_SETUP_GATE | TF_NAV_GREEN_SETUP_GATE | TF_NAV_YELLOW_SETUP_GATE ),
 
 	// save/load these manually set flags, and don't clear them between rounds
-	TF_NAV_PERSISTENT_ATTRIBUTES		= TF_NAV_SNIPER_SPOT | TF_NAV_SENTRY_SPOT | TF_NAV_NO_SPAWNING | TF_NAV_BLUE_SETUP_GATE | TF_NAV_RED_SETUP_GATE | TF_NAV_BLOCKED_AFTER_POINT_CAPTURE | TF_NAV_BLOCKED_UNTIL_POINT_CAPTURE | TF_NAV_BLUE_ONE_WAY_DOOR | TF_NAV_RED_ONE_WAY_DOOR | TF_NAV_DOOR_NEVER_BLOCKS | TF_NAV_DOOR_ALWAYS_BLOCKS | TF_NAV_UNBLOCKABLE | TF_NAV_WITH_SECOND_POINT | TF_NAV_WITH_THIRD_POINT | TF_NAV_WITH_FOURTH_POINT | TF_NAV_WITH_FIFTH_POINT | TF_NAV_RESCUE_CLOSET
+	TF_NAV_PERSISTENT_ATTRIBUTES
+		= TF_NAV_SNIPER_SPOT | TF_NAV_SENTRY_SPOT | TF_NAV_NO_SPAWNING
+		| TF_NAV_BLUE_SETUP_GATE | TF_NAV_RED_SETUP_GATE
+		| TF_NAV_BLOCKED_AFTER_POINT_CAPTURE | TF_NAV_BLOCKED_UNTIL_POINT_CAPTURE
+		| TF_NAV_BLUE_ONE_WAY_DOOR | TF_NAV_RED_ONE_WAY_DOOR
+		| TF_NAV_DOOR_NEVER_BLOCKS | TF_NAV_DOOR_ALWAYS_BLOCKS
+		| TF_NAV_UNBLOCKABLE
+		| TF_NAV_WITH_SECOND_POINT | TF_NAV_WITH_THIRD_POINT
+		| TF_NAV_WITH_FOURTH_POINT | TF_NAV_WITH_FIFTH_POINT
+		| TF_NAV_RESCUE_CLOSET
+		// TF2C
+		| TF_NAV_GREEN_SETUP_GATE | TF_NAV_YELLOW_SETUP_GATE
+		| TF_NAV_GREEN_ONE_WAY_DOOR | TF_NAV_YELLOW_ONE_WAY_DOOR
 };
 
 
@@ -92,9 +121,9 @@ public:
 	void SetInvasionSearchMarker( unsigned int marker );
 	bool IsInvasionSearchMarked( unsigned int marker ) const;
 
-	void SetAttributeTF( int flags );
-	void ClearAttributeTF( int flags );
-	bool HasAttributeTF( int flags ) const;
+	void SetAttributeTF( uint64 flags );
+	void ClearAttributeTF( uint64 flags );
+	bool HasAttributeTF( uint64 flags ) const;
 
 	void AddPotentiallyVisibleActor( CBaseCombatCharacter *who );
 	void RemovePotentiallyVisibleActor( CBaseCombatCharacter *who );
@@ -113,6 +142,9 @@ public:
 	void OnCombat( void );										// invoked when combat happens in/near this area
 	bool IsInCombat( void ) const;								// return true if this area has seen combat recently
 	float GetCombatIntensity( void ) const;						// 1 = in active combat, 0 = quiet
+
+	uint64 GetAttr_SpawnRoom( int iTeam ) const;
+	uint64 GetAttr_Sentry( int iTeam ) const;
 
 	static void MakeNewTFMarker( void );
 	static void ResetTFMarker( void );
@@ -137,7 +169,7 @@ private:
 	CUtlVector< CTFNavArea * > m_invasionAreaVector[ TF_TEAM_COUNT ];	// use our team as index to get list of areas the enemy is invading from
 	unsigned int m_invasionSearchMarker;
 
-	unsigned int m_attributeFlags;
+	uint64 m_attributeFlags;
 
 	CUtlVector< CHandle< CBaseCombatCharacter > > m_potentiallyVisibleActor[ TF_TEAM_COUNT ];
 
@@ -281,17 +313,17 @@ inline bool CTFNavArea::IsInvasionSearchMarked( unsigned int marker ) const
 	return marker == m_invasionSearchMarker;
 }
 
-inline void CTFNavArea::SetAttributeTF( int flags )
+inline void CTFNavArea::SetAttributeTF( uint64 flags )
 {
 	m_attributeFlags |= flags;
 }
 
-inline void CTFNavArea::ClearAttributeTF( int flags )
+inline void CTFNavArea::ClearAttributeTF( uint64 flags )
 {
 	m_attributeFlags &= ~flags;
 }
 
-inline bool CTFNavArea::HasAttributeTF( int flags ) const
+inline bool CTFNavArea::HasAttributeTF( uint64 flags ) const
 {
 	return ( m_attributeFlags & flags ) ? true : false;
 }
