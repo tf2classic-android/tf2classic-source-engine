@@ -397,8 +397,8 @@ void CTFNavArea::Save( CUtlBuffer &fileBuffer, unsigned int version ) const
 	CNavArea::Save( fileBuffer, version );
 
 	// save attribute flags
-	unsigned int attributes = m_attributeFlags & TF_NAV_PERSISTENT_ATTRIBUTES;
-	fileBuffer.PutUnsignedInt( attributes );
+	uint64 attributes = m_attributeFlags & TF_NAV_PERSISTENT_ATTRIBUTES;
+	fileBuffer.PutUnsignedInt64( attributes );
 }
 
 
