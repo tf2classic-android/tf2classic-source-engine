@@ -2788,6 +2788,7 @@ float CTFBot::GetThreatDanger( CBaseCombatCharacter *who ) const
 		case TF_CLASS_DEMOMAN:
 			return 0.6f;		// 3/5
 
+		case TF_CLASS_MERCENARY: // SanyaSho: TF2C
 		case TF_CLASS_SOLDIER:
 		case TF_CLASS_HEAVYWEAPONS:
 			return 0.8f;		// 4/5
@@ -3054,6 +3055,14 @@ void CTFBot::EquipBestWeaponForThreat( const CKnownEntity *threat )
 	// modify our gun choice based on threat situation (range, etc)
 	switch( GetPlayerClass()->GetClassIndex() )
 	{
+	case TF_CLASS_MERCENARY: // SanyaSho: TF2C
+		// SanyaSho: if we're ran out of ammo - try to use our secondary weapon, if not - use melee
+		if( gun && !gun->HasPrimaryAmmo() )
+		{
+			gun = ( secondary && secondary->HasPrimaryAmmo() ) ? secondary : melee;
+		}
+		break;
+
 	case TF_CLASS_DEMOMAN:
 	case TF_CLASS_HEAVYWEAPONS:
 	case TF_CLASS_SPY:
