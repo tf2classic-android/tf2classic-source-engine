@@ -45,7 +45,7 @@ ActionResult< CTFBot > CTFBotDeathmatch::Update( CTFBot *me, float interval )
 			DevMsg( "CTFBotDeathmatch: primary known threat #%d \"%s\" @ dist %.0f\n", pEntity->entindex(), pEntity->GetClassname(), flRangeTo );
 		}
 
-		if( me->GetEntityForLoadoutSlot( TF_LOADOUT_SLOT_PRIMARY ) && me->IsRangeLessThan( threat->GetLastKnownPosition(), 1000.0f ) )
+		if( /*me->GetEntityForLoadoutSlot( TF_LOADOUT_SLOT_PRIMARY ) &&*/ me->IsRangeLessThan( threat->GetLastKnownPosition(), 1000.0f ) )
 		{
 			return SuspendFor( new CTFBotAttack, "Going after an enemy" );
 		}

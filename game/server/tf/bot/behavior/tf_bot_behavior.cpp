@@ -626,7 +626,7 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 			// lead our target and aim for the feet with the rocket launcher
 			if ( !me->IsDifficulty( CTFBot::EASY ) )
 			{
-				if ( myWeapon->GetWeaponID() == TF_WEAPON_ROCKETLAUNCHER )
+				if ( (myWeapon->GetWeaponID() == TF_WEAPON_ROCKETLAUNCHER) || (myWeapon->GetWeaponID() == TF_WEAPON_ROCKETLAUNCHER_MERC) )
 				{
 					// if they are above us, don't aim for the feet
 					const float aboveTolerance = 30.0f;
@@ -767,7 +767,7 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 				return imperfectAimSpot;
 			}
 
-			if ( myWeapon->IsWeapon( TF_WEAPON_GRENADELAUNCHER ) ||
+			if ( (myWeapon->IsWeapon( TF_WEAPON_GRENADELAUNCHER ) || myWeapon->IsWeapon( TF_WEAPON_GRENADELAUNCHER_MERC )) ||
 				 myWeapon->IsWeapon( TF_WEAPON_PIPEBOMBLAUNCHER ) )
 			{
 				Vector toThreat = subject->GetAbsOrigin() - me->GetAbsOrigin();
@@ -1315,8 +1315,8 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 		CTFPlayer *playerThreat = ToTFPlayer( threat->GetEntity() );
 		if ( playerThreat && playerThreat->m_Shared.IsInvulnerable() )
 		{
-			if ( !myWeapon->IsWeapon( TF_WEAPON_ROCKETLAUNCHER ) &&
-				!myWeapon->IsWeapon( TF_WEAPON_GRENADELAUNCHER ) &&
+			if ( !(myWeapon->IsWeapon( TF_WEAPON_ROCKETLAUNCHER ) || myWeapon->IsWeapon( TF_WEAPON_ROCKETLAUNCHER_MERC )) &&
+				!( myWeapon->IsWeapon( TF_WEAPON_GRENADELAUNCHER ) || myWeapon->IsWeapon( TF_WEAPON_GRENADELAUNCHER_MERC ) ) &&
 				!myWeapon->IsWeapon( TF_WEAPON_PIPEBOMBLAUNCHER ) /*&&
 				!myWeapon->IsWeapon( TF_WEAPON_ROCKETLAUNCHER_DIRECTHIT )*/ )
 			{
