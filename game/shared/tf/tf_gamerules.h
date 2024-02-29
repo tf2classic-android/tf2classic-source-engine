@@ -397,6 +397,7 @@ public:
 	virtual ~CTFGameRules();
 
 	virtual bool ClientCommand( CBaseEntity *pEdict, const CCommand &args );
+	virtual void LevelShutdown();
 	virtual void Think();
 
 	bool CheckWinLimit();

@@ -53,6 +53,7 @@
 	#include "entity_weaponspawn.h"
 	#include "tf_basedmpowerup.h"
 	#include "tf_ammo_pack.h"
+	#include "tf_bot_manager.h"
 #endif
 
 ConVar mp_humans_must_join_team( "mp_humans_must_join_team", "any", FCVAR_REPLICATED, "Restricts human players to a single team {any, blue, red, spectator}" );
@@ -157,6 +158,7 @@ ConVar tf_gamemode_vip( "tf_gamemode_vip", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED
 ConVar tf_gamemode_dm( "tf_gamemode_dm", "0" , FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 
 ConVar tf_bot_count( "tf_bot_count", "0", FCVAR_NOTIFY | FCVAR_DEVELOPMENTONLY );
+ConVar hide_server( "hide_server", "0", FCVAR_GAMEDLL, "Whether the server should be hidden from the master server" );
 
 ConVar tf_teamtalk( "tf_teamtalk", "1", FCVAR_NOTIFY, "Teammates can always chat with each other whether alive or dead." );
 ConVar tf_ctf_bonus_time( "tf_ctf_bonus_time", "10", FCVAR_NOTIFY, "Length of team crit time for CTF capture." );
@@ -1765,6 +1767,13 @@ void CTFGameRules::Activate()
 		hBotRoster = dynamic_cast<CTFBotRoster *>( gEntList.FindEntityByClassname( hBotRoster, "bot_roster" ) );
 	}
 
+	// hide from the master server if this game is a training game
+	// or offline practice
+	if( IsInTraining() || TheTFBots().IsInOfflinePractice() || IsInItemTestingMode() )
+	{
+		hide_server.SetValue( true );
+	}
+
 	SetMultipleTrains( false );
 
 	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_deathmatch" ) || !Q_strncmp( STRING( gpGlobals->mapname ), "dm_", 3 ) )
@@ -2966,6 +2975,12 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 		}
 
 		return BaseClass::ClientCommand( pEdict, args );
+	}
+
+	void CTFGameRules::LevelShutdown()
+	{
+		TheTFBots().LevelShutdown();
+		hide_server.Revert();
 	}
 
 	// Add the ability to ignore the world trace
