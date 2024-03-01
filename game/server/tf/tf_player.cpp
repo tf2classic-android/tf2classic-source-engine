@@ -61,6 +61,7 @@
 #include "player_resource.h"
 #include "tf_player_resource.h"
 #include "bot/tf_bot.h"
+#include "bot/tf_bot_manager.h"
 #include "NextBot/NextBotUtil.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -81,6 +82,9 @@ extern ConVar	tf_spy_invis_unstealth_time;
 extern ConVar	tf_stalematechangeclasstime;
 
 extern ConVar	tf_damage_disablespread;
+
+extern ConVar	tf_bot_quota_mode;
+extern ConVar	tf_bot_quota;
 
 EHANDLE g_pLastSpawnPoints[TF_TEAM_COUNT];
 
@@ -1982,8 +1986,10 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 			}
 			else
 			{
+				// Don't telefrag at round start. Since players respawn instantly in pre-round state if the map doesn't
+				// have enough spawn points it will cause constant tele-fragging and massive lag spikes.
 				pSpawnPointName = "info_player_deathmatch";
-				bSuccess = SelectFurthestSpawnSpot( pSpawnPointName, pSpot );
+				bSuccess = SelectFurthestSpawnSpot( pSpawnPointName, pSpot, TFGameRules()->State_Get() != GR_STATE_PREROUND );
 			}
 
 			if ( bSuccess )
@@ -2016,36 +2022,19 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CTFPlayer::SelectSpawnSpot( const char *pEntClassName, CBaseEntity* &pSpot )
+bool CTFPlayer::SelectSpawnSpot( const char *pEntClassName, CBaseEntity *&pSpot )
 {
 	// Get an initial spawn point.
 	pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
-	if ( !pSpot )
+	if( !pSpot )
 	{
-		// Sometimes the first spot can be NULL????
+		// Since we're not searching from the start the first result can be NULL.
 		pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
 	}
-
-	// Sometimes some DM maps are missing the info_player_deathmatch spawn points.
-	// falback onto the regular info_player_teamspawn entities
-	if ( !pSpot && TFGameRules()->IsDeathmatch() )
-	{
-		pEntClassName = "info_player_teamspawn";
-		pSpot = gEntList.FindEntityByClassname (pSpot, pEntClassName );
-	}
-
-	if ( !pSpot )
-	{
-		// Still NULL? That means there're no spawn points at all, bail.
+	
+	// Still NULL? That means there're no spawn points at all, bail.
+	if( !pSpot )
 		return false;
-	}
-
-	if ( TFGameRules()->IsDeathmatch() )
-	{
-		// Randomize the start spot in DM.
-		for ( int i = random->RandomInt( 0, 4 ); i > 0; i-- )
-			pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
-	}
 
 	// First we try to find a spawn point that is fully clear. If that fails,
 	// we look for a spawnpoint that's clear except for another players. We
@@ -2053,37 +2042,18 @@ bool CTFPlayer::SelectSpawnSpot( const char *pEntClassName, CBaseEntity* &pSpot 
 	bool bIgnorePlayers = false;
 
 	CBaseEntity *pFirstSpot = pSpot;
-	do 
+	do
 	{
-		if ( pSpot )
+		if( pSpot )
 		{
 			// Check to see if this is a valid team spawn (player is on this team, etc.).
 			if( TFGameRules()->IsSpawnPointValid( pSpot, this, bIgnorePlayers ) )
 			{
 				// Check for a bad spawn entity.
-				if ( pSpot->GetAbsOrigin() == vec3_origin )
+				if( pSpot->GetAbsOrigin() == vec3_origin )
 				{
 					pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
 					continue;
-				}
-
-				if ( bIgnorePlayers && TFGameRules()->IsDeathmatch() )
-				{
-					// We're spawning on a busy spawn point so kill off anyone occupying it.
-					CBaseEntity *pList[MAX_PLAYERS];
-					Vector vecMins = pSpot->GetAbsOrigin() + VEC_HULL_MIN;
-					Vector vecMaxs = pSpot->GetAbsOrigin() + VEC_HULL_MAX;
-					int count = UTIL_EntitiesInBox( pList, MAX_PLAYERS, vecMins, vecMaxs, FL_CLIENT );
-
-					for ( int i = 0; i < count; i++ )
-					{
-						CBaseEntity *pEntity = pList[i];
-						if ( pEntity != this )
-						{
-							CTakeDamageInfo info( this, this, 1000, DMG_CRUSH, TF_DMG_TELEFRAG );
-							pEntity->TakeDamage( info );
-						}
-					}
 				}
 
 				// Found a valid spawn point.
@@ -2094,141 +2064,168 @@ bool CTFPlayer::SelectSpawnSpot( const char *pEntClassName, CBaseEntity* &pSpot 
 		// Get the next spawning point to check.
 		pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
 
-		if ( pSpot == pFirstSpot && !bIgnorePlayers )
+		if( pSpot == pFirstSpot && !bIgnorePlayers )
 		{
-			// Loop through again, ignoring players
+			// Loop through again, ignoring players.
 			bIgnorePlayers = true;
 			pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
 		}
-	} 
+	}
 	// Continue until a valid spawn point is found or we hit the start.
-	while ( pSpot != pFirstSpot ); 
+	while( pSpot != pFirstSpot );
 
 	return false;
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: Special spawn point search function for DM.
 //-----------------------------------------------------------------------------
-bool CTFPlayer::SelectFurthestSpawnSpot( const char *pEntClassName, CBaseEntity* &pSpot, bool bTelefrag /*= true*/ )
+bool CTFPlayer::SelectFurthestSpawnSpot( const char *pEntClassName, CBaseEntity *&pSpot, bool bTelefrag /*= true*/ )
 {
 	// Get an initial spawn point.
 	pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
-	if ( !pSpot )
+	if( !pSpot )
 	{
-		// Sometimes the first spot can be NULL????
+		// Since we're not searching from the start the first result can be NULL.
 		pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
 	}
 
 	// Sometimes some DM maps are missing the info_player_deathmatch spawn points.
-	// Fall back to the regular info_player_teamspawn entities.
-	if ( !pSpot && TFGameRules()->IsDeathmatch() )
+	// falback onto the regular info_player_teamspawn entities
+	if( !pSpot && TFGameRules()->IsDeathmatch() )
 	{
 		pEntClassName = "info_player_teamspawn";
 		pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
 	}
 
-	if ( !pSpot )
-	{
-		// Still NULL? That means there're no spawn points at all, bail.
+	// Still NULL? That means there're no spawn points at all, bail.
+	if( !pSpot )
 		return false;
-	}
 
-	if ( TFGameRules()->IsDeathmatch() )
+	// Randomize the start spot in DM.
+	if( TFGameRules()->IsDeathmatch() )
 	{
-		// Randomize the start spot in DM.
-		for ( int i = random->RandomInt( 0, 4 ); i > 0; i-- )
+		for( int i = random->RandomInt( 0, 4 ); i > 0; i-- )
+		{
 			pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
+		}
 	}
 
 	// Find spawn point that is furthest from all other players.
 	CBaseEntity *pFirstSpot = pSpot;
 	float flFurthest = 0.0f;
 	CBaseEntity *pFurthest = NULL;
+	bool bIgnorePlayers = !TFGameRules()->IsTeamplay();
+
 	do
 	{
-		if ( !pSpot )
+		if( pSpot )
 		{
-			pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
-			continue;
-		}
-
-		// Check to see if this is a valid team spawn (player is on this team, etc.).
-		if ( TFGameRules()->IsSpawnPointValid( pSpot, this, true ) )
-		{
-			// Check for a bad spawn entity.
-			if ( pSpot->GetAbsOrigin() == vec3_origin )
+			// Check to see if this is a valid team spawn (player is on this team, etc.).
+			if( TFGameRules()->IsSpawnPointValid( pSpot, this, bIgnorePlayers ) )
 			{
-				pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
-				continue;
-			}
-
-			// Check distance from other players.
-			bool bOtherPlayersPresent = false;
-			float flClosestPlayerDist = FLT_MAX;
-			for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-			{
-				CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
-				if ( !pPlayer || pPlayer == this || !pPlayer->IsAlive() || ( InSameTeam( pPlayer ) && !TFGameRules()->IsDeathmatch() ) )
-					continue;
-
-				bOtherPlayersPresent = true;
-
-				float flDistSqr = ( pPlayer->GetAbsOrigin() - pSpot->GetAbsOrigin() ).LengthSqr();
-				if ( flDistSqr < flClosestPlayerDist )
+				// Check for a bad spawn entity.
+				if( pSpot->GetAbsOrigin() == vec3_origin )
 				{
-					flClosestPlayerDist = flDistSqr;
+					pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
+					continue;
 				}
-			}
 
-			// If there are no other players just pick the first valid spawn point.
-			if ( !bOtherPlayersPresent )
-			{
-				pFurthest = pSpot;
-				break;
-			}
+				// Check distance from other players.
+				bool bOtherPlayersPresent = false;
+				float flClosestPlayerDist = FLT_MAX;
+				for( int i = 1; i <= gpGlobals->maxClients; i++ )
+				{
+					CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
+					if( !pPlayer || pPlayer == this || !pPlayer->IsAlive() || !m_Shared.IsEnemy( pPlayer ) )
+						continue;
 
-			if ( flClosestPlayerDist > flFurthest )
-			{
-				flFurthest = flClosestPlayerDist;
-				pFurthest = pSpot;
+					bOtherPlayersPresent = true;
+
+					float flDistSqr = pPlayer->GetAbsOrigin().DistToSqr( pSpot->GetAbsOrigin() );
+					if( flDistSqr < flClosestPlayerDist )
+					{
+						flClosestPlayerDist = flDistSqr;
+					}
+				}
+
+				// If there are no other players just pick the first valid spawn point.
+				if( !bOtherPlayersPresent )
+				{
+					pFurthest = pSpot;
+					break;
+				}
+
+				// Avoid Displacer teleport destinations.
+				bool bSpotTargeted = false;
+
+				/*
+				for( CWeaponDisplacer *pDisplacer : CWeaponDisplacer::AutoList() )
+				{
+					CBaseEntity *pDestination = pDisplacer->GetTeleportSpot();
+					if( !pDestination )
+						continue;
+
+					if( pDestination == pSpot && !bIgnorePlayers )
+					{
+						bSpotTargeted = true;
+						break;
+					}
+
+					if( !m_Shared.IsEnemy( pDisplacer ) )
+						continue;
+
+					float flDistSqr = pDestination->GetAbsOrigin().DistToSqr( pSpot->GetAbsOrigin() );
+					if( flDistSqr < flClosestPlayerDist )
+					{
+						flClosestPlayerDist = flDistSqr;
+					}
+				}
+				*/
+
+				if( !bSpotTargeted && flClosestPlayerDist > flFurthest )
+				{
+					flFurthest = flClosestPlayerDist;
+					pFurthest = pSpot;
+				}
 			}
 		}
 
 		// Get the next spawning point to check.
 		pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
+
+		if( pSpot == pFirstSpot && !pFurthest && !bIgnorePlayers )
+		{
+			// Loop through again, ignoring players.
+			bIgnorePlayers = true;
+			pSpot = gEntList.FindEntityByClassname( pSpot, pEntClassName );
+		}
 	}
 	// Continue until a valid spawn point is found or we hit the start.
-	while ( pSpot != pFirstSpot );
+	while( pSpot != pFirstSpot );
 
-	if ( pFurthest )
+	if( pFurthest )
 	{
-		if ( bTelefrag )
-		{
-			if( !pSpot )
-			{
-				// We can't get pSpot for it
-				return false;
-			}
+		pSpot = pFurthest;
 
+		if( bTelefrag )
+		{
 			// Kill off anyone occupying this spot if it's somehow busy.
 			CBaseEntity *pList[MAX_PLAYERS];
 			Vector vecMins = pSpot->GetAbsOrigin() + VEC_HULL_MIN;
 			Vector vecMaxs = pSpot->GetAbsOrigin() + VEC_HULL_MAX;
 			int count = UTIL_EntitiesInBox( pList, MAX_PLAYERS, vecMins, vecMaxs, FL_CLIENT );
 
-			for ( int i = 0; i < count; i++ )
+			for( int i = 0; i < count; i++ )
 			{
 				CBaseEntity *pEntity = pList[i];
-				if ( pEntity != this && ( !InSameTeam( pEntity ) || TFGameRules()->IsDeathmatch() ) )
+				if( pEntity != this && m_Shared.IsEnemy( pEntity ) )
 				{
-					CTakeDamageInfo info( this, this, 1000, DMG_CRUSH, TF_DMG_TELEFRAG );
+					CTakeDamageInfo info( this, this, 1000, DMG_CRUSH | DMG_ALWAYSGIB, TF_DMG_TELEFRAG );
 					pEntity->TakeDamage( info );
 				}
 			}
 		}
-
-		pSpot = pFurthest;
 
 		// Found a valid spawn point.
 		return true;
@@ -2309,6 +2306,87 @@ int CTFPlayer::GetAutoTeam( void )
 	{
 		if (pBlue && pRed)
 		{
+			CTFBot *pPlayerBot = dynamic_cast<CTFBot *>( this );
+			if( FStrEq( tf_bot_quota_mode.GetString(), "fill" ) && ( tf_bot_quota.GetInt() > 0 ) && !( pPlayerBot && pPlayerBot->HasAttribute( CTFBot::QUOTA_MANANGED ) ) )
+			{
+				// We're using 'tf_bot_quota_mode fill' to keep the teams even so balance based on the human players on each team
+				int nPlayerCountRed = 0;
+				int nPlayerCountBlue = 0;
+
+				for( int i = 1; i <= gpGlobals->maxClients; ++i )
+				{
+					CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
+
+					if( pPlayer == NULL )
+						continue;
+
+					if( FNullEnt( pPlayer->edict() ) )
+						continue;
+
+					if( !pPlayer->IsConnected() )
+						continue;
+
+					if( !pPlayer->IsPlayer() )
+						continue;
+
+					CTFBot *pBot = dynamic_cast<CTFBot *>( pPlayer );
+					if( pBot && pBot->HasAttribute( CTFBot::QUOTA_MANANGED ) )
+						continue;
+
+					if( pPlayer->GetTeamNumber() == TF_TEAM_RED )
+					{
+						nPlayerCountRed++;
+					}
+					else if( pPlayer->GetTeamNumber() == TF_TEAM_BLUE )
+					{
+						nPlayerCountBlue++;
+					}
+				}
+
+				if( nPlayerCountRed < nPlayerCountBlue )
+				{
+					iTeam = TF_TEAM_RED;
+				}
+				else if( nPlayerCountBlue < nPlayerCountRed )
+				{
+					iTeam = TF_TEAM_BLUE;
+				}
+				else if( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT || pRed->GetRole() == TEAM_ROLE_DEFENDERS )
+				{
+					// AutoTeam should give new players to the attackers on A/D maps if the teams are even
+					iTeam = TF_TEAM_BLUE;
+				}
+				else
+				{
+					// teams have an even number of human players, pick a random team
+					iTeam = RandomInt( 0, 1 ) ? TF_TEAM_RED : TF_TEAM_BLUE;
+				}
+
+				bool bKick = false;
+				// Now we have a team we want to join to balance the human players, can we join it?
+				if( iTeam == TF_TEAM_RED )
+				{
+					if( pBlue->GetNumPlayers() < pRed->GetNumPlayers() )
+					{
+						bKick = true;
+					}
+				}
+				else
+				{
+					if( pRed->GetNumPlayers() < pBlue->GetNumPlayers() )
+					{
+						bKick = true;
+					}
+				}
+
+				if( !bKick || TheTFBots().RemoveBotFromTeamAndKick( iTeam ) )
+				{
+					return iTeam;
+				}
+
+				// If kick needed but failed, fall through to default logic
+			}
+
 			if (pBlue->GetNumPlayers() < pRed->GetNumPlayers())
 			{
 				iTeam = TF_TEAM_BLUE;
@@ -5792,6 +5870,12 @@ void CTFPlayer::RemoveAllOwnedEntitiesFromWorld( bool bSilent /* = true */ )
 {
 	RemoveOwnedProjectiles();
 	
+	if( IsBotOfType( TF_BOT_TYPE ) && ToTFBot( this )->HasAttribute( CTFBot::RETAIN_BUILDINGS ) )
+	{
+		// keep this bot's buildings
+		return;
+	}
+
 	// Destroy any buildables - this should replace TeamFortress_RemoveBuildings
 	RemoveAllObjects( bSilent );
 }
