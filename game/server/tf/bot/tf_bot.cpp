@@ -87,10 +87,16 @@ bool IsPlayerClassname( const char *string )
 //-----------------------------------------------------------------------------------------------------
 bool IsTeamName( const char *string )
 {
-	if ( !stricmp( string, "red" ) )
+	if( !stricmp( string, "red" ) )
 		return true;
 
-	if ( !stricmp( string, "blue" ) )
+	if( !stricmp( string, "blue" ) )
+		return true;
+
+	if( !stricmp( string, "green" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
+		return true;
+
+	if( !stricmp( string, "yellow" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
 		return true;
 
 	return false;
@@ -121,13 +127,13 @@ const char *DifficultyLevelToString( CTFBot::DifficultyType skill )
 {
 	switch( skill )
 	{
-	case CTFBot::EASY:		return "Easy ";
-	case CTFBot::NORMAL:	return "Normal ";
-	case CTFBot::HARD:		return "Hard ";
-	case CTFBot::EXPERT:	return "Expert ";
+	case CTFBot::EASY:		return "[Easy] ";
+	case CTFBot::NORMAL:	return "[Normal] ";
+	case CTFBot::HARD:		return "[Hard] ";
+	case CTFBot::EXPERT:	return "[Expert] ";
 	}
 
-	return "Undefined ";
+	return "[Undefined] ";
 }
 
 
@@ -388,11 +394,11 @@ CON_COMMAND_F( tf_bot_add, "Add a bot.", FCVAR_GAMEDLL )
 	{
 		iTeam = TF_TEAM_BLUE;
 	}
-	else if( FStrEq( teamname, "green" ) )
+	else if( FStrEq( teamname, "green" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
 	{
 		iTeam = TF_TEAM_GREEN;
 	}
-	else if( FStrEq( teamname, "yellow" ) )
+	else if( FStrEq( teamname, "yellow" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
 	{
 		iTeam = TF_TEAM_YELLOW;
 	}
@@ -489,11 +495,11 @@ CON_COMMAND_F( tf_bot_kick, "Remove a TFBot by name, or all bots (\"all\").", FC
 		{
 			iTeam = TF_TEAM_BLUE;
 		}
-		else if( FStrEq( args.Arg( i ), "green" ) )
+		else if( FStrEq( args.Arg( i ), "green" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
 		{
 			iTeam = TF_TEAM_GREEN;
 		}
-		else if( FStrEq( args.Arg( i ), "yellow" ) )
+		else if( FStrEq( args.Arg( i ), "yellow" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
 		{
 			iTeam = TF_TEAM_YELLOW;
 		}
@@ -576,11 +582,11 @@ CON_COMMAND_F( tf_bot_kill, "Kill a TFBot by name, or all bots (\"all\").", FCVA
 		{
 			iTeam = TF_TEAM_BLUE;
 		}
-		else if( FStrEq( args.Arg( i ), "green" ) )
+		else if( FStrEq( args.Arg( i ), "green" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
 		{
 			iTeam = TF_TEAM_GREEN;
 		}
-		else if( FStrEq( args.Arg( i ), "yellow" ) )
+		else if( FStrEq( args.Arg( i ), "yellow" ) && ( TFGameRules() && TFGameRules()->IsFourTeamGame() ) )
 		{
 			iTeam = TF_TEAM_YELLOW;
 		}
