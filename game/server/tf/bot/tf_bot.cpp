@@ -843,7 +843,6 @@ const char *CTFBot::GetNextSpawnClassname( void ) const
 	{
 		if ( const_cast< CTFBot * >( this )->GetObjectOfType( OBJ_SENTRYGUN ) || const_cast< CTFBot * >( this )->GetObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT ) )
 		{
-			Msg( "QQWWEE\n" );
 			return "engineer";
 		}
 	}
@@ -3760,23 +3759,26 @@ void CTFBot::DeleteSquad( void )
 	}
 }
 
+#define LOADOUT_POSITION_MELEE 2
+#define LOADOUT_POSITION_PRIMARY 0
+#define LOADOUT_POSITION_SECONDARY 1
+
 //---------------------------------------------------------------------------------------------
 bool CTFBot::IsWeaponRestricted( CTFWeaponBase *weapon ) const
 {
-#if 0
 	if ( !weapon )
 	{
 		return false;
 	}
 
 	// Get the weapon's loadout slot
-	CEconItemView *pEconItemView = weapon->GetAttributeContainer()->GetItem();
+	CEconItemView *pEconItemView = weapon->GetItem();
 	if ( !pEconItemView )
 		return false;
-	CTFItemDefinition *pItemDef = pEconItemView->GetStaticData();
+	CEconItemDefinition *pItemDef = pEconItemView->GetStaticData();
 	if ( !pItemDef )
 		return false;
-	int iLoadoutSlot = pItemDef->GetLoadoutSlot( GetPlayerClass()->GetClassIndex() );
+	int iLoadoutSlot = pItemDef->GetLoadoutSlot( const_cast< CTFBot * >( this )->GetPlayerClass()->GetClassIndex());
 
 	if ( HasWeaponRestriction( MELEE_ONLY ) )
 	{
@@ -3792,7 +3794,6 @@ bool CTFBot::IsWeaponRestricted( CTFWeaponBase *weapon ) const
 	{
 		return (iLoadoutSlot != LOADOUT_POSITION_SECONDARY);
 	}
-#endif
 
 	return false;
 }
