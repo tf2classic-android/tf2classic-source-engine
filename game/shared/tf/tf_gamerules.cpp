@@ -175,6 +175,16 @@ ConVar tf_tournament_classlimit_engineer( "tf_tournament_classlimit_engineer", "
 ConVar tf_tournament_classchange_allowed( "tf_tournament_classchange_allowed", "1", FCVAR_NOTIFY, "Allow players to change class while the game is active?.\n" );
 ConVar tf_tournament_classchange_ready_allowed( "tf_tournament_classchange_ready_allowed", "1", FCVAR_NOTIFY, "Allow players to change class after they are READY?.\n" );
 ConVar tf_classlimit( "tf_classlimit", "0", FCVAR_NOTIFY, "Limit on how many players can be any class (i.e. tf_classlimit 2 would limit 2 players per class).\n" );
+
+// ITEMS CRC32
+#if defined( DEBUG )
+#define TF2C_SV_ITEMS_CRC32_FLAGS	FCVAR_NOTIFY | FCVAR_DONTRECORD
+#else
+#define TF2C_SV_ITEMS_CRC32_FLAGS	FCVAR_DEVELOPMENTONLY | FCVAR_NOTIFY | FCVAR_DONTRECORD
+#endif
+ConVar tf2c_sv_items_crc32( "tf2c_sv_items_crc32", "uninitialized", TF2C_SV_ITEMS_CRC32_FLAGS );
+
+ConVar tf2c_allow_crc32_mismatch( "tf2c_allow_crc32_mismatch", "0", FCVAR_NOTIFY, "Allow players with custom items_game.txt to join your server." );
 #endif
 
 #ifdef GAME_DLL
@@ -1738,6 +1748,39 @@ void CTFGameRules::Activate()
 	m_redPayloadToBlock = NULL;
 	m_bluePayloadToBlock = NULL;
 
+#if defined( GAME_DLL )
+	// ITEMS CRC32
+	CRC32_t file_crc32 = 0xFFFFFFF;
+	char buffer[8192] = {};
+
+	FileHandle_t file = filesystem->Open( "scripts/items/items_game.txt", "r", "MOD" );
+
+	if( !file )
+	{
+#ifdef DEBUG
+		DevMsg( "[SERVER] CRC32 of items_game.txt is failed\n" );
+#endif
+		filesystem->Close( file );
+		return;
+	}
+
+	CRC32_Init( &file_crc32 );
+	while( !filesystem->EndOfFile( file ) )
+	{
+		int readed_real = filesystem->Read( &buffer, sizeof( buffer ), file );
+		CRC32_ProcessBuffer( &file_crc32, &buffer, readed_real );
+	}
+	CRC32_Final( &file_crc32 );
+
+#ifdef DEBUG
+	DevMsg( "[SERVER] CRC32 of items_game.txt is 0x%x\n", file_crc32 );
+#endif
+
+	filesystem->Close( file );
+
+	tf2c_sv_items_crc32.SetValue( UTIL_VarArgs( "%x", file_crc32 ) );
+#endif
+
 	// bot roster
 	m_hBlueBotRoster = NULL;
 	m_hRedBotRoster = NULL;
@@ -3248,6 +3291,30 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 	bool CTFGameRules::ClientConnected(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 	{
 #ifdef GAME_DLL
+		// ITEMS CRC32
+		const char *pszClientCRC32 = engine->GetClientConVarValue( engine->IndexOfEdict( pEntity ), "tf2c_cl_items_crc32" );
+		if( pszClientCRC32[0] && !tf2c_allow_crc32_mismatch.GetBool() )
+		{
+#if defined( DEBUG )
+			DevMsg( "[SERVER] %s's items_game.txt CRC32 is %s\n", pszName, pszClientCRC32 );
+#endif
+
+			if( !Q_stricmp( pszClientCRC32, "uninitialized" ) )
+			{
+				V_strncpy( reject, "Please, don't try to beat game rules", maxrejectlen - 1 );
+				return false;
+			}
+
+			if( Q_stricmp( tf2c_sv_items_crc32.GetString(), pszClientCRC32 ) )
+			{
+#if defined( DEBUG )
+				DevMsg( "[SERVER] Failed to verify %s's CRC32. Client: %s; Server: %s\n", pszName, pszClientCRC32, tf2c_sv_items_crc32.GetString() );
+#endif
+				V_strncpy( reject, "\nInvalid items_game.txt CRC32!\nPlease, remove all of your mods and try again", maxrejectlen - 1 );
+				return false;
+			}
+		}
+
 		const CSteamID *pPlayerID = engine->GetClientSteamID(pEntity);
 
 		KeyValues *pKV = m_pAuthData->FindKey("bans");

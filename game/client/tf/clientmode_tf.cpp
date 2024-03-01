@@ -65,6 +65,13 @@ void HUDMinModeChangedCallBack( IConVar *var, const char *pOldString, float flOl
 ConVar cl_hud_minmode( "cl_hud_minmode", "0", FCVAR_ARCHIVE, "Set to 1 to turn on the advanced minimalist HUD mode.", HUDMinModeChangedCallBack );
 ConVar tf2c_coloredhud("tf2c_coloredhud", "0", FCVAR_ARCHIVE, "Set to 1 to turn on panel coloring.", HUDMinModeChangedCallBack);
 
+#if defined( DEBUG )
+#define TF2C_ITEMS_CRC32_FLAGS	FCVAR_HIDDEN | FCVAR_DONTRECORD | FCVAR_USERINFO
+#else
+#define TF2C_ITEMS_CRC32_FLAGS	FCVAR_DEVELOPMENTONLY | FCVAR_DONTRECORD | FCVAR_USERINFO
+#endif
+ConVar tf2c_cl_items_crc32( "tf2c_cl_items_crc32", "uninitialized", TF2C_ITEMS_CRC32_FLAGS );
+
 IClientMode *g_pClientMode = NULL;
 // --------------------------------------------------------------------------------- //
 // CTFModeManager.
@@ -107,6 +114,37 @@ void CTFModeManager::Init()
 	LoadObjectInfos( ::filesystem );
 
 	GetClientVoiceMgr()->SetHeadLabelOffset( 40 );
+
+	// ITEMS CRC32
+	CRC32_t file_crc32 = 0xFFFFFFF;
+	char buffer[8192] = {};
+
+	FileHandle_t file = filesystem->Open( "scripts/items/items_game.txt", "r", "MOD" );
+
+	if( !file )
+	{
+#ifdef DEBUG
+		DevMsg( "[CLIENT] CRC32 of items_game.txt is failed\n" );
+#endif
+		filesystem->Close( file );
+		return;
+	}
+
+	CRC32_Init( &file_crc32 );
+	while( !filesystem->EndOfFile( file ) )
+	{
+		int readed_real = filesystem->Read( &buffer, sizeof( buffer ), file );
+		CRC32_ProcessBuffer( &file_crc32, &buffer, readed_real );
+	}
+	CRC32_Final( &file_crc32 );
+
+#ifdef DEBUG
+	DevMsg( "[CLIENT] CRC32 of items_game.txt is 0x%x\n", file_crc32 );
+#endif
+
+	filesystem->Close( file );
+
+	tf2c_cl_items_crc32.SetValue( VarArgs( "%x", file_crc32 ) );
 }
 
 void CTFModeManager::LevelInit( const char *newmap )
