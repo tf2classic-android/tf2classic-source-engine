@@ -90,6 +90,8 @@ ConVar tf2c_zoom_fov( "tf2c_zoom_fov", "65", FCVAR_REPLICATED | FCVAR_DEVELOPMEN
 
 extern ConVar tf_infinite_ammo;
 
+ConVar tf2c_spy_cloak_ammo_refill( "tf2c_spy_cloak_ammo_refill", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Allows Spy to re-fill his cloak charge from ammo pickups." );
+
 const char *g_pszBDayGibs[22] =
 {
 	"models/effects/bday_gib01.mdl",
@@ -399,6 +401,20 @@ bool CTFPlayerShared::InCond( ETFCond nCond )
 	}
 
 	return ( ( *pVar & ( 1 << nCondFlag ) ) != 0 );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFPlayerShared::RemoveCondIfPresent( ETFCond nCond )
+{
+	if( InCond( nCond ) )
+	{
+		RemoveCond( nCond );
+		return true;
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -772,6 +788,13 @@ void CTFPlayerShared::OnConditionAdded( ETFCond nCond )
 		OnAddSpeedBoost();
 		break;
 
+	case TF_COND_LASTSTANDING:
+#ifdef GAME_DLL
+		m_pOuter->TakeHealth( m_pOuter->GetMaxHealth() * 2, HEAL_NOTIFY | HEAL_IGNORE_MAXHEALTH | HEAL_MAXBUFFCAP );
+#endif
+		m_pOuter->TeamFortress_SetSpeed();
+		break;
+
 	case TF_COND_SOFTZOOM:
 		m_pOuter->SetFOV( m_pOuter, tf2c_zoom_fov.GetInt(), 0.2f );
 		break;
@@ -860,6 +883,10 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond nCond )
 		OnRemoveSlowed();
 		break;
 
+	case TF_COND_DISGUISED_AS_DISPENSER:
+		m_pOuter->TeamFortress_SetSpeed();
+		break;
+
 	case TF_COND_HALLOWEEN_GIANT:
 		OnRemoveHalloweenGiant();
 		break;
@@ -888,6 +915,10 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond nCond )
 		OnRemoveSpeedBoost();
 		break;
 
+	case TF_COND_LASTSTANDING:
+		m_pOuter->TeamFortress_SetSpeed();
+		break;
+
 	case TF_COND_SOFTZOOM:
 		m_pOuter->SetFOV( m_pOuter, 0, 0.2f );
 		break;
@@ -909,6 +940,33 @@ int CTFPlayerShared::GetMaxBuffedHealth( void )
 	iRoundDown = iRoundDown * 5;
 
 	return iRoundDown;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFPlayerShared::HealNegativeConds( void )
+{
+	static ETFCond aConds[] =
+	{
+		TF_COND_BURNING,
+		TF_COND_BLEEDING,
+		TF_COND_SLOWED, //TF_COND_TRANQUILIZED,
+		TF_COND_URINE,
+		TF_COND_MAD_MILK,
+	};
+
+	bool bSuccess = false;
+
+	for( int i = 0, c = ARRAYSIZE( aConds ); i < c; i++ )
+	{
+		if( RemoveCondIfPresent( aConds[i] ) )
+		{
+			bSuccess = true;
+		}
+	}
+
+	return bSuccess;
 }
 
 int CTFPlayerShared::GetDisguiseMaxBuffedHealth( void )
@@ -983,7 +1041,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		for ( int i = 0; i < m_aHealers.Count(); i++ )
 		{
 			// Dispensers refill cloak.
-			if ( m_aHealers[i].bDispenserHeal )
+			if ( tf2c_spy_cloak_ammo_refill.GetBool() && m_aHealers[i].bDispenserHeal )
 			{
 				m_flCloakMeter = MIN( m_flCloakMeter + m_aHealers[i].flAmount * gpGlobals->frametime, 100.0f );
 			}
@@ -1341,25 +1399,10 @@ void CTFPlayerShared::OnAddInvulnerable( void )
 {
 #ifndef CLIENT_DLL
 	// Stock uber removes negative conditions.
-	if ( InCond( TF_COND_BURNING ) )
-	{
-		RemoveCond( TF_COND_BURNING );
-	}
-
-	if ( InCond( TF_COND_SLOWED ) )
-	{
-		RemoveCond( TF_COND_SLOWED );
-	}
-
-        if ( InCond( TF_COND_URINE ) )
-        {
-                RemoveCond( TF_COND_URINE );
-        }
-
-        if ( InCond( TF_COND_MAD_MILK ) )
-        {
-                RemoveCond( TF_COND_MAD_MILK );
-        }
+	RemoveCondIfPresent( TF_COND_BURNING );
+	RemoveCondIfPresent( TF_COND_SLOWED );
+	RemoveCondIfPresent( TF_COND_URINE );
+	RemoveCondIfPresent( TF_COND_MAD_MILK );
 #else
 	if ( m_pOuter->IsLocalPlayer() )
 	{
@@ -2212,6 +2255,11 @@ void CTFPlayerShared::FindDisguiseTarget( void )
 	}
 }
 #endif
+
+int CTFPlayerShared::GetDisguiseTeam( void )
+{
+	return InCond( TF_COND_DISGUISED_AS_DISPENSER ) ? (int)( ( m_pOuter->GetTeamNumber() == TF_TEAM_RED ) ? TF_TEAM_BLUE : TF_TEAM_RED ) : m_nDisguiseTeam;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Complete our disguise
@@ -3366,7 +3414,7 @@ void CTFPlayer::TeamFortress_SetSpeed()
 	CALL_ATTRIB_HOOK_FLOAT( maxfbspeed, mult_player_movespeed );
 
 	// 50% speed boost from the power-up.
-	if ( m_Shared.InCond( TF_COND_POWERUP_SPEEDBOOST ) )
+	if ( m_Shared.InCond( TF_COND_POWERUP_SPEEDBOOST ) || m_Shared.InCond( TF_COND_LASTSTANDING ) )
 	{
 		maxfbspeed *= 1.5f;
 	}
@@ -3447,7 +3495,8 @@ void CTFPlayer::TeamFortress_SetSpeed()
 
 	if ( m_Shared.InCond( TF_COND_DISGUISED_AS_DISPENSER ) )
 	{
-		maxfbspeed *= 2.0f;
+		//maxfbspeed *= 2.0f;
+		maxfbspeed *= 0.0f;
 	}
 
 	// Reduce our speed if we were tranquilized
@@ -3543,7 +3592,7 @@ bool CTFPlayer::IsAllowedToPickUpFlag( void )
 
 bool CTFPlayer::HasInfiniteAmmo( void ) const
 {
-	if( tf_infinite_ammo.GetBool() || TFGameRules()->IsInstagib() /*|| m_Shared.InCond( TF_COND_LASTSTANDING )*/ )
+	if( tf_infinite_ammo.GetBool() || TFGameRules()->IsInstagib() || const_cast< CTFPlayer *>( this )->m_Shared.InCond( TF_COND_LASTSTANDING ) )
 	{
 		return true;
 	}

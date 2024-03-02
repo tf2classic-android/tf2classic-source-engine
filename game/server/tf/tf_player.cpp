@@ -63,6 +63,10 @@
 #include "bot/tf_bot.h"
 #include "bot/tf_bot_manager.h"
 #include "NextBot/NextBotUtil.h"
+#include "tf_gamerules.h"
+#include "voice_gamemgr.h"
+
+extern IVoiceGameMgrHelper *g_pVoiceGameMgrHelper;
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -85,6 +89,7 @@ extern ConVar	tf_damage_disablespread;
 
 extern ConVar	tf_bot_quota_mode;
 extern ConVar	tf_bot_quota;
+extern ConVar	tf2c_spy_cloak_ammo_refill;
 
 EHANDLE g_pLastSpawnPoints[TF_TEAM_COUNT];
 
@@ -532,6 +537,18 @@ void CTFPlayer::TFPlayerThink()
 		DispatchParticleEffect( "rocketjump_smoke", PATTACH_POINT_FOLLOW, this, "foot_R" );
 		m_bJumpEffect = true;
 	}
+
+	CBaseEntity *pGroundEntity = GetGroundEntity();
+	if( GetPlayerClass()->GetClassIndex() == TF_CLASS_SPY && ( GetFlags() & FL_DUCKING ) && ( pGroundEntity != NULL ) )
+	{
+		int nDisguiseAsDispenserOnCrouch = 0;
+		CALL_ATTRIB_HOOK_INT( nDisguiseAsDispenserOnCrouch, disguise_as_dispenser_on_crouch );
+		if( nDisguiseAsDispenserOnCrouch != 0 )
+		{
+			m_Shared.AddCond( TF_COND_DISGUISED_AS_DISPENSER, 0.5f );
+		}
+	}
+
 
 	SetContextThink( &CTFPlayer::TFPlayerThink, gpGlobals->curtime, "TFPlayerThink" );
 }
@@ -1028,6 +1045,24 @@ void CTFPlayer::InitialSpawn( void )
 {
 	BaseClass::InitialSpawn();
 
+	engine->SetFakeClientConVarValue( edict(), "hud_classautokill", "1" );
+	engine->SetFakeClientConVarValue( edict(), "tf_medigun_autoheal", "0" );
+	engine->SetFakeClientConVarValue( edict(), "cl_autorezoom", "1" );
+	engine->SetFakeClientConVarValue( edict(), "cl_autoreload", "0" );
+	engine->SetFakeClientConVarValue( edict(), "cl_flipviewmodels", "0" );
+	engine->SetFakeClientConVarValue( edict(), "fov_desired", "90" );
+	engine->SetFakeClientConVarValue( edict(), "viewmodel_fov", "54" );
+	engine->SetFakeClientConVarValue( edict(), "viewmodel_offset_x", "0" );
+	engine->SetFakeClientConVarValue( edict(), "viewmodel_offset_y", "0" );
+	engine->SetFakeClientConVarValue( edict(), "viewmodel_offset_z", "0" );
+	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_color_r", "255" );
+	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_color_g", "255" );
+	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_color_b", "255" );
+	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_particle", "1" );
+	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_winanim", "1" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_proximity_voice", "0" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_dev_mark", "1" );
+
 	m_AttributeManager.InitializeAttributes( this );
 
 	SetWeaponBuilder( NULL );
@@ -1213,13 +1248,25 @@ int CTFPlayer::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 
 	// Always transmit all players to us if we're in spec.
 	if ( pPlayer->GetTeamNumber() < FIRST_GAME_TEAM )
-	{
 		return FL_EDICT_ALWAYS;
-	}
-	else if ( InSameTeam( pPlayer ) && !pPlayer->IsAlive() )
-	{
-		// Transmit teammates to us if we're dead.
+
+	bool bProximity;
+	if ( g_pVoiceGameMgrHelper->CanPlayerHearPlayer( pPlayer, this, bProximity ) && bProximity )
 		return FL_EDICT_ALWAYS;
+
+	// Transmit last man standing.
+	if ( m_Shared.InCond( TF_COND_LASTSTANDING ) )
+		return FL_EDICT_ALWAYS; 
+	
+	if ( InSameTeam( pPlayer ) )
+	{
+		// Transmit teammates to dead players.
+		if( !pPlayer->IsAlive() )
+			return FL_EDICT_ALWAYS;
+
+		// Transmit flag carrier.
+		if( HasTheFlag() )
+			return FL_EDICT_ALWAYS;
 	}
 
 	return BaseClass::ShouldTransmit( pInfo );
@@ -1262,32 +1309,11 @@ void CTFPlayer::Regenerate( void )
 		SetHealth( iCurrentHealth );
 	}
 
-	if ( m_Shared.InCond( TF_COND_BURNING ) )
-	{
-		m_Shared.RemoveCond( TF_COND_BURNING );
-	}
-
-	// Remove tranq condition
-	if ( m_Shared.InCond( TF_COND_SLOWED ) )
-	{
-		m_Shared.RemoveCond( TF_COND_SLOWED );
-	}
-
-	// Remove jarate condition
-	if ( m_Shared.InCond( TF_COND_URINE ) )
-	{
-		m_Shared.RemoveCond( TF_COND_URINE );
-	}
-
-	// Remove Mad Milk condition
-	if ( m_Shared.InCond( TF_COND_MAD_MILK ) )
-	{
-		m_Shared.RemoveCond( TF_COND_MAD_MILK );
-	}
-
+	m_Shared.HealNegativeConds();
 
 	// Fill Spy cloak
-	m_Shared.SetSpyCloakMeter( 100.0f );
+	if( tf2c_spy_cloak_ammo_refill.GetBool() )
+		m_Shared.SetSpyCloakMeter( 100.0f );
 }
 
 //-----------------------------------------------------------------------------
@@ -3675,28 +3701,44 @@ void CTFPlayer::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, 
 //-----------------------------------------------------------------------------
 int CTFPlayer::TakeHealth( float flHealth, int bitsDamageType )
 {
-	int iResult = false;
+	int iResult = 0;
 
-	// If the bit's set, add over the max health
-	if ( bitsDamageType & DMG_IGNORE_MAXHEALTH )
+	// If the bit's set, add over the max health.
+	if( bitsDamageType & HEAL_IGNORE_MAXHEALTH )
 	{
 		int iTimeBasedDamage = g_pGameRules->Damage_GetTimeBased();
-		m_bitsDamageType &= ~(bitsDamageType & ~iTimeBasedDamage);
-		m_iHealth += flHealth;
-		iResult = (int)flHealth;
+		m_bitsDamageType &= ~( bitsDamageType & ~iTimeBasedDamage );
+
+		if( bitsDamageType & HEAL_MAXBUFFCAP )
+		{
+			if( flHealth > m_Shared.GetMaxBuffedHealth() - m_iHealth )
+			{
+				flHealth = m_Shared.GetMaxBuffedHealth() - m_iHealth;
+			}
+		}
+
+		if( flHealth <= 0 )
+		{
+			iResult = 0;
+		}
+		else
+		{
+			m_iHealth += flHealth;
+			iResult = (int)flHealth;
+		}
 	}
 	else
 	{
 		float flHealthToAdd = flHealth;
-		float flMaxHealth = GetPlayerClass()->GetMaxHealth();
-		
-		// don't want to add more than we're allowed to have
-		if ( flHealthToAdd > flMaxHealth - m_iHealth )
+		float flMaxHealth = GetMaxHealth();
+
+		// Don't want to add more than we're allowed to have.
+		if( flHealthToAdd > flMaxHealth - m_iHealth )
 		{
 			flHealthToAdd = flMaxHealth - m_iHealth;
 		}
 
-		if ( flHealthToAdd <= 0 )
+		if( flHealthToAdd <= 0 )
 		{
 			iResult = 0;
 		}
@@ -3705,6 +3747,23 @@ int CTFPlayer::TakeHealth( float flHealth, int bitsDamageType )
 			iResult = BaseClass::TakeHealth( flHealthToAdd, bitsDamageType );
 		}
 	}
+
+	if( ( bitsDamageType & HEAL_NOTIFY ) && iResult > 0 )
+	{
+		IGameEvent *event = gameeventmanager->CreateEvent( "player_healonhit" );
+		if( event )
+		{
+			event->SetInt( "amount", iResult );
+			event->SetInt( "entindex", entindex() );
+
+			gameeventmanager->FireEvent( event );
+		}
+	}
+
+	//if( iResult > 0 )
+	//{
+	//	m_Shared.ResetDamageSourceType();
+	//}
 
 	return iResult;
 }

@@ -12,6 +12,8 @@
 #include "engine/IEngineSound.h"
 #include "entity_ammopack.h"
 
+extern ConVar tf2c_spy_cloak_ammo_refill;
+
 //=============================================================================
 //
 // CTF AmmoPack defines.
@@ -77,11 +79,14 @@ bool CAmmoPack::MyTouch( CBasePlayer *pPlayer )
 			bSuccess = true;
 		}
 
-		float flCloak = pTFPlayer->m_Shared.GetSpyCloakMeter();
-		if ( flCloak < 100.0f )
+		if( tf2c_spy_cloak_ammo_refill.GetBool() )
 		{
-			pTFPlayer->m_Shared.SetSpyCloakMeter( MIN( 100.0f, flCloak + 100.0f * PackRatios[GetPowerupSize()] ) );
-			bSuccess = true;
+			float flCloak = pTFPlayer->m_Shared.GetSpyCloakMeter();
+			if( flCloak < 100.0f )
+			{
+				pTFPlayer->m_Shared.SetSpyCloakMeter( MIN( 100.0f, flCloak + 100.0f * PackRatios[GetPowerupSize()] ) );
+				bSuccess = true;
+			}
 		}
 
 		// did we give them anything?

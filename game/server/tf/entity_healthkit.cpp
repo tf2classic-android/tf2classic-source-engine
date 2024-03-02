@@ -77,12 +77,11 @@ bool CHealthKit::MyTouch( CBasePlayer *pPlayer )
 			// Overheal pellets, well, overheal.
 			if ( bTiny || bMega )
 			{
-				iHealthToAdd = clamp( iHealthToAdd, 0, pTFPlayer->m_Shared.GetMaxBuffedHealth() - pTFPlayer->GetHealth() );
-				iHealthRestored = pPlayer->TakeHealth( iHealthToAdd, DMG_IGNORE_MAXHEALTH );
+				iHealthRestored = pTFPlayer->TakeHealth( iHealthToAdd, HEAL_IGNORE_MAXHEALTH | HEAL_MAXBUFFCAP );
 			}
 			else
 			{
-				iHealthRestored = pPlayer->TakeHealth( iHealthToAdd, DMG_GENERIC );
+				iHealthRestored = pPlayer->TakeHealth( iHealthToAdd, HEAL_NOTIFY );
 			}
 
 			if ( iHealthRestored )
@@ -96,19 +95,11 @@ bool CHealthKit::MyTouch( CBasePlayer *pPlayer )
 					bSuccess = true;
 			}
 
-			if ( !bTiny )
+			if( !bTiny )
 			{
 				// Remove any negative conditions whether player got healed or not.
-				if ( pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) )
-				{
-					pTFPlayer->m_Shared.RemoveCond( TF_COND_BURNING );
+				if( pTFPlayer->m_Shared.HealNegativeConds() )
 					bSuccess = true;
-				}
-				if ( pTFPlayer->m_Shared.InCond( TF_COND_SLOWED ) )
-				{
-					pTFPlayer->m_Shared.RemoveCond( TF_COND_SLOWED );
-					bSuccess = true;
-				}
 			}
 		}
 

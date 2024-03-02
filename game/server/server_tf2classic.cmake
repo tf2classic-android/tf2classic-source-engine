@@ -392,6 +392,8 @@ set(
 				"${SERVER_BASE_DIR}/tf/tf_powerup_shield.h"
 				"${SERVER_BASE_DIR}/tf/tf_powerup_speedboost.cpp"
 				"${SERVER_BASE_DIR}/tf/tf_powerup_speedboost.h"
+				"${SERVER_BASE_DIR}/tf/tf_powerup_megahealth.cpp"
+				"${SERVER_BASE_DIR}/tf/tf_powerup_megahealth.h"
 			#}
 			"${SERVER_BASE_DIR}/tf/entity_ammopack.cpp"
 			"${SERVER_BASE_DIR}/tf/entity_ammopack.h"

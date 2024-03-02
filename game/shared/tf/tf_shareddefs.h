@@ -621,6 +621,7 @@ enum ETFCond
 	TF_COND_SMOKE_BOMB,
 	TF_COND_SLOWED,
 	TF_COND_INVULNERABLE_SPAWN_PROTECT,
+	TF_COND_LASTSTANDING,
 	TF_COND_SOFTZOOM,
 
 	// Powerup conditions
@@ -941,6 +942,11 @@ extern const char *g_pszHintMessages[];
 #define DMG_NOCLOSEDISTANCEMOD	(DMG_POISON)
 
 #define TF_DMG_SENTINEL_VALUE	0x7FFFFFFF
+
+// This can only ever be used on a TakeHealth call, since it re-uses a dmg flag that means something else
+#define HEAL_IGNORE_MAXHEALTH	( 1 << 1 )
+#define HEAL_NOTIFY				( 1 << 2 )
+#define HEAL_MAXBUFFCAP			( 1 << 3 )
 
 // This can only ever be used on a TakeHealth call, since it re-uses a dmg flag that means something else
 #define DMG_IGNORE_MAXHEALTH	(DMG_BULLET)

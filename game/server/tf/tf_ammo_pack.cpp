@@ -16,6 +16,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+extern ConVar tf2c_spy_cloak_ammo_refill;
+
 //----------------------------------------------
 
 // Network table.
@@ -164,20 +166,22 @@ void CTFAmmoPack::PackTouch( CBaseEntity *pOther )
 			bSuccess = true;
 		}
 
-		//int iMaxMetal = pTFPlayer->GetPlayerClass()->GetData()->m_aAmmoMax[TF_AMMO_METAL];
 		// Unlike other ammo, give fixed amount of metal that was given to us at spawn.
-		if ( pPlayer->GiveAmmo( m_iAmmo[TF_AMMO_METAL], TF_AMMO_METAL ) )
+		int iMaxMetal = pTFPlayer->GetPlayerClass()->GetData()->m_aAmmoMax[TF_AMMO_METAL];
+		if ( pPlayer->GiveAmmo( Ceil2Int( iMaxMetal * PackRatios[POWERUP_MEDIUM] ), TF_AMMO_METAL ) )
 		{
 			bSuccess = true;
 		}
 
-
-		// Unlike medium ammo packs, restore only 25% cloak.
-		float flCloak = pTFPlayer->m_Shared.GetSpyCloakMeter();
-		if ( flCloak < 100.0f )
+		if( tf2c_spy_cloak_ammo_refill.GetBool() )
 		{
-			pTFPlayer->m_Shared.SetSpyCloakMeter( MIN( 100.0f, flCloak + 50.0f ) );
-			bSuccess = true;
+			// Unlike medium ammo packs, restore only 25% cloak.
+			float flCloak = pTFPlayer->m_Shared.GetSpyCloakMeter();
+			if( flCloak < 100.0f )
+			{
+				pTFPlayer->m_Shared.SetSpyCloakMeter( MIN( 100.0f, flCloak + 50.0f ) );
+				bSuccess = true;
+			}
 		}
 	}
 	else

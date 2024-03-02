@@ -124,6 +124,7 @@ static int g_TauntCamAchievements[] =
 extern ConVar mp_capstyle;
 extern ConVar sv_turbophysics;
 extern ConVar mp_chattime;
+extern ConVar sv_alltalk;
 extern ConVar tf_arena_max_streak;
 
 ConVar tf_caplinear( "tf_caplinear", "1", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "If set to 1, teams must capture control points linearly." );
@@ -1809,6 +1810,10 @@ void CTFGameRules::Activate()
 		hide_server.SetValue( true );
 	}
 
+	m_bVoteCalled = false;
+	m_bServerVoteOnReset = false;
+	m_flVoteCheckThrottle = 0;
+
 	SetMultipleTrains( false );
 
 	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_deathmatch" ) || !Q_strncmp( STRING( gpGlobals->mapname ), "dm_", 3 ) )
@@ -2837,6 +2842,9 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 	public:
 		virtual bool		CanPlayerHearPlayer( CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity )
 		{
+			if( sv_alltalk.GetBool() )
+				return true;
+
 			// Dead players can only be heard by other dead team mates but only if a match is in progress
 			if ( TFGameRules()->State_Get() != GR_STATE_TEAM_WIN && TFGameRules()->State_Get() != GR_STATE_GAME_OVER ) 
 			{
@@ -3049,6 +3057,11 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 		if( IsInDomination() && (gpGlobals->curtime > m_flNextDominationThink) )
 		{
 			Domination_RunLogic();
+		}
+
+		if( g_voteController )
+		{
+			ManageServerSideVoteCreation();
 		}
 
 		// periodically count up the fake clients and set the bot_count cvar to update server tags
@@ -4352,6 +4365,88 @@ CTFPlayer *CTFGameRules::GetRecentDamager( CTFPlayer *pVictim, int iDamager, flo
 }
 
 //-----------------------------------------------------------------------------
+// Purpose:  Server-side vote creation
+//-----------------------------------------------------------------------------
+void CTFGameRules::ManageServerSideVoteCreation( void )
+{
+	if( gpGlobals->curtime < m_flVoteCheckThrottle )
+		return;
+
+	if( IsInTournamentMode() )
+		return;
+
+	if( IsInArenaMode() )
+		return;
+
+	if( IsInWaitingForPlayers() )
+		return;
+
+	if( m_bInSetup )
+		return;
+
+	if( IsInTraining() )
+		return;
+
+	if( IsInItemTestingMode() )
+		return;
+
+	if( m_MapList.Count() < 2 )
+		return;
+
+	// Ask players which map they would prefer to play next, based
+	// on "n" lowest playtime from server stats
+
+	ConVarRef sv_vote_issue_nextlevel_allowed( "sv_vote_issue_nextlevel_allowed" );
+	ConVarRef sv_vote_issue_nextlevel_choicesmode( "sv_vote_issue_nextlevel_choicesmode" );
+
+	if( sv_vote_issue_nextlevel_allowed.GetBool() && sv_vote_issue_nextlevel_choicesmode.GetBool() )
+	{
+		// Don't do this if we already have a nextlevel set
+		if( nextlevel.GetString() && *nextlevel.GetString() )
+			return;
+
+		if( !m_bServerVoteOnReset && !m_bVoteCalled )
+		{
+			// If we have any round or win limit, ignore time
+			if( mp_winlimit.GetInt() || mp_maxrounds.GetInt() )
+			{
+				int nBlueScore = TFTeamMgr()->GetTeam( TF_TEAM_BLUE )->GetScore();
+				int nRedScore = TFTeamMgr()->GetTeam( TF_TEAM_RED )->GetScore();
+				int nGreenScore = TFTeamMgr()->GetTeam( TF_TEAM_GREEN )->GetScore();
+				int nYellowScore = TFTeamMgr()->GetTeam( TF_TEAM_YELLOW )->GetScore();
+				int nWinLimit = mp_winlimit.GetInt();
+				if( ( nWinLimit - nBlueScore ) == 1 || ( nWinLimit - nRedScore ) == 1 || ( nWinLimit - nGreenScore ) == 1 || ( nWinLimit - nYellowScore ) == 1 )
+				{
+					m_bServerVoteOnReset = true;
+				}
+
+				int nRoundsPlayed = GetRoundsPlayed();
+				if( ( mp_maxrounds.GetInt() - nRoundsPlayed ) == 1 )
+				{
+					m_bServerVoteOnReset = true;
+				}
+			}
+			else if( mp_timelimit.GetInt() > 0 )
+			{
+				int nTimeLeft = GetTimeLeft();
+				if( nTimeLeft <= 120 && !m_bServerVoteOnReset )
+				{
+					if( g_voteController )
+					{
+						g_voteController->CreateVote( DEDICATED_SERVER, "nextlevel", "" );
+					}
+					m_bVoteCalled = true;
+				}
+			}
+		}
+	}
+
+	m_flVoteCheckThrottle = gpGlobals->curtime + 0.5f;
+}
+
+
+
+//-----------------------------------------------------------------------------
 // Purpose: Returns who should be awarded the kill
 //-----------------------------------------------------------------------------
 CBasePlayer *CTFGameRules::GetDeathScorer( CBaseEntity *pKiller, CBaseEntity *pInflictor, CBaseEntity *pVictim )
@@ -5065,6 +5160,17 @@ void CTFGameRules::RoundRespawn( void )
 	if ( !IsInWaitingForPlayers() )
 	{
 		ShowRoundInfoPanel();
+	}
+
+	// We've hit some condition where a server-side vote should be called on respawn
+	if( m_bServerVoteOnReset )
+	{
+		if( g_voteController )
+		{
+			g_voteController->CreateVote( DEDICATED_SERVER, "nextlevel", "" );
+		}
+		m_bVoteCalled = true;
+		m_bServerVoteOnReset = false;
 	}
 }
 

@@ -808,6 +808,10 @@ bool CObjectSentrygun::ValidTargetPlayer( CTFPlayer *pPlayer, const Vector &vecS
 	if ( pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && pPlayer->m_Shared.GetDisguiseTeam() == GetTeamNumber() && pPlayer != m_hEnemy )
 		return false;
 
+	// Don't shoot spys that are pretending to be a dispenser
+	if( pPlayer->m_Shared.InCond( TF_COND_DISGUISED_AS_DISPENSER ) )
+		return false;
+
 	// Not across water boundary.
 	if ( ( GetWaterLevel() == 0 && pPlayer->GetWaterLevel() >= 3 ) || ( GetWaterLevel() == 3 && pPlayer->GetWaterLevel() <= 0 ) )
 		return false;

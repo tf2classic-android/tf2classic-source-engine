@@ -2047,6 +2047,11 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 		RemoveAllDecals();
 	}
 
+	if( ( m_iOldHealth != m_iHealth ) || ( m_iOldTeam != GetTeamNumber() ) )
+	{
+		UpdateGlowColor();
+	}
+
 	// Detect class changes
 	if ( m_iOldPlayerClass != m_PlayerClass.GetClassIndex() )
 	{
@@ -2303,32 +2308,67 @@ void C_TFPlayer::StopBurningSound( void )
 	}
 }
 
+void C_TFPlayer::UpdateGlowEffect( void )
+{
+	DestroyGlowEffect();
+
+	BaseClass::UpdateGlowEffect();
+}
+
+void C_TFPlayer::DestroyGlowEffect( void )
+{
+	BaseClass::DestroyGlowEffect();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void C_TFPlayer::UpdateClientSideGlow( void )
+{
+	bool bShouldGlow = false;
+
+	// Never show glow on local player.
+	if( !IsLocalPlayer() )
+	{
+		bShouldGlow = ( HasTheFlag() && !IsEnemyPlayer() ) || m_Shared.InCond( TF_COND_LASTSTANDING );
+	}
+
+	if( bShouldGlow != IsClientSideGlowEnabled() )
+	{
+		SetClientSideGlowEnabled( bShouldGlow );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void C_TFPlayer::UpdateGlowColor( void )
+{
+	CGlowObject *pGlowObject = GetGlowObject();
+	if( pGlowObject )
+	{
+		float r, g, b;
+		GetGlowEffectColor( &r, &g, &b );
+
+		pGlowObject->SetColor( Vector( r, g, b ) );
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 {
-	switch ( GetTeamNumber() )
+	// Set the glow color on flag carrier according to their health.
+	if( HasTheFlag() && !IsEnemyPlayer() )
 	{
-		case TF_TEAM_BLUE:
-			*r = 0.49f; *g = 0.66f; *b = 0.7699971f;
-			break;
-
-		case TF_TEAM_RED:
-			*r = 0.74f; *g = 0.23f; *b = 0.23f;
-			break;
-
-		case TF_TEAM_GREEN:
-			*r = 0.03f; *g = 0.68f; *b = 0;
-			break;
-
-		case TF_TEAM_YELLOW:
-			*r = 1.0f; *g = 0.62f; *b = 0;
-			break;
-
-		default:
-			*r = 0.76f; *g = 0.76f; *b = 0.76f;
-			break;
+		*r = RemapValClamped( GetHealth(), GetMaxHealth() * 0.5f, GetMaxHealth(), 0.75f, 0.33f );
+		*g = RemapValClamped( GetHealth(), 0.0f, GetMaxHealth() * 0.5f, 0.23f, 0.75f );
+		*b = 0.23f;
+	}
+	else
+	{
+		TFGameRules()->GetTeamGlowColor( GetTeamNumber(), *r, *g, *b );
 	}
 }
 
@@ -3932,7 +3972,11 @@ int C_TFPlayer::GetSkin()
 		int iVisibleTeam = GetTeamNumber();
 
 		// if this player is disguised and on the other team, use disguise team
-		if ( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() )
+		if( m_Shared.InCond( TF_COND_DISGUISED_AS_DISPENSER ) && IsEnemyPlayer() && ( GetFlags() & FL_DUCKING ) && ( GetGroundEntity() != NULL ) )
+		{
+			iVisibleTeam = ( iVisibleTeam == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED );
+		}
+		else if( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() )
 		{
 			iVisibleTeam = m_Shared.GetDisguiseTeam();
 		}

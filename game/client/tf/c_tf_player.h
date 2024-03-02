@@ -143,6 +143,10 @@ public:
 
 	virtual void	InitPhonemeMappings();
 
+	void			UpdateGlowEffect( void );
+	void			DestroyGlowEffect( void );
+	void			UpdateClientSideGlow( void );
+	void			UpdateGlowColor( void );
 	virtual void	GetGlowEffectColor( float *r, float *g, float *b );
 
 	float GetDesaturationAmount();

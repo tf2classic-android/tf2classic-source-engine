@@ -108,6 +108,7 @@ public:
 	void	AddCond( ETFCond nCond, float flDuration = PERMANENT_CONDITION );
 	void	RemoveCond( ETFCond nCond );
 	bool	InCond( ETFCond nCond );
+	bool	RemoveCondIfPresent( ETFCond nCond );
 	void	RemoveAllCond( CTFPlayer *pPlayer );
 	void	OnConditionAdded( ETFCond nCond );
 	void	OnConditionRemoved( ETFCond nCond );
@@ -127,6 +128,8 @@ public:
 
 	int		GetMaxBuffedHealth( void );
 
+	bool	HealNegativeConds( void );
+
 #ifdef CLIENT_DLL
 	// This class only receives calls for these from C_TFPlayer, not
 	// natively from the networking system
@@ -141,8 +144,8 @@ public:
 	void	CompleteDisguise( void );
 	void	RemoveDisguise( void );
 	void	FindDisguiseTarget( void );
-	int		GetDisguiseTeam( void )				{ return m_nDisguiseTeam; }
-	int		GetDisguiseClass( void ) 			{ return m_nDisguiseClass; }
+	int		GetDisguiseTeam( void );
+	int		GetDisguiseClass( void ) 			{ return InCond( TF_COND_DISGUISED_AS_DISPENSER ) ? (int)TF_CLASS_ENGINEER : m_nDisguiseClass;; }
 	int		GetMaskClass( void )				{ return m_nMaskClass; }
 	int		GetDesiredDisguiseClass( void )		{ return m_nDesiredDisguiseClass; }
 	int		GetDesiredDisguiseTeam( void )		{ return m_nDesiredDisguiseTeam; }

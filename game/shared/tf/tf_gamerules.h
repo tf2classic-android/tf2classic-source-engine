@@ -452,6 +452,8 @@ public:
 	CBasePlayer *GetAssister( CBasePlayer *pVictim, CBasePlayer *pScorer, CBaseEntity *pInflictor );
 	CTFPlayer *GetRecentDamager( CTFPlayer *pVictim, int iDamager, float flMaxElapsed );
 
+	void	ManageServerSideVoteCreation( void );
+
 	virtual void ClientDisconnected( edict_t *pClient );
 
 	void	RadiusDamage( CTFRadiusDamageInfo &radiusInfo );
@@ -580,6 +582,11 @@ public:
 	// for bot rosters
 	CHandle<CTFBotRoster> m_hBlueBotRoster;
 	CHandle<CTFBotRoster> m_hRedBotRoster;
+
+	// Automatic vote called near the end of a map
+	bool    m_bVoteCalled;
+	bool    m_bServerVoteOnReset;
+	float   m_flVoteCheckThrottle;
 #endif
 
 };
