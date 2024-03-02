@@ -24,6 +24,7 @@
 #include "tf_team.h"
 #include "tf_gamestats.h"
 #include "ilagcompensationmanager.h"
+#include "inetchannelinfo.h"
 #endif
 
 #include "tf_weapon_medigun.h"
@@ -589,6 +590,15 @@ bool CWeaponMedigun::FindAndHealTargets( void )
 	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return false;
+
+#ifdef GAME_DLL
+	if( !pOwner->IsBot() )
+	{
+		INetChannelInfo *pNetChanInfo = engine->GetPlayerNetInfo( pOwner->entindex() );
+		if( !pNetChanInfo || pNetChanInfo->IsTimingOut() )
+			return false;
+	}
+#endif // GAME_DLL
 
 	bool bFound = false;
 
