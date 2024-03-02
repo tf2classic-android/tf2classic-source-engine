@@ -537,8 +537,6 @@ private:
 
 	bool m_bFirstBlood;
 	int	m_iArenaTeamCount;
-
-	KeyValues *m_pAuthData;
 #endif
 
 	float m_flNextDominationThink;

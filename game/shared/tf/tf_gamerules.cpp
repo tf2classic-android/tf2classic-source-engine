@@ -1427,19 +1427,6 @@ int	CTFGameRules::Damage_GetShouldNotBleed( void )
 	return 0;
 }
 
-// SanyaSho: vpc_parser.py sucked my balls
-// i do not want to change project VPC and rebuild ALL of game part. It takes >10 mins.
-#if !defined( TF2C_AUTHDATA_KEY ) && !defined( TF2C_AUTODATA_XOR ) && !defined( TF2C_AUTHDATA_BYTE ) && defined( GAME_DLL )
-#define TF2C_AUTHDATA_KEY {0x41,0x41,0x41,0x41,0x41,0x41,0x41,0x41}
-#define TF2C_AUTHDATA_XOR {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
-#define TF2C_AUTHDATA_BYTE 0x00
-#endif
-
-#ifdef GAME_DLL
-unsigned char g_aAuthDataKey[8] = TF2C_AUTHDATA_KEY;
-unsigned char g_aAuthDataXOR[8] = TF2C_AUTHDATA_XOR;
-#endif
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1491,15 +1478,6 @@ CTFGameRules::CTFGameRules()
 	m_bluePayloadToPush = NULL;
 	m_redPayloadToBlock = NULL;
 	m_bluePayloadToBlock = NULL;
-
-	// Load 'authenticated' data
-	unsigned char szPassword[8];
-	V_memcpy(szPassword, g_aAuthDataKey, sizeof(szPassword));
-	for (unsigned int i = 0; i < sizeof(szPassword); ++i)
-		szPassword[i] ^= g_aAuthDataXOR[i] ^ TF2C_AUTHDATA_BYTE;
-
-	m_pAuthData = ReadEncryptedKVFile(filesystem, "scripts/authdata", szPassword, true);
-	V_memset(szPassword, 0x00, sizeof(szPassword));
 
 #else // GAME_DLL
 
@@ -3312,39 +3290,6 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 #endif
 				V_strncpy( reject, "\nInvalid items_game.txt CRC32!\nPlease, remove all of your mods and try again", maxrejectlen - 1 );
 				return false;
-			}
-		}
-
-		const CSteamID *pPlayerID = engine->GetClientSteamID(pEntity);
-
-		KeyValues *pKV = m_pAuthData->FindKey("bans");
-		if (pKV)
-		{
-			for (KeyValues *pSub = pKV->GetFirstTrueSubKey(); pSub; pSub = pSub->GetNextTrueSubKey())
-			{
-				KeyValues *pIDSub = pSub->FindKey("id");
-				if (pIDSub && pPlayerID && pIDSub->GetUint64() == pPlayerID->ConvertToUint64())
-				{
-					// SteamID is banned
-					KeyValues *pMsgSub = pSub->FindKey("message");
-					if (pMsgSub)
-					{
-						V_strncpy(reject, pMsgSub->GetString(), maxrejectlen - 1);
-					}
-					return false;
-				}
-			
-				KeyValues *pIPSub = pSub->FindKey("ip");
-				if (pIPSub && pszAddress && !V_strcmp(pIPSub->GetString(), pszAddress))
-				{
-					// IP is banned
-					KeyValues *pMsgSub = pSub->FindKey("message");
-					if (pMsgSub)
-					{
-						V_strncpy(reject, pMsgSub->GetString(), maxrejectlen - 1);
-					}
-					return false;
-				}
 			}
 		}
 #endif		
