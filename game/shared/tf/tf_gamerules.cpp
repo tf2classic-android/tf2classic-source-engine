@@ -1490,6 +1490,13 @@ CTFGameRules::CTFGameRules()
 	// Initialize the game type
 	m_nGameType.Set( TF_GAMETYPE_UNDEFINED );
 
+	m_bPlayingKoth.Set( false );
+	m_bPlayingMedieval.Set( false );
+	m_bPlayingHybrid_CTF_CP.Set( false );
+	m_bPlayingSpecialDeliveryMode.Set( false );
+	m_bPlayingRobotDestructionMode.Set( false );
+	m_bPowerupMode.Set( false );
+
 	// Initialize the classes here.
 	InitPlayerClasses();
 
@@ -1721,6 +1728,13 @@ void CTFGameRules::Activate()
 	tf_gamemode_dm.SetValue( 0 );
 	tf_bot_count.SetValue( 0 );
 
+	m_bPlayingKoth.Set( false );
+	m_bPlayingMedieval.Set( false );
+	m_bPlayingHybrid_CTF_CP.Set( false );
+	m_bPlayingSpecialDeliveryMode.Set( false );
+	m_bPlayingRobotDestructionMode.Set( false );
+	m_bPowerupMode.Set( false );
+
 	m_redPayloadToPush = NULL;
 	m_bluePayloadToPush = NULL;
 	m_redPayloadToBlock = NULL;
@@ -1826,6 +1840,12 @@ void CTFGameRules::Activate()
 		engine->ServerCommand( "exec config_arena.cfg \n" );
 		engine->ServerExecute();
 		return;
+	}
+
+	if( StringHasPrefix( STRING( gpGlobals->mapname ), "sd_" ) )
+	{
+		m_bPlayingSpecialDeliveryMode.Set( true );
+		tf_gamemode_sd.SetValue( 1 );
 	}
 
 	CKothLogic *pKoth = dynamic_cast<CKothLogic*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_koth" ) );
@@ -2341,6 +2361,14 @@ void CTFGameRules::SetupOnRoundRunning( void )
 
 		pPlayer->TeamFortress_SetSpeed();
 		pPlayer->SpeakConceptIfAllowed( MP_CONCEPT_ROUND_START );
+	}
+
+	if( IsInSpecialDeliveryMode() && !IsInWaitingForPlayers() )
+	{
+		if( !IsHalloweenScenario( HALLOWEEN_SCENARIO_DOOMSDAY ) )
+		{
+			BroadcastSound( 255, "Announcer.SD_RoundStart" );
+		}
 	}
 }
 
@@ -5269,6 +5297,15 @@ bool CTFGameRules::ShouldScorePerRound( void )
 	}
 
 	return bRetVal;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFGameRules::IsValveMap( void )
+{
+	// SanyaSho: always return true for TF2C. For sv_allow_point_servercommand
+	return true;
 }
 
 #endif  // GAME_DLL

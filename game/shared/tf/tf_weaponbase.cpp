@@ -1990,6 +1990,14 @@ void CTFWeaponBase::MakeTracer( const Vector &vecTracerSrc, const trace_t &tr )
 // -----------------------------------------------------------------------------
 // Purpose:
 // -----------------------------------------------------------------------------
+bool CTFWeaponBase::CanHeadshot( void )
+{
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Purpose:
+// -----------------------------------------------------------------------------
 const char *CTFWeaponBase::GetMuzzleFlashModel( void )
 {
 	const char *pszModel = GetTFWpnData().m_szMuzzleFlashModel;

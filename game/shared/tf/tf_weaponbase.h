@@ -235,7 +235,7 @@ public:
 	
 	void MakeTracer( const Vector &vecTracerSrc, const trace_t &tr );
 	
-	virtual bool CanHeadshot( void ) { return false; }
+	virtual bool CanHeadshot( void );
 
 	virtual acttable_t *ActivityList( int &iActivityCount );
 	static acttable_t s_acttablePrimary[];

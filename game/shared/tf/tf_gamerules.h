@@ -278,6 +278,8 @@ public:
 
 	bool			ShouldScorePerRound( void );
 
+	virtual bool	IsValveMap( void );
+
 	virtual int		PlayerRelationship(CBaseEntity *pPlayer, CBaseEntity *pTarget);
 
 	virtual void	PlayTrainCaptureAlert( CTeamControlPoint *pPoint, bool bFinalPointInMap );
