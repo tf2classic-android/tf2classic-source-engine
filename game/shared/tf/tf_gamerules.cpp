@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 #include "cbase.h"
+#include "shareddefs.h"
 #include "tf_gamerules.h"
 #include "ammodef.h"
 #include "KeyValues.h"
@@ -3293,8 +3294,41 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 
 	void CTFGameRules::PlayTrainCaptureAlert( CTeamControlPoint *pPoint, bool bFinalPointInMap )
 	{
-		const char *pszSound = bFinalPointInMap ? TEAM_TRAIN_FINAL_ALERT : TEAM_TRAIN_ALERT;
-		BroadcastSound( 255, pszSound );
+		// No more alerts in Payload Race
+		if( HasMultipleTrains() )
+			return;
+		
+		if( pPoint && PointsMayBeCaptured() )
+		{
+			if( bFinalPointInMap )
+			{
+				for( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
+				{
+					if( pPoint->GetOwner() == i )
+					{
+						g_TFAnnouncer.Speak( i, TF_ANNOUNCER_CART_FINALWARNING_DEFENDER );
+					}
+					else
+					{
+						g_TFAnnouncer.Speak( i, TF_ANNOUNCER_CART_FINALWARNING_ATTACKER );
+					}
+				}
+			}
+			else
+			{
+				for( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
+				{
+					if( pPoint->GetOwner() == i )
+					{
+						g_TFAnnouncer.Speak( i, TF_ANNOUNCER_CART_WARNING_DEFENDER );
+					}
+					else
+					{
+						g_TFAnnouncer.Speak( i, TF_ANNOUNCER_CART_WARNING_ATTACKER );
+					}
+				}
+			}
+		}
 	}
 
 	CObjectSentrygun *CTFGameRules::FindSentryGunWithMostKills( int team ) const
@@ -6233,7 +6267,7 @@ bool CTFGameRules::Domination_RunLogic()
 			CTFTeam *pGlobalTFTeam = GetGlobalTFTeam( iOwningTeam );
 			if( pGlobalTFTeam )
 			{
-				if( pGlobalTFTeam->GetTeamNumber() != 0 ) // != 0 ????
+				if( pGlobalTFTeam->GetTeamNumber() != TEAM_UNASSIGNED ) // Maybe we should use < FIRST_GAME_TEAM ?
 				{
 					int nValue = tf2c_domination_points_per_round.GetInt();
 
