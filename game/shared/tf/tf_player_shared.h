@@ -118,10 +118,12 @@ public:
 	bool	IsCritBoosted( void );
 	bool	IsMiniCritBoosted( void );
 	bool	IsInvulnerable( void );
-	bool    IsControlStunned( void );
-	bool    IsLoserStateStunned( void ) const;
+	bool	IsControlStunned( void );
+	bool	IsLoserStateStunned( void ) const;
 	bool	IsStealthed( void );
 
+	int	GetPowerupFlags( void );
+	
 	void	ConditionGameRulesThink( void );
 
 	void	InvisibilityThink( void );

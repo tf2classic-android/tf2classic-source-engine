@@ -4642,6 +4642,7 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 			event->SetInt( "assister_revenge", 1 );
 		}
 #endif
+		event->SetInt( "powerup_flags", pScorer ? pScorer->m_Shared.GetPowerupFlags() : 0 );
 
 		gameeventmanager->FireEvent( event );
 	}

@@ -996,6 +996,24 @@ int CTFPlayerShared::GetDisguiseMaxBuffedHealth( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+int CTFPlayerShared::GetPowerupFlags( void )
+{
+	int nFlags = 0;
+	
+	for ( int i = 0; g_aPowerups[i].cond != TF_COND_LAST; i++ )
+	{
+		if ( InCond( g_aPowerups[i].cond ) )
+		{
+			nFlags |= ( 1 << i );
+		}
+	}
+	
+	return nFlags;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Runs SERVER SIDE only Condition Think
 // If a player needs something to be updated no matter what do it here (invul, etc).
 //-----------------------------------------------------------------------------

@@ -431,8 +431,6 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 		const char *killedwithweaponlog = event->GetString( "weapon_logclassname" );
 		int nPowerupFlags = event->GetInt( "powerup_flags" );
 
-		Msg("bIsObjectDestroyed %i\n", bIsObjectDestroyed);
-
 		// Get the names of the players
 		const char *killer_name = ( killer > 0 ) ? g_PR->GetPlayerName( killer ) : "";
 		const char *victim_name = g_PR->GetPlayerName( victim );
