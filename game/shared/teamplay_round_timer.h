@@ -93,7 +93,9 @@ private:
 	int GetTimeWarningMessage( int nWarning );
 #endif
 	void SendTimeWarning( int nWarning );
+#if defined( TF_CLIENT_DLL )
 	const char *GetTimeWarningSound( int nWarning );
+#endif
 
 #else
 	void SetState( int nState, bool bFireOutput = true );

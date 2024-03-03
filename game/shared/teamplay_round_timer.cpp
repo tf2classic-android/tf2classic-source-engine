@@ -11,6 +11,7 @@
 
 #if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
 #include "tf_announcer.h"
+#include "engine/IEngineSound.h"
 #endif
 
 #ifdef CLIENT_DLL
@@ -51,7 +52,7 @@
 #define ROUND_SETUP_2SECS	"Announcer.RoundBegins2Seconds"
 #define ROUND_SETUP_1SECS	"Announcer.RoundBegins1Seconds"
 
-#if defined( TF_CLIENT_DLL ) || defined ( TF_CLASSIC_CLIENT )
+#if defined( TF_CLIENT_DLL ) //|| defined ( TF_CLASSIC_CLIENT )
 #define MERASMUS_SETUP_5SECS	"Merasmus.RoundBegins5Seconds"
 #define MERASMUS_SETUP_4SECS	"Merasmus.RoundBegins4Seconds"
 #define MERASMUS_SETUP_3SECS	"Merasmus.RoundBegins3Seconds"
@@ -277,7 +278,12 @@ CTeamRoundTimer::~CTeamRoundTimer( void )
 //-----------------------------------------------------------------------------
 void CTeamRoundTimer::Precache( void )
 {
-#if defined( TF_DLL ) || defined( TF_CLIENT_DLL ) || defined( TF_CLASSIC ) || defined( TF_CLASSIC_CLIENT ) 
+#if defined( TF_CLASSIC ) || defined( TF_CLASSIC_CLIENT )
+	// SanyaSho: precache only Ambient.Siren for TF2C
+	PrecacheScriptSound( ROUND_START_BELL );
+#endif
+
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
 	PrecacheScriptSound( ROUND_TIMER_60SECS );
 	PrecacheScriptSound( ROUND_TIMER_30SECS );
 	PrecacheScriptSound( ROUND_TIMER_10SECS );
@@ -299,7 +305,7 @@ void CTeamRoundTimer::Precache( void )
 	PrecacheScriptSound( ROUND_TIMER_TIME_ADDED_WINNER );
 	PrecacheScriptSound( ROUND_START_BELL );
 
-#if defined( TF_CLIENT_DLL ) || defined ( TF_CLASSIC_CLIENT )
+#if defined( TF_CLIENT_DLL ) //|| defined ( TF_CLASSIC_CLIENT )
 	PrecacheScriptSound( MERASMUS_SETUP_5SECS );
 	PrecacheScriptSound( MERASMUS_SETUP_4SECS );
 	PrecacheScriptSound( MERASMUS_SETUP_3SECS );
@@ -556,6 +562,7 @@ void CTeamRoundTimer::OnDataChanged( DataUpdateType_t updateType )
 	}
 }
 
+#if defined( TF_CLIENT_DLL )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -699,6 +706,7 @@ const char *CTeamRoundTimer::GetTimeWarningSound( int nWarning )
 
 	return pszRetVal;
 }
+#endif
 
 #if defined( TF_CLASSIC_CLIENT )
 //-----------------------------------------------------------------------------
@@ -885,10 +893,18 @@ void CTeamRoundTimer::SendTimeWarning( int nWarning )
 #if defined( TF_CLASSIC_CLIENT )
 				if ( bShouldPlaySound == true )
 				{
-					g_TFAnnouncer.Speak( GetTimeWarningMessage( nWarning ) );
-					if( (nWarning == RT_WARNING_30SECS) && (m_nState == RT_STATE_SETUP) )
+					if( nWarning == RT_WARNING_TIME_START )
 					{
-						g_TFCuesManager.PlayCue( 0 );
+						CLocalPlayerFilter filter;
+						C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, ROUND_START_BELL );
+					}
+					else
+					{
+ 						g_TFAnnouncer.Speak( GetTimeWarningMessage( nWarning ) );
+						if( (nWarning == RT_WARNING_30SECS) && (m_nState == RT_STATE_SETUP) )
+						{
+							g_TFCuesManager.PlayCue( 0 );
+						}
 					}
 				}
 #endif

@@ -3335,7 +3335,19 @@ void CTeamplayRoundBasedRules::ResetMapTime( void )
 void CTeamplayRoundBasedRules::PlayStartRoundVoice( void )
 {
 #if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
-	g_TFAnnouncer.Speak( TF_ANNOUNCER_ARENA_ROUNDSTART );
+	if( !TFGameRules() )
+	{
+		return;
+	}
+	
+	if( TFGameRules()->IsDeathmatch() )
+	{
+		g_TFAnnouncer.Speak( TF_ANNOUNCER_ARENA_ROUNDSTART );
+	}
+	else if( TFGameRules()->IsInSpecialDeliveryMode() )
+	{
+		g_TFAnnouncer.Speak( TF_ANNOUNCER_SD_ROUNDSTART );
+	}
 #else
 	for ( int i = LAST_SHARED_TEAM+1; i < GetNumberOfTeams(); i++ )
 	{
@@ -3355,6 +3367,10 @@ void CTeamplayRoundBasedRules::PlayWinSong( int team )
 	}
 	else
 	{
+#if defined( TF_CLASSIC ) || defined( TF_CLASSIC_CLIENT )
+		if ( TFGameRules() && TFGameRules()->IsInSpecialDeliveryMode() )
+			return;
+#endif
 #if defined (TF_DLL) || defined (TF_CLIENT_DLL)
 		if ( TFGameRules() && TFGameRules()->IsPlayingSpecialDeliveryMode() )
 			return;
