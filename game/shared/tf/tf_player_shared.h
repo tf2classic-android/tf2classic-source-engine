@@ -236,6 +236,7 @@ public:
 	void	IncrementAirDucks( void );
 	void	ResetAirDucks( void );
 
+	bool	IsHasting( void );
 	bool	IsEnemy( CBaseEntity *pEntity );
 	void	DebugPrintConditions( void );
 

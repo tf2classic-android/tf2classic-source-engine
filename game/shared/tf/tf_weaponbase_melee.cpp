@@ -194,13 +194,10 @@ void CTFWeaponBaseMelee::Swing( CTFPlayer *pPlayer )
 	DoViewModelAnimation();
 
 	// Set next attack times.
-	float flFireDelay = m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeFireDelay;
-	CALL_ATTRIB_HOOK_FLOAT( flFireDelay, mult_postfiredelay );
-
-	m_flNextPrimaryAttack = gpGlobals->curtime + flFireDelay;
+	m_flNextPrimaryAttack = gpGlobals->curtime + GetFireRate();
 
 	SetWeaponIdleTime( m_flNextPrimaryAttack + m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeIdleEmpty );
-	
+
 	if ( IsCurrentAttackACrit() )
 	{
 		WeaponSound( BURST );

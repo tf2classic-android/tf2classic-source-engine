@@ -375,6 +375,23 @@ bool CTFWeaponBase::IsWeapon( ETFWeaponID iWeapon ) const
 	return GetWeaponID() == iWeapon;
 }
 
+// -----------------------------------------------------------------------------
+// Purpose:
+// -----------------------------------------------------------------------------
+float CTFWeaponBase::GetFireRate( void )
+{
+	float flFireDelay = m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeFireDelay;
+	CALL_ATTRIB_HOOK_FLOAT( flFireDelay, mult_postfiredelay );
+
+	CTFPlayer *pOwner = GetTFPlayerOwner();
+	if( pOwner && pOwner->m_Shared.IsHasting() )
+	{
+		flFireDelay *= TF_POWERUP_SPEEDBOOST_INV_FACTOR;
+	}
+
+	return flFireDelay;
+}
+
 typedef struct
 {
 	int			baseAct;
@@ -1546,6 +1563,11 @@ void CTFWeaponBase::SetReloadTimer( float flReloadTime )
 	CALL_ATTRIB_HOOK_FLOAT( flModifiedTime, mult_reload_time_hidden );
 	CALL_ATTRIB_HOOK_FLOAT( flModifiedTime, fast_reload );
 
+	if( pPlayer->m_Shared.IsHasting() )
+	{
+		flModifiedTime *= TF_POWERUP_SPEEDBOOST_INV_FACTOR;
+	}
+
 	CBaseViewModel *vm = pPlayer->GetViewModel( m_nViewModelIndex );
 	if ( vm )
 	{
@@ -1852,6 +1874,35 @@ bool CTFWeaponBase::ReloadOrSwitchWeapons( void )
 			if ( Reload() )
 				return true;
 		}
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Set the desired activity for the weapon and its viewmodel counterpart
+// Input  : iActivity - activity to play
+//-----------------------------------------------------------------------------
+bool CTFWeaponBase::SendWeaponAnim( int iActivity )
+{
+	// Speed up the firing animation when under Haste powerup effects.
+	CTFPlayer *pOwner = GetTFPlayerOwner();
+
+	if( !pOwner )
+	{
+		return false;
+	}
+
+	CBaseViewModel *vm = pOwner->GetViewModel( m_nViewModelIndex, false );
+
+	if( BaseClass::SendWeaponAnim( iActivity ) )
+	{
+		if( vm && iActivity == ACT_VM_PRIMARYATTACK && pOwner->m_Shared.IsHasting() )
+		{
+			vm->SetPlaybackRate( 1.0f / TF_POWERUP_SPEEDBOOST_INV_FACTOR );
+		}
+
+		return true;
 	}
 
 	return false;

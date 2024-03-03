@@ -678,6 +678,9 @@ struct tf_powerup_t
 
 extern tf_powerup_t g_aPowerups[];
 
+#define TF_POWERUP_SPEEDBOOST_FACTOR		1.3f
+#define TF_POWERUP_SPEEDBOOST_INV_FACTOR	0.7f
+
 extern ETFCond condition_to_attribute_translation[];
 
 bool ConditionExpiresFast( int nCond );

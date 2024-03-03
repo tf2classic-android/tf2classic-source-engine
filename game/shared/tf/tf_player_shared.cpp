@@ -536,6 +536,14 @@ bool CTFPlayerShared::IsStealthed( void )
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayerShared::IsHasting( void )
+{
+	return ( InCond( TF_COND_POWERUP_SPEEDBOOST ) || InCond( TF_COND_LASTSTANDING ) );
+}
+
 bool CTFPlayerShared::IsEnemy( CBaseEntity *pEntity )
 {
 	if( TFGameRules() && TFGameRules()->IsDeathmatch() )

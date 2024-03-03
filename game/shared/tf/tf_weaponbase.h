@@ -160,6 +160,7 @@ public:
 	CTFWeaponInfo const	&GetTFWpnData() const;
 	virtual ETFWeaponID GetWeaponID( void ) const;
 	bool IsWeapon( ETFWeaponID iWeapon ) const;
+	virtual float GetFireRate( void );
 	virtual int	GetDamageType() const { return g_aWeaponDamageTypes[ GetWeaponID() ]; }
 	virtual int GetCustomDamageType() const { return TF_DMG_CUSTOM_NONE; }
 
@@ -270,6 +271,7 @@ public:
 	virtual bool	Ready( void );
 	virtual bool	Lower( void );
 
+	virtual bool	SendWeaponAnim( int iActivity );
 	virtual void	WeaponIdle( void );
 
 	virtual void	WeaponReset( void );

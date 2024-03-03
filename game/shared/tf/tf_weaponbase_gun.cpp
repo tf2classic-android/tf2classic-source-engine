@@ -190,10 +190,7 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 	m_flLastFireTime = gpGlobals->curtime;
 
 	// Set next attack times.
-	float flFireDelay = m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeFireDelay;
-	CALL_ATTRIB_HOOK_FLOAT( flFireDelay, mult_postfiredelay );
-
-	m_flNextPrimaryAttack = gpGlobals->curtime + flFireDelay;
+	m_flNextPrimaryAttack = gpGlobals->curtime + GetFireRate();
 
 	// Don't push out secondary attack, because our secondary fire
 	// systems are all separate from primary fire (sniper zooming, demoman pipebomb detonating, etc)
