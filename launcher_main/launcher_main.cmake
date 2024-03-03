@@ -56,7 +56,7 @@ set_property(
 set_install_properties(
 	launcher_main
 	""
-	"hl2_launcher${EXECUTABLE_SUBNAME}"
+	"hl2${EXECUTABLE_SUBNAME}"
 	"${GAMEDIR}"
 )
 
