@@ -83,6 +83,9 @@ enum
 	RT_WARNING_2SECS,
 	RT_WARNING_1SECS,
 	RT_WARNING_TIME_START,
+#if defined( TF_CLASSIC ) || defined( TF_CLASSIC_CLIENT )
+	RT_WARNING_300SECS,
+#endif
 };
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -489,6 +492,14 @@ void CTeamRoundTimer::ClientThink()
 
 	float flTime = GetTimeRemaining();
 
+#if defined( TF_CLASSIC ) || defined( TF_CLASSIC_CLIENT )
+	if( flTime <= 301.0 && m_bFire5MinRemain )
+	{
+		m_bFire5MinRemain = false;
+		SendTimeWarning( RT_WARNING_300SECS );
+	}
+	else
+#endif
 	if ( flTime <= 61.0 && m_bFire1MinRemain )
 	{
 		m_bFire1MinRemain = false;
@@ -714,7 +725,7 @@ const char *CTeamRoundTimer::GetTimeWarningSound( int nWarning )
 //-----------------------------------------------------------------------------
 int CTeamRoundTimer::GetTimeWarningMessage( int nWarning )
 {
-	int iMessage;
+	int iMessage = -1;
 	int nState = m_nState;
 
 	// Force "setup" lines during freezetime.
@@ -801,6 +812,13 @@ int CTeamRoundTimer::GetTimeWarningMessage( int nWarning )
 		else
 		{
 			iMessage = TF_ANNOUNCER_ROUNDENDS_1SEC;
+		}
+		break;
+	// SanyaSho: our custom 5mins sequence
+	case RT_WARNING_300SECS:
+		if( nState != RT_STATE_SETUP ) // only ending sequence :-(
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_5MIN;
 		}
 		break;
 	default:
