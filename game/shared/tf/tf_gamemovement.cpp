@@ -180,7 +180,13 @@ Vector CTFGameMovement::GetPlayerViewOffset( bool ducked ) const
 unsigned int CTFGameMovement::PlayerSolidMask( bool brushOnly )
 {
 	unsigned int uMask = 0;
-
+	
+	// Ghost players dont collide with anything but the world
+	if ( m_pTFPlayer && m_pTFPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) )
+	{
+		return MASK_PLAYERSOLID_BRUSHONLY;
+	}
+	
 	if ( m_pTFPlayer && !m_isPassingThroughEnemies )
 	{
 		switch( m_pTFPlayer->GetTeamNumber() )
@@ -281,13 +287,13 @@ bool CTFGameMovement::CheckWaterJumpButton( void )
 	}
 
 	// In water above our waist.
-	if ( player->GetWaterLevel() >= 2 )
+	if ( player->GetWaterLevel() >= 2 || m_pTFPlayer->m_Shared.InCond( TF_COND_SWIMMING_NO_EFFECTS ) )
 	{	
 		// Swimming, not jumping.
 		SetGroundEntity( NULL );
 
 		// We move up a certain amount.
-		if ( player->GetWaterType() == CONTENTS_WATER )
+		if ( player->GetWaterType() == CONTENTS_WATER || m_pTFPlayer->m_Shared.InCond( TF_COND_SWIMMING_NO_EFFECTS ) )
 		{
 			mv->m_vecVelocity[2] = 100;
 		}
@@ -297,7 +303,7 @@ bool CTFGameMovement::CheckWaterJumpButton( void )
 		}
 
 		// Play swiming sound.
-		if ( player->m_flSwimSoundTime <= 0 )
+		if ( player->m_flSwimSoundTime <= 0 && !m_pTFPlayer->m_Shared.InCond( TF_COND_SWIMMING_NO_EFFECTS ) )
 		{
 			// Don't play sound again for 1 second.
 			player->m_flSwimSoundTime = 1000;
@@ -603,7 +609,13 @@ bool CTFGameMovement::CheckWater( void )
 			}
 		}
 	}
-
+	
+	// force player to be under water
+	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_SWIMMING_CURSE ) )
+	{
+		wl = WL_Eyes;
+	}
+	
 	player->SetWaterLevel( wl );
 	player->SetWaterType( wt );
 
@@ -1519,10 +1531,11 @@ void CTFGameMovement::FullWalkMove()
 		CheckWater();
 		return;
 	}
-
+	
 	// If we are swimming in the water, see if we are nudging against a place we can jump up out
-	//  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
-	if ( InWater() ) 
+	//  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0.
+	//  Also run the swim code if we're a ghost or have the TF_COND_SWIMMING_NO_EFFECTS condition
+	if ( InWater() || ( m_pTFPlayer && ( m_pTFPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) || m_pTFPlayer->m_Shared.InCond( TF_COND_SWIMMING_NO_EFFECTS ) ) ) )
 	{
 		FullWalkMoveUnderwater();
 		return;
