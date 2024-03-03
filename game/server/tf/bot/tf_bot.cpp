@@ -3271,7 +3271,7 @@ bool CTFBot::IsHitScanWeapon( CTFWeaponBase *weapon ) const
 		//case TF_WEAPON_PEP_BRAWLER_BLASTER:
 		//case TF_WEAPON_SNIPERRIFLE_CLASSIC:
 		case TF_WEAPON_SHOTGUN_MERC: // SanyaSho: TF2C
-		case TF_WEAPON_PISTOL_MERC: // SanyaSho: TF2C
+		//case TF_WEAPON_PISTOL_MERC: // SanyaSho: TF2C
 		case TF_WEAPON_SIXSHOOTER: // SanyaSho: TF2C
 		case TF_WEAPON_TOMMYGUN: // SanyaSho: TF2C
 		case TF_WEAPON_SUPERSHOTGUN: // SanyaSho: TF2C
@@ -3313,7 +3313,7 @@ bool CTFBot::IsContinuousFireWeapon( CTFWeaponBase *weapon ) const
 		case TF_WEAPON_ROCKETLAUNCHER_MERC: // SanyaSho: TF2C
 		case TF_WEAPON_GRENADELAUNCHER_MERC: // SanyaSho: TF2C
 		case TF_WEAPON_ASSAULTRIFLE: // SanyaSho: TF2C
-		case TF_WEAPON_PISTOL_MERC: // SanyaSho: TF2C
+		//case TF_WEAPON_PISTOL_MERC: // SanyaSho: TF2C
 			return false;
 		};
 	}
