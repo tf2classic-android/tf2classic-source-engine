@@ -138,6 +138,7 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	RecvPropInt( RECVINFO( m_iDesiredWeaponID ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_nStreaks ), RecvPropInt( RECVINFO( m_nStreaks[0] ) ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_flCondExpireTimeLeft ), RecvPropFloat( RECVINFO( m_flCondExpireTimeLeft[0] ) ) ),
+	RecvPropVector( RECVINFO( m_vecAirblastPos ) ),
 END_RECV_TABLE()
 
 BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
@@ -201,6 +202,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	SendPropInt( SENDINFO( m_iDesiredWeaponID ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_nStreaks ), SendPropInt( SENDINFO_ARRAY( m_nStreaks ) ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_flCondExpireTimeLeft ), SendPropFloat( SENDINFO_ARRAY( m_flCondExpireTimeLeft ) ) ),
+	SendPropVector( SENDINFO( m_vecAirblastPos ), -1, SPROP_COORD ),
 END_SEND_TABLE()
 
 BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
@@ -262,6 +264,8 @@ CTFPlayerShared::CTFPlayerShared()
 
 	m_iStunPhase = 0;
 
+	m_vecAirblastPos = vec3_origin;
+	
 	m_nTeamTeleporterUsed = TEAM_UNASSIGNED;
 
 #ifdef CLIENT_DLL
@@ -455,6 +459,7 @@ bool CTFPlayerShared::IsCritBoosted( void )
 	return false;
 }
 
+//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 bool CTFPlayerShared::IsMiniCritBoosted( void )
@@ -790,6 +795,11 @@ void CTFPlayerShared::OnConditionAdded( ETFCond nCond )
 		OnAddSpeedBoost();
 		break;
 
+	// SanyaSho: probably dead code
+	//case TF_COND_AIRBLASTED:
+	//	m_pOuter->TeamFortress_SetSpeed();
+	//	break;
+
 	case TF_COND_LASTSTANDING:
 #ifdef GAME_DLL
 		m_pOuter->TakeHealth( m_pOuter->GetMaxHealth() * 2, HEAL_NOTIFY | HEAL_IGNORE_MAXHEALTH | HEAL_MAXBUFFCAP );
@@ -920,7 +930,11 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond nCond )
 	case TF_COND_LASTSTANDING:
 		m_pOuter->TeamFortress_SetSpeed();
 		break;
-
+		
+	case TF_COND_AIRBLASTED:
+		m_vecAirblastPos = vec3_origin;
+		break;
+			
 	case TF_COND_SOFTZOOM:
 		m_pOuter->SetFOV( m_pOuter, 0, 0.2f );
 		break;

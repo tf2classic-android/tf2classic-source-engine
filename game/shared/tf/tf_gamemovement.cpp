@@ -834,7 +834,21 @@ void CTFGameMovement::WalkMove( void )
 	Vector vecWishDirection( ( ( vecForward.x * flForwardMove ) + ( vecRight.x * flSideMove ) ),
 		                     ( ( vecForward.y * flForwardMove ) + ( vecRight.y * flSideMove ) ), 
 							 0.0f );
-
+	
+	// If we're airblasted, prevent moving towards airblast position.
+	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIRBLASTED ) )
+	{
+		Vector vecBlastDir = mv->GetAbsOrigin() - m_pTFPlayer->m_Shared.GetAirblastPosition();
+		vecBlastDir.z = 0.0f;
+		VectorNormalize( vecBlastDir );
+		
+		float flDot = DotProduct( vecWishDirection, vecBlastDir );
+		if ( flDot < 0.0f )
+		{
+			vecWishDirection -= vecBlastDir * flDot;
+		}
+	}
+	
 	// Calculate the speed and direction of movement, then clamp the speed.
 	float flWishSpeed = VectorNormalize( vecWishDirection );
 	flWishSpeed = clamp( flWishSpeed, 0.0f, mv->m_flMaxSpeed );
@@ -981,7 +995,21 @@ void CTFGameMovement::AirMove( void )
 	for (i=0 ; i<2 ; i++)       // Determine x and y parts of velocity
 		wishvel[i] = forward[i]*fmove + right[i]*smove;
 	wishvel[2] = 0;             // Zero out z part of velocity
-
+	
+	// If we're airblasted, prevent moving towards airblast position.
+	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIRBLASTED ) )
+	{
+		Vector vecBlastDir = mv->GetAbsOrigin() - m_pTFPlayer->m_Shared.GetAirblastPosition();
+		vecBlastDir.z = 0.0f;
+		VectorNormalize( vecBlastDir );
+		
+		float flDot = DotProduct( wishvel, vecBlastDir );
+		if ( flDot < 0.0f )
+		{
+			wishvel -= vecBlastDir * flDot;
+		}
+	}
+	
 	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
 	wishspeed = VectorNormalize(wishdir);
 

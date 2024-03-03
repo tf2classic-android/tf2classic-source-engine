@@ -268,6 +268,8 @@ public:
 
 	int GetSequenceForDeath( CBaseAnimating *pAnim, int iDamageCustom );
 
+	const Vector &GetAirblastPosition( void ) { return m_vecAirblastPos.Get(); }
+	void SetAirblastPosition( Vector vecPosition ) { m_vecAirblastPos = vecPosition; }
 private:
 
 	void ImpactWaterTrace( trace_t &trace, const Vector &vecStart );
@@ -416,7 +418,9 @@ private:
 	CNetworkHandle( CTFPlayer, m_hStunner );
 	CNetworkVar( float, m_flStunExpireTime );
 	int m_iStunPhase;
-	
+
+	CNetworkVector( m_vecAirblastPos );
+
 	CNetworkHandle( CBaseObject, m_hCarriedObject );
 	CNetworkVar( bool, m_bCarryingObject );
 
