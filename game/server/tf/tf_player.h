@@ -439,6 +439,7 @@ public:
 	bool	m_bBlastLaunched;
 
 	CNetworkVar( bool, m_bIsPlayerADev );
+	CNetworkVar( bool, m_bIsPlayerChatProtected );
 
 	int					StateGet( void ) const;
 
@@ -681,6 +682,7 @@ private:
 public:
 	bool				SetPowerplayEnabled( bool bOn );
 	bool				PlayerHasPowerplay( void );
+	bool				PlayerHasChatProtection();
 	void				PowerplayThink( void );
 	float				m_flPowerPlayTime;
 };

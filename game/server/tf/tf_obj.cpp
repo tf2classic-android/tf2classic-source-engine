@@ -1818,6 +1818,12 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	if ( IsPlacing() )
 		return 0;
 
+	if( GetOwner() )
+	{
+		if( GetOwner()->m_Shared.InCond( TF_COND_INVULNERABLE_CHAT_PROTECTION ) )
+			return 0;
+	}
+	
 	// Check teams
 	if ( info.GetAttacker() )
 	{

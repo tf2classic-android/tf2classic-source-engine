@@ -6,6 +6,7 @@
 //=============================================================================
 
 #include "cbase.h"
+#include "tf_shareddefs.h"
 #include "trigger_area_capture.h"
 #include "tf_player.h"
 #include "tf_gamerules.h"
@@ -134,6 +135,8 @@ ConVar tf2c_player_powerup_allowdrop( "tf2c_player_powerup_allowdrop", "0", FCVA
 ConVar tf2c_player_powerup_throwforce( "tf2c_player_powerup_throwforce", "500", FCVAR_DEVELOPMENTONLY, "Force when the player 'throws' their powerup." );
 ConVar tf2c_player_powerup_explodeforce( "tf2c_player_powerup_explodeforce", "200", FCVAR_DEVELOPMENTONLY, "Force when the player 'explodes' with a powerup." );
 
+ConVar tf2c_chat_protection( "tf2c_chat_protection", "1", FCVAR_NOTIFY, "Enable chat protection. Invulnerability is applied while the chat window is open." );
+    
 // -------------------------------------------------------------------------------- //
 // Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
 // -------------------------------------------------------------------------------- //
@@ -324,6 +327,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayer, DT_TFNonLocalPlayerExclusive )
 	SendPropVector	(SENDINFO(m_vecOrigin), -1,  SPROP_COORD_MP_LOWPRECISION|SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin ),
 
 	SendPropBool( SENDINFO( m_bIsPlayerADev ) ),
+	SendPropBool( SENDINFO( m_bIsPlayerChatProtected ) ),
 
 	SendPropFloat( SENDINFO_VECTORELEM(m_angEyeAngles, 0), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f ),
 	SendPropAngle( SENDINFO_VECTORELEM(m_angEyeAngles, 1), 10, SPROP_CHANGES_OFTEN ),
@@ -477,6 +481,7 @@ CTFPlayer::CTFPlayer()
 	m_flTeamScrambleScore = 0.0f;
 
 	m_bIsPlayerADev = false;
+	m_bIsPlayerChatProtected = false;
 }
 
 
@@ -808,7 +813,7 @@ void CTFPlayer::PostThink()
 	// Store the eye angles pitch so the client can compute its animation state correctly.
 	m_angEyeAngles = EyeAngles();
 
-    m_PlayerAnimState->Update( m_angEyeAngles[YAW], m_angEyeAngles[PITCH] );
+	m_PlayerAnimState->Update( m_angEyeAngles[YAW], m_angEyeAngles[PITCH] );
 
 	if ( m_flTauntAttackTime > 0.0f && m_flTauntAttackTime < gpGlobals->curtime )
 	{
@@ -818,6 +823,22 @@ void CTFPlayer::PostThink()
 
 	// Check if player is typing.
 	m_bTyping = ( m_nButtons & IN_TYPING ) != 0;
+	
+	if( IsAlive() )
+	{
+		bool bHaveCond = m_Shared.InCond( TF_COND_INVULNERABLE_CHAT_PROTECTION );
+		if( bHaveCond != ( m_bTyping && tf2c_chat_protection.GetBool() && m_bIsPlayerChatProtected ) )
+		{
+			if( bHaveCond )
+			{
+				m_Shared.RemoveCond( TF_COND_INVULNERABLE_CHAT_PROTECTION );
+			}
+			else
+			{
+				m_Shared.AddCond( TF_COND_INVULNERABLE_CHAT_PROTECTION );
+			}
+		}
+	}
 }
 
 /*
@@ -9514,6 +9535,14 @@ bool CTFPlayer::PlayerHasPowerplay( void )
 	return false;
 }
 #endif
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::PlayerHasChatProtection()
+{
+	return true;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

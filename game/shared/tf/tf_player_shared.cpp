@@ -7,6 +7,7 @@
 #include "tf_gamerules.h"
 #include "tf_player_shared.h"
 #include "takedamageinfo.h"
+#include "tf_shareddefs.h"
 #include "tf_weaponbase.h"
 #include "effect_dispatch_data.h"
 #include "tf_item.h"
@@ -476,7 +477,8 @@ bool CTFPlayerShared::IsInvulnerable( void )
 		InCond( TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGE ) ||
 		InCond( TF_COND_INVULNERABLE_USER_BUFF ) ||
 		InCond( TF_COND_INVULNERABLE_CARD_EFFECT ) ||
-		InCond( TF_COND_INVULNERABLE_SPAWN_PROTECT ) )
+		InCond( TF_COND_INVULNERABLE_SPAWN_PROTECT ) ||
+		InCond( TF_COND_INVULNERABLE_CHAT_PROTECTION ) )
 		return true;
 
 	return false;

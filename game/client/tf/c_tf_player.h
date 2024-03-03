@@ -375,6 +375,7 @@ public:
 	CTFPlayerAnimState *m_PlayerAnimState;
 
 	bool m_bIsPlayerADev;
+	bool m_bIsPlayerChatProtected;
 
 	QAngle	m_angEyeAngles;
 	CInterpolatedVar< QAngle >	m_iv_angEyeAngles;

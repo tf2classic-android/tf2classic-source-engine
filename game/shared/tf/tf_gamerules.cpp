@@ -3793,6 +3793,7 @@ void CTFGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 	pTFPlayer->SetDefaultFOV( iFov );
 
 	pTFPlayer->m_bIsPlayerADev = pTFPlayer->PlayerHasPowerplay() && ( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf2c_dev_mark" ) ) > 0 );
+	pTFPlayer->m_bIsPlayerChatProtected = pTFPlayer->PlayerHasChatProtection();
 }
 
 static const char *g_aTaggedConVars[] =

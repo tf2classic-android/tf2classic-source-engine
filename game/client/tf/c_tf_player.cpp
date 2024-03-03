@@ -1724,6 +1724,7 @@ BEGIN_RECV_TABLE_NOBASE( C_TFPlayer, DT_TFNonLocalPlayerExclusive )
 	RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ),
 
 	RecvPropBool( RECVINFO( m_bIsPlayerADev ) ),
+	RecvPropBool( RECVINFO( m_bIsPlayerChatProtected ) ),
 
 	RecvPropFloat( RECVINFO( m_angEyeAngles[0] ) ),
 	RecvPropFloat( RECVINFO( m_angEyeAngles[1] ) ),
@@ -1785,6 +1786,7 @@ C_TFPlayer::C_TFPlayer() :
 	m_iIDEntIndex = 0;
 
 	m_bIsPlayerADev = false;
+	m_bIsPlayerChatProtected = false;
 
 	m_angEyeAngles.Init();
 	AddVar( &m_angEyeAngles, &m_iv_angEyeAngles, LATCH_SIMULATION_VAR );
