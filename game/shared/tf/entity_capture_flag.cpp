@@ -7,6 +7,7 @@
 #include "entity_capture_flag.h"
 #include "tf_gamerules.h"
 #include "tf_shareddefs.h"
+#include "tf_announcer.h"
 
 #ifdef CLIENT_DLL
 #include <vgui_controls/Panel.h>
@@ -211,32 +212,8 @@ void CCaptureFlag::Precache( void )
 	PrecacheModel(STRING(m_szModel));
 
 	PrecacheScriptSound( TF_CTF_FLAGSPAWN ); // Should be Resource.Flagspawn
-	PrecacheScriptSound( TF_CTF_ENEMY_STOLEN );
-	PrecacheScriptSound( TF_CTF_ENEMY_DROPPED );
-	PrecacheScriptSound( TF_CTF_ENEMY_CAPTURED );
-	PrecacheScriptSound( TF_CTF_ENEMY_RETURNED );
-	PrecacheScriptSound( TF_CTF_TEAM_STOLEN );
-	PrecacheScriptSound( TF_CTF_TEAM_DROPPED );
-	PrecacheScriptSound( TF_CTF_TEAM_CAPTURED );
-	PrecacheScriptSound( TF_CTF_TEAM_RETURNED );
-
 	PrecacheScriptSound( TF_AD_CAPTURED_SOUND );
-	PrecacheScriptSound( TF_AD_ENEMY_STOLEN );
-	PrecacheScriptSound( TF_AD_ENEMY_DROPPED );
-	PrecacheScriptSound( TF_AD_ENEMY_CAPTURED );
-	PrecacheScriptSound( TF_AD_ENEMY_RETURNED );
-	PrecacheScriptSound( TF_AD_TEAM_STOLEN );
-	PrecacheScriptSound( TF_AD_TEAM_DROPPED );
-	PrecacheScriptSound( TF_AD_TEAM_CAPTURED );
-	PrecacheScriptSound( TF_AD_TEAM_RETURNED );
-
-	PrecacheScriptSound( TF_INVADE_ENEMY_STOLEN );
-	PrecacheScriptSound( TF_INVADE_ENEMY_DROPPED );
-	PrecacheScriptSound( TF_INVADE_ENEMY_CAPTURED );
-	PrecacheScriptSound( TF_INVADE_TEAM_STOLEN );
-	PrecacheScriptSound( TF_INVADE_TEAM_DROPPED );
-	PrecacheScriptSound( TF_INVADE_TEAM_CAPTURED );
-	PrecacheScriptSound( TF_INVADE_FLAG_RETURNED );
+	PrecacheScriptSound( "Resource.FlagSpawn" );
 
 	PrecacheParticleSystem( "player_intel_trail_blue" );
 	PrecacheParticleSystem( "player_intel_trail_red" );
@@ -443,22 +420,21 @@ void CCaptureFlag::ResetMessage( void )
 			if ( iTeam == GetTeamNumber() )
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_CTF_ENEMY_RETURNED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_ENEMYRETURNED );
 
 				TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_YOUR_FLAG_RETURNED );
 			}
 			else
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_CTF_TEAM_RETURNED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_TEAMRETURNED );
 
 				TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_ENEMY_FLAG_RETURNED );
 			}
 		}
 
 		// Returned sound
-		CPASAttenuationFilter filter( this, TF_CTF_FLAGSPAWN );
-		EmitSound( filter, entindex(), TF_CTF_FLAGSPAWN );
+		EmitSound( TF_CTF_FLAGSPAWN );
 	}
 	else if ( m_nGameType == TF_FLAGTYPE_ATTACK_DEFEND )
 	{
@@ -469,14 +445,14 @@ void CCaptureFlag::ResetMessage( void )
 				TFTeamMgr()->TeamCenterPrint( iTeam, "#TF_AD_FlagReturned" );
 
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_AD_TEAM_RETURNED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_TEAMRETURNED );
 			}
 			else
 			{
 				TFTeamMgr()->TeamCenterPrint( iTeam, "#TF_AD_FlagReturned" );
 
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_AD_ENEMY_RETURNED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_ENEMYRETURNED );
 			}
 		}
 	}
@@ -487,7 +463,7 @@ void CCaptureFlag::ResetMessage( void )
 			TFTeamMgr()->TeamCenterPrint( iTeam, "#TF_Invade_FlagReturned" );
 
 			CTeamRecipientFilter filter( iTeam, true );
-			EmitSound( filter, entindex(), TF_INVADE_FLAG_RETURNED );
+			g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_INVADE_RETURNED );
 		}
 	}
 
@@ -648,14 +624,14 @@ void CCaptureFlag::PickUp( CTFPlayer *pPlayer, bool bInvisible )
 			if ( iTeam != pPlayer->GetTeamNumber() )
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_CTF_ENEMY_STOLEN );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_ENEMYSTOLEN );
 
 				TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_YOUR_FLAG_TAKEN );
 			}
 			else
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_CTF_TEAM_STOLEN );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_TEAMSTOLEN );
 
 				// exclude the guy who just picked it up
 				filter.RemoveRecipient( pPlayer );
@@ -674,12 +650,12 @@ void CCaptureFlag::PickUp( CTFPlayer *pPlayer, bool bInvisible )
 			if ( iTeam != pPlayer->GetTeamNumber() )
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_AD_ENEMY_STOLEN );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_ENEMYSTOLEN );
 			}
 			else
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_AD_TEAM_STOLEN );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_TEAMSTOLEN );
 			}
 		}
 	}
@@ -696,12 +672,12 @@ void CCaptureFlag::PickUp( CTFPlayer *pPlayer, bool bInvisible )
 				TFTeamMgr()->TeamCenterPrint( iTeam, "#TF_Invade_OtherTeamPickup" );
 
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_INVADE_ENEMY_STOLEN );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_INVADE_ENEMYSTOLEN );
 			}
 			else
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_INVADE_TEAM_STOLEN );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_INVADE_TEAMSTOLEN );
 			}
 		}
 
@@ -812,14 +788,14 @@ void CCaptureFlag::Capture( CTFPlayer *pPlayer, int nCapturePoint )
 				if ( iTeam != pPlayer->GetTeamNumber() )
 				{
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_CTF_ENEMY_CAPTURED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_ENEMYCAPTURED );
 
 					TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_YOUR_FLAG_CAPTURED );
 				}
 				else
 				{
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_CTF_TEAM_CAPTURED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_TEAMCAPTURED );
 
 					TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_ENEMY_FLAG_CAPTURED );
 				}
@@ -860,12 +836,12 @@ void CCaptureFlag::Capture( CTFPlayer *pPlayer, int nCapturePoint )
 				TFTeamMgr()->TeamCenterPrint( iTeam, "#TF_AD_AttackersSecuredPoint" );
 
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_AD_ENEMY_CAPTURED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_ENEMYCAPTURED );
 			}
 			else
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_AD_TEAM_CAPTURED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_TEAMCAPTURED );
 			}
 		}
 
@@ -891,12 +867,12 @@ void CCaptureFlag::Capture( CTFPlayer *pPlayer, int nCapturePoint )
 				TFTeamMgr()->TeamCenterPrint( iTeam, "#TF_Invade_OtherTeamCapture" );
 
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_INVADE_ENEMY_CAPTURED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_INVADE_ENEMYCAPTURED );
 			}
 			else
 			{
 				CTeamRecipientFilter filter( iTeam, true );
-				EmitSound( filter, entindex(), TF_INVADE_TEAM_CAPTURED );
+				g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_INVADE_TEAMCAPTURED );
 			}
 		}
 
@@ -1021,14 +997,14 @@ void CCaptureFlag::Drop( CTFPlayer *pPlayer, bool bVisible,  bool bThrown /*= fa
 				if ( iTeam != pPlayer->GetTeamNumber() )
 				{
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_CTF_ENEMY_DROPPED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_ENEMYDROPPED );
 
 					TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_YOUR_FLAG_DROPPED );
 				}
 				else
 				{
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_CTF_TEAM_DROPPED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_CTF_TEAMDROPPED );
 
 					TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_ENEMY_FLAG_DROPPED );
 				}
@@ -1052,12 +1028,12 @@ void CCaptureFlag::Drop( CTFPlayer *pPlayer, bool bVisible,  bool bThrown /*= fa
 					TFTeamMgr()->TeamCenterPrint( iTeam, "#TF_Invade_FlagDrop" );
 
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_INVADE_ENEMY_DROPPED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_INVADE_ENEMYDROPPED );
 				}
 				else
 				{
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_INVADE_TEAM_DROPPED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_INVADE_TEAMDROPPED );
 				}
 			}
 		}
@@ -1074,12 +1050,12 @@ void CCaptureFlag::Drop( CTFPlayer *pPlayer, bool bVisible,  bool bThrown /*= fa
 				if ( iTeam != pPlayer->GetTeamNumber() )
 				{
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_AD_ENEMY_DROPPED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_ENEMYDROPPED );
 				}
 				else
 				{
 					CTeamRecipientFilter filter( iTeam, true );
-					EmitSound( filter, entindex(), TF_AD_TEAM_DROPPED );
+					g_TFAnnouncer.Speak( filter, TF_ANNOUNCER_AD_TEAMDROPPED );
 				}
 			}
 		}

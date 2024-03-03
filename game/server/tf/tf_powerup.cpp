@@ -4,13 +4,10 @@
 //
 //=============================================================================//
 #include "cbase.h"
-#include "items.h"
-#include "tf_gamerules.h"
-#include "tf_shareddefs.h"
-#include "tf_player.h"
-#include "tf_team.h"
-#include "engine/IEngineSound.h"
 #include "tf_powerup.h"
+#include "tf_gamerules.h"
+#include "particle_parse.h"
+#include "util_shared.h"
 
 //=============================================================================
 float PackRatios[POWERUP_SIZES] =
@@ -26,22 +23,39 @@ float PackRatios[POWERUP_SIZES] =
 //
 // CTF Powerup tables.
 //
-
-IMPLEMENT_AUTO_LIST( ITFPowerupAutoList )
+IMPLEMENT_SERVERCLASS_ST( CTFPowerup, DT_TFPowerup )
+	SendPropBool( SENDINFO( m_bDisabled ) ),
+	SendPropBool( SENDINFO( m_bRespawning ) ),
+	SendPropTime( SENDINFO( m_flRespawnStartTime ) ),
+	SendPropTime( SENDINFO( m_flRespawnTime ) ),
+END_SEND_TABLE()
 
 BEGIN_DATADESC( CTFPowerup )
 
-// Keyfields.
-DEFINE_KEYFIELD( m_bDisabled, FIELD_BOOLEAN, "StartDisabled" ),
+	// Keyfields.
+	DEFINE_KEYFIELD( m_bDisabled, FIELD_BOOLEAN, "StartDisabled" ),
 
-// Inputs.
-DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
-DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
-DEFINE_INPUTFUNC( FIELD_VOID, "Toggle", InputToggle ),
+	// Inputs.
+	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Toggle", InputToggle ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "EnableWithEffect", InputEnableWithEffect ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "DisableWithEffect", InputDisableWithEffect ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "RespawnNow", InputRespawnNow ),
 
-// Outputs.
+	// Outputs.
+	DEFINE_OUTPUT( m_outputOnRespawn, "OnRespawn" ),
+	DEFINE_OUTPUT( m_outputOn15SecBeforeRespawn, "On15SecBeforeRespawn" ),
+	DEFINE_OUTPUT( m_outputOnTeam1Touch, "OnTeam1Touch" ),
+	DEFINE_OUTPUT( m_outputOnTeam2Touch, "OnTeam2Touch" ),
+	DEFINE_OUTPUT( m_outputOnTeam3Touch, "OnTeam3Touch" ),
+	DEFINE_OUTPUT( m_outputOnTeam4Touch, "OnTeam4Touch" ),
+
+	DEFINE_THINKFUNC( RespawnThink ),
 
 END_DATADESC();
+
+IMPLEMENT_AUTO_LIST( ITFPowerupAutoList );
 
 //=============================================================================
 //
@@ -56,6 +70,20 @@ CTFPowerup::CTFPowerup()
 	m_bDisabled = false;
 	m_bRespawning = false;
 	m_flNextCollideTime = 0.0f;
+	m_flOwnerPickupEnableTime = 0.0f;
+
+	// 10 seconds respawn time by default. Override in derived classes.
+	m_flRespawnDelay = 10.0f;
+	m_flInitialSpawnDelay = 0.0f;
+	m_bDropped = false;
+	m_bFire15SecRemain = false;
+	memset( m_bEnabledModes, 0, sizeof( m_bEnabledModes ) );
+	
+	// SanyaSho: HACK
+	for ( int i = 1; i < TF_GAMETYPE_COUNT; i++ )
+	{
+		m_bEnabledModes[i] = true;
+	}
 
 	UseClientSideAnimation();
 }
@@ -63,25 +91,64 @@ CTFPowerup::CTFPowerup()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPowerup::Spawn( void )
+void CTFPowerup::Precache( void )
 {
 	BaseClass::Precache();
+
+	PrecacheParticleSystem( "ExplosionCore_buildings" );
+
+	PrecacheMaterial( "vgui/flagtime_full" );
+	PrecacheMaterial( "vgui/flagtime_empty" );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPowerup::Spawn( void )
+{
 	BaseClass::Spawn();
 
-	BaseClass::SetOriginalSpawnOrigin( GetAbsOrigin() );
-	BaseClass::SetOriginalSpawnAngles( GetAbsAngles() );
+	AddEffects( EF_ITEM_BLINK );
+	
+	SetOriginalSpawnOrigin( GetLocalOrigin() );
+	SetOriginalSpawnAngles( GetAbsAngles() );
 
 	VPhysicsDestroyObject();
 	SetMoveType( MOVETYPE_NONE );
 	SetSolidFlags( FSOLID_NOT_SOLID | FSOLID_TRIGGER );
 
-	if ( m_bDisabled )
+	if ( ValidateForGameType( TFGameRules()->GetGameType() ) == true )
 	{
-		SetDisabled( true );
-	}
+		SetDisabled( m_bDisabled );
 
-	m_bRespawning = false;
-	ResetSequence( LookupSequence("idle") );
+		ResetSequence( LookupSequence( "idle" ) );
+
+		if ( m_flInitialSpawnDelay > 0.0f && !m_bDropped )
+		{
+			// Don't spawn immediately.
+			Respawn();
+
+			// Override the respawn time
+			SetRespawnTime( m_flInitialSpawnDelay );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPowerup::KeyValue( const char *szKeyName, const char *szValue )
+{
+	/*for ( int i = 1; i < TF_GAMETYPE_COUNT; i++ )
+	{
+		if ( FStrEq( szKeyName, UTIL_VarArgs( "EnabledIn%s", g_aGameTypeInfo[i].name ) ) )
+		{
+			m_bEnabledModes[i] = !!atoi( szValue );
+			return true;
+		}
+	}*/
+
+	return BaseClass::KeyValue( szKeyName, szValue );
 }
 
 //-----------------------------------------------------------------------------
@@ -90,12 +157,24 @@ void CTFPowerup::Spawn( void )
 CBaseEntity* CTFPowerup::Respawn( void )
 {
 	m_bRespawning = true;
-	CBaseEntity *pReturn = BaseClass::Respawn();
 
-	// Override the respawn time
-	SetNextThink( gpGlobals->curtime + GetRespawnDelay() );
+	HideOnPickedUp();
+	SetTouch( NULL );
 
-	return pReturn;
+	RemoveAllDecals(); //remove any decals
+	
+	RemoveEffects( EF_ITEM_BLINK );
+
+	// Set respawn time.
+	SetRespawnTime( m_flRespawnDelay );
+	m_flRespawnStartTime = gpGlobals->curtime;
+
+	if ( !m_bDisabled )
+	{
+		SetContextThink( &CTFPowerup::RespawnThink, gpGlobals->curtime, "RespawnThinkContext" );
+	}
+
+	return this;
 }
 
 //-----------------------------------------------------------------------------
@@ -103,15 +182,30 @@ CBaseEntity* CTFPowerup::Respawn( void )
 //-----------------------------------------------------------------------------
 void CTFPowerup::Materialize( void )
 {
-	if ( !m_bDisabled && IsEffectActive( EF_NODRAW ) )
-	{
-		// changing from invisible state to visible.
-		EmitSound( "Item.Materialize" );
-		RemoveEffects( EF_NODRAW );
-	}
-
 	m_bRespawning = false;
+	UnhideOnRespawn();
 	SetTouch( &CItem::ItemTouch );
+
+	m_outputOnRespawn.FireOutput( this, this );
+	SetContextThink( NULL, 0, "RespawnThinkContext" );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPowerup::HideOnPickedUp( void )
+{
+	AddEffects( EF_NODRAW );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPowerup::UnhideOnRespawn( void )
+{
+	EmitSound( "Item.Materialize" );
+	AddEffects( EF_ITEM_BLINK );
+	RemoveEffects( EF_NODRAW );
 }
 
 //-----------------------------------------------------------------------------
@@ -119,6 +213,11 @@ void CTFPowerup::Materialize( void )
 //-----------------------------------------------------------------------------
 bool CTFPowerup::ValidTouch( CBasePlayer *pPlayer )
 {
+	if ( IsRespawning() )
+	{
+		return false;
+	}
+
 	// Is the item enabled?
 	if ( IsDisabled() )
 	{
@@ -137,7 +236,7 @@ bool CTFPowerup::ValidTouch( CBasePlayer *pPlayer )
 	{
 		return false;
 	}
-
+	
 	// Don't collide with the owner for the first portion of our life if we're a lunchbox item
 	if ( m_flNextCollideTime > gpGlobals->curtime && pPlayer == GetOwnerEntity() )
 	{
@@ -158,8 +257,56 @@ bool CTFPowerup::MyTouch( CBasePlayer *pPlayer )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPowerup::DropSingleInstance( const Vector &vecVelocity, CBaseCombatCharacter *pOwner, float flUnknown, float flRestTime )
+bool CTFPowerup::ItemCanBeTouchedByPlayer( CBasePlayer *pPlayer )
 {
+	// Owner can't pick it up for some time after dropping it.
+	if ( pPlayer == GetOwnerEntity() && gpGlobals->curtime < m_flOwnerPickupEnableTime )
+		return false;
+
+	return BaseClass::ItemCanBeTouchedByPlayer( pPlayer );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPowerup::SetRespawnTime( float flDelay )
+{
+	m_flRespawnTime = gpGlobals->curtime + flDelay;
+	m_bFire15SecRemain = ( flDelay >= 15.0f );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPowerup::RespawnThink( void )
+{
+	if ( m_bFire15SecRemain && m_flRespawnTime - gpGlobals->curtime <= 15.0f )
+	{
+		m_bFire15SecRemain = false;
+		m_outputOn15SecBeforeRespawn.FireOutput( this, this );
+		OnIncomingSpawn();
+	}
+
+	if ( gpGlobals->curtime >= m_flRespawnTime )
+	{
+		Materialize();
+	}
+	else
+	{
+		SetContextThink( &CTFPowerup::RespawnThink, gpGlobals->curtime, "RespawnThinkContext" );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPowerup::DropSingleInstance( const Vector &vecVelocity, CBaseCombatCharacter *pOwner, float flOwnerPickupDelay, float flRestTime, float flRemoveTime /*= 30.0f*/ )
+{
+	SetOwnerEntity( pOwner );
+	AddSpawnFlags( SF_NORESPAWN );
+	m_bDropped = true;
+	DispatchSpawn( this );
+
 	SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE );
 	SetAbsVelocity( vecVelocity );
 	SetSolid( SOLID_BBOX );
@@ -167,12 +314,10 @@ void CTFPowerup::DropSingleInstance( const Vector &vecVelocity, CBaseCombatChara
 	if ( flRestTime != 0.0f )
 		ActivateWhenAtRest( flRestTime );
 
-	AddSpawnFlags( SF_NORESPAWN );
-	
-	SetOwnerEntity( pOwner );
+	m_flOwnerPickupEnableTime = gpGlobals->curtime + flOwnerPickupDelay;
 
 	// Remove after 30 seconds.
-	SetContextThink( &CBaseEntity::SUB_Remove, gpGlobals->curtime + 30.0f, "PowerupRemoveThink" );
+	SetContextThink( &CBaseEntity::SUB_Remove, gpGlobals->curtime + flRemoveTime, "PowerupRemoveThink" );
 }
 
 //-----------------------------------------------------------------------------
@@ -188,6 +333,24 @@ void CTFPowerup::InputEnable( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CTFPowerup::InputDisable( inputdata_t &inputdata )
 {
+	SetDisabled( true );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPowerup::InputEnableWithEffect( inputdata_t &inputdata )
+{
+	DispatchParticleEffect( "ExplosionCore_buildings", GetAbsOrigin(), vec3_angle );
+	SetDisabled( false );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPowerup::InputDisableWithEffect( inputdata_t &inputdata )
+{
+	DispatchParticleEffect( "ExplosionCore_buildings", GetAbsOrigin(), vec3_angle );
 	SetDisabled( true );
 }
 
@@ -221,18 +384,89 @@ void CTFPowerup::SetDisabled( bool bDisabled )
 {
 	m_bDisabled = bDisabled;
 
-	if ( bDisabled )
+	if ( m_bDisabled )
 	{
 		AddEffects( EF_NODRAW );
+		SetContextThink( NULL, 0, "RespawnThinkContext" );
 	}
 	else
 	{
-		// only turn it back on if we're not in the middle of respawning
-		if ( !m_bRespawning )
+		RemoveEffects( EF_NODRAW );
+		
+		if ( m_bRespawning )
 		{
-			RemoveEffects( EF_NODRAW );
+			HideOnPickedUp();
+			m_bFire15SecRemain = ( m_flRespawnTime - gpGlobals->curtime >= 15.0f );
+			SetContextThink( &CTFPowerup::RespawnThink, gpGlobals->curtime, "RespawnThinkContext" );
 		}
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPowerup::InputRespawnNow( inputdata_t &inputdata )
+{
+	if ( m_bRespawning )
+	{
+		Materialize();
+	}
+}
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPowerup::FireOutputsOnPickup( CBasePlayer *pPlayer )
+{
+	if ( TFGameRules()->IsTeamplay() )
+	{
+		switch ( pPlayer->GetTeamNumber() )
+		{
+		case TF_TEAM_RED:
+			m_outputOnTeam1Touch.FireOutput( pPlayer, this );
+			break;
+		case TF_TEAM_BLUE:
+			m_outputOnTeam2Touch.FireOutput( pPlayer, this );
+			break;
+		case TF_TEAM_GREEN:
+			m_outputOnTeam3Touch.FireOutput( pPlayer, this );
+			break;
+		case TF_TEAM_YELLOW:
+			m_outputOnTeam4Touch.FireOutput( pPlayer, this );
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFPowerup::ValidateForGameType( int  iType )
+{
+	if ( m_bDropped )
+		return true;
+
+	if ( iType && ( !m_bEnabledModes[iType] || TFGameRules()->IsInstagib() ) )
+	{
+		UTIL_Remove( this );
+		return false;
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPowerup::UpdatePowerupsForGameType( int  iType )
+{
+	// Run through all pickups and update their status based on the selected gamemode.
+	for( int i = 0; i < ITFPowerupAutoList::AutoList().Count(); ++i )
+	{
+		CTFPowerup *pPowerup = static_cast< CTFPowerup * >( ITFPowerupAutoList::AutoList()[i] );
+		if( !pPowerup )
+			continue;
+
+		pPowerup->ValidateForGameType( iType );
+	}
+}

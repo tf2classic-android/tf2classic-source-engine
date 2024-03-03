@@ -26,10 +26,15 @@ public:
 
 	CTFPowerupCritdamage();
 
-	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_crit.mdl"; }
-	virtual const char *GetDefaultPickupSound( void ) { return "PowerupCrit.Touch"; }
+	virtual const char *GetPowerupModel( void ) { return "models/items/powerup_crit.mdl"; }
+	virtual const char *GetPickupSound( void ) { return "PowerupCrit.Touch"; }
 
 	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_CRITDAMAGE; }
+	
+	virtual int GetIncomingAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_INCOMING; }
+	virtual int GetSpawnAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_SPAWN; }
+	virtual int GetTeamPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_TEAMPICKUP; }
+	virtual int GetEnemyPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_ENEMYPICKUP; }
 };
 
 #endif // POWERUP_CRITDAMAGE_H

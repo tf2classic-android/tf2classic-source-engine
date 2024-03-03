@@ -11,6 +11,7 @@
 #include "tf_weaponbase.h"
 #include "time.h"
 #include "viewport_panel_names.h"
+#include "tf_announcer.h"
 #ifdef CLIENT_DLL
 	#include <game/client/iviewport.h>
 	#include "c_tf_player.h"
@@ -754,6 +755,12 @@ void CTFGameRulesProxy::Activate()
 {
 	TFGameRules()->m_bFourTeamMode = m_bFourTeamMode;
 
+	// SanyaSho: HACK
+	for ( int i = 1; i < TF_GAMETYPE_VIP+1; i++ )
+	{
+		CTFPowerup::UpdatePowerupsForGameType( i );
+	}
+	
 	TFGameRules()->Activate();
 
 	TFGameRules()->SetHudType( m_iHud_Type );
@@ -2372,7 +2379,7 @@ void CTFGameRules::SetupOnRoundRunning( void )
 	{
 		if( !IsHalloweenScenario( HALLOWEEN_SCENARIO_DOOMSDAY ) )
 		{
-			BroadcastSound( 255, "Announcer.SD_RoundStart" );
+			g_TFAnnouncer.Speak( 255, TF_ANNOUNCER_SD_ROUNDSTART );
 		}
 	}
 }
@@ -2414,7 +2421,8 @@ void CTFGameRules::SetupOnStalemateStart( void )
 
 			for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 			{
-				BroadcastSound( i, "Announcer.AM_RoundStartRandom" );
+				//BroadcastSound( i, "Announcer.AM_RoundStartRandom" );
+				g_TFAnnouncer.Speak( i, TF_ANNOUNCER_ARENA_ROUNDSTART );
 			}
 
 		}
@@ -3535,6 +3543,26 @@ float CTFGameRules::FlItemRespawnTime( CItem *pItem )
 	return ITEM_RESPAWN_TIME;
 }
 
+bool CTFGameRules::CanHaveItem( CBasePlayer *pPlayer, CItem *pItem )
+{
+	//CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
+	
+	// Zombies cannot pickup any items.
+	//if ( pTFPlayer->IsZombie() )
+	//	return false;
+	
+	return true;
+}
+
+void CTFGameRules::PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem )
+{
+	CTFPowerup *pTFItem = dynamic_cast<CTFPowerup *>( pItem );
+	if ( pTFItem )
+	{
+		pTFItem->FireOutputsOnPickup( pPlayer );
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -4521,21 +4549,21 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 		{
 			for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 			{
-				BroadcastSound( i, "Announcer.AM_FirstBloodFast" );
+				g_TFAnnouncer.Speak( i, TF_ANNOUNCER_ARENA_FIRSTBLOOD_FAST );
 			}
 		}
 		else if ( flElapsedTime < 50.0 )
 		{
 			for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 			{
-				BroadcastSound( i, "Announcer.AM_FirstBloodRandom" );
+				g_TFAnnouncer.Speak( i, TF_ANNOUNCER_ARENA_FIRSTBLOOD );
 			}
 		}
 		else
 		{
 			for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 			{
-				BroadcastSound( i, "Announcer.AM_FirstBloodFinally" );
+				g_TFAnnouncer.Speak( i, TF_ANNOUNCER_ARENA_FIRSTBLOOD_FINALLY );
 			}
 		}
 
@@ -5111,7 +5139,7 @@ void CTFGameRules::Arena_RunTeamLogic( void )
 		{
 			for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 			{
-				BroadcastSound( i, "Announcer.AM_TeamScrambleRandom" );
+				g_TFAnnouncer.Speak( i, TF_ANNOUNCER_ARENA_TEAMSCRAMBLE );
 			}
 		}
 	}
@@ -6052,11 +6080,7 @@ void CTFGameRules::OnDataChanged( DataUpdateType_t updateType )
 
 void CTFGameRules::HandleOvertimeBegin()
 {
-	C_TFPlayer *pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( pTFPlayer )
-	{
-		pTFPlayer->EmitSound( "Game.Overtime" );
-	}
+	g_TFAnnouncer.Speak( TF_ANNOUNCER_OVERTIME );
 }
 
 //-----------------------------------------------------------------------------

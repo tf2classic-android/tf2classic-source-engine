@@ -13,6 +13,7 @@
 
 #include "tf_powerup.h"
 #include "tf_shareddefs.h"
+#include "tf_announcer.h"
 
 //=============================================================================
 
@@ -25,33 +26,32 @@ public:
 	DECLARE_SERVERCLASS();
 
 	CTFBaseDMPowerup();
-
-	void	Spawn( void );
-	void	Precache( void );
-	CBaseEntity* Respawn( void );
-	void	Materialize( void );
-	bool	MyTouch( CBasePlayer *pPlayer );
-	float	GetRespawnDelay( void );
+	
+	virtual void    Spawn( void );
+	virtual void    Precache( void );
+	virtual int             UpdateTransmitState( void );
+	
+	virtual void    HideOnPickedUp( void );
+	virtual void    UnhideOnRespawn( void );
+	virtual void    OnIncomingSpawn( void );
+	virtual bool    ValidTouch( CBasePlayer *pPlayer );
+	virtual bool    MyTouch( CBasePlayer *pPlayer );
+	
 	float	GetEffectDuration( void ) { return m_flEffectDuration; }
 	void	SetEffectDuration( float flTime ) { m_flEffectDuration = flTime; }
-
-	virtual const char *GetDefaultPickupSound( void ) { return "HealthKit.Touch"; }
-	virtual const char *GetDefaultPowerupModel( void ) { return "models/class_menu/random_class_icon.mdl"; }
-
+	
+	virtual const char *GetPickupSound( void ) { return "HealthKit.Touch"; }
+	virtual const char *GetPowerupModel( void ) { return "models/class_menu/random_class_icon.mdl"; }
 	virtual ETFCond GetCondition( void ) { return TF_COND_LAST; } // Should trigger an assert.
+	virtual int GetIncomingAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_INCOMING; }
+	virtual int GetSpawnAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_SPAWN; }
+	virtual int GetTeamPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_TEAMPICKUP; }
+	virtual int GetEnemyPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_CRIT_ENEMYPICKUP; }
 
 	static CTFBaseDMPowerup *Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, const char *pszClassname, float flDuration );
 
 protected:
 	float		m_flEffectDuration;
-
-private:
-	string_t	m_strPickupSound;
-
-	IMPLEMENT_NETWORK_VAR_FOR_DERIVED( m_bRespawning );
-
-	CNetworkVar( float, m_flRespawnTime );
-	CNetworkVar( float, m_flRespawnAtTime );
 };
 
 #endif // BASE_DM_POWERUP_H

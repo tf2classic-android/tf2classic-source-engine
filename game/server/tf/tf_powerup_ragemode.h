@@ -24,10 +24,15 @@ public:
 
 	CTFPowerupRagemode();
 
-	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_berserk.mdl"; }
-	virtual const char *GetDefaultPickupSound( void ) { return "PowerupBerserk.Touch"; }
+	virtual const char *GetPowerupModel( void ) { return "models/items/powerup_berserk.mdl"; }
+	virtual const char *GetPickupSound( void ) { return "PowerupBerserk.Touch"; }
 
 	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_RAGEMODE; }
+	
+	virtual int GetIncomingAnnouncement( void ) { return TF_ANNOUNCER_DM_BERSERK_INCOMING; }
+	virtual int GetSpawnAnnouncement( void ) { return TF_ANNOUNCER_DM_BERSERK_SPAWN; }
+	virtual int GetTeamPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_BERSERK_TEAMPICKUP; }
+	virtual int GetEnemyPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_BERSERK_ENEMYPICKUP; }
 };
 
 #endif // POWERUP_RAGEMODE_H

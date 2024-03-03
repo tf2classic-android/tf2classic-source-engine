@@ -63,6 +63,7 @@ public:
 	void InputSetEnable( inputdata_t &inputdata );
 	void InputSetDisable( inputdata_t &inputdata );
 	void InputSetTrack( inputdata_t &inputdata );
+	void SetTrack( int iTrack );
 	
 	virtual int UpdateTransmitState();
 	

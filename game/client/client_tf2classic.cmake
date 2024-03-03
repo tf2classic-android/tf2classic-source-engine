@@ -112,6 +112,8 @@ set(
 			"${CLIENT_BASE_DIR}/tf/c_obj_teleporter.h"
 			"${CLIENT_BASE_DIR}/tf/c_playerattachedmodel.cpp"
 			"${CLIENT_BASE_DIR}/tf/c_playerattachedmodel.h"
+			"${CLIENT_BASE_DIR}/tf/c_tf_powerup.cpp"
+			"${CLIENT_BASE_DIR}/tf/c_tf_powerup.h"
 			"${CLIENT_BASE_DIR}/tf/c_tf_ammo_pack.cpp"
 			"${CLIENT_BASE_DIR}/tf/c_tf_fx.cpp"
 			"${CLIENT_BASE_DIR}/tf/c_tf_fx.h"
@@ -364,6 +366,8 @@ set(
 			
 			#$Folder	"Shared"
 			#{
+				"${SHARED_BASE_DIR}/tf/tf_announcer.cpp"
+				"${SHARED_BASE_DIR}/tf/tf_announcer.h"
 				"${SHARED_BASE_DIR}/tf/buildnum.cpp"
 				"${SHARED_BASE_DIR}/tf/buildnum.h"
 

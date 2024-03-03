@@ -35,6 +35,7 @@
 
 #if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
 #include "tf_gamerules.h"
+#include "tf_announcer.h"
 #endif
 
 #if defined(TF_CLIENT_DLL) || defined(TF_DLL)
@@ -3333,10 +3334,14 @@ void CTeamplayRoundBasedRules::ResetMapTime( void )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::PlayStartRoundVoice( void )
 {
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+	g_TFAnnouncer.Speak( TF_ANNOUNCER_ARENA_ROUNDSTART );
+#else
 	for ( int i = LAST_SHARED_TEAM+1; i < GetNumberOfTeams(); i++ )
 	{
 		BroadcastSound( i, UTIL_VarArgs("Game.TeamRoundStart%d", i ) );
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -3355,6 +3360,12 @@ void CTeamplayRoundBasedRules::PlayWinSong( int team )
 			return;
 #endif // TF_DLL
 
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+		for( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
+		{
+			g_TFAnnouncer.Speak( i, ( i == team ) ? TF_ANNOUNCER_VICTORY : TF_ANNOUNCER_DEFEAT );
+		}
+#else
 		BroadcastSound( TEAM_UNASSIGNED, UTIL_VarArgs("Game.TeamWin%d", team ) );
 
 		for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
@@ -3372,6 +3383,7 @@ void CTeamplayRoundBasedRules::PlayWinSong( int team )
 				}
 			}
 		}
+#endif
 	}
 }
 
@@ -3380,12 +3392,16 @@ void CTeamplayRoundBasedRules::PlayWinSong( int team )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::PlaySuddenDeathSong( void )
 {
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+	g_TFAnnouncer.Speak( TF_ANNOUNCER_SUDDENDEATH );
+#else
 	BroadcastSound( TEAM_UNASSIGNED, "Game.SuddenDeath" );
 
 	for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 	{
 		BroadcastSound( i, "Game.SuddenDeath" );
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -3393,12 +3409,16 @@ void CTeamplayRoundBasedRules::PlaySuddenDeathSong( void )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::PlayStalemateSong( void )
 {
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+	g_TFAnnouncer.Speak( TF_ANNOUNCER_STALEMATE );
+#else
 	BroadcastSound( TEAM_UNASSIGNED, GetStalemateSong( TEAM_UNASSIGNED ) );
 
 	for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 	{
 		BroadcastSound( i, GetStalemateSong( i ) );
 	}
+#endif
 }
 
 bool CTeamplayRoundBasedRules::PlayThrottledAlert( int iTeam, const char *sound, float fDelayBeforeNext )

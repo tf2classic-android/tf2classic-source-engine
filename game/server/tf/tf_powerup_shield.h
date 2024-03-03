@@ -23,10 +23,15 @@ public:
 
 	CTFPowerupShield();
 
-	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_shield.mdl"; }
-	virtual const char *GetDefaultPickupSound( void ) { return "PowerupUber.Touch"; }
+	virtual const char *GetPowerupModel( void ) { return "models/items/powerup_shield.mdl"; }
+	virtual const char *GetPickupSound( void ) { return "PowerupUber.Touch"; }
 
 	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_SHIELD; }
+	
+	virtual int GetIncomingAnnouncement( void ) { return TF_ANNOUNCER_DM_SHIELD_INCOMING; }
+	virtual int GetSpawnAnnouncement( void ) { return TF_ANNOUNCER_DM_SHIELD_SPAWN; }
+	virtual int GetTeamPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_SHIELD_TEAMPICKUP; }
+	virtual int GetEnemyPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_SHIELD_ENEMYPICKUP; }
 };
 
 #endif // POWERUP_SHIELD_H

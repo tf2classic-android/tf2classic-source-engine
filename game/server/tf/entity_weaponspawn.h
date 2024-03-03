@@ -14,39 +14,48 @@
 
 //=============================================================================
 
+class CTFWeaponInfo;
+
 DECLARE_AUTO_LIST( IWeaponSpawnerAutoList )
 class CWeaponSpawner : public CTFPowerup, public IWeaponSpawnerAutoList
+
 {
 public:
 	DECLARE_CLASS( CWeaponSpawner, CTFPowerup );
-	DECLARE_DATADESC();
 	DECLARE_SERVERCLASS();
+	DECLARE_DATADESC();
 
 	CWeaponSpawner();
 
-	void	Spawn( void );
-	void	Precache( void );
-	virtual bool KeyValue( const char *szKeyName, const char *szValue );
-	virtual CBaseEntity* Respawn( void );
-	virtual void	Materialize( void );
-	bool	MyTouch( CBasePlayer *pPlayer );
-	void	EndTouch( CBaseEntity *pOther );
-	float	GetRespawnDelay( void );
+	virtual void	Spawn( void );
+	virtual void	Precache( void );
+	virtual bool	KeyValue( const char *szKeyName, const char *szValue );
+	virtual int		UpdateTransmitState( void );
+
+	virtual bool	ValidTouch( CBasePlayer *pPlayer );
+	virtual void	HideOnPickedUp( void );
+	virtual void	UnhideOnRespawn( void );
+	virtual void	OnIncomingSpawn( void );
+	virtual bool	MyTouch( CBasePlayer *pPlayer );
+	virtual void	EndTouch( CBaseEntity *pOther );
 
 private:
 	CEconItemView m_Item;
+	int m_nWeaponID;
+	int m_nItemID;
 
 	CNetworkVar( bool, m_bStaticSpawner );
 	CNetworkVar( bool, m_bOutlineDisabled );
+	CNetworkVar( bool, m_bSpecialGlow );
 
-	IMPLEMENT_NETWORK_VAR_FOR_DERIVED( m_bDisabled );
-	IMPLEMENT_NETWORK_VAR_FOR_DERIVED( m_bRespawning );
-
-	CNetworkVar( float, m_flRespawnTime );
-	CNetworkVar( float, m_flRespawnAtTime );
-
-	int		m_nWeaponID;
-	int		m_nItemID;
+	struct powerupvoices
+	{
+		int incoming;
+		int spawn;
+		int teampickup;
+		int enemypickup;
+	} m_Announcements;
+	bool m_bEnableAnnouncements;
 };
 
 #endif // ENTITY_HEALTHKIT_H

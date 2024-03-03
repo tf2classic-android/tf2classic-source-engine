@@ -1,8 +1,9 @@
-//=============================================================================//
+//====== Copyright © 1996-2013, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: FILL IN
 //
 //=============================================================================//
+
 #include "cbase.h"
 #include "tf_powerup_megahealth.h"
 #include "tf_player.h"
@@ -14,7 +15,18 @@
 
 //=============================================================================
 
+BEGIN_DATADESC( CTFPowerupMegaHealth )
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS( item_powerup_megahealth, CTFPowerupMegaHealth );
+
+//-----------------------------------------------------------------------------
+// Purpose: Constructor 
+//-----------------------------------------------------------------------------
+CTFPowerupMegaHealth::CTFPowerupMegaHealth()
+{
+	m_flEffectDuration = 15.0f;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Touch function
@@ -30,8 +42,7 @@ bool CTFPowerupMegaHealth::MyTouch( CBasePlayer *pPlayer )
 		pTFPlayer->m_Shared.HealNegativeConds();
 		pTFPlayer->EmitSound( GetPickupSound() );
 
-		/*
-		if ( TFGameRules()->IsTeamplay() )
+		if ( !TFGameRules()->IsDeathmatch() && TFGameRules()->IsTeamplay() )
 		{
 			for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 			{
@@ -54,7 +65,6 @@ bool CTFPowerupMegaHealth::MyTouch( CBasePlayer *pPlayer )
 			filter.RemoveRecipient( pPlayer );
 			g_TFAnnouncer.Speak( filter, GetEnemyPickupAnnouncement() );
 		}
-		*/
 
 		return true;
 	}

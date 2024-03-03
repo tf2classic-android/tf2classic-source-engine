@@ -9,6 +9,10 @@
 #include "teamplay_round_timer.h"
 #include "teamplayroundbased_gamerules.h"
 
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+#include "tf_announcer.h"
+#endif
+
 #ifdef CLIENT_DLL
 #include "iclientmode.h"
 #include "vgui_controls/AnimationController.h"
@@ -696,6 +700,110 @@ const char *CTeamRoundTimer::GetTimeWarningSound( int nWarning )
 	return pszRetVal;
 }
 
+#if defined( TF_CLASSIC_CLIENT )
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CTeamRoundTimer::GetTimeWarningMessage( int nWarning )
+{
+	int iMessage;
+	int nState = m_nState;
+
+	// Force "setup" lines during freezetime.
+	if ( TFGameRules()->State_Get() == GR_STATE_PREROUND )
+		nState = RT_STATE_SETUP;
+
+	switch( nWarning )
+	{
+	case RT_WARNING_60SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_60SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_60SEC;
+		}
+		break;
+	case RT_WARNING_30SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_30SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_30SEC;
+		}
+		break;
+	case RT_WARNING_10SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_10SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_10SEC;
+		}
+		break;
+	case RT_WARNING_5SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_5SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_5SEC;
+		}
+		break;
+	case RT_WARNING_4SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_4SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_4SEC;
+		}
+		break;
+	case RT_WARNING_3SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_3SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_3SEC;
+		}
+		break;
+	case RT_WARNING_2SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_2SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_2SEC;
+		}
+		break;
+	case RT_WARNING_1SECS:
+		if ( nState == RT_STATE_SETUP )
+		{
+			iMessage = TF_ANNOUNCER_ROUNDBEGINS_1SEC;
+		}
+		else
+		{
+			iMessage = TF_ANNOUNCER_ROUNDENDS_1SEC;
+		}
+		break;
+	default:
+		iMessage = -1;
+		break;
+	}
+
+	return iMessage;
+}
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -774,18 +882,22 @@ void CTeamRoundTimer::SendTimeWarning( int nWarning )
 					}
 				}
 
-#if defined( TF_CLIENT_DLL ) || defined( TF_CLASSIC_CLIENT )
+#if defined( TF_CLASSIC_CLIENT )
 				if ( bShouldPlaySound == true )
 				{
-					const char *pszMessage = GetTimeWarningSound( nWarning );
-					pPlayer->EmitSound( pszMessage );
-#if defined( TF_CLASSIC_CLIENT )
-					//g_TFAnnouncer->Speak( pszMessage );
+					g_TFAnnouncer.Speak( GetTimeWarningMessage( nWarning ) );
 					if( (nWarning == RT_WARNING_30SECS) && (m_nState == RT_STATE_SETUP) )
 					{
 						g_TFCuesManager.PlayCue( 0 );
 					}
+				}
 #endif
+
+#if defined( TF_CLIENT_DLL )
+				if ( bShouldPlaySound == true )
+				{
+					const char *pszMessage = GetTimeWarningSound( nWarning );
+					pPlayer->EmitSound( pszMessage );
 				}
 #endif // TF_CLIENT_DLL
 			}
@@ -1271,21 +1383,32 @@ void CTeamRoundTimer::AddTimerSeconds( int iSecondsToAdd, int iTeamResponsible /
 				{
 					if ( iTeam == iTeamResponsible )
 					{
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+						g_TFAnnouncer.Speak( iTeam, TF_ANNOUNCER_TIMEADDED_TEAM );
+#else
 						CTeamRecipientFilter filter( iTeam, true );
 						EmitSound( filter, entindex(), ROUND_TIMER_TIME_ADDED_WINNER );
-						
+#endif
 					}
 					else
 					{
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+						g_TFAnnouncer.Speak( iTeam, TF_ANNOUNCER_TIMEADDED_ENEMY );
+#else
 						CTeamRecipientFilter filter( iTeam, true );
 						EmitSound( filter, entindex(), ROUND_TIMER_TIME_ADDED_LOSER );
+#endif
 					}
 				}
 			}
 			else
 			{
+#if defined( TF_CLASSIC_CLIENT ) || defined( TF_CLASSIC )
+				g_TFAnnouncer.Speak( TF_ANNOUNCER_TIMEADDED );
+#else
 				CReliableBroadcastRecipientFilter filter;
 				EmitSound( filter, entindex(), ROUND_TIMER_TIME_ADDED );
+#endif
 			}
 		}
 

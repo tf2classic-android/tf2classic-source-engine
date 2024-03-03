@@ -89,6 +89,9 @@ private:
 	virtual void ClientThink();
 	void OnPreDataChanged( DataUpdateType_t updateType );
 	void OnDataChanged( DataUpdateType_t updateType );
+#if defined( TF_CLASSIC_CLIENT )
+	int GetTimeWarningMessage( int nWarning );
+#endif
 	void SendTimeWarning( int nWarning );
 	const char *GetTimeWarningSound( int nWarning );
 

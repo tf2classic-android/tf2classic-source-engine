@@ -102,5 +102,8 @@ void RegisterUserMessages()
 	usermessages->Register("EOTLDuckEvent", 7);
 	usermessages->Register("PlayerPickupWeapon", -1);
 	usermessages->Register("QuestObjectiveCompleted", 14);
+
+	// TF2C messages.
+	usermessages->Register( "AnnouncerSpeak", -1 );
 }
 

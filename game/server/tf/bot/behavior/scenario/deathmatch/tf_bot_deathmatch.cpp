@@ -117,7 +117,7 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 		if( !pObj )
 			continue;
 
-		if( (pObj->IsDisabled() || pObj->m_bRespawning || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
+		if( (pObj->IsDisabled() || pObj->IsRespawning() || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
 			continue;
 
 		if( TheNavMesh->GetNearestNavArea( pObj ) )
@@ -132,7 +132,7 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 		if( !pObj )
 			continue;
 
-		if( (pObj->IsDisabled() || pObj->m_bRespawning || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
+		if( (pObj->IsDisabled() || pObj->IsRespawning() || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
 			continue;
 
 		if( TheNavMesh->GetNearestNavArea( pObj ) )

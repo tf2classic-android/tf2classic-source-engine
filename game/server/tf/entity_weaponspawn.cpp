@@ -4,6 +4,7 @@
 //
 //=============================================================================//
 #include "cbase.h"
+#include "econ_item_system.h"
 #include "tf_gamerules.h"
 #include "tf_shareddefs.h"
 #include "tf_player.h"
@@ -15,6 +16,7 @@
 #include "in_buttons.h"
 #include "tf_fx.h"
 #include "tf_dropped_weapon.h"
+#include "tf_announcer.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -46,24 +48,23 @@ static WeaponTranslation_t g_aWeaponTranslations[] =
 	{ 71, 9014 }			// 71	=> TF_WEAPON_TOMMYGUN
 };
 
-//#define RESPAWN_PARTICLE "particlename"
+ConVar tf2c_weapon_respawn_timer( "tf2c_weapon_respawn_timer", "1", FCVAR_REPLICATED, "Show visual respawn timers for weapons in Deathmatch." );
+
+IMPLEMENT_SERVERCLASS_ST( CWeaponSpawner, DT_WeaponSpawner )
+	SendPropBool( SENDINFO( m_bStaticSpawner ) ),
+	SendPropBool( SENDINFO( m_bOutlineDisabled ) ),
+	SendPropBool( SENDINFO( m_bSpecialGlow ) ),
+END_SEND_TABLE()
 
 BEGIN_DATADESC( CWeaponSpawner )
 	DEFINE_KEYFIELD( m_nWeaponID, FIELD_INTEGER, "WeaponNumber" ),
 	DEFINE_KEYFIELD( m_nItemID, FIELD_INTEGER, "itemid" ),
-	DEFINE_KEYFIELD( m_flRespawnTime, FIELD_FLOAT, "RespawnTime" ),
+	DEFINE_KEYFIELD( m_flRespawnDelay, FIELD_FLOAT, "RespawnTime" ),
+	DEFINE_KEYFIELD( m_flInitialSpawnDelay, FIELD_FLOAT, "InitialSpawnDelay" ),
 	DEFINE_KEYFIELD( m_bStaticSpawner, FIELD_BOOLEAN, "StaticSpawner" ),
 	DEFINE_KEYFIELD( m_bOutlineDisabled, FIELD_BOOLEAN, "DisableWeaponOutline" ),
+	DEFINE_KEYFIELD( m_bSpecialGlow, FIELD_BOOLEAN, "SpecialGlow" ),
 END_DATADESC()
-
-IMPLEMENT_SERVERCLASS_ST( CWeaponSpawner, DT_WeaponSpawner )
-	SendPropBool( SENDINFO( m_bDisabled ) ),
-	SendPropBool( SENDINFO( m_bRespawning ) ),
-	SendPropBool( SENDINFO( m_bStaticSpawner ) ),
-	SendPropBool( SENDINFO( m_bOutlineDisabled ) ),
-	SendPropTime( SENDINFO( m_flRespawnTime ) ),
-	SendPropTime( SENDINFO( m_flRespawnAtTime ) ),
-END_SEND_TABLE()
 
 LINK_ENTITY_TO_CLASS( tf_weaponspawner, CWeaponSpawner );
 
@@ -71,14 +72,11 @@ IMPLEMENT_AUTO_LIST( IWeaponSpawnerAutoList )
 
 CWeaponSpawner::CWeaponSpawner()
 {
+	m_flRespawnDelay = 10.0f;
+	m_bEnableAnnouncements = false;
 	m_nWeaponID = TF_WEAPON_NONE;
 	m_nItemID = -1;
-	m_flRespawnTime = 10.0f;
-	m_bStaticSpawner = false;
-	m_bOutlineDisabled = false;
-	m_flRespawnAtTime = 0.0f;
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Spawn function 
@@ -106,18 +104,25 @@ void CWeaponSpawner::Spawn( void )
 
 	SetModel( m_Item.GetWorldDisplayModel() );
 
+	ETFWeaponID nDisplacerID = (ETFWeaponID)GetWeaponId( GetItemSchema()->GetItemDefinition( m_nItemID )->item_class );
+	if ( nDisplacerID == TF_WEAPON_DISPLACER )
+	{
+		m_Announcements.incoming = TF_ANNOUNCER_DM_DISPLACER_INCOMING;
+		m_Announcements.spawn = TF_ANNOUNCER_DM_DISPLACER_SPAWN;
+		m_Announcements.teampickup = TF_ANNOUNCER_DM_DISPLACER_TEAMPICKUP;
+		m_Announcements.enemypickup = TF_ANNOUNCER_DM_DISPLACER_ENEMYPICKUP;
+		m_bEnableAnnouncements = true;
+	}
+	else
+	{
+		m_bEnableAnnouncements = false;
+	}
+
 	BaseClass::Spawn();
 
 	// Ensures consistent trigger bounds for all weapons. (danielmm8888)
 	SetSolid( SOLID_BBOX );
 	SetCollisionBounds( -Vector( 22, 22, 15 ), Vector( 22, 22, 15 ) );
-
-	AddEffects( EF_ITEM_BLINK );
-}
-
-float CWeaponSpawner::GetRespawnDelay( void )
-{
-	return m_flRespawnTime;
 }
 
 //-----------------------------------------------------------------------------
@@ -126,7 +131,7 @@ float CWeaponSpawner::GetRespawnDelay( void )
 void CWeaponSpawner::Precache( void )
 {
 	PrecacheModel( m_Item.GetWorldDisplayModel() );
-	//PrecacheParticleSystem( RESPAWN_PARTICLE );
+	BaseClass::Precache();
 }
 
 //-----------------------------------------------------------------------------
@@ -159,56 +164,62 @@ bool CWeaponSpawner::KeyValue( const char *szKeyName, const char *szValue )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:  Override to get rid of EF_NODRAW
+// Purpose: 
 //-----------------------------------------------------------------------------
-CBaseEntity* CWeaponSpawner::Respawn( void )
+int CWeaponSpawner::UpdateTransmitState( void )
 {
-	CBaseEntity *pRet = BaseClass::Respawn();
+	if ( m_bSpecialGlow )
+		return SetTransmitState( FL_EDICT_ALWAYS );
 
-	RemoveEffects( EF_NODRAW );
+	return BaseClass::UpdateTransmitState();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CWeaponSpawner::HideOnPickedUp( void )
+{
 	RemoveEffects( EF_ITEM_BLINK );
 	m_nRenderFX = kRenderFxDistort;
-	//m_nRenderMode = kRenderTransColor;
-	//SetRenderColor( 246, 232, 99, 128 );
+}
 
-	m_flRespawnAtTime = GetNextThink();
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CWeaponSpawner::UnhideOnRespawn( void )
+{
+	AddEffects( EF_ITEM_BLINK );
+	m_nRenderFX = kRenderFxNone;
+	EmitSound( "Item.Materialize" );
 
-	return pRet;
+	if ( m_bEnableAnnouncements )
+	{
+		g_TFAnnouncer.Speak( m_Announcements.spawn );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CWeaponSpawner::OnIncomingSpawn( void )
+{
+	if ( m_bEnableAnnouncements )
+	{
+		g_TFAnnouncer.Speak( m_Announcements.incoming );
+	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponSpawner::Materialize( void )
+bool CWeaponSpawner::ValidTouch( CBasePlayer *pPlayer )
 {
-	BaseClass::Materialize();
+	CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
 
-	if ( !IsDisabled() )
-	{
-		EmitSound( "Item.Materialize" );
-		CPVSFilter filter( GetAbsOrigin() );
-		//TE_TFParticleEffect( filter, 0.0f, RESPAWN_PARTICLE, GetAbsOrigin(), QAngle( 0,0,0 ) );
-		AddEffects( EF_ITEM_BLINK );
-		m_nRenderFX = kRenderFxNone;
-	}
-}
+	if ( pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_POWERUP_RAGEMODE ) )
+		return false;
 
-//-----------------------------------------------------------------------------
-// Purpose:  
-//-----------------------------------------------------------------------------
-void CWeaponSpawner::EndTouch( CBaseEntity *pOther )
-{
-	CTFPlayer *pTFPlayer = dynamic_cast<CTFPlayer*>( pOther );
-
-	if ( ValidTouch( pTFPlayer ) && pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
-	{
-		int iCurrentWeaponID = pTFPlayer->m_Shared.GetDesiredWeaponIndex();
-		if ( iCurrentWeaponID == m_nItemID )
-		{
-			pTFPlayer->m_Shared.SetDesiredWeaponIndex( -1 );
-		}
-	}
-
+	return BaseClass::ValidTouch( pPlayer );
 }
 
 //-----------------------------------------------------------------------------
@@ -270,8 +281,53 @@ bool CWeaponSpawner::MyTouch( CBasePlayer *pPlayer )
 			MessageEnd();
 
 			pPlayer->EmitSound( "BaseCombatCharacter.AmmoPickup" );
+			
+			if ( m_bEnableAnnouncements )
+			{
+				if ( !TFGameRules()->IsDeathmatch() && TFGameRules()->IsTeamplay() )
+				{
+					for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
+					{
+						if ( i != pPlayer->GetTeamNumber() )
+						{
+							CTeamRecipientFilter filter( i, true );
+							g_TFAnnouncer.Speak( filter, m_Announcements.enemypickup );
+						}
+						else
+						{
+							CTeamRecipientFilter filter( i, true );
+							filter.RemoveRecipient( pPlayer );
+							g_TFAnnouncer.Speak( filter, m_Announcements.teampickup );
+						}
+					}
+				}
+				else
+				{
+					CTeamRecipientFilter filter( FIRST_GAME_TEAM, true );
+					filter.RemoveRecipient( pPlayer );
+					g_TFAnnouncer.Speak( filter, m_Announcements.enemypickup );
+				}
+			}
 		}
 	}
 
 	return bSuccess;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:  
+//-----------------------------------------------------------------------------
+void CWeaponSpawner::EndTouch( CBaseEntity *pOther )
+{
+	CTFPlayer *pTFPlayer = dynamic_cast<CTFPlayer*>( pOther );
+
+	if ( ValidTouch( pTFPlayer ) && pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
+	{
+		int iCurrentWeaponID = pTFPlayer->m_Shared.GetDesiredWeaponIndex();
+		if ( iCurrentWeaponID == m_nItemID )
+		{
+			pTFPlayer->m_Shared.SetDesiredWeaponIndex( -1 );
+		}
+	}
+
 }

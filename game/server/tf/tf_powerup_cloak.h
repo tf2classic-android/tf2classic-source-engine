@@ -23,10 +23,15 @@ public:
 
 	CTFPowerupCloak();
 
-	virtual const char *GetDefaultPowerupModel( void ) { return "models/items/powerup_invis.mdl"; }
-	virtual const char *GetDefaultPickupSound( void ) { return "PowerupCloak.Touch"; }
+	virtual const char *GetPowerupModel( void ) { return "models/items/powerup_invis.mdl"; }
+	virtual const char *GetPickupSound( void ) { return "PowerupCloak.Touch"; }
 
 	virtual ETFCond GetCondition( void ) { return TF_COND_POWERUP_CLOAK; }
+	
+	virtual int GetIncomingAnnouncement( void ) { return TF_ANNOUNCER_DM_CLOAK_INCOMING; }
+	virtual int GetSpawnAnnouncement( void ) { return TF_ANNOUNCER_DM_CLOAK_SPAWN; }
+	virtual int GetTeamPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_CLOAK_TEAMPICKUP; }
+	virtual int GetEnemyPickupAnnouncement( void ) { return TF_ANNOUNCER_DM_CLOAK_ENEMYPICKUP; }
 };
 
 #endif // POWERUP_CLOAK_H

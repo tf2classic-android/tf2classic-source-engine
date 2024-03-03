@@ -250,7 +250,7 @@ ActionResult< CTFBot > CTFBotDeliverFlag::Update( CTFBot *me, float interval )
 #if defined( TF_ENABLE_MVM )
 		if ( flOldTravelDistance != -1.0f && m_flTotalTravelDistance - flOldTravelDistance > 2000.0f )
 		{
-			TFGameRules()->BroadcastSound( 255, "Announcer.MVM_Bomb_Reset" );
+			g_TFAnnouncer.Speak( 255, TF_ANNOUNCER_MVM_BOMBRESET );
 
 			// Look for players that helped with the reset and send an event
 			CUtlVector<CTFPlayer *> playerVector;

@@ -415,6 +415,9 @@ public:
 	virtual float FlItemRespawnTime( CItem *pItem );
 	virtual Vector VecItemRespawnSpot( CItem *pItem );
 	virtual QAngle VecItemRespawnAngles( CItem *pItem );
+	
+	virtual bool CanHaveItem( CBasePlayer *pPlayer, CItem *pItem );
+	virtual void PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem );
 
 	virtual const char *GetChatFormat( bool bTeamOnly, CBasePlayer *pPlayer );
 	void ClientSettingsChanged( CBasePlayer *pPlayer );

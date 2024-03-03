@@ -392,6 +392,11 @@ void CTFMusicController::InputSetDisable( inputdata_t &inputdata )
 void CTFMusicController::InputSetTrack( inputdata_t &inputdata )
 {
 	int iTrack = inputdata.value.Int();
+	SetTrack( iTrack );
+}
+
+void CTFMusicController::SetTrack( int iTrack )
+{
 	if( iTrack != m_iTrack )
 	{
 		m_iTrack = iTrack;

@@ -8,6 +8,7 @@
 #include "clientmode_tf.h"
 #include "c_tf_objective_resource.h"
 #include "engine/IEngineSound.h"
+#include "tf_announcer.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -145,12 +146,14 @@ void C_TFObjectiveResource::SetCappingTeam( int index, int team )
 
 			if ( iLocalTeam != team )
 			{
-				CLocalPlayerFilter filter;
-
 				if( GetOwningTeam( index ) == iLocalTeam )
-					C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Announcer.ControlPointContested" );
+				{
+					g_TFAnnouncer.Speak( TF_ANNOUNCER_CONTROLPOINT_CONTESTED );
+				}
 				else
-					C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Announcer.ControlPointContested_Neutral" );
+				{
+					g_TFAnnouncer.Speak( TF_ANNOUNCER_CONTROLPOINT_CONTESTED_NEUTRAL );
+				}
 			}
 		}
 	}
