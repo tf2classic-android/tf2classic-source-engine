@@ -3313,7 +3313,7 @@ bool CTFBot::IsContinuousFireWeapon( CTFWeaponBase *weapon ) const
 		case TF_WEAPON_ROCKETLAUNCHER_MERC: // SanyaSho: TF2C
 		case TF_WEAPON_GRENADELAUNCHER_MERC: // SanyaSho: TF2C
 		case TF_WEAPON_ASSAULTRIFLE: // SanyaSho: TF2C
-		//case TF_WEAPON_PISTOL_MERC: // SanyaSho: TF2C
+		case TF_WEAPON_PISTOL_MERC: // SanyaSho: TF2C
 			return false;
 		};
 	}
@@ -3370,7 +3370,12 @@ bool CTFBot::IsBarrageAndReloadWeapon( CTFWeaponBase *weapon ) const
 		//case TF_WEAPON_ROCKETLAUNCHER_DIRECTHIT:
 		case TF_WEAPON_GRENADELAUNCHER:
 		case TF_WEAPON_PIPEBOMBLAUNCHER:
+		case TF_WEAPON_SHOTGUN_PRIMARY:
 		case TF_WEAPON_SCATTERGUN:
+		case TF_WEAPON_SHOTGUN_SOLDIER:
+		case TF_WEAPON_SHOTGUN_HWG:
+		case TF_WEAPON_SHOTGUN_PYRO:
+		case TF_WEAPON_SUPERSHOTGUN: // SanyaSho: TF2C
 		case TF_WEAPON_ROCKETLAUNCHER_MERC: // SanyaSho: TF2C
 		case TF_WEAPON_GRENADELAUNCHER_MERC: // SanyaSho: TF2C
 			return true;
@@ -3413,6 +3418,8 @@ bool CTFBot::IsQuietWeapon( CTFWeaponBase *weapon ) const
 		case TF_WEAPON_CROWBAR: // SanyaSho: TF2C
 		case TF_WEAPON_UMBRELLA: // SanyaSho: TF2C
 		case TF_WEAPON_HAMMERFISTS: // SanyaSho: TF2C
+		case TF_WEAPON_FLAG: // SanyaSho: TF2C
+		case TF_WEAPON_CUBEMAP: // SanyaSho: TF2C
 			return true;
 		};
 	}
