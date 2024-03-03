@@ -899,6 +899,11 @@ void CScrambleTeams::ExecuteCommand( void )
 //-----------------------------------------------------------------------------
 bool CScrambleTeams::IsEnabled( void )
 {
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+	{
+		return false;
+	}
+
 	return sv_vote_issue_scramble_teams_allowed.GetBool();
 }
 
