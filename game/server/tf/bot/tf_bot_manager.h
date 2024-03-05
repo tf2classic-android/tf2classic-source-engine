@@ -90,6 +90,10 @@ public:
 	bool IsInOfflinePractice() const;
 	bool IsMeleeOnly() const;
 
+	// TF2V BOT NAMES
+	const char *GetRandomBotName( void );
+	void ReloadBotNames( void );
+
 	CTFBot* GetAvailableBotFromPool();
 	
 	void OnForceAddedBots( int iNumAdded );
@@ -106,10 +110,16 @@ public:
 	bool RemoveBotFromTeamAndKick( int nTeam );
 
 protected:
+	// TF2V BOT NAMES
+	bool LoadBotNames( void );
+
 	void MaintainBotQuota();
 	void SetIsInOfflinePractice( bool bIsInOfflinePractice );
 	void RevertOfflinePracticeConvars();
 
+	// TF2V BOT NAMES
+	CUtlVector<string_t> m_BotNames;
+	
 	float m_flNextPeriodicThink;
 
 #ifdef TF_CREEP_MODE

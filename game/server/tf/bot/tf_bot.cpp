@@ -318,7 +318,7 @@ void CreateBotName( int iTeam, int iClassIndex, CTFBot::DifficultyType skill, ch
 	}
 	else
 	{
-		pBotName = GetRandomBotName();
+		pBotName = TheTFBots().GetRandomBotName();
 	}
 	
 	const char *pDifficultyString = tf_bot_prefix_name_with_difficulty.GetBool() ? DifficultyLevelToString( skill ) : "";

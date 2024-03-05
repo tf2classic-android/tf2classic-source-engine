@@ -112,6 +112,9 @@ void CTFBotManager::OnMapLoaded( void )
 	NextBotManager::OnMapLoaded();
 
 	ClearStuckBotData();
+	
+	// TF2V BOT NAMES
+	ReloadBotNames();
 }
 
 
@@ -349,6 +352,43 @@ bool CTFBotManager::RemoveBotFromTeamAndKick( int nTeam )
 
 	return false;
 }
+
+
+
+//----------------------------------------------------------------------------------------------------------------
+bool CTFBotManager::LoadBotNames()
+{
+	VPROF_BUDGET( __FUNCTION__, VPROF_BUDGETGROUP_OTHER_FILESYSTEM );
+	
+	if( !g_pFullFileSystem )
+	{
+		return false;
+	}
+	
+	KeyValues* pBotNames = new KeyValues( "BotNames" );
+	if( !pBotNames->LoadFromFile( g_pFullFileSystem, "scripts/tf_bot_names.txt", "MOD" ) )
+	{
+		Warning( "CTFBotManager: Could not load %s\n", "scripts/tf_bot_names.txt" );
+		pBotNames->deleteThis();
+		return false;
+	}
+	
+	FOR_EACH_VALUE( pBotNames, pSubData )
+	{
+		if( FStrEq( pSubData->GetString(), "" ) )
+			continue;
+		
+		string_t iName = AllocPooledString( pSubData->GetString() );
+		if( m_BotNames.Find(iName) == m_BotNames.InvalidIndex() )
+		{
+			m_BotNames[ m_BotNames.AddToTail() ] = iName;
+		}
+	}
+	
+	pBotNames->deleteThis();
+	return true;
+}
+
 
 //----------------------------------------------------------------------------------------------------------------
 void CTFBotManager::MaintainBotQuota()
@@ -626,12 +666,42 @@ void CTFBotManager::RevertOfflinePracticeConvars()
 //----------------------------------------------------------------------------------------------------------------
 void CTFBotManager::LevelShutdown()
 {
+	// TF2V BOT NAMES
+	m_BotNames.RemoveAll();
 	m_flNextPeriodicThink = 0.0f;
 	if ( IsInOfflinePractice() )
 	{
 		RevertOfflinePracticeConvars();
 		SetIsInOfflinePractice( false );
 	}		
+}
+
+
+
+//----------------------------------------------------------------------------------------------------------------
+const char *CTFBotManager::GetRandomBotName()
+{
+	static char szName[64];
+	if( m_BotNames.Count() == 0 )
+	{
+		return ::GetRandomBotName();
+	}
+
+	static int nameIndex = RandomInt( 0, m_BotNames.Count() - 1 );
+	string_t iszName = m_BotNames[ ++nameIndex % m_BotNames.Count() ];
+	const char* pszName = STRING( iszName );
+	V_strcpy_safe( szName, pszName );
+	
+	return szName;
+
+}
+
+
+//----------------------------------------------------------------------------------------------------------------
+void CTFBotManager::ReloadBotNames()
+{
+	m_BotNames.RemoveAll();
+	LoadBotNames();
 }
 
 
@@ -885,3 +955,8 @@ void CTFBotManager::DrawStuckBotData( float deltaT )
 }
 
 
+//----------------------------------------------------------------------------------------------------------------
+CON_COMMAND_F( tf_bot_names_reload, "Reload all names for TFBots.", FCVAR_CHEAT )
+{
+	TheTFBots().ReloadBotNames();
+}
