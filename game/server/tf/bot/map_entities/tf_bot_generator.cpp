@@ -6,6 +6,7 @@
 #include "cbase.h"
 
 #include "tf_bot_generator.h"
+#include "behavior/scenario/deathmatch/tf_bot_taunt_deathmatch.h"
 
 #include "bot/tf_bot.h"
 #include "bot/tf_bot_manager.h"
@@ -399,6 +400,8 @@ void CTFBotGenerator::SpawnBot( void )
 		{
 			bot->ForceRespawn();
 		}
+		
+		bot->SetShouldSayHello( false );
 
 		// make sure the bot is facing the right way.
 		// @todo Tom Bui: for some reason it is still turning towards another direction...need to investigate

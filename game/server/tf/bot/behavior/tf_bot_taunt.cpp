@@ -8,7 +8,6 @@
 #include "bot/tf_bot.h"
 #include "bot/behavior/tf_bot_taunt.h"
 
-
 //---------------------------------------------------------------------------------------------
 ActionResult< CTFBot >	CTFBotTaunt::OnStart( CTFBot *me, Action< CTFBot > *priorAction )
 {

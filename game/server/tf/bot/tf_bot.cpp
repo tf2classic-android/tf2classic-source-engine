@@ -29,6 +29,7 @@
 #include "bot/behavior/tf_bot_behavior.h"
 #include "bot/map_entities/tf_bot_generator.h"
 #include "bot/map_entities/tf_bot_hint_entity.h"
+#include "behavior/scenario/deathmatch/tf_bot_taunt_deathmatch.h"
 
 ConVar tf_bot_force_class( "tf_bot_force_class", "", FCVAR_GAMEDLL, "If set to a class name, all TFBots will respawn as that class" );
 
@@ -455,6 +456,8 @@ CON_COMMAND_F( tf_bot_add, "Add a bot.", FCVAR_GAMEDLL )
 				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 			}
+			
+			pBot->SetShouldSayHello( true );
 
 			++iNumAdded;
 		}
@@ -2936,7 +2939,7 @@ bool CTFBot::EquipRequiredWeapon( void )
 		return Weapon_Switch( pWeapon );
 	}
 
-	if ( TheTFBots().IsMeleeOnly() /*|| TFGameRules()->IsInMedievalMode()*/ || HasWeaponRestriction(MELEE_ONLY) )
+	if ( TheTFBots().IsMeleeOnly() /*|| TFGameRules()->IsInMedievalMode()*/ || HasWeaponRestriction( MELEE_ONLY ) )
 	{
 		// force use of melee weapons
 		Weapon_Switch( Weapon_GetSlot( TF_WPN_TYPE_MELEE ) );

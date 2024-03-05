@@ -7,6 +7,7 @@
 #define TF_BOT_BEHAVIOR_H
 
 #include "Path/NextBotPathFollow.h"
+#include "util_shared.h"
 
 class CTFBotMainAction : public Action< CTFBot >
 {

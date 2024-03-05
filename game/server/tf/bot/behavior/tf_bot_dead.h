@@ -11,6 +11,8 @@
 class CTFBotDead : public Action< CTFBot >
 {
 public:
+	CTFBotDead( CTFPlayer *pAttacker = NULL );
+	
 	virtual ActionResult< CTFBot >	OnStart( CTFBot *me, Action< CTFBot > *priorAction );
 	virtual ActionResult< CTFBot >	Update( CTFBot *me, float interval );
 
@@ -18,6 +20,9 @@ public:
 
 private:
 	IntervalTimer m_deadTimer;
+	
+	CTFPlayer *pTFAttacker;
+	bool m_bSaidSomethingAboutYourMother;
 };
 
 #endif // TF_BOT_DEAD_H

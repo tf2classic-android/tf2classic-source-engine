@@ -469,7 +469,11 @@ public:
 	int GetUberHealthThreshold();
 	float GetUberDeployDelayDuration();
 
+	void SetShouldSayHello( bool bSay ) { m_bDMChat_ShouldSayHello = bSay; }
+	bool ShouldSayHello() { return m_bDMChat_ShouldSayHello; }
 private:
+	bool m_bDMChat_ShouldSayHello;
+	
 	CTFBotLocomotion	*m_locomotor;
 	CTFBotBody			*m_body;
 	CTFBotVision		*m_vision;

@@ -223,10 +223,12 @@ set(
 							"${SERVER_BASE_DIR}/tf/bot/behavior/scenario/capture_the_flag/tf_bot_attack_flag_defenders.h"
 						#}
 
-						#$Folder	"CaptureTheFlag"
+						#$Folder	"Deathmatch"
 						#{
 							"${SERVER_BASE_DIR}/tf/bot/behavior/scenario/deathmatch/tf_bot_deathmatch.cpp"
 							"${SERVER_BASE_DIR}/tf/bot/behavior/scenario/deathmatch/tf_bot_deathmatch.h"
+							"${SERVER_BASE_DIR}/tf/bot/behavior/scenario/deathmatch/tf_bot_taunt_deathmatch.cpp"
+							"${SERVER_BASE_DIR}/tf/bot/behavior/scenario/deathmatch/tf_bot_taunt_deathmatch.h"
 						#}
 					#}
 					

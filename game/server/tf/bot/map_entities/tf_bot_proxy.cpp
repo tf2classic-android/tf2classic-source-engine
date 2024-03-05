@@ -128,6 +128,8 @@ void CTFBotProxy::InputSpawn( inputdata_t &inputdata )
 			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 		}
+		
+		m_bot.Get()->SetShouldSayHello( false ); // don't print anything when spawned from bot proxy
 
 		m_onSpawned.FireOutput( m_bot, m_bot );
 	}

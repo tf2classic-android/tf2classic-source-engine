@@ -493,6 +493,8 @@ void CTFBotManager::MaintainBotQuota()
 					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 				}
+				
+				pBot->SetShouldSayHello( true );
 
 #if 0
 				// Keep track of any bots we add during a match

@@ -26,6 +26,7 @@
 #include "bot/behavior/nav_entities/tf_bot_nav_ent_wait.h"
 #include "bot/behavior/tf_bot_tactical_monitor.h"
 #include "bot/behavior/tf_bot_taunt.h"
+#include "bot/behavior/scenario/deathmatch/tf_bot_taunt_deathmatch.h"
 
 
 extern ConVar tf_bot_health_ok_ratio;
@@ -116,6 +117,12 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 	{
 		// not on a team - do nothing
 		return Done( "Not on a playing team" );
+	}
+	
+	if( me->ShouldSayHello() )
+	{
+		g_TFBotDeathmatchReaction.ReactOnEvent( EVENT_JOINED_SERVER, me );
+		me->SetShouldSayHello( false );
 	}
 
 #if defined( TF_ENABLE_MVM )
@@ -267,7 +274,7 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 //---------------------------------------------------------------------------------------------
 EventDesiredResult<CTFBot> CTFBotMainAction::OnKilled( CTFBot *me, const CTakeDamageInfo& info )
 {
-	return TryChangeTo( new CTFBotDead, RESULT_CRITICAL, "I died!" );
+	return TryChangeTo( new CTFBotDead( ToTFPlayer( info.GetAttacker() ) ), RESULT_CRITICAL, "I died!" );
 }
 
 
@@ -543,9 +550,15 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 {
 	// make sure we forget about this guy
 	me->GetVisionInterface()->ForgetEntity( victim );
-
+	
 	bool do_taunt = victim && victim->IsPlayer();
 
+	// SanyaSho: allow taunting in DM.
+	if( !do_taunt && (TFGameRules() && TFGameRules()->IsDeathmatch()) )
+	{
+		do_taunt = (victim != NULL);
+	}
+	
 #ifdef STAGING_ONLY
 	if ( !do_taunt )
 	{
@@ -568,7 +581,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 
 		if ( !ToTFPlayer( victim )->IsBot() && me->IsEnemy( victim ) && me->IsSelf( info.GetAttacker() ) )
 		{
-			bool isTaunting = !me->HasTheFlag() && RandomFloat( 0.0f, 100.0f ) <= tf_bot_taunt_victim_chance.GetFloat();
+			bool isTaunting = !me->HasTheFlag() && RandomFloat( 0.0f, 100.0f ) <= ((TFGameRules() && TFGameRules()->IsDeathmatch()) ? 100.f : tf_bot_taunt_victim_chance.GetFloat());
 
 			if ( TFGameRules()->IsMannVsMachineMode() && me->IsMiniBoss() )
 			{
@@ -579,7 +592,14 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 			if ( isTaunting )
 			{
 				// we just killed a human - taunt!
-				return TrySuspendFor( new CTFBotTaunt, RESULT_IMPORTANT, "Taunting our victim" );
+				if( !TFGameRules()->IsDeathmatch() )
+				{
+					return TrySuspendFor( new CTFBotTaunt, RESULT_IMPORTANT, "Taunting our victim" );
+				}
+				else
+				{
+					return TrySuspendFor( new CTFBotTauntDeathmatch( ToTFPlayer( victim ) ), RESULT_IMPORTANT, "[DEATHMATCH] Taunting our victim" );
+				}
 			}
 		}
 	}

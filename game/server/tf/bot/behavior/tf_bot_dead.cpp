@@ -9,9 +9,16 @@
 #include "bot/tf_bot.h"
 #include "bot/behavior/tf_bot_dead.h"
 #include "bot/behavior/tf_bot_behavior.h"
+#include "bot/behavior/scenario/deathmatch/tf_bot_taunt_deathmatch.h"
 
 #include "nav_mesh.h"
 
+
+CTFBotDead::CTFBotDead( CTFPlayer *pAttacker )
+{
+	pTFAttacker = pAttacker;
+	m_bSaidSomethingAboutYourMother = false;
+}
 
 //---------------------------------------------------------------------------------------------
 ActionResult< CTFBot >	CTFBotDead::OnStart( CTFBot *me, Action< CTFBot > *priorAction )
@@ -31,6 +38,19 @@ ActionResult< CTFBot >	CTFBotDead::Update( CTFBot *me, float interval )
 		return ChangeTo( new CTFBotMainAction, "This should not happen!" );
 	}
 
+	// print a message after a 1-1.5 second after ded
+	if( (TFGameRules() && TFGameRules()->IsDeathmatch()) && m_deadTimer.IsGreaterThen( RandomFloat( 1.f, 1.5f ) ) )
+	{	
+		if( pTFAttacker )
+		{
+			if( !m_bSaidSomethingAboutYourMother )
+			{
+				g_TFBotDeathmatchReaction.ReactOnEvent( EVENT_GOT_KILLED, me, pTFAttacker );
+				m_bSaidSomethingAboutYourMother = true;
+			}
+		}
+	}
+	
 	if ( m_deadTimer.IsGreaterThen( 5.0f ) )
 	{
 		if ( me->HasAttribute( CTFBot::REMOVE_ON_DEATH ) )
