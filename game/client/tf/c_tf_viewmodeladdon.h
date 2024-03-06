@@ -22,6 +22,7 @@ public:
 
 	virtual int	InternalDrawModel( int flags );
 	virtual int	DrawModel( int flags );
+	virtual bool OnInternalDrawModel( ClientModelRenderInfo_t *pInfo );
 	virtual int DrawOverriddenViewmodel( int flags );
 
 	void SetViewmodel( C_TFViewModel *vm );

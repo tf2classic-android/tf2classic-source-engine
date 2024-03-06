@@ -11,6 +11,7 @@
 
 #ifdef CLIENT_DLL
 #include "c_tf_player.h"
+#include "view.h"
 
 // for spy material proxy
 #include "proxyentity.h"
@@ -155,8 +156,7 @@ void CTFViewModel::RemoveViewmodelAddon( void )
 {
 	if ( m_hViewmodelAddon.Get() )
 	{
-		m_hViewmodelAddon->SetModel( "" );
-		m_hViewmodelAddon->Remove();
+		m_hViewmodelAddon->Release();
 	}
 }
 
@@ -356,6 +356,16 @@ int CTFViewModel::DrawModel( int flags )
 	}
 
 	return BaseClass::DrawModel( flags );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFViewModel::OnInternalDrawModel( ClientModelRenderInfo_t *pInfo )
+{
+	// Use camera position for lighting origin.
+	pInfo->pLightingOrigin = &MainViewOrigin();
+	return BaseClass::OnInternalDrawModel( pInfo );
 }
 
 //-----------------------------------------------------------------------------

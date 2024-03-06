@@ -9,6 +9,7 @@
 #include "c_tf_player.h"
 #include "tf_viewmodel.h"
 #include "model_types.h"
+#include "view.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -43,6 +44,16 @@ int C_ViewmodelAttachmentModel::InternalDrawModel( int flags )
 	pRenderContext->CullMode( MATERIAL_CULLMODE_CCW );
 
 	return ret;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool C_ViewmodelAttachmentModel::OnInternalDrawModel( ClientModelRenderInfo_t *pInfo )
+{
+	// Use camera position for lighting origin.
+	pInfo->pLightingOrigin = &MainViewOrigin();
+	return BaseClass::OnInternalDrawModel( pInfo );
 }
 
 //-----------------------------------------------------------------------------
