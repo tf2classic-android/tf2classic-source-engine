@@ -815,7 +815,7 @@ void CTFDeathMatchScoreBoardDialog::FireGameEvent( IGameEvent *event )
 		}
 		ShowPanel( true );
 
-		if( g_pMusicController && !g_pMusicController->IsPlaying() )
+		if( g_pMusicController && !g_pMusicController->IsPlaying() && !g_pMusicController->IsPlayingEnding() )
 		{
 			CLocalPlayerFilter filter;
 			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, ( bPlayerFirst ? "music.dm_winpanel_first" : "music.dm_winpanel" ) );

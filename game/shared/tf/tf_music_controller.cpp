@@ -1,5 +1,14 @@
+//=============================================================================
+// 
+// Purpose: Team Fortress 2 Classic reverse-engineered music controller
+// 
+// Author: SanyaSho (2024)
+// 
+//=============================================================================
+
 #include "cbase.h"
 #include "GameEventListener.h"
+#include "iclientnetworkable.h"
 #include "igamesystem.h"
 #include "shareddefs.h"
 #include "soundenvelope.h"
@@ -23,19 +32,13 @@ void ToggleMusic( IConVar *pCVar, const char *pzsOld, float flOld )
 	if( g_pMusicController )
 	{
 		ConVar *pCvar = (ConVar *)pCVar;
-		if( pCvar->GetBool() )
-		{
-			g_pMusicController->StartMusic();
-		}
-		else
-		{
-			g_pMusicController->StopMusic( false );
-		}
+		g_pMusicController->ToggleMusicEnabled( pCvar->GetBool() );
 	}
 }
-ConVar tf2c_music( "tf2c_music", "0", FCVAR_ARCHIVE, "Enable music in Deathmatch.", ToggleMusic );
+ConVar tf2c_music( "tf2c_music", "1", FCVAR_ARCHIVE, "Enable music in Deathmatch.", ToggleMusic ); // SanyaSho: 0 by default
 
 ConVar tf2c_music_volume( "tf2c_music_volume", "1.0", FCVAR_ARCHIVE, "", true, 0.0f, true, 1.0f );
+ConVar tf2c_music_volume_dead( "tf2c_music_volume_dead", "0.25", FCVAR_ARCHIVE, "", true, 0.0f, true, 1.0f );
 #endif
 
 const char *g_aMusicSegmentNames[TF_NUM_MUSIC_SEGMENTS] = 
@@ -50,6 +53,9 @@ BEGIN_DATADESC( CTFMusicController )
 	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputSetEnable ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputSetDisable ),
 	DEFINE_INPUTFUNC( FIELD_INTEGER, "SetTrack", InputSetTrack ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "SetRandomTrack", InputSetRandomTrack ),
+	
+	DEFINE_KEYFIELD( m_iTrack, FIELD_INTEGER, "tracknum" ),
 #endif
 END_DATADESC()
 
@@ -77,7 +83,7 @@ CTFMusicController::CTFMusicController() : m_Tracks( 0, 0, DefLessFunc( int ) )
 	m_bPlaying = false;
 	m_bInWaiting = false;
 #else
-	m_iTrack = 1; // default: 0
+	m_iTrack = 0;
 	m_bShouldPlay = false;
 #endif
 }
@@ -91,7 +97,7 @@ void CTFMusicController::Spawn()
 {
 	Precache();
 #if defined( GAME_DLL )
-	m_bShouldPlay = HasSpawnFlags( SF_MUSICCONTROLLER_SHOULDPLAY );
+	m_bShouldPlay = !HasSpawnFlags( SF_MUSICCONTROLLER_SILENT );
 #endif
 	BaseClass::Spawn();
 }
@@ -126,10 +132,12 @@ void CTFMusicController::ParseMusicData( const char *pszFile )
 			MusicData_t musicData;
 			musicData.szName[0] = '\0';
 			musicData.szComposer[0] = '\0';
+			musicData.szIcon[0] = '\0';
 			memset( musicData.aSegments, 0, sizeof( musicData.aSegments ) );
 			
 			V_strncpy( musicData.szName, pData->GetString( "name" ), sizeof( musicData.szName ) );
 			V_strncpy( musicData.szComposer, pData->GetString( "composer" ), sizeof( musicData.szComposer ) );
+			V_strncpy( musicData.szIcon, pData->GetString( "icon" ), sizeof( musicData.szIcon ) );
 			KeyValues *pSegmentsKey = pData->FindKey( "segments" );
 			if( pSegmentsKey )
 			{
@@ -144,7 +152,7 @@ void CTFMusicController::ParseMusicData( const char *pszFile )
 	}
 	else
 	{
-		Warning( "C_TFMusicController: Failed to load music data from %s!\n", pszFile );
+		Warning( "CTFMusicController: Failed to load music data from %s!\n", pszFile );
 	}
 	
 	pKV->deleteThis();
@@ -170,16 +178,14 @@ void CTFMusicController::ClientThink()
 	
 	float flOldVolume = controller.SoundGetVolume( m_pSound );
 	float flVolume = tf2c_music_volume.GetFloat();
-	float flNewVolume = 0.f;
-	
+
 	// dead
 	if( !pPlayer->IsAlive() )
 	{
-		flNewVolume = flVolume * 0.25f;
-		flVolume = flVolume * 0.25f;
+		flVolume = flVolume * tf2c_music_volume_dead.GetFloat();
 	}
 	
-	if( flNewVolume != flOldVolume )
+	if( flVolume != flOldVolume )
 	{
 		controller.SoundChangeVolume( m_pSound, flVolume, 0.5f );
 	}
@@ -195,7 +201,19 @@ void CTFMusicController::OnDataChanged( DataUpdateType_t updateType )
 {
 	BaseClass::OnDataChanged( updateType );
 	
-	if( !g_pMusicController )
+	if( updateType != DATA_UPDATE_CREATED ) // probably something with datatable changed event
+	{
+		if( m_iTrack != m_iPlayingTrack )
+		{
+			RestartMusic();
+		}
+		
+		if( m_bShouldPlay != m_bOldShouldPlay )
+		{
+			ToggleMusicEnabled( m_bShouldPlay );
+		}	
+	}
+	else if( !g_pMusicController )
 	{
 		g_pMusicController = this;
 		
@@ -203,10 +221,10 @@ void CTFMusicController::OnDataChanged( DataUpdateType_t updateType )
 		ListenForGameEvent( "localplayer_changeteam" );
 		ListenForGameEvent( "teamplay_update_timer" );
 		ListenForGameEvent( "deathmatch_results" );
+		ListenForGameEvent( "tf_game_over" );
+		ListenForGameEvent( "teamplay_game_over" );
+		ListenForGameEvent( "teamplay_round_win" );
 	}
-	
-	StopMusic( false );
-	StartMusic();
 }
 	
 void CTFMusicController::StartMusic()
@@ -216,10 +234,9 @@ void CTFMusicController::StartMusic()
 		return;
 	}
 	
-	m_bInWaiting = TFGameRules() && ( TFGameRules()->IsInWaitingForPlayers() || TFGameRules()->InRoundRestart() );
+	m_bInWaiting = ShouldPlayWaitingMusic();
 	
-	if( (g_pMusicController == this) && tf2c_music.GetBool() && m_bShouldPlay && (GetLocalPlayerTeam() >= FIRST_GAME_TEAM) &&
-	    (TFGameRules()->State_Get() != GR_STATE_GAME_OVER) && C_BasePlayer::GetLocalPlayer() )
+	if( CanPlayMusic() && C_BasePlayer::GetLocalPlayer() )
 	{
 		m_iPlayingTrack = m_iTrack;
 		
@@ -248,6 +265,7 @@ void CTFMusicController::StartMusic()
 					{
 						pEvent->SetString( "name", musicData.szName );
 						pEvent->SetString( "composer", musicData.szComposer );
+						pEvent->SetString( "icon", musicData.szIcon );
 						gameeventmanager->FireEventClientSide( pEvent );
 					}
 				}
@@ -288,7 +306,7 @@ void CTFMusicController::StopMusic( bool bPlayEnding )
 		if( nTrack != m_Tracks.InvalidIndex() )
 		{
 			MusicData_t musicData = m_Tracks.Element( nTrack );
-			const char *pszEndingTrack = musicData.aSegments[2];
+			const char *pszEndingTrack = musicData.aSegments[TF_MUSIC_SEGMENT_ENDING];
 			if( pszEndingTrack[0] )
 			{
 				EmitSound_t params;
@@ -303,7 +321,7 @@ void CTFMusicController::StopMusic( bool bPlayEnding )
 				else
 				{
 					params.m_flVolume = tf2c_music_volume.GetFloat() * soundParameters.volume;
-					params.m_nFlags |= 1u;
+					params.m_nFlags |= SND_CHANGE_VOL;
 				}
 				
 				CLocalPlayerFilter filter;
@@ -325,6 +343,24 @@ void CTFMusicController::StopMusic( bool bPlayEnding )
 	SetNextClientThink( CLIENT_THINK_NEVER );
 }
 
+void CTFMusicController::ToggleMusicEnabled( bool bEnable )
+{
+	if( bEnable )
+	{
+		StartMusic();
+	}
+	else
+	{
+		StopMusic( false );
+	}
+}
+
+void CTFMusicController::RestartMusic()
+{
+	StopMusic( false );
+	StartMusic();
+}
+
 void CTFMusicController::FireGameEvent( IGameEvent *pEvent )
 {
 	CBasePlayer *pPlayer = CBasePlayer::GetLocalPlayer();
@@ -336,32 +372,25 @@ void CTFMusicController::FireGameEvent( IGameEvent *pEvent )
 	const char *pszEvent = pEvent->GetName();
 	if( !Q_stricmp( pszEvent, "localplayer_changeteam" ) )
 	{
-		int nTeamNumber = pPlayer->GetTeamNumber();
-		if( nTeamNumber < FIRST_GAME_TEAM )
+		if( pPlayer->GetTeamNumber() == TEAM_SPECTATOR ) // should be <=
 		{
-			// ded
+			// player switched to spectator or TEAM_UNASSIGNED
 			StopMusic( true );
 			return;
 		}
 		StartMusic();
 	}
-	else if( !Q_stricmp( pszEvent, "teamplay_update_timer" ) || !Q_stricmp( pszEvent, "deathmatch_results" ) )
+	else if( !Q_stricmp( pszEvent, "deathmatch_results" ) || !Q_stricmp( pszEvent, "tf_game_over" ) || !Q_stricmp( pszEvent, "teamplay_game_over" ) || !Q_stricmp( pszEvent, "teamplay_round_win" ) )
 	{
 		StopMusic( true );
-		// BYTE5(this->m_pfnThink) = 1; // probably SetNextClientThink
+		m_bPlayingEnding = true; // FIXME(SanyaSho): should we move this directly to StopMusic()?
 	}
-	else
+	else if( !Q_stricmp( pszEvent, "teamplay_update_timer" ) )
 	{
-		/*
-		v8 = LOBYTE(g_pGameRules[5].m_pNext) || BYTE1(g_pGameRules[4].m_pNext);
-		if ( BYTE6(this->m_pfnThink) != v8 )
+		if( m_bInWaiting != ShouldPlayWaitingMusic() )
 		{
-			C_TFMusicController::StopMusic((C_TFMusicController *)((char *)this - 1320), 0);
-			pMusicController = (C_TFMusicController *)((char *)this - 1320);
-LABEL_16:
-			C_TFMusicController::StartMusic(pMusicController);
+			RestartMusic();
 		}
-		*/
 	}
 }
 
@@ -404,6 +433,23 @@ void CTFMusicController::SetTrack( int iTrack )
 	}
 }
 
+void CTFMusicController::InputSetRandomTrack( inputdata_t &inputdata )
+{
+	SelectRandomTrack();
+}
+
+void CTFMusicController::SelectRandomTrack()
+{
+	unsigned short nTrack = m_Tracks.Find( m_Tracks.Key( RandomInt( 1, m_Tracks.Count() - 1 ) ) );
+
+	//Msg( __FUNCTION__ ": Selected random track %d from m_Tracks list.\n", nTrack );
+
+	if( nTrack != m_Tracks.InvalidIndex() )
+	{
+		SetTrack( nTrack );
+	}
+}
+
 int CTFMusicController::UpdateTransmitState()
 {
 	return BaseClass::SetTransmitState( FL_EDICT_ALWAYS );
@@ -425,6 +471,25 @@ void CTFMusicController::PrecacheTrack( int iTrack )
 			PrecacheScriptSound( pszElement );
 		}
 	}
+}
+
+int CTFMusicController::DrawDebugTextOverlays()
+{
+	int text_offset = BaseClass::DrawDebugTextOverlays();
+	
+	if( m_debugOverlays & OVERLAY_TEXT_BIT ) 
+	{
+		char tempstr[512];
+		V_sprintf_safe( tempstr, "Track: %d", m_iTrack.Get() );
+		EntityText( text_offset, tempstr, 0 );
+		text_offset++;
+		
+		V_sprintf_safe( tempstr, "Should play: %s", m_bShouldPlay ? "Yes" : "No" );
+		EntityText( text_offset, tempstr, 0 );
+		text_offset++;
+	}
+	
+	return text_offset;
 }
 #endif
 

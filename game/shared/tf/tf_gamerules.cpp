@@ -13,6 +13,7 @@
 #include "time.h"
 #include "viewport_panel_names.h"
 #include "tf_announcer.h"
+#include "tf_music_controller.h"
 #ifdef CLIENT_DLL
 	#include <game/client/iviewport.h>
 	#include "c_tf_player.h"
@@ -178,6 +179,8 @@ ConVar tf_tournament_classlimit_engineer( "tf_tournament_classlimit_engineer", "
 ConVar tf_tournament_classchange_allowed( "tf_tournament_classchange_allowed", "1", FCVAR_NOTIFY, "Allow players to change class while the game is active?.\n" );
 ConVar tf_tournament_classchange_ready_allowed( "tf_tournament_classchange_ready_allowed", "1", FCVAR_NOTIFY, "Allow players to change class after they are READY?.\n" );
 ConVar tf_classlimit( "tf_classlimit", "0", FCVAR_NOTIFY, "Limit on how many players can be any class (i.e. tf_classlimit 2 would limit 2 players per class).\n" );
+
+ConVar tf2c_spawn_music_controller( "tf2c_spawn_music_controller", "1", FCVAR_NOTIFY );
 
 // ITEMS CRC32
 #if defined( DEBUG )
@@ -1749,6 +1752,24 @@ void CTFGameRules::Activate()
 	m_redPayloadToBlock = NULL;
 	m_bluePayloadToBlock = NULL;
 
+	// TDCMERGE
+	if( tf2c_spawn_music_controller.GetBool() && !gEntList.FindEntityByClassname( NULL, "tf_music_controller" ) )
+	{
+		CTFMusicController *pMusicController = dynamic_cast<CTFMusicController *>( CBaseEntity::CreateNoSpawn( "tf_music_controller", vec3_origin, vec3_angle ) );
+		if( !pMusicController )
+		{
+			return;
+		}
+		
+		DispatchSpawn( pMusicController );
+		pMusicController->Activate();
+		
+		pMusicController->SetName( AllocPooledString( "music_controller" ) );
+		
+		pMusicController->SelectRandomTrack();
+	}
+	// TDCMERGE
+        
 #if defined( GAME_DLL )
 	// ITEMS CRC32
 	CRC32_t file_crc32 = 0xFFFFFFF;
