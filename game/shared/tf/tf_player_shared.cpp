@@ -4,6 +4,7 @@
 //
 //=============================================================================
 #include "cbase.h"
+#include "econ_item_schema.h"
 #include "tf_gamerules.h"
 #include "tf_player_shared.h"
 #include "takedamageinfo.h"
@@ -4337,6 +4338,19 @@ void CTFPlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float
 #endif
 
 	BaseClass::PlayStepSound( vecOrigin, psurface, fvol, force );
+}
+
+const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
+{
+	int iUseArmorFootsteps = 0;
+	CALL_ATTRIB_HOOK_INT( iUseArmorFootsteps, mod_armor_footsteps );
+	if( iUseArmorFootsteps != 0 )
+		return pszBaseStepSoundName;
+		
+	const char *pszStepSound = "TFPlayer.ArmorStepLeft";
+	if( !(m_Local.m_nStepside == 0) )
+		pszStepSound = "TFPlayer.ArmorStepRight";
+	return pszStepSound;
 }
 
 #if defined( CLIENT_DLL )

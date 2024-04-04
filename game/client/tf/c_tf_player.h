@@ -86,6 +86,7 @@ public:
 	virtual void FireEvent( const Vector& origin, const QAngle& angles, int event, const char *options );
 	C_TFTeam *GetTFTeam( void );
 	virtual void PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
+	virtual const char *GetOverrideStepSound( const char *pszBaseStepSoundName );
 
 	bool IsVIP();
 

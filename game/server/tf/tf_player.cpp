@@ -936,6 +936,9 @@ void CTFPlayer::Precache()
 	PrecacheScriptSound( "Game.SuddenDeath" );
 	PrecacheScriptSound( "Game.Stalemate" );
 	PrecacheScriptSound( "TV.Tune" );
+	
+	PrecacheScriptSound( "TFPlayer.ArmorStepLeft" ); // SanyaSho: for mod_armor_footsteps
+	PrecacheScriptSound( "TFPlayer.ArmorStepRight" ); // SanyaSho: for mod_armor_footsteps
 
 	// Precache particle systems
 	PrecacheParticleSystem( "crit_text" );
