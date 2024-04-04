@@ -66,6 +66,8 @@
 #include "NextBot/NextBotUtil.h"
 #include "tf_gamerules.h"
 #include "voice_gamemgr.h"
+#include "nav_area.h"
+#include "bot/tf_bot.h"
 
 extern IVoiceGameMgrHelper *g_pVoiceGameMgrHelper;
 
@@ -136,6 +138,8 @@ ConVar tf2c_player_powerup_throwforce( "tf2c_player_powerup_throwforce", "500", 
 ConVar tf2c_player_powerup_explodeforce( "tf2c_player_powerup_explodeforce", "200", FCVAR_DEVELOPMENTONLY, "Force when the player 'explodes' with a powerup." );
 
 ConVar tf2c_chat_protection( "tf2c_chat_protection", "1", FCVAR_NOTIFY, "Enable chat protection. Invulnerability is applied while the chat window is open." );
+
+ConVar tf_nav_in_combat_range( "tf_nav_in_combat_range", "1000", FCVAR_CHEAT );
     
 // -------------------------------------------------------------------------------- //
 // Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
@@ -4964,6 +4968,46 @@ bool CTFPlayer::ShouldGib( const CTakeDamageInfo &info )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void CTFPlayer::OnNavAreaChanged( CNavArea *enteredArea, CNavArea *leftArea )
+{
+	VPROF_BUDGET( "CTFPlayer::OnNavAreaChanged", "NextBot" );
+	
+	if( !IsAlive() || GetTeamNumber() == TEAM_SPECTATOR )
+	{
+		return;
+	}
+	
+	if( leftArea )
+	{
+		// remove us from old visible set
+		NavAreaCollector wasVisible;
+		leftArea->ForAllPotentiallyVisibleAreas( wasVisible );
+		
+		for( int i = 0; i < wasVisible.m_area.Count(); ++i )
+		{
+			CTFNavArea *area = (CTFNavArea *)wasVisible.m_area[i];
+			area->RemovePotentiallyVisibleActor( this );
+		}
+	}
+	
+	if( enteredArea )
+	{
+		// add us to new visible set
+		// @todo: is it faster to only do this for the areas that changed between sets?
+		NavAreaCollector isVisible;
+		enteredArea->ForAllPotentiallyVisibleAreas( isVisible );
+		
+		for( int i = 0; i < isVisible.m_area.Count(); ++i )
+		{
+			CTFNavArea *area = (CTFNavArea *)isVisible.m_area[i];
+			area->AddPotentiallyVisibleActor( this );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &info )
 {
 	BaseClass::Event_KilledOther( pVictim, info );
@@ -6097,6 +6141,40 @@ void CTFPlayer::NoteWeaponFired()
 	if( m_pCurrentCommand )
 	{
 		m_iLastWeaponFireUsercmd = m_pCurrentCommand->command_number;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPlayer::OnMyWeaponFired( CBaseCombatWeapon *weapon )
+{
+	BaseClass::OnMyWeaponFired( weapon );
+
+	// mark region as 'in combat'
+	if( m_ctNavCombatUpdate.IsElapsed() )
+	{
+		CTFWeaponBase *tfWeapon = static_cast<CTFWeaponBase *>( weapon );
+		
+		if( !tfWeapon )
+		{
+			return;
+		}
+		
+		// not a 'combat' weapon
+		// TODO: GET THIS FROM LIVE TF2!
+		
+		// important to keep this at one second, so rate cvars make sense (units/sec)
+		m_ctNavCombatUpdate.Start( 1.0f );
+		
+		// only search up/down StepHeight as a cheap substitute for line of sight
+		CUtlVector< CNavArea * > nearbyAreaVector;
+		CollectSurroundingAreas( &nearbyAreaVector, GetLastKnownArea(), tf_nav_in_combat_range.GetFloat(), StepHeight, StepHeight );
+		
+		for( int i = 0; i < nearbyAreaVector.Count(); ++i )
+		{
+			static_cast<CTFNavArea *>( nearbyAreaVector[i] )->OnCombat();
+		}
 	}
 }
 

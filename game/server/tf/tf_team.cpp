@@ -141,6 +141,25 @@ int CTFTeamManager::Create( const char *pName, color32 color )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Remove any teams that are not active on the current map.
+//-----------------------------------------------------------------------------
+void CTFTeamManager::RemoveExtraTeams( void )
+{
+	int nActiveTeams = TF_TEAM_COUNT;
+	
+	if ( TFGameRules()->IsDeathmatch() )
+	{
+		nActiveTeams = FIRST_GAME_TEAM + 1;
+	}
+	
+	for ( int i = g_Teams.Count() - 1; i >= nActiveTeams; i-- )
+	{
+		UTIL_Remove( g_Teams[i] );
+		g_Teams.Remove( i );
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 int CTFTeamManager::GetFlagCaptures( int iTeam )

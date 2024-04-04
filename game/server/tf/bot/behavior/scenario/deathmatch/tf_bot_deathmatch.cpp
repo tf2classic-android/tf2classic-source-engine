@@ -45,7 +45,7 @@ ActionResult< CTFBot > CTFBotDeathmatch::Update( CTFBot *me, float interval )
 			DevMsg( "CTFBotDeathmatch: primary known threat #%d \"%s\" @ dist %.0f\n", pEntity->entindex(), pEntity->GetClassname(), flRangeTo );
 		}
 
-		if( /*me->GetEntityForLoadoutSlot( TF_LOADOUT_SLOT_PRIMARY ) &&*/ me->IsRangeLessThan( threat->GetLastKnownPosition(), 1000.0f ) )
+		if( me->IsRangeLessThan( threat->GetLastKnownPosition(), 1000.0f ) )
 		{
 			return SuspendFor( new CTFBotAttack, "Going after an enemy" );
 		}
@@ -110,50 +110,17 @@ CBaseEntity *CTFBotDeathmatch::ChooseGoalEntity( CTFBot *me )
 	CUtlVector< CBaseEntity * > goalVector;
 
 	// Find weaponspawners
-	for( int i = 0; i < IWeaponSpawnerAutoList::AutoList().Count(); ++i )
-	{
-		CWeaponSpawner *pObj = static_cast< CWeaponSpawner * >( IWeaponSpawnerAutoList::AutoList()[i] );
-
-		if( !pObj )
-			continue;
-
-		if( (pObj->IsDisabled() || pObj->IsRespawning() || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
-			continue;
-
-		if( TheNavMesh->GetNearestNavArea( pObj ) )
-			goalVector.AddToTail( pObj );
-	}
+	FIND_PICKUP_AND_ADD_TO_LIST( CWeaponSpawner, IWeaponSpawnerAutoList, goalVector );
 
 	// Find powerups
-	for( int i = 0; i < ITFBaseDMPowerupAutoList::AutoList().Count(); ++i )
-	{
-		CTFBaseDMPowerup *pObj = static_cast< CTFBaseDMPowerup * >( ITFBaseDMPowerupAutoList::AutoList()[i] );
+	FIND_PICKUP_AND_ADD_TO_LIST( CTFBaseDMPowerup, ITFBaseDMPowerupAutoList, goalVector );
 
-		if( !pObj )
-			continue;
-
-		if( (pObj->IsDisabled() || pObj->IsRespawning() || !pObj->ValidTouch( me )) && !TFGameRules()->IsInstagib() )
-			continue;
-
-		if( TheNavMesh->GetNearestNavArea( pObj ) )
-			goalVector.AddToTail( pObj );
-	}
-	
 	// NEW: Find some dropped weapons on floor
-	for( int i = 0; i < ITFDroppedWeaponAutoList::AutoList().Count(); ++i )
-	{
-		CTFDroppedWeapon *pWeapon = static_cast< CTFDroppedWeapon * >( ITFDroppedWeaponAutoList::AutoList()[i] );
-		
-		if( !pWeapon )
-			continue;
-
-		if( TheNavMesh->GetNearestNavArea( pWeapon ) )
-			goalVector.AddToTail( pWeapon );
-	}
+	FIND_OBJECT_AND_ADD_TO_LIST_NO_CHECK( CTFDroppedWeapon, ITFDroppedWeaponAutoList, goalVector );
 
 	if( tf_bot_debug_deathmatch.GetBool() )
 	{
-		for( int i = 0; i < goalVector.Count(); ++i )
+		FOR_EACH_VEC( goalVector, i )
 		{
 			TheNavMesh->AddToSelectedSet( TheNavMesh->GetNearestNavArea( goalVector[i]->WorldSpaceCenter() ) );
 		}

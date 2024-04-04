@@ -17,6 +17,7 @@
 #include "props.h"
 #include "filters.h"
 #include "NextBotUtil.h"
+#include "team_spawnpoint.h"
 
 // NOTE: nav_debug_blocked ConVar is also use for debugging NAV_MESH_NAV_BLOCKER and TF_NAV_BLOCKED...
 
@@ -1425,95 +1426,130 @@ void CTFNavMesh::ComputeIncursionDistances( void )
 		{
 			area->m_distanceFromSpawnRoom[i] = -1.0f;
 		}
+
+		area->m_distanceFromSpawnRoomFFA = -1.0f;
 	}
 
-	bool isRedComputed = false;
-	bool isBlueComputed = false;
-	for ( int i=0; i<IFuncRespawnRoomAutoList::AutoList().Count(); ++i )
+	if( !TFGameRules()->IsDeathmatch() )
 	{
-		CFuncRespawnRoom *spawnRoom = static_cast< CFuncRespawnRoom* >( IFuncRespawnRoomAutoList::AutoList()[i] );
-
-		if ( !spawnRoom->GetActive() )
-			continue;
-
-		if ( spawnRoom->m_bDisabled )
-			continue;
-
-		// find a spawn point inside this room
-		for ( int i=0; i<ITFTeamSpawnAutoList::AutoList().Count(); ++i )
+		bool isRedComputed = false;
+		bool isBlueComputed = false;
+		for ( int i=0; i<IFuncRespawnRoomAutoList::AutoList().Count(); ++i )
 		{
-			CTFTeamSpawn *spawnSpot = static_cast< CTFTeamSpawn* >( ITFTeamSpawnAutoList::AutoList()[i] );
-
-			if ( !spawnSpot->IsTriggered( NULL ) )
+			CFuncRespawnRoom *spawnRoom = static_cast< CFuncRespawnRoom* >( IFuncRespawnRoomAutoList::AutoList()[i] );
+			
+			if ( !spawnRoom->GetActive() )
 				continue;
-
-			if ( spawnSpot->IsDisabled() )
+			
+			if ( spawnRoom->m_bDisabled )
 				continue;
-
-			if ( spawnSpot->GetTeamNumber() == TF_TEAM_RED && isRedComputed )
-				continue;
-
-			if ( spawnSpot->GetTeamNumber() == TF_TEAM_BLUE && isBlueComputed )
-				continue;
-
-			if ( spawnRoom->PointIsWithin( spawnSpot->GetAbsOrigin() ) )
+			
+			// find a spawn point inside this room
+			for ( int i=0; i<ITFTeamSpawnAutoList::AutoList().Count(); ++i )
 			{
-				// found a valid spawn spot in an active spawn room, compute travel distances throughout the nav mesh
-				CTFNavArea *spawnArea = static_cast< CTFNavArea * >( TheTFNavMesh()->GetNearestNavArea( spawnSpot ) );
-				if ( spawnArea )
+				CTFTeamSpawn *spawnSpot = static_cast< CTFTeamSpawn* >( ITFTeamSpawnAutoList::AutoList()[i] );
+				
+				if ( !spawnSpot->IsTriggered( NULL ) )
+					continue;
+				
+				if ( spawnSpot->IsDisabled() )
+					continue;
+				
+				if ( spawnSpot->GetTeamNumber() == TF_TEAM_RED && isRedComputed )
+					continue;
+				
+				if ( spawnSpot->GetTeamNumber() == TF_TEAM_BLUE && isBlueComputed )
+					continue;
+				
+				if ( spawnRoom->PointIsWithin( spawnSpot->GetAbsOrigin() ) )
 				{
-					ComputeIncursionDistances( spawnArea, spawnSpot->GetTeamNumber() );
-
-					if ( spawnSpot->GetTeamNumber() == TF_TEAM_RED )
+					// found a valid spawn spot in an active spawn room, compute travel distances throughout the nav mesh
+					CTFNavArea *spawnArea = static_cast< CTFNavArea * >( TheTFNavMesh()->GetNearestNavArea( spawnSpot ) );
+					if ( spawnArea )
 					{
-						isRedComputed = true;
+						ComputeIncursionDistances( spawnArea, spawnSpot->GetTeamNumber() );
+						
+						if ( spawnSpot->GetTeamNumber() == TF_TEAM_RED )
+						{
+							isRedComputed = true;
+						}
+						else
+						{
+							isBlueComputed = true;
+						}
+						
+						break;
 					}
-					else
-					{
-						isBlueComputed = true;
-					}
-
-					break;
+				}
+			}
+		}
+		
+		if ( !isRedComputed )
+		{
+			Warning( "Can't compute incursion distances from the Red spawn room(s). Bots will perform poorly. This is caused by either a missing func_respawnroom, or missing info_player_teamspawn entities within the func_respawnroom.\n" );
+		}
+		
+		if ( !isBlueComputed )
+		{
+			Warning( "Can't compute incursion distances from the Blue spawn room(s). Bots will perform poorly. This is caused by either a missing func_respawnroom, or missing info_player_teamspawn entities within the func_respawnroom.\n" );
+		}
+		
+		if ( !TFGameRules()->IsMannVsMachineMode() )
+		{
+			// In Raid mode, the Red (bot) team has no spawn room.
+			// So, we'll assume the Red incursion distance is the inverse of the Blue incursion distance for now.
+			// @TODO: Use the Boss battle room as the anchor for computing Red incursion distances
+			float maxBlueIncursionDistance = 0.0f;
+			
+			for( int i=0; i<TheNavAreas.Count(); ++i )
+			{
+				CTFNavArea *area = static_cast< CTFNavArea * >( TheNavAreas[ i ] );
+				
+				if ( area->GetIncursionDistance( TF_TEAM_BLUE ) > maxBlueIncursionDistance )
+				{
+					maxBlueIncursionDistance = area->GetIncursionDistance( TF_TEAM_BLUE );
+				}
+			}
+			
+			for( int i=0; i<TheNavAreas.Count(); ++i )
+			{
+				CTFNavArea *area = static_cast< CTFNavArea * >( TheNavAreas[ i ] );
+				
+				if ( area->GetIncursionDistance( TF_TEAM_BLUE ) >= 0.0f )
+				{
+					area->m_distanceFromSpawnRoom[ TF_TEAM_RED ] = maxBlueIncursionDistance - area->GetIncursionDistance( TF_TEAM_BLUE );
 				}
 			}
 		}
 	}
-
-	if ( !isRedComputed )
+	else
 	{
-		Warning( "Can't compute incursion distances from the Red spawn room(s). Bots will perform poorly. This is caused by either a missing func_respawnroom, or missing info_player_teamspawn entities within the func_respawnroom.\n" );
-	}
-
-	if ( !isBlueComputed )
-	{
-		Warning( "Can't compute incursion distances from the Blue spawn room(s). Bots will perform poorly. This is caused by either a missing func_respawnroom, or missing info_player_teamspawn entities within the func_respawnroom.\n" );
-	}
-
-	if ( !TFGameRules()->IsMannVsMachineMode() )
-	{
-		// In Raid mode, the Red (bot) team has no spawn room.
-		// So, we'll assume the Red incursion distance is the inverse of the Blue incursion distance for now.
-		// @TODO: Use the Boss battle room as the anchor for computing Red incursion distances
-		float maxBlueIncursionDistance = 0.0f;
-
-		for( int i=0; i<TheNavAreas.Count(); ++i )
+		bool isFFAComputed = false;
+		for( int i = 0; i < ITFTeamSpawnAutoList::AutoList().Count(); ++i )
 		{
-			CTFNavArea *area = static_cast< CTFNavArea * >( TheNavAreas[ i ] );
-
-			if ( area->GetIncursionDistance( TF_TEAM_BLUE ) > maxBlueIncursionDistance )
+			CTFTeamSpawn *spawnSpot = static_cast< CTFTeamSpawn * >( ITFTeamSpawnAutoList::AutoList()[i] );
+			
+			if( !spawnSpot->IsTriggered( NULL ) )
+				continue;
+			
+			if( spawnSpot->IsDisabled() )
+				continue;
+			
+			if( isFFAComputed )
+				continue;
+			
+			CTFNavArea *spawnArea = static_cast<CTFNavArea *>( TheTFNavMesh()->GetNearestNavArea( spawnSpot ) );
+			if( spawnArea )
 			{
-				maxBlueIncursionDistance = area->GetIncursionDistance( TF_TEAM_BLUE );
+				ComputeIncursionDistancesFFA( spawnArea );
+				
+				isFFAComputed = true;
 			}
 		}
-
-		for( int i=0; i<TheNavAreas.Count(); ++i )
+		
+		if( !isFFAComputed )
 		{
-			CTFNavArea *area = static_cast< CTFNavArea * >( TheNavAreas[ i ] );
-
-			if ( area->GetIncursionDistance( TF_TEAM_BLUE ) >= 0.0f )
-			{
-				area->m_distanceFromSpawnRoom[ TF_TEAM_RED ] = maxBlueIncursionDistance - area->GetIncursionDistance( TF_TEAM_BLUE );
-			}
+			Warning( "Can't compute FFA incursion distances from the DM spawn point(s). Bots will perform poorly in FFA deathmatch.\nThis is caused by either a lack of info_player_teamspawn entities, or by info_player_teamspawn entities that aren't properly situated on the nav mesh.\n" );
 		}
 	}
 }
@@ -1616,6 +1652,90 @@ void CTFNavMesh::ComputeIncursionDistances( CTFNavArea *spawnArea, int team )
 				adjArea->SetParent( area );
 
 				if ( !adjArea->IsOpen() )
+				{
+					// Since we're doing a breadth-first search, this area will end up at the end of the list.
+					// Adding it to the tail explicitly saves us a bunch of list traversals.
+					adjArea->AddToOpenListTail();
+				}
+			}
+		}
+	}
+}
+
+
+//--------------------------------------------------------------------------------------------------------
+void CTFNavMesh::ComputeIncursionDistancesFFA( CTFNavArea *spawnArea )
+{
+	if( spawnArea == NULL )
+	{
+		return;
+	}
+	
+	CNavArea::ClearSearchLists();
+	
+	spawnArea->m_distanceFromSpawnRoomFFA = 0.0f;
+	spawnArea->AddToOpenList();
+	spawnArea->Mark();
+	spawnArea->SetParent( NULL );
+	
+	CUtlVectorFixedGrowable< const NavConnect *, 64 > adjAreaVector;
+	
+	while( !CNavArea::IsOpenListEmpty() )
+	{
+		// get next area to check
+		CTFNavArea *area = static_cast<CTFNavArea *>( CNavArea::PopOpenList() );
+		
+		// ignore spawn room exits, since they presumably will be open
+		// ignore setup gates, since they will be open after the setup time
+		if( area->IsBlocked( TF_TEAM_RED ) )
+		{
+			// don't pass through blocked areas
+			continue;
+		}
+		
+		// explore adjacent floor areas
+		adjAreaVector.RemoveAll();
+		
+		for( int dir = 0; dir < NUM_DIRECTIONS; ++dir )
+		{
+			// collect all OUTGOING links from this area to adjacent areas
+			const NavConnectVector *adjVector = area->GetAdjacentAreas( (NavDirType)dir );
+			FOR_EACH_VEC( ( *adjVector ), bit )
+			{
+				adjAreaVector.AddToTail( &( *adjVector )[bit] );
+			}
+		}
+		
+		FOR_EACH_VEC( adjAreaVector, vit )
+		{
+			const NavConnect *connect = adjAreaVector[vit];
+			CTFNavArea *adjArea = static_cast<CTFNavArea *>( connect->area );
+			
+			if( area->ComputeAdjacentConnectionHeightChange( adjArea ) > TF_PLAYER_JUMP_HEIGHT )
+			{
+				// don't go up ledges too high to jump
+				continue;
+			}
+			
+			// compute travel distance
+			float newTravelDistance = 0.0f;
+			
+			// travel distance is zero in all areas of our spawn room
+			// if ( !adjArea->HasAttributeTF( teamSpawnRoom ) )
+			{
+				float between = connect->length;
+				newTravelDistance = area->m_distanceFromSpawnRoomFFA + between;
+			}
+			
+			float adjacentTravelDistance = adjArea->m_distanceFromSpawnRoomFFA;
+			
+			if( adjacentTravelDistance < 0.0f || adjacentTravelDistance > newTravelDistance )
+			{
+				adjArea->m_distanceFromSpawnRoomFFA = newTravelDistance;
+				adjArea->Mark();
+				adjArea->SetParent( area );
+				
+				if( !adjArea->IsOpen() )
 				{
 					// Since we're doing a breadth-first search, this area will end up at the end of the list.
 					// Adding it to the tail explicitly saves us a bunch of list traversals.

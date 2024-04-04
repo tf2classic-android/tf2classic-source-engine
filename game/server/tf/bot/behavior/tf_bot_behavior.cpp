@@ -579,9 +579,9 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 			m_nextDisguise = playerVictim->GetPlayerClass()->GetClassIndex();
 		}
 
-		if ( !ToTFPlayer( victim )->IsBot() && me->IsEnemy( victim ) && me->IsSelf( info.GetAttacker() ) )
+		if ( tf_bot_chat.GetBool() && !ToTFPlayer( victim )->IsBot() && me->IsEnemy( victim ) && me->IsSelf( info.GetAttacker() ) )
 		{
-			bool isTaunting = !me->HasTheFlag() && RandomFloat( 0.0f, 100.0f ) <= ((TFGameRules() && TFGameRules()->IsDeathmatch()) ? 100.f : tf_bot_taunt_victim_chance.GetFloat());
+			bool isTaunting = !me->HasTheFlag() && (TFGameRules() && TFGameRules()->IsDeathmatch()) ? ( RandomFloat( 0.f, 100.f ) <= tf_bot_chat_chance.GetFloat() ) : ( RandomFloat( 0.0f, 100.0f ) <= tf_bot_taunt_victim_chance.GetFloat() );
 
 			if ( TFGameRules()->IsMannVsMachineMode() && me->IsMiniBoss() )
 			{
@@ -598,7 +598,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 				}
 				else
 				{
-					return TrySuspendFor( new CTFBotTauntDeathmatch( ToTFPlayer( victim ) ), RESULT_IMPORTANT, "[DEATHMATCH] Taunting our victim" );
+					return TrySuspendFor( new CTFBotTauntDeathmatch( EVENT_KILLED_PLAYER, ToTFPlayer( victim ) ), RESULT_IMPORTANT, "[DEATHMATCH] Taunting our victim" );
 				}
 			}
 		}

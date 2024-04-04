@@ -166,6 +166,7 @@ private:
 	friend class CTFNavMesh;
 
 	float m_distanceFromSpawnRoom[ TF_TEAM_COUNT ];
+	float m_distanceFromSpawnRoomFFA;
 	CUtlVector< CTFNavArea * > m_invasionAreaVector[ TF_TEAM_COUNT ];	// use our team as index to get list of areas the enemy is invading from
 	unsigned int m_invasionSearchMarker;
 

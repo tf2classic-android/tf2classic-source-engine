@@ -60,7 +60,12 @@ public:
 	void			AddRoundScore( int iScore ) { m_iRoundScore += iScore; }
 	void			SetRoundScore( int iScore ) { m_iRoundScore = iScore; }
 	int			GetRoundScore() const { return m_iRoundScore; }
-
+	
+	int			GetWinCount( void ) { return m_iWins; }
+	void			SetWinCount( int iWins ) { m_iWins = iWins; }
+	void			IncrementWins( void ) { m_iWins++; }
+	void			ResetWins( void ) { m_iWins = 0; }
+	
 	CTFPlayer		*GetVIP() const
 	{
 		CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( m_iVIP ) );
@@ -77,14 +82,14 @@ public:
 			m_iVIP = 0;
 		}
 	}
-
+	
 private:
 	color32						m_TeamColor;
 	CUtlVector< CHandle<CBaseObject> >	m_aObjects;			// List of team objects.
 
 	CNetworkVar( int, m_nFlagCaptures );
 	CNetworkVar( int, m_iRole );
-	CNetworkVar( int, m_bEscorting );
+	CNetworkVar( bool, m_bEscorting );
 	CNetworkVar( int, m_iRoundScore );
 
 	int m_iVIP;
@@ -100,6 +105,7 @@ public:
 	// Creation/Destruction.
 	bool	Init( void );
 	void    Shutdown( void );
+	void    RemoveExtraTeams( void );
 
 	bool	IsValidTeam( int iTeam );
 	int		GetTeamCount( void );

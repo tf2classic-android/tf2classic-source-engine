@@ -10,6 +10,7 @@
 #include "tf_obj_sentrygun.h"
 #include "tf_obj_dispenser.h"
 #include "tf_obj_sapper.h"
+#include "tf_team.h"
 #include "usermessages.h"
 #include "player_resource.h"
 #include "team.h"
@@ -372,12 +373,12 @@ void CTFGameStats::Event_PlayerSpawned( CTFPlayer *pPlayer )
 	if ( !map )
 		return;
 
-	int iTeamCount = TFGameRules()->IsFourTeamGame() ? 5 : 3;
-
 	// calculate peak player count on each team
-	for ( iTeam = FIRST_GAME_TEAM; iTeam <= iTeamCount; iTeam++ )
+	for ( iTeam = FIRST_GAME_TEAM; iTeam < GetNumberOfTeams(); iTeam++ )
 	{
-		int iPlayerCount = GetGlobalTeam( iTeam )->GetNumPlayers();
+		CTFTeam *pTeam = GetGlobalTFTeam( iTeam );
+		
+		int iPlayerCount = pTeam->GetNumPlayers();
 		if ( iPlayerCount > map->m_iPeakPlayerCount[iTeam] )
 		{
 			map->m_iPeakPlayerCount[iTeam] = iPlayerCount;

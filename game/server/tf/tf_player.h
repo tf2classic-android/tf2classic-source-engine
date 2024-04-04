@@ -146,6 +146,8 @@ public:
 	void				ImpactWaterTrace( trace_t &trace, const Vector &vecStart );
 	void				NoteWeaponFired();
 
+	virtual void			OnMyWeaponFired( CBaseCombatWeapon *weapon );
+
 	bool				HasItem( void ) const;					// Currently can have only one item at a time.
 	void				SetItem( CTFItem *pItem );
 	CTFItem				*GetItem( void ) const;
@@ -310,6 +312,8 @@ public:
 	void DestroyRagdoll( void );
 	CNetworkHandle( CBaseEntity, m_hRagdoll );	// networked entity handle 
 	virtual bool ShouldGib( const CTakeDamageInfo &info );
+
+	virtual void OnNavAreaChanged( CNavArea *enteredArea, CNavArea *leftArea );
 
 	// Dropping Ammo
 	void DropAmmoPack( void );
@@ -678,6 +682,8 @@ private:
 
 	float m_flTeamScrambleScore;
 
+	CountdownTimer m_ctNavCombatUpdate;
+	
 	COutputEvent		m_OnDeath;
 
 public:

@@ -28,6 +28,7 @@
 #include "bot/behavior/nav_entities/tf_bot_nav_ent_wait.h"
 #include "bot/behavior/engineer/tf_bot_engineer_building.h"
 #include "bot/behavior/squad/tf_bot_escort_squad_leader.h"
+#include "bot/behavior/scenario/deathmatch/tf_bot_taunt_deathmatch.h"
 
 #include "bot/behavior/training/tf_bot_training.h"
 #include "bot/map_entities/tf_bot_hint_sentrygun.h"
@@ -237,7 +238,14 @@ ActionResult< CTFBot >	CTFBotTacticalMonitor::Update( CTFBot *me, float interval
 						// don't ack again for awhile
 						m_acknowledgeRetryTimer.Start( RandomFloat( 10.0f, 20.0f ) );
 
-						return SuspendFor( new CTFBotTaunt, "Acknowledging friendly human attention" );
+						if( TFGameRules()->IsDeathmatch() )
+						{
+							return SuspendFor( new CTFBotTauntDeathmatch( EVENT_LOOK_AT_ME, watcher ), "Acknowledging friendly human attention" );
+						}
+						else
+						{
+							return SuspendFor( new CTFBotTaunt, "Acknowledging friendly human attention" );
+						}
 					}
 				}
 			}

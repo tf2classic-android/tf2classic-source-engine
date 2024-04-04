@@ -126,6 +126,7 @@ protected:
 private:
 	void ComputeIncursionDistances( void );					// recompute travel distance from each team's spawn room for each nav area
 	void ComputeIncursionDistances( CTFNavArea *spawnArea, int team );
+	void ComputeIncursionDistancesFFA( CTFNavArea *spawnArea );
 	void ComputeInvasionAreas( void );
 	void ComputeLegalBombDropAreas( void );
 	void ComputeBombTargetDistance();

@@ -557,33 +557,36 @@ void CTFBotManager::MaintainBotQuota()
 		if ( UTIL_KickBotFromTeam( TEAM_UNASSIGNED ) )
 			return;
 
-		int kickTeam;
+		int kickTeam = TF_TEAM_RED;
 
-		CTeam *pRed = GetGlobalTeam( TF_TEAM_RED );
-		CTeam *pBlue = GetGlobalTeam( TF_TEAM_BLUE );
+		if( !TFGameRules()->IsDeathmatch() )
+		{
+			CTeam *pRed = GetGlobalTeam( TF_TEAM_RED );
+			CTeam *pBlue = GetGlobalTeam( TF_TEAM_BLUE );
 
-		// remove from the team that has more players
-		if ( pBlue->GetNumPlayers() > pRed->GetNumPlayers() )
-		{
-			kickTeam = TF_TEAM_BLUE;
-		}
-		else if ( pBlue->GetNumPlayers() < pRed->GetNumPlayers() )
-		{
-			kickTeam = TF_TEAM_RED;
-		}
-		// remove from the team that's winning
-		else if ( pBlue->GetScore() > pRed->GetScore() )
-		{
-			kickTeam = TF_TEAM_BLUE;
-		}
-		else if ( pBlue->GetScore() < pRed->GetScore() )
-		{
-			kickTeam = TF_TEAM_RED;
-		}
-		else
-		{
-			// teams and scores are equal, pick a team at random
-			kickTeam = (RandomInt( 0, 1 ) == 0) ? TF_TEAM_BLUE : TF_TEAM_RED;
+			// remove from the team that has more players
+			if ( pBlue->GetNumPlayers() > pRed->GetNumPlayers() )
+			{
+				kickTeam = TF_TEAM_BLUE;
+			}
+			else if ( pBlue->GetNumPlayers() < pRed->GetNumPlayers() )
+			{
+				kickTeam = TF_TEAM_RED;
+			}
+			// remove from the team that's winning
+			else if ( pBlue->GetScore() > pRed->GetScore() )
+			{
+				kickTeam = TF_TEAM_BLUE;
+			}
+			else if ( pBlue->GetScore() < pRed->GetScore() )
+			{
+				kickTeam = TF_TEAM_RED;
+			}
+			else
+			{
+				// teams and scores are equal, pick a team at random
+				kickTeam = (RandomInt( 0, 1 ) == 0) ? TF_TEAM_BLUE : TF_TEAM_RED;
+			}
 		}
 
 		// attempt to kick a bot from the given team

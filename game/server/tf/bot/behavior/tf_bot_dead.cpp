@@ -39,8 +39,8 @@ ActionResult< CTFBot >	CTFBotDead::Update( CTFBot *me, float interval )
 	}
 
 	// print a message after a 1-1.5 second after ded
-	if( (TFGameRules() && TFGameRules()->IsDeathmatch()) && m_deadTimer.IsGreaterThen( RandomFloat( 1.f, 1.5f ) ) )
-	{	
+	if( (TFGameRules() && TFGameRules()->IsDeathmatch()) && m_deadTimer.IsGreaterThen( RandomFloat( 1.f, 1.5f ) ) && ( RandomFloat( 0.f, 100.f ) <= tf_bot_chat_chance.GetFloat() ) )
+	{
 		if( pTFAttacker )
 		{
 			if( !m_bSaidSomethingAboutYourMother )
@@ -50,7 +50,7 @@ ActionResult< CTFBot >	CTFBotDead::Update( CTFBot *me, float interval )
 			}
 		}
 	}
-	
+
 	if ( m_deadTimer.IsGreaterThen( 5.0f ) )
 	{
 		if ( me->HasAttribute( CTFBot::REMOVE_ON_DEATH ) )

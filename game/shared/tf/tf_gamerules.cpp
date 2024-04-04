@@ -764,8 +764,10 @@ void CTFGameRulesProxy::Activate()
 	{
 		CTFPowerup::UpdatePowerupsForGameType( i );
 	}
-	
+
 	TFGameRules()->Activate();
+
+	TFTeamMgr()->RemoveExtraTeams();
 
 	TFGameRules()->SetHudType( m_iHud_Type );
 
