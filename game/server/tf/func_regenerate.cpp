@@ -14,9 +14,6 @@
 
 LINK_ENTITY_TO_CLASS( func_regenerate, CRegenerateZone );
 
-#define TF_REGENERATE_SOUND				"Regenerate.Touch"
-#define TF_REGENERATE_NEXT_USE_TIME		3.0f
-
 //=============================================================================
 //
 // CTF Regenerate Zone tables.

@@ -1340,6 +1340,38 @@ void CTFPlayer::Regenerate( void )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
+void CTFPlayer::Restock( bool bRestoreHealth, bool bRestoreAmmo )
+{
+	if( bRestoreHealth )
+	{
+		SetHealth( Max( GetHealth(), GetMaxHealth() ) );
+		m_Shared.HealNegativeConds();
+	}
+	
+	if( bRestoreAmmo )
+	{
+		int i, c;
+		
+		// Refill clip in all weapons.
+		for ( i = 0, c = WeaponCount(); i < c; i++ )
+		{
+			CBaseCombatWeapon *pWeapon = GetWeapon( i );
+			if ( !pWeapon )
+				continue;
+			
+			pWeapon->GiveDefaultAmmo();
+		}
+		
+		for ( i = TF_AMMO_PRIMARY; i < TF_AMMO_COUNT; i++ )
+		{
+			SetAmmoCount( GetMaxAmmo( i ), i );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 void CTFPlayer::InitClass( void )
 {
 	// Set initial health and armor based on class.
@@ -1511,9 +1543,7 @@ void CTFPlayer::GiveDefaultItems()
 	}
 
 	// Give weapons.
-	if( TFGameRules()->IsInstagib() ) // TODO: Rewrite it as in TF2C 2017!
-		ManageInstagibWeapons( pData );
-	else if ( tf2c_random_weapons.GetBool() )
+	if ( tf2c_random_weapons.GetBool() )
 		ManageRandomWeapons( pData );
 	else if ( tf2c_legacy_weapons.GetBool() )
 		ManageRegularWeaponsLegacy( pData );
@@ -1696,9 +1726,9 @@ void CTFPlayer::ManageRegularWeapons( TFPlayerClassData_t *pData )
 	ValidateWeapons( true );
 	ValidateWearables();
 
-	for ( int iSlot = 0; iSlot < TF_PLAYER_WEAPON_COUNT; ++iSlot )
+	for ( int iSlot = 0; iSlot < TF_LOADOUT_SLOT_COUNT; ++iSlot )
 	{
-		if ( GetEntityForLoadoutSlot( iSlot ) != NULL )
+		if ( iSlot == TF_LOADOUT_SLOT_BUILDING || GetEntityForLoadoutSlot( iSlot ) != NULL )
 		{
 			// Nothing to do here.
 			continue;
@@ -1712,15 +1742,41 @@ void CTFPlayer::ManageRegularWeapons( TFPlayerClassData_t *pData )
 			const char *pszClassname = pItem->GetEntityName();
 			Assert( pszClassname );
 
+#if 1
+			GiveNamedItem( pszClassname, 0, pItem );
+#else
 			CEconEntity *pEntity = dynamic_cast<CEconEntity *>( GiveNamedItem( pszClassname, 0, pItem ) );
 
 			if ( pEntity )
 			{
 				pEntity->GiveTo( this );
 			}
+#endif
 		}
 	}
+	
+	/*
+	for ( int i = TF_LOADOUT_SLOT_PRIMARY; i < TF_LOADOUT_SLOT_COUNT; ++i )
+	{
+		if ( i != TF_LOADOUT_SLOT_BUILDING && !GetEntityForLoadoutSlot( i ) )
+		{
+			CEconItemView *pItem = GetLoadoutItem( m_PlayerClass.GetClassIndex(), i );
+			if ( pItem )
+			{
+				//if ( ItemIsAllowed( pItem ) )
+				{
+					const char *pszClassname = pItem->GetEntityName();
+					if( !pszClassname || !pszClassname[0] )
+						continue;
 
+					if ( V_stricmp( pszClassname, "no_entity" ) )
+						GiveNamedItem( pszClassname, 0, pItem );
+				}
+			}
+		}
+	}
+	*/
+	
 	PostInventoryApplication();
 }
 
@@ -1739,7 +1795,7 @@ void CTFPlayer::ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData )
 {
 	for ( int iWeapon = 0; iWeapon < TF_PLAYER_WEAPON_COUNT; ++iWeapon )
 	{
-		ETFWeaponID iWeaponID = (ETFWeaponID)GetTFInventory()->GetWeapon( m_PlayerClass.GetClassIndex(), iWeapon );
+		ETFWeaponID iWeaponID = (ETFWeaponID)GetTFInventory()->GetWeapon( m_PlayerClass.GetClassIndex(), (ETFLoadoutSlot)iWeapon );
 
 		if ( iWeaponID != TF_WEAPON_NONE )
 		{
@@ -1784,49 +1840,6 @@ void CTFPlayer::ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData )
 			if ( pCarriedWeapon && pCarriedWeapon->GetWeaponID() != TF_WEAPON_BUILDER )
 			{
 				pCarriedWeapon->UnEquip( this );
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CTFPlayer::ManageInstagibWeapons( TFPlayerClassData_t *pData )
-{
-	// FIXME: HARDCODED WEAPON IDS FROM ITEMS_GAME.TXT
-	int gTFInstagibWeapons[2] =
-	{
-		9010,		// TF_WEAPON_CROWBAR
-		9021		// TF_WEAPON_LEVERRIFLE
-	};
-
-	for( int i = 0; i < ARRAYSIZE( gTFInstagibWeapons ); i++ )
-	{
-		int iWeaponID = gTFInstagibWeapons[i];
-
-		CEconItemDefinition *pItemDef = GetItemSchema()->GetItemDefinition( iWeaponID );
-		if( !pItemDef )
-		{
-			Warning( "Unknown iWeaponID: %d\n", iWeaponID );
-			return;
-		}
-
-		CEconItemView econItem( iWeaponID );
-		econItem.SkipBaseAttributes( false );
-
-		const char *pszClassname = pItemDef->item_class;
-		CEconEntity *pEconEnt = dynamic_cast<CEconEntity *>( GiveNamedItem( pszClassname, 0, &econItem ) );
-		if( pEconEnt )
-		{
-			pEconEnt->GiveTo( this );
-
-			CBaseCombatWeapon *pWeapon = pEconEnt->MyCombatWeaponPointer();
-			if ( pWeapon )
-			{
-				// Give full ammo for this weapon.
-				int iAmmoType = pWeapon->GetPrimaryAmmoType();
-				SetAmmoCount( GetMaxAmmo( iAmmoType ), iAmmoType );
 			}
 		}
 	}
@@ -1926,12 +1939,17 @@ void CTFPlayer::ManageGrenades( TFPlayerClassData_t *pData )
 //-----------------------------------------------------------------------------
 CEconItemView *CTFPlayer::GetLoadoutItem( int iClass, int iSlot )
 {
+	if( /*TFGameRules()->IsDeathmatch() &&*/ IsPlayerClass( TF_CLASS_MERCENARY ) ) // SanyaSho: mercenary has own inventory preset
+	{
+		return GetTFInventory()->GetMercenaryItem( this, (ETFLoadoutSlot)iSlot );
+	}
+	
 	int iPreset = m_WeaponPreset[iClass][iSlot];
 
 	if ( tf2c_force_stock_weapons.GetBool() )
 		iPreset = 0;
 
-	return GetTFInventory()->GetItem( iClass, iSlot, iPreset );
+	return GetTFInventory()->GetItem( iClass, (ETFLoadoutSlot)iSlot, iPreset );
 }
 
 //-----------------------------------------------------------------------------
@@ -1941,10 +1959,10 @@ void CTFPlayer::HandleCommand_WeaponPreset( int iSlotNum, int iPresetNum )
 {
 	int iClass = m_PlayerClass.GetClassIndex();
 
-	if ( !GetTFInventory()->CheckValidSlot( iClass, iSlotNum ) )
+	if ( !GetTFInventory()->CheckValidSlot( iClass, (ETFLoadoutSlot)iSlotNum ) )
 		return;
 
-	if ( !GetTFInventory()->CheckValidWeapon( iClass, iSlotNum, iPresetNum ) )
+	if ( !GetTFInventory()->CheckValidWeapon( iClass, (ETFLoadoutSlot)iSlotNum, iPresetNum ) )
 		return;
 
 	m_WeaponPreset[iClass][iSlotNum] = iPresetNum;
@@ -1955,10 +1973,10 @@ void CTFPlayer::HandleCommand_WeaponPreset( int iSlotNum, int iPresetNum )
 //-----------------------------------------------------------------------------
 void CTFPlayer::HandleCommand_WeaponPreset( int iClass, int iSlotNum, int iPresetNum )
 {
-	if ( !GetTFInventory()->CheckValidSlot( iClass, iSlotNum ) )
+	if ( !GetTFInventory()->CheckValidSlot( iClass, (ETFLoadoutSlot)iSlotNum ) )
 		return;
 
-	if ( !GetTFInventory()->CheckValidWeapon( iClass, iSlotNum, iPresetNum ) )
+	if ( !GetTFInventory()->CheckValidWeapon( iClass, (ETFLoadoutSlot)iSlotNum, iPresetNum ) )
 		return;
 
 	m_WeaponPreset[iClass][iSlotNum] = iPresetNum;
@@ -1967,7 +1985,7 @@ void CTFPlayer::HandleCommand_WeaponPreset( int iClass, int iSlotNum, int iPrese
 //-----------------------------------------------------------------------------
 // Purpose: Create and give the named item to the player, setting the item ID. Then return it.
 //-----------------------------------------------------------------------------
-CBaseEntity	*CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, CEconItemView* pItem )
+CBaseEntity *CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, CEconItemView* pItem, int iAmmo )
 {
 	const char *pszEntName = TranslateWeaponEntForClass( pszName, m_PlayerClass.GetClassIndex() );
 
@@ -1975,9 +1993,8 @@ CBaseEntity	*CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, CEconI
 	if ( Weapon_OwnsThisType( pszEntName ) )
 		return NULL;
 
-	CBaseEntity *pEntity = CreateEntityByName( pszEntName );
-	
-	if ( pEntity == NULL )
+	CBaseEntity *pEntity = CBaseEntity::CreateNoSpawn( pszName, GetAbsOrigin(), vec3_angle );
+	if ( !pEntity )
 	{
 		Msg( "NULL Ent in GiveNamedItem!\n" );
 		return NULL;
@@ -1989,24 +2006,82 @@ CBaseEntity	*CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, CEconI
 		pEcon->SetItem( *pItem );
 	}
 
-	pEntity->SetLocalOrigin( GetLocalOrigin() );
 	pEntity->AddSpawnFlags( SF_NORESPAWN );
-
-	CBaseCombatWeapon *pWeapon = pEntity->MyCombatWeaponPointer();
-	if ( pWeapon )
-	{
-		pWeapon->SetSubType( iSubType );
-	}
-
 	DispatchSpawn( pEntity );
 	pEntity->Activate();
 
-	if ( pEntity && !pEntity->IsMarkedForDeletion() )
+	if ( pEntity->IsMarkedForDeletion() )
+		return NULL;
+
+	CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>( pEntity );
+	if ( pWeapon )
+	{
+		pWeapon->SetSubType( iSubType );
+
+		// Give ammo for this weapon if asked.
+		if ( pWeapon->UsesPrimaryAmmo() )
+		{
+			if ( iAmmo == TF_GIVEAMMO_MAX )
+			{
+				SetAmmoCount( GetMaxAmmo( pWeapon->GetPrimaryAmmoType() ), pWeapon->GetPrimaryAmmoType() );
+			}
+			else if ( iAmmo == TF_GIVEAMMO_INITIAL )
+			{
+				SetAmmoCount( pWeapon->GetInitialAmmo(), pWeapon->GetPrimaryAmmoType() );
+			}
+			else if ( iAmmo != TF_GIVEAMMO_NONE )
+			{
+				SetAmmoCount( iAmmo, pWeapon->GetPrimaryAmmoType() );
+			}
+		}
+
+		pEcon->GiveTo( this );
+		pWeapon->GiveTo( this ); // FIXME(SanyaSho): should call this to prevent broken pickup animation and other logic
+
+		if ( iAmmo == TF_GIVEAMMO_MAX && pWeapon->UsesPrimaryAmmo() )
+		{
+			// If we want max ammo then update the ammo count once more so we actually get the proper amount.
+			SetAmmoCount( GetMaxAmmo( pWeapon->GetPrimaryAmmoType() ), pWeapon->GetPrimaryAmmoType() );
+		}
+	}
+	else
 	{
 		pEntity->Touch( this );
 	}
 
 	return pEntity;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CBaseEntity *CTFPlayer::GiveEconItem( const char *pszName, int iSubType, int iAmmo )
+{
+	CEconItemView econItem( pszName );
+	if( econItem.GetItemDefIndex() < 0 )
+	{
+		Warning( "Attempted to give unknown item %s!\n", pszName );
+		return NULL;
+	}
+	
+	const char *szEntityName = econItem.GetEntityName();
+	if( !szEntityName[0] )
+	{
+		return NULL;
+	}
+	
+	if( !Q_stricmp( szEntityName, "no_entity" ) )
+	{
+		Warning( "Item %s is not an entity!\n", pszName );
+		return NULL;
+	}
+	else
+	{
+		return GiveNamedItem( szEntityName, iSubType, &econItem, iAmmo );
+	}
+	
+	return NULL;
 }
 
 
@@ -5818,6 +5893,16 @@ void CTFPlayer::RemoveAllWeapons( void )
 {
 	BaseClass::RemoveAllWeapons();
 
+	// Unequip all weapons
+	for ( int i = 0; i < WeaponCount(); i++ )
+	{
+		CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase * >( GetWeapon( i ) );
+		if ( !pWeapon )
+			continue;
+		
+		pWeapon->UnEquip( this );
+	}
+	
 	// Remove all wearables.
 	for ( int i = 0; i < GetNumWearables(); i++ )
 	{
@@ -8493,6 +8578,23 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 		}
 	}
 
+	// equipped loadout items
+	for( int i =0; i < TF_LOADOUT_SLOT_COUNT; i++ )
+	{
+		CEconEntity *pWearable = GetEntityForLoadoutSlot( i );
+		if( pWearable )
+		{
+			CEconItemDefinition *pItem = pWearable->GetItem()->GetStaticData();
+			if( pItem )
+			{
+				if( !pItem->baseitem )
+				{
+					criteriaSet.AppendCriteria( UTIL_VarArgs( "loadout_slot_%s", g_LoadoutSlots[i] ), pItem->item_name );
+				}
+			}
+		}
+	}
+	
 	// Player under crosshair
 	trace_t tr;
 	Vector forward;

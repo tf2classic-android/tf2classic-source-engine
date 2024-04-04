@@ -137,7 +137,8 @@ public:
 	void				HandleCommand_WeaponPreset(int iSlotNum, int iPresetNum);
 	void				HandleCommand_WeaponPreset(int iClass, int iSlotNum, int iPresetNum);
 
-	CBaseEntity			*GiveNamedItem( const char *pszName, int iSubType = 0, CEconItemView* pItem = NULL );
+	CBaseEntity			*GiveNamedItem( const char *pszName, int iSubType = 0, CEconItemView* pItem = NULL, int iAmmo = TF_GIVEAMMO_NONE );
+	CBaseEntity			*GiveEconItem( const char *pszName, int iSubType = 0, int iAmmo = 0 );
 
 	void				SaveMe( void );
 
@@ -150,6 +151,7 @@ public:
 	CTFItem				*GetItem( void ) const;
 
 	void				Regenerate( void );
+	void				Restock( bool bRestoreHealth, bool bRestoreAmmo );
 	float				GetNextRegenTime( void ){ return m_flNextRegenerateTime; }
 	void				SetNextRegenTime( float flTime ){ m_flNextRegenerateTime = flTime; }
 
@@ -388,7 +390,7 @@ public:
 	virtual void		PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
 	virtual bool		IsDeflectable( void ) { return true; }
 
-	bool IsVIP() const;
+	bool IsVIP();
 
 	void JumpSound();
 
@@ -456,7 +458,6 @@ public:
 	void				ValidateWearables( void );
 	void				ManageRegularWeapons( TFPlayerClassData_t *pData );
 	void				ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData );
-	void				ManageInstagibWeapons( TFPlayerClassData_t *pData );
 	void				ManageRandomWeapons( TFPlayerClassData_t *pData );
 	void				ManageBuilderWeapons( TFPlayerClassData_t *pData );
 	void				ManageGrenades(TFPlayerClassData_t *pData);

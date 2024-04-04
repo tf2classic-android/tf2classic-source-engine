@@ -1,9 +1,11 @@
 #include "cbase.h"
+#include "econ_item_schema.h"
 #include "econ_item_system.h"
 #include "script_parser.h"
 #include "activitylist.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "tf_shareddefs.h"
 #include "tier0/memdbgon.h"
 
 const char *g_TeamVisualSections[TF_TEAM_COUNT] =
@@ -436,19 +438,23 @@ public:
 
 		if ( pszLoadoutSlot[0] )
 		{
-			pItem->item_slot = UTIL_StringFieldToInt( pszLoadoutSlot, g_LoadoutSlots, TF_LOADOUT_SLOT_COUNT );
+			pItem->item_slot = (ETFLoadoutSlot)UTIL_StringFieldToInt( pszLoadoutSlot, g_LoadoutSlots, TF_LOADOUT_SLOT_COUNT );
 		}
+
+		// SanyaSho: one new check from 2017 build
+		//if ( pItem->item_slot == TF_LOADOUT_SLOT_INVALID )
+		//	return false;
 
 		const char *pszAnimSlot = pData->GetString( "anim_slot" );
 		if ( pszAnimSlot[0] )
 		{
 			if ( V_strcmp( pszAnimSlot, "FORCE_NOT_USED" ) != 0 )
 			{
-				pItem->anim_slot = UTIL_StringFieldToInt( pszAnimSlot, g_AnimSlots, TF_WPN_TYPE_COUNT );
+				pItem->anim_slot = (ETFWeaponType)UTIL_StringFieldToInt( pszAnimSlot, g_AnimSlots, TF_WPN_TYPE_COUNT );
 			}
 			else
 			{
-				pItem->anim_slot = -2;
+				pItem->anim_slot = TF_WPN_TYPE_NOT_USED;
 			}
 		}
 
@@ -506,7 +512,7 @@ public:
 
 						if ( pszSlotname[0] != '1' )
 						{
-							pItem->item_slot_per_class[iClass] = UTIL_StringFieldToInt( pszSlotname, g_LoadoutSlots, TF_LOADOUT_SLOT_COUNT );
+							pItem->item_slot_per_class[iClass] = (ETFLoadoutSlot)UTIL_StringFieldToInt( pszSlotname, g_LoadoutSlots, TF_LOADOUT_SLOT_COUNT );
 						}
 					}
 				}
@@ -678,6 +684,29 @@ CEconItemDefinition* CEconItemSchema::GetItemDefinition( int id )
 	CEconItemDefinition *itemdef = NULL;
 	FIND_ELEMENT( m_Items, id, itemdef );
 	return itemdef;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CEconItemSchema::GetItemIndex( const char *pszName )
+{
+	if( !pszName || !pszName[0] )
+		return -1;
+	
+	FOR_EACH_MAP_FAST( m_Items, i )
+	{
+		CEconItemDefinition *pItem = m_Items.Element( i );
+		if( !pItem )
+			continue;
+		
+		if( !Q_stricmp( pItem->name, pszName ) )
+		{
+			return m_Items.Key( i );
+		}
+	}
+	
+	return -1;
 }
 
 //-----------------------------------------------------------------------------

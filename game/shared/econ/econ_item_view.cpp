@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "econ_item_schema.h"
 #include "econ_item_view.h"
 #include "econ_item_system.h"
 #include "activitylist.h"
@@ -65,12 +66,25 @@ CEconItemView::CEconItemView( int iItemID )
 	Init( iItemID );
 }
 
+CEconItemView::CEconItemView( const char *pszName )
+{
+	Init( GetItemSchema()->GetItemIndex( pszName ) );
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 void CEconItemView::Init( int iItemID )
 {
 	SetItemDefIndex( iItemID );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CEconItemView::Init( const char *pszName )
+{
+	Init( GetItemSchema()->GetItemIndex( pszName ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -172,7 +186,7 @@ bool CEconItemView::IsCosmetic()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int CEconItemView::GetAnimationSlot( void )
+ETFWeaponType CEconItemView::GetAnimationSlot( void )
 {
 	CEconItemDefinition *pStatic = GetStaticData();
 
@@ -181,7 +195,7 @@ int CEconItemView::GetAnimationSlot( void )
 		return pStatic->anim_slot;
 	}
 
-	return -1;
+	return TF_WPN_TYPE_INVALID;
 }
 
 //-----------------------------------------------------------------------------

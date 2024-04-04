@@ -87,7 +87,7 @@ public:
 	C_TFTeam *GetTFTeam( void );
 	virtual void PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
 
-	bool IsVIP() const;
+	bool IsVIP();
 
 	void JumpSound();
 

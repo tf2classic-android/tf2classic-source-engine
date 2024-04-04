@@ -30,8 +30,10 @@ public:
 	DECLARE_EMBEDDED_NETWORKVAR();
 	CEconItemView();
 	CEconItemView( int iItemID );
+	CEconItemView( const char *pszName );
 
 	void Init( int iItemID );
+	void Init( const char *pszName );
 
 	CEconItemDefinition *GetStaticData( void ) const;
 
@@ -39,7 +41,7 @@ public:
 	const char* GetPlayerDisplayModel( int iClass = 0 ) const;
 	const char* GetEntityName( void );
 	bool IsCosmetic( void );
-	int GetAnimationSlot( void );
+	ETFWeaponType GetAnimationSlot( void );
 	Activity GetActivityOverride( int iTeamNumber, Activity actOriginalActivity );
 	const char* GetActivityOverride( int iTeamNumber, const char *name );
 	const char* GetSoundOverride( int iIndex, int iTeamNum = TEAM_UNASSIGNED ) const;

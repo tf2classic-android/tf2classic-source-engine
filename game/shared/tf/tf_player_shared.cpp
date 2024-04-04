@@ -1738,12 +1738,9 @@ void CTFPlayerShared::OnRemoveHalloweenTiny( void )
 void CTFPlayerShared::OnAddRagemode( void )
 {
 #ifdef GAME_DLL
-	CTFWeaponBase *pWeapon = (CTFWeaponBase *)m_pOuter->GiveNamedItem( "tf_weapon_hammerfists" );
-	if ( pWeapon )
-	{
-		pWeapon->DefaultTouch( m_pOuter );
+	CTFWeaponBase *pWeapon = (CTFWeaponBase *)m_pOuter->GiveEconItem( "Hammerfists" );
+	if( pWeapon )
 		m_pOuter->Weapon_Switch( pWeapon );
-	}
 
 	m_pOuter->TeamFortress_SetSpeed();
 #endif
@@ -4357,9 +4354,9 @@ CTFTeam *CTFPlayer::GetTFTeam()
 	return pTFTeam;
 }
 
-bool CTFPlayer::IsVIP() const
+bool CTFPlayer::IsVIP()
 {
-	if( (TFGameRules() && (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP)) && (const_cast< CTFPlayer * >( this )->GetTFTeam() && const_cast< CTFPlayer * >( this )->GetTFTeam()->IsEscorting()) && const_cast< CTFPlayer * >( this )->IsPlayerClass( TF_CLASS_CIVILIAN ) )
+	if( (TFGameRules() && (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP)) && (GetTFTeam() && GetTFTeam()->IsEscorting()) && IsPlayerClass( TF_CLASS_CIVILIAN ) )
 		return true;
 	return false;
 }

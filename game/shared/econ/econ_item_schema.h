@@ -202,6 +202,36 @@ public:
 	//CUtlDict< EconItemStyle*, unsigned short > styles;
 };
 
+/*
+class CTFTauntInfo
+{
+	CTFTauntInfo()
+	{
+	}
+	
+	CUtlVector<char const *> custom_taunt_scene_per_class[TF_CLASS_COUNT];
+	CUtlVector<char const *> custom_taunt_outro_scene_per_class[TF_CLASS_COUNT];
+	CUtlVector<char const *> custom_partner_taunt_initiator_per_class[TF_CLASS_COUNT];
+	CUtlVector<char const *> custom_partner_taunt_receiver_per_class[TF_CLASS_COUNT];
+	const char *custom_taunt_prop_per_class[TF_CLASS_COUNT];
+	const char *custom_taunt_prop_scene_per_class[TF_CLASS_COUNT];
+	const char *custom_taunt_prop_outro_scene_per_class[TF_CLASS_COUNT];
+	bool is_hold_taunt;
+	bool is_partner_taunt;
+	int taunt_attack;
+	float taunt_attack_time;
+	float taunt_separation_forward_distance;
+	bool stop_taunt_if_moved;
+	const char *taunt_success_sound;
+	const char *taunt_success_sound_loop;
+	float taunt_move_speed;
+	float taunt_turn_speed;
+	bool taunt_force_move_forward;
+	ETFLoadoutSlot taunt_force_weapon_slot;
+	bool taunt_mimic;
+};
+*/
+
 class CEconItemDefinition
 {
 public:
@@ -211,15 +241,15 @@ public:
 		used_by_classes = 0;
 
 		for ( int i = 0; i < TF_CLASS_COUNT_ALL; i++ )
-			item_slot_per_class[i] = -1;
+			item_slot_per_class[i] = TF_LOADOUT_SLOT_INVALID;
 
 		show_in_armory = false;
 		CLEAR_STR(item_class);
 		CLEAR_STR(item_type_name);
 		CLEAR_STR(item_name);
 		CLEAR_STR(item_description);
-		item_slot = -1;
-		anim_slot = -1;
+		item_slot = TF_LOADOUT_SLOT_INVALID;
+		anim_slot = TF_WPN_TYPE_INVALID;
 		item_quality = QUALITY_NORMAL;
 		baseitem = false;
 		propername = false;
@@ -249,14 +279,14 @@ public:
 	CUtlDict< bool, unsigned short > capabilities;
 	CUtlDict< bool, unsigned short > tags;
 	int used_by_classes;
-	int item_slot_per_class[TF_CLASS_COUNT_ALL];
+	ETFLoadoutSlot item_slot_per_class[TF_CLASS_COUNT_ALL];
 	bool show_in_armory;
 	char item_class[128];
 	char item_type_name[128];
 	char item_name[128];
 	char item_description[128];
-	int  item_slot;
-	int  anim_slot;
+	ETFLoadoutSlot  item_slot;
+	ETFWeaponType  anim_slot;
 	EEconItemQuality  item_quality;
 	bool baseitem;
 	bool propername;
@@ -274,6 +304,7 @@ public:
 	bool act_as_wearable;
 	CUtlVector<CEconItemAttribute> attributes;
 	EconItemVisuals visual[TF_TEAM_COUNT];
+	//CTFTauntInfo taunt;
 	char mouse_pressed_sound[128];
 	char drop_sound[128];
 };

@@ -130,8 +130,8 @@ enum
 	TF_CLASS_UNDEFINED = 0,
 
 	TF_CLASS_SCOUT,			// TF_FIRST_NORMAL_CLASS
-    TF_CLASS_SNIPER,
-    TF_CLASS_SOLDIER,
+	TF_CLASS_SNIPER,
+	TF_CLASS_SOLDIER,
 	TF_CLASS_DEMOMAN,
 	TF_CLASS_MEDIC,
 	TF_CLASS_HEAVYWEAPONS,
@@ -261,8 +261,10 @@ enum
 //-----------------------------------------------------------------------------
 // Weapon Types
 //-----------------------------------------------------------------------------
-enum
+enum ETFWeaponType
 {
+	TF_WPN_TYPE_NOT_USED = -2,
+	TF_WPN_TYPE_INVALID = -1,
 	TF_WPN_TYPE_PRIMARY = 0,
 	TF_WPN_TYPE_SECONDARY,
 	TF_WPN_TYPE_MELEE,
@@ -283,8 +285,9 @@ extern const char *g_LoadoutSlots[];
 //-----------------------------------------------------------------------------
 // Loadout slots
 //-----------------------------------------------------------------------------
-enum
+enum ETFLoadoutSlot
 {
+	TF_LOADOUT_SLOT_INVALID = -1,
 	TF_LOADOUT_SLOT_PRIMARY = 0,
 	TF_LOADOUT_SLOT_SECONDARY,
 	TF_LOADOUT_SLOT_MELEE,
@@ -1189,6 +1192,14 @@ enum
 
 #define OBJECT_COST_MULTIPLIER_PER_OBJECT			3
 #define OBJECT_UPGRADE_COST_MULTIPLIER_PER_LEVEL	3
+
+// enum used by GiveNamedItem, GiveEconItem and func_restock
+enum
+{
+	TF_GIVEAMMO_MAX = -3,
+	TF_GIVEAMMO_INITIAL = -2,
+	TF_GIVEAMMO_NONE = -1,
+};
 
 //--------------------------------------------------------------------------
 // Powerups

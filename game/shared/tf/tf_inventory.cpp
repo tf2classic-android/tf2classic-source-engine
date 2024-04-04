@@ -7,6 +7,8 @@
 
 
 #include "cbase.h"
+#include "econ_item_view.h"
+#include "tf_gamerules.h"
 #include "tf_shareddefs.h"
 #include "tf_inventory.h"
 #include "econ_item_system.h"
@@ -37,6 +39,16 @@ CTFInventory::CTFInventory() : CAutoGameSystemPerFrame( "CTFInventory" )
 			m_Items[iClass][iSlot].AddToTail( NULL );
 		}
 	}
+	
+	// FIXME(SanyaSho): this should look like this
+	for ( int iSlot = 0; iSlot < TF_LOADOUT_SLOT_COUNT; iSlot++ )
+	{
+		m_DeathmatchItems[iSlot] = NULL;
+		m_CTFItems[iSlot] = NULL;
+		//m_InfectedHumanItems[iSlot] = NULL; // SanyaSho: disable this for now
+		//m_InfectedZombieItems[iSlot] = NULL; // SanyaSho: disable this for now
+		m_InstagibItems[iSlot] = NULL;
+	}
 };
 
 CTFInventory::~CTFInventory()
@@ -45,6 +57,79 @@ CTFInventory::~CTFInventory()
 	m_pInventory->deleteThis();
 #endif
 }
+
+const char *g_aDeathmatchLoadout[TF_LOADOUT_SLOT_COUNT] =
+{
+	NULL,
+	"Pistol (Merc)",
+	"TF_WEAPON_CROWBAR",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	//NULL,
+	//NULL
+}; // idb
+const char *g_aCTFLoadout[TF_LOADOUT_SLOT_COUNT] =
+{
+	"Assault Rifle",
+	"Sten Gun",
+	"TF_WEAPON_CROWBAR",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	//NULL,
+	//NULL
+}; // idb
+/* // SanyaSho: disable this for now
+const char *g_aInfectedHumanLoadout[TF_LOADOUT_SLOT_COUNT] =
+{
+	"Hunting Shotgun",
+	"Pistol (Merc)",
+	"TF_WEAPON_CROWBAR",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	//NULL,
+	//NULL
+}; // idb
+const char *g_aInfectedZombieLoadout[TF_LOADOUT_SLOT_COUNT] =
+{
+	NULL,
+	NULL,
+	"Claws",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	//NULL,
+	//NULL
+}; // idb
+*/
+const char *g_aInstagibLoadout[TF_LOADOUT_SLOT_COUNT] =
+{
+	"Lever Rifle",
+	NULL,
+	"TF_WEAPON_CROWBAR",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	//NULL,
+	//NULL
+}; // idb
 
 //-----------------------------------------------------------------------------
 // Purpose: Fill the item arrays with data from item schema.
@@ -59,7 +144,7 @@ bool CTFInventory::Init( void )
 		int iItemID = GetItemSchema()->m_Items.Key( i );
 		CEconItemDefinition *pItemDef = GetItemSchema()->m_Items.Element( i );
 
-		if ( pItemDef->item_slot == -1 )
+		if ( pItemDef->item_slot == TF_LOADOUT_SLOT_INVALID )
 			continue;
 
 		// Add it to each class that uses it.
@@ -87,6 +172,16 @@ bool CTFInventory::Init( void )
 					m_Items[iClass][iSlot].AddToTail( pNewItem );
 				}
 			}
+			
+			// FIXME(SanyaSho): should be called if something wrong with m_Items(probably)
+			for( int i = 0; i < TF_LOADOUT_SLOT_COUNT; i++ )
+			{
+				m_DeathmatchItems[i] = new CEconItemView( g_aDeathmatchLoadout[i] );
+				m_CTFItems[i] = new CEconItemView(  g_aCTFLoadout[i] );
+				//m_InfectedHumanItems[i] = new CEconItemView(  g_aInfectedHumanLoadout[i] ); // SanyaSho: disable this for now
+				//m_InfectedZombieItems[i] = new CEconItemView( g_aInfectedZombieLoadout[i] ); // SanyaSho: disable this for now
+				m_InstagibItems[i] = new CEconItemView( g_aInstagibLoadout[i] );
+			}
 		}
 	}
 
@@ -107,9 +202,9 @@ void CTFInventory::LevelInitPreEntity( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: LEGACY
 //-----------------------------------------------------------------------------
-int CTFInventory::GetWeapon( int iClass, int iSlot )
+int CTFInventory::GetWeapon( int iClass, ETFLoadoutSlot iSlot )
 {
 	return Weapons[iClass][iSlot];
 };
@@ -117,10 +212,84 @@ int CTFInventory::GetWeapon( int iClass, int iSlot )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-CEconItemView *CTFInventory::GetItem( int iClass, int iSlot, int iNum )
+CEconItemView *CTFInventory::GetMercenaryItem( CBasePlayer *pPlayer, ETFLoadoutSlot iSlot )
+{
+	CEconItemView *m_pItem = NULL;
+
+	// ADDITION(SanyaSho): apply CTF item list if we're playing CTF in non-dm.
+	if( !TFGameRules()->IsDeathmatch() )
+	{
+		m_pItem = m_CTFItems[iSlot];
+	}
+	else
+	{
+#if SOONSOON
+		switch( TFGameRules()->GetRetroModeType() )
+		{
+			case TF_GAMESUBTYPE_CTF:
+			case TF_GAMESUBTYPE_AD:
+			case TF_GAMESUBTYPE_INVADE:
+				m_pItem = m_CTFItems[iSlot];
+				break;
+			case TF_GAMESUBTYPE_INFECTION:
+				if( pPlayer->GetTeamNumber() == TF_TEAM_BLUE ) // zimbabwe ABOBA
+				{
+					m_pItem = m_InfectedZombieItems[iSlot];
+				}
+				else
+				{
+					m_pItem = m_InfectedHumanItems[iSlot];
+				}
+				break;
+			default:
+				m_pItem = m_DeathmatchItems[iSlot];
+				
+				if( TFGameRules()->IsInstagib() )
+				{
+					m_pItem = m_InstagibItems[iSlot];
+				}
+				break;
+		}
+#else
+		switch( TFGameRules()->GetGameType() )
+		{
+			case TF_GAMETYPE_CTF:
+			{
+				m_pItem = m_CTFItems[iSlot];
+				break;
+			}
+			
+			default:
+			{
+				m_pItem = m_DeathmatchItems[iSlot];
+				
+				if( TFGameRules()->IsInstagib() )
+				{
+					m_pItem = m_InstagibItems[iSlot];
+				}
+				break;
+			}
+		}
+#endif
+	}
+	
+	// missing item
+	if( !m_pItem || (m_pItem->GetItemDefIndex() < 0) )
+		return NULL;
+
+	return m_pItem;
+};
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+CEconItemView *CTFInventory::GetItem( int iClass, ETFLoadoutSlot iSlot, int iNum )
 {
 	if ( CheckValidWeapon( iClass, iSlot, iNum ) == false )
 		return NULL;
+
+	//if( iClass > TF_CLASS_COUNT )
+	//	return NULL;
 
 	return m_Items[iClass][iSlot][iNum];
 };
@@ -128,12 +297,12 @@ CEconItemView *CTFInventory::GetItem( int iClass, int iSlot, int iNum )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CTFInventory::CheckValidSlot( int iClass, int iSlot, bool bHudCheck /*= false*/ )
+bool CTFInventory::CheckValidSlot( int iClass, ETFLoadoutSlot iSlot )
 {
 	if ( iClass < TF_CLASS_UNDEFINED || iClass > TF_CLASS_COUNT )
 		return false;
 
-	int iCount = ( bHudCheck ? INVENTORY_ROWNUM : TF_LOADOUT_SLOT_COUNT );
+	int iCount = ( TF_LOADOUT_SLOT_COUNT ); // probably TF_LOADOUT_SLOT_TAUNT
 
 	// Array bounds check.
 	if ( iSlot >= iCount || iSlot < 0 )
@@ -149,12 +318,12 @@ bool CTFInventory::CheckValidSlot( int iClass, int iSlot, bool bHudCheck /*= fal
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CTFInventory::CheckValidWeapon( int iClass, int iSlot, int iWeapon, bool bHudCheck /*= false*/ )
+bool CTFInventory::CheckValidWeapon( int iClass, ETFLoadoutSlot iSlot, int iWeapon )
 {
 	if ( iClass < TF_CLASS_UNDEFINED || iClass > TF_CLASS_COUNT )
 		return false;
 
-	int iCount = ( bHudCheck ? INVENTORY_COLNUM : m_Items[iClass][iSlot].Count() );
+	int iCount = ( m_Items[iClass][iSlot].Count() );
 
 	// Array bounds check.
 	if ( iWeapon >= iCount || iWeapon < 0 )
@@ -170,7 +339,7 @@ bool CTFInventory::CheckValidWeapon( int iClass, int iSlot, int iWeapon, bool bH
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-int CTFInventory::NumWeapons( int iClass, int iSlot )
+int CTFInventory::NumWeapons( int iClass, ETFLoadoutSlot iSlot )
 {
 	// Slot must contain a base item.
 	if ( m_Items[iClass][iSlot][0] == NULL )
@@ -236,7 +405,7 @@ void CTFInventory::ResetInventory()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-int CTFInventory::GetWeaponPreset( int iClass, int iSlot )
+int CTFInventory::GetWeaponPreset( int iClass, ETFLoadoutSlot iSlot )
 {
 	KeyValues *pClass = m_pInventory->FindKey( g_aPlayerClassNames_NonLocalized[iClass] );
 	if ( !pClass )	//cannot find class node
@@ -244,8 +413,8 @@ int CTFInventory::GetWeaponPreset( int iClass, int iSlot )
 		ResetInventory();
 		return 0;
 	}
-	int iPreset = pClass->GetInt( g_LoadoutSlots[iSlot], -1 );
-	if ( iPreset == -1 )	//cannot find slot node
+	int iPreset = pClass->GetInt( g_LoadoutSlots[iSlot], TF_LOADOUT_SLOT_INVALID );
+	if ( iPreset == TF_LOADOUT_SLOT_INVALID )	//cannot find slot node
 	{
 		ResetInventory();
 		return 0;
@@ -260,7 +429,7 @@ int CTFInventory::GetWeaponPreset( int iClass, int iSlot )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CTFInventory::SetWeaponPreset( int iClass, int iSlot, int iPreset )
+void CTFInventory::SetWeaponPreset( int iClass, ETFLoadoutSlot iSlot, int iPreset )
 {
 	KeyValues* pClass = m_pInventory->FindKey( g_aPlayerClassNames_NonLocalized[iClass] );
 	if ( !pClass )	//cannot find class node
@@ -272,7 +441,7 @@ void CTFInventory::SetWeaponPreset( int iClass, int iSlot, int iPreset )
 	SaveInventory();
 }
 
-const char* CTFInventory::GetSlotName( int iSlot )
+const char* CTFInventory::GetSlotName( ETFLoadoutSlot iSlot )
 {
 	return g_LoadoutSlots[iSlot];
 };

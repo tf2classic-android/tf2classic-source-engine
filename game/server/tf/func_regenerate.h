@@ -13,6 +13,9 @@
 #include "triggers.h"
 #include "props.h"
 
+#define TF_REGENERATE_SOUND "Regenerate.Touch"
+#define TF_REGENERATE_NEXT_USE_TIME 3.0f
+
 //=============================================================================
 //
 // CTF Regenerate Zone class.
@@ -42,6 +45,8 @@ private:
 	bool					m_bDisabled;
 	CHandle<CDynamicProp>	m_hAssociatedModel;
 	string_t				m_iszAssociatedModel;
+
+	friend class CRestockZone;
 
 	DECLARE_DATADESC();
 };

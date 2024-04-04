@@ -36,22 +36,29 @@ public:
 	virtual bool	Init( void );
 	virtual void	LevelInitPreEntity( void );
 
-	int				GetWeapon( int iClass, int iSlot );
-	CEconItemView	*GetItem( int iClass, int iSlot, int iNum );
-	bool			CheckValidSlot( int iClass, int iSlot, bool bHudCheck = false );
-	bool			CheckValidWeapon( int iClass, int iSlot, int iWeapon, bool bHudCheck = false );
-	int				NumWeapons( int iClass, int iSlot );
+	int				GetWeapon( int iClass, ETFLoadoutSlot iSlot );
+	CEconItemView *GetMercenaryItem( CBasePlayer *pPlayer, ETFLoadoutSlot iSlot );
+	CEconItemView	*GetItem( int iClass, ETFLoadoutSlot iSlot, int iNum );
+	bool			CheckValidSlot( int iClass, ETFLoadoutSlot iSlot );
+	bool			CheckValidWeapon( int iClass, ETFLoadoutSlot iSlot, int iWeapon );
+	int				NumWeapons( int iClass, ETFLoadoutSlot iSlot );
 
 #if defined( CLIENT_DLL )
-	int				GetWeaponPreset( int iClass, int iSlot );
-	void			SetWeaponPreset( int iClass, int iSlot, int iPreset );
-	const char		*GetSlotName( int iSlot );
+	int				GetWeaponPreset( int iClass, ETFLoadoutSlot iSlot );
+	void			SetWeaponPreset( int iClass, ETFLoadoutSlot iSlot, int iPreset );
+	const char		*GetSlotName( ETFLoadoutSlot iSlot );
 #endif
 
 private:
 	static const int			Weapons[TF_CLASS_COUNT_ALL][TF_PLAYER_WEAPON_COUNT];
-	CUtlVector<CEconItemView *>	m_Items[TF_CLASS_COUNT_ALL][TF_LOADOUT_SLOT_COUNT];
-
+	CUtlVector<CEconItemView *>	m_Items[TF_CLASS_COUNT_ALL][TF_LOADOUT_SLOT_COUNT]; // should be CUtlVectorAutoPurge
+	
+	CEconItemView *m_DeathmatchItems[TF_LOADOUT_SLOT_COUNT];
+	CEconItemView *m_CTFItems[TF_LOADOUT_SLOT_COUNT];
+	//CEconItemView *m_InfectedHumanItems[TF_LOADOUT_SLOT_COUNT]; // SanyaSho: disable this for now
+	//CEconItemView *m_InfectedZombieItems[TF_LOADOUT_SLOT_COUNT]; // SanyaSho: disable this for now
+	CEconItemView *m_InstagibItems[TF_LOADOUT_SLOT_COUNT];
+	
 #if defined( CLIENT_DLL )
 	void LoadInventory();
 	void ResetInventory();
