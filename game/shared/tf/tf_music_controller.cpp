@@ -229,6 +229,12 @@ void CTFMusicController::OnDataChanged( DataUpdateType_t updateType )
 	
 void CTFMusicController::StartMusic()
 {
+	// SanyaSho: don't try to play anything in non-dm
+	if( !TFGameRules()->IsDeathmatch() )
+	{
+		return;
+	}
+	
 	if( m_bPlaying )
 	{
 		return;
@@ -279,6 +285,12 @@ void CTFMusicController::StartMusic()
 
 void CTFMusicController::StopMusic( bool bPlayEnding )
 {
+	// SanyaSho: don't try to play anything in non-dm
+	if( !TFGameRules()->IsDeathmatch() )
+	{
+		return;
+	}
+
 	if( !m_bPlaying )
 	{
 		return;
@@ -363,6 +375,12 @@ void CTFMusicController::RestartMusic()
 
 void CTFMusicController::FireGameEvent( IGameEvent *pEvent )
 {
+	// SanyaSho: don't try to play anything in non-dm
+	if( !TFGameRules()->IsDeathmatch() )
+	{
+		return;
+	}
+	
 	CBasePlayer *pPlayer = CBasePlayer::GetLocalPlayer();
 	if( !pPlayer )
 	{
@@ -475,6 +493,12 @@ void CTFMusicController::PrecacheTrack( int iTrack )
 
 int CTFMusicController::DrawDebugTextOverlays()
 {
+	// SanyaSho: don't try to play anything in non-dm
+	if( !TFGameRules()->IsDeathmatch() )
+	{
+		return BaseClass::DrawDebugTextOverlays();
+	}
+
 	int text_offset = BaseClass::DrawDebugTextOverlays();
 	
 	if( m_debugOverlays & OVERLAY_TEXT_BIT ) 
