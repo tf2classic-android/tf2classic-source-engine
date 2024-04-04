@@ -13,6 +13,8 @@
 // little-endian "TF2C"
 #define TF2CHEADER (('C'<<24)+('2'<<16)+('F'<<8)+'T')
 
+//#define TF2C_NAV_SUBVERSION 256 // SanyaSho: original one
+#define TF2C_NAV_SUBVERSION 512
 
 #define SENTRY_MAX_RANGE 1100.0f
 

@@ -1331,7 +1331,8 @@ unsigned int CTFNavMesh::GetSubVersionNumber( void ) const
 	// 1: initial implementation
 	// 2: added TF-specific attribute flags
 	// 256: TF2C 2017
-	return 256;
+	// 512: our nav file subversion
+	return TF2C_NAV_SUBVERSION;
 }
 
 
@@ -1372,9 +1373,9 @@ NavErrorType CTFNavMesh::LoadCustomDataPreArea( CUtlBuffer &fileBuffer, unsigned
 
 	if( magic == TF2CHEADER )
 	{
-		if( subVersion >= 256 )
+		if( subVersion >= TF2C_NAV_SUBVERSION )
 		{
-			if( subVersion <= 256 )
+			if( subVersion <= TF2C_NAV_SUBVERSION )
 			{
 				return NAV_OK;
 			}
@@ -1401,7 +1402,8 @@ NavErrorType CTFNavMesh::LoadCustomDataPreArea( CUtlBuffer &fileBuffer, unsigned
 	{
 		Warning(
 			"This nav file was not built for TF2Classic!\n"
-			"(If you are trying to use a nav file from live TF2, you need to convert if with tf2c_convert_nav_file.)\n" );
+			//"(If you are trying to use a nav file from live TF2, you need to convert if with tf2c_convert_nav_file.)\n" );
+			"(You need to regenerate nav file for this map. Use nav_generate.)\n" );
 		return NAV_INVALID_FILE;
 	}
 
