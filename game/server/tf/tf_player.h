@@ -392,7 +392,6 @@ public:
 	bool ShouldAnnouceAchievement( void );
 
 	virtual void		PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
-	virtual const char		*GetOverrideStepSound( const char *pszBaseStepSoundName );
 	virtual bool		IsDeflectable( void ) { return true; }
 
 	bool IsVIP();
