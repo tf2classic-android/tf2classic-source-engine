@@ -62,6 +62,6 @@ target_link_libraries(
 	vtf
 
 	"${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}"
-	"${LIBCOMMON}/libz${STATIC_LIB_EXT}"
 	"${LIBCOMMON}/libpng${STATIC_LIB_EXT}"
+	"${LIBCOMMON}/libz${STATIC_LIB_EXT}"
 )
