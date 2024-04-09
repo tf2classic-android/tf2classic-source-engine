@@ -11,12 +11,12 @@ set(
 	VAUDIO_MINIMP3_SOURCE_FILES
 
 	# Source Files
-	"${VAUDIO_MINIMP3_DIR}/vaudio_minimp3.cpp"
+	"${VAUDIO_MINIMP3_DIR}/mp3codecs.cpp"
 
 	# Header Files
 	"${SRCDIR}/public/tier1/interface.h"
 	"${SRCDIR}/public/vaudio/ivaudio.h"
-	"${VAUDIO_MINIMP3_DIR}/minimp3.h"
+	#"${VAUDIO_MINIMP3_DIR}/minimp3.h"
 )
 
 add_library(
@@ -39,4 +39,5 @@ target_include_directories(
 	vaudio_minimp3 PRIVATE
 
 	"${ENGINE_SRC_DIR}"
+	"${THIRDPARTYDIR}/minimp3/"
 )
