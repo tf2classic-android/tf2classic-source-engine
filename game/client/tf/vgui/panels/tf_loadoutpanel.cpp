@@ -233,9 +233,9 @@ bool CTFLoadoutPanel::Init()
 
 		for ( int iSlot = 0; iSlot < TF_LOADOUT_SLOT_COUNT; iSlot++ )
 		{
-			for ( int iPreset = 0; iPreset < GetTFInventory()->NumWeapons( iClassIndex, iSlot ); iPreset++ )
+			for ( int iPreset = 0; iPreset < GetTFInventory()->NumWeapons( iClassIndex, (ETFLoadoutSlot)iSlot ); iPreset++ )
 			{
-				CEconItemView *pItem = GetTFInventory()->GetItem( iClassIndex, iSlot, iPreset );
+				CEconItemView *pItem = GetTFInventory()->GetItem( iClassIndex, (ETFLoadoutSlot)iSlot, iPreset );
 
 				if ( pItem )
 				{
@@ -484,8 +484,8 @@ void CTFLoadoutPanel::UpdateModelWeapons( void )
 	int iAnimationIndex = -1;
 
 	// Get active weapon info.
-	int iPreset = GetTFInventory()->GetWeaponPreset( m_iCurrentClass, m_iCurrentSlot );
-	CEconItemView *pActiveItem = GetTFInventory()->GetItem( m_iCurrentClass, m_iCurrentSlot, iPreset );
+	int iPreset = GetTFInventory()->GetWeaponPreset( m_iCurrentClass, (ETFLoadoutSlot)m_iCurrentSlot );
+	CEconItemView *pActiveItem = GetTFInventory()->GetItem( m_iCurrentClass, (ETFLoadoutSlot)m_iCurrentSlot, iPreset );
 	Assert( pActiveItem );
 
 	if ( pActiveItem )
@@ -503,8 +503,8 @@ void CTFLoadoutPanel::UpdateModelWeapons( void )
 		if ( iSlot == -1 )
 			continue;
 
-		int iWeapon = GetTFInventory()->GetWeaponPreset( m_iCurrentClass, iSlot );
-		CEconItemView *pItem = GetTFInventory()->GetItem( m_iCurrentClass, iSlot, iWeapon );
+		int iWeapon = GetTFInventory()->GetWeaponPreset( m_iCurrentClass, (ETFLoadoutSlot)iSlot );
+		CEconItemView *pItem = GetTFInventory()->GetItem( m_iCurrentClass, (ETFLoadoutSlot)iSlot, iWeapon );
 		CEconItemDefinition *pItemDef = pItem ? pItem->GetStaticData() : NULL;
 
 		if ( !pItemDef )
@@ -653,7 +653,7 @@ void CTFLoadoutPanel::DefaultLayout()
 			CTFButton *pSlideButtonL = m_pSlideButtons[iRow * 2];
 			CTFButton *pSlideButtonR = m_pSlideButtons[( iRow * 2 ) + 1];
 			int iSlot = g_aClassLoadoutSlots[iClassIndex][iRow];
-			int iNumWeapons = GetTFInventory()->NumWeapons( iClassIndex, iSlot );
+			int iNumWeapons = GetTFInventory()->NumWeapons( iClassIndex, (ETFLoadoutSlot)iSlot );
 
 			for ( int iColumn = 0; iColumn < m_pWeaponIcons[iRow].Count() || iColumn < iNumWeapons; iColumn++ )
 			{
@@ -672,7 +672,7 @@ void CTFLoadoutPanel::DefaultLayout()
 
 				if ( iSlot != -1 )
 				{
-					pItem = GetTFInventory()->GetItem( iClassIndex, iSlot, iColumn );
+					pItem = GetTFInventory()->GetItem( iClassIndex, (ETFLoadoutSlot)iSlot, iColumn );
 				}
 
 				CEconItemDefinition *pItemData = pItem ? pItem->GetStaticData() : NULL;
@@ -683,7 +683,7 @@ void CTFLoadoutPanel::DefaultLayout()
 					pWeaponButton->SetItemDefinition( pItemData );
 					pWeaponButton->SetLoadoutSlot( iSlot, iColumn );
 
-					int iWeaponPreset = GetTFInventory()->GetWeaponPreset( iClassIndex, iSlot );
+					int iWeaponPreset = GetTFInventory()->GetWeaponPreset( iClassIndex, (ETFLoadoutSlot)iSlot );
 
 					pWeaponButton->SetSelected( ( iColumn == iWeaponPreset ) );
 
@@ -730,7 +730,7 @@ void CTFLoadoutPanel::GameLayout()
 
 void CTFLoadoutPanel::SetWeaponPreset( int iClass, int iSlot, int iPreset )
 {
-	GetTFInventory()->SetWeaponPreset( iClass, iSlot, iPreset );
+	GetTFInventory()->SetWeaponPreset( iClass, (ETFLoadoutSlot)iSlot, iPreset );
 	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
 	if ( pPlayer )
 	{

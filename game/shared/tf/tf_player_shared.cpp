@@ -2423,7 +2423,7 @@ void CTFPlayerShared::RecalcDisguiseWeapon( int iSlot /*= 0*/ )
 		if ( pDisguiseTarget && pDisguiseTarget->IsPlayerClass( m_nDisguiseClass ) )
 			pItem = pDisguiseTarget->GetLoadoutItem( m_nDisguiseClass, i );
 		else
-			pItem = GetTFInventory()->GetItem( m_nDisguiseClass, i, 0 );
+			pItem = GetTFInventory()->GetItem( m_nDisguiseClass, (ETFLoadoutSlot)i, 0 );
 
 		if ( !pItem )
 			continue;

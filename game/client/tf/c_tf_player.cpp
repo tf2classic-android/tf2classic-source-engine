@@ -4342,7 +4342,7 @@ void C_TFPlayer::LoadInventory( void )
 	{
 		for ( int iSlot = 0; iSlot < TF_LOADOUT_SLOT_COUNT; iSlot++ )
 		{
-			int iPreset = GetTFInventory()->GetWeaponPreset( iClass, iSlot );
+			int iPreset = GetTFInventory()->GetWeaponPreset( iClass, (ETFLoadoutSlot)iSlot );
 			char szCmd[64];
 			Q_snprintf( szCmd, sizeof( szCmd ), "weaponpresetclass %d %d %d;", iClass, iSlot, iPreset );
 			engine->ExecuteClientCmd( szCmd );
@@ -4353,7 +4353,7 @@ void C_TFPlayer::LoadInventory( void )
 void C_TFPlayer::EditInventory( int iSlot, int iWeapon )
 {
 	int iClass = GetPlayerClass()->GetClassIndex();
-	GetTFInventory()->SetWeaponPreset( iClass, iSlot, iWeapon );
+	GetTFInventory()->SetWeaponPreset( iClass, (ETFLoadoutSlot)iSlot, iWeapon );
 }
 
 //-----------------------------------------------------------------------------
