@@ -166,6 +166,14 @@ if( ENABLE_TOGLES )
 	set( IS_TOGLES 1 )
 endif()
 
+option( BUILD_FOR_PUBLIC_USE "Disables some funny stuff that we have in game/" OFF )
+message( STATUS "BUILD_FOR_PUBLIC_USE: ${BUILD_FOR_PUBLIC_USE}" )
+if( BUILD_FOR_PUBLIC_USE )
+	add_compile_definitions(
+		PUBLIC_BUILD
+	)
+endif()
+
 message( "=============================================================================" )
 
 # CMAKETODO(SanyaSho): windows support

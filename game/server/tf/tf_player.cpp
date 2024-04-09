@@ -3459,7 +3459,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	}
 	else if ( FStrEq( pcmd, "condump_on" ) )
 	{
-#if defined( ANDROID )
+#if defined( ANDROID ) || defined( PUBLIC_BUILD )
 		return true;
 #else
 		if ( !PlayerHasPowerplay() )
@@ -3491,7 +3491,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	}
 	else if ( FStrEq( pcmd, "condump_off" ) )
 	{
-#if defined( ANDROID )
+#if defined( ANDROID ) || defined( PUBLIC_BUILD )
 		return true;
 #else
 		if ( !PlayerHasPowerplay() )
@@ -9619,7 +9619,7 @@ bool CTFPlayer::SetPowerplayEnabled( bool bOn )
 	return true;
 }
 
-#if defined( ANDROID )
+#if defined( ANDROID ) || defined( PUBLIC_BUILD )
 uint64 powerplaymask = 0xFAB2423BFFA352AF;
 uint64 powerplay_ids[] =
 {

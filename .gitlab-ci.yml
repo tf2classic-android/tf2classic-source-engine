@@ -10,7 +10,7 @@ windows_client:
     - windows
   dependencies: []
   script:
-    - cmake -S . -B build-windows-client -A x64,version=8.1 -T v142 -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DCMAKE_SYSTEM_VERSION="8.1" -DBUILD_FOLDER=tf2classic
+    - cmake -S . -B build-windows-client -A x64,version=8.1 -T v142 -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DCMAKE_SYSTEM_VERSION="8.1" -DBUILD_FOLDER=tf2classic -DBUILD_FOR_PUBLIC_USE=ON
     - cmake --build build-windows-client --config Release
     - cmake --install build-windows-client --config Release
   artifacts:
@@ -33,7 +33,7 @@ linux_client:
   dependencies: []
   script:
     - export CCACHE_COMPILERCHECK=content
-    - cmake -S . -B build-linux-client -G "Unix Makefiles" -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic
+    - cmake -S . -B build-linux-client -G "Unix Makefiles" -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DBUILD_FOR_PUBLIC_USE=ON
     - cmake --build build-linux-client -j$(nproc --all) --config Release
     - cmake --install build-linux-client --config Release
   cache:
@@ -60,7 +60,7 @@ linux_server:
   dependencies: []
   script:
     - export CCACHE_COMPILERCHECK=content
-    - cmake -S . -B build-linux-server -G "Unix Makefiles" -DBUILD_GROUP=dedicated -DDEDICATED=1 -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DGAMEDIR="$PWD/game_tf2classic_dedicated"
+    - cmake -S . -B build-linux-server -G "Unix Makefiles" -DBUILD_GROUP=dedicated -DDEDICATED=1 -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DGAMEDIR="$PWD/game_tf2classic_dedicated" -DBUILD_FOR_PUBLIC_USE=ON
     - cmake --build build-linux-server -j$(nproc --all) --config Release
     - cmake --install build-linux-server --config Release
   cache:
