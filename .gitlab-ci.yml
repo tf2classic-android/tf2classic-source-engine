@@ -36,6 +36,7 @@ linux_client:
     - cmake -S . -B build-linux-client -G "Unix Makefiles" -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DBUILD_FOR_PUBLIC_USE=ON
     - cmake --build build-linux-client -j$(nproc --all) --config Release
     - cmake --install build-linux-client --config Release
+    - strip --strip-unneeded game_tf2classic/hl2_linux game_tf2classic/*/*.so game_tf2classic/*/*/*.so
   cache:
     key: ccache-$CI_COMMIT_REF_NAME-$CI_JOB_NAME
     paths:
@@ -63,6 +64,7 @@ linux_server:
     - cmake -S . -B build-linux-server -G "Unix Makefiles" -DBUILD_GROUP=dedicated -DDEDICATED=1 -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DGAMEDIR="$PWD/game_tf2classic_dedicated" -DBUILD_FOR_PUBLIC_USE=ON
     - cmake --build build-linux-server -j$(nproc --all) --config Release
     - cmake --install build-linux-server --config Release
+    - strip --strip-unneeded game_tf2classic_dedicated/srcds_linux game_tf2classic_dedicated/*/*.so game_tf2classic_dedicated/*/*/*.so
   cache:
     key: ccache-$CI_COMMIT_REF_NAME-$CI_JOB_NAME
     paths:
