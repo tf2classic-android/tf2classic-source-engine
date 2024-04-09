@@ -14,8 +14,16 @@ windows_client:
     - cmake --build build-windows-client --config Release
     - cmake --install build-windows-client --config Release
   artifacts:
+    name: "winclient-$env:CI_PROJECT_NAME-$env:CI_COMMIT_SHORT_SHA"
     paths:
     - game_tf2classic
+    exclude:
+    - "game_tf2classic/*.pdb"
+    - "game_tf2classic/*.lib"
+    - "game_tf2classic/bin/*.pdb"
+    - "game_tf2classic/bin.*.lib"
+    - "game_tf2classic/tf2classic/bin/*.pdb"
+    - "game_tf2classic/tf2classic/bin/*.lib"
 
 linux_client:
   image: "registry.gitlab.steamos.cloud/steamrt/sniper/sdk"
@@ -33,8 +41,16 @@ linux_client:
     paths:
       - ../.ccache
   artifacts:
+    name: "linclient-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
     paths:
     - game_tf2classic
+    exclude:
+    - "game_tf2classic/*.dbg"
+    - "game_tf2classic/*.a"
+    - "game_tf2classic/bin/*.dbg"
+    - "game_tf2classic/bin/*.a"
+    - "game_tf2classic/tf2classic/bin/*.dbg"
+    - "game_tf2classic/tf2classic/bin/*.a"
 
 linux_server:
   image: "registry.gitlab.steamos.cloud/steamrt/sniper/sdk"
@@ -44,7 +60,7 @@ linux_server:
   dependencies: []
   script:
     - export CCACHE_COMPILERCHECK=content
-    - cmake -S . -B build-linux-server -G "Unix Makefiles" -DBUILD_GROUP=dedicated -DDEDICATED=1 -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DGAMEDIR=game_tf2classic_dedicated
+    - cmake -S . -B build-linux-server -G "Unix Makefiles" -DBUILD_GROUP=dedicated -DDEDICATED=1 -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DGAMEDIR="$PWD/game_tf2classic_dedicated"
     - cmake --build build-linux-server -j$(nproc --all) --config Release
     - cmake --install build-linux-server --config Release
   cache:
@@ -52,5 +68,13 @@ linux_server:
     paths:
       - ../.ccache
   artifacts:
+    name: "linserver-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
     paths:
     - game_tf2classic_dedicated
+    exclude:
+    - "game_tf2classic_dedicated/*.dbg"
+    - "game_tf2classic_dedicated/*.a"
+    - "game_tf2classic_dedicated/bin/*.dbg"
+    - "game_tf2classic_dedicated/bin/*.a"
+    - "game_tf2classic_dedicated/tf2classic/bin/*.dbg"
+    - "game_tf2classic_dedicated/tf2classic/bin/*.a"
