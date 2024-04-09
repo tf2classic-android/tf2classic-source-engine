@@ -225,12 +225,13 @@ list(
 
 # GIT_COMMIT_START
 # https://jonathanhamberg.com/post/cmake-embedding-git-hash/
-execute_process( COMMAND git describe --dirty --always WORKING_DIRECTORY ${SRCDIR} OUTPUT_VARIABLE GIT_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE )
+execute_process( COMMAND git describe --dirty --always WORKING_DIRECTORY ${SRCDIR} OUTPUT_VARIABLE GIT_COMMIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE )
 string( TIMESTAMP BUILD_START_DATE "%Y-%m-%d" )
 
+configure_file( "${SRCDIR}/common/git_info.h.in" "${SRCDIR}/common/git_info.h" @ONLY )
 configure_file( "${SRCDIR}/common/git_info.cpp.in" "${SRCDIR}/common/git_info.cpp" @ONLY )
 
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "common/git_info.cpp.in" )
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "common/git_info.h.in" "common/git_info.cpp.in" )
 
 list(
 	APPEND ADDITIONAL_SOURCES_DLL

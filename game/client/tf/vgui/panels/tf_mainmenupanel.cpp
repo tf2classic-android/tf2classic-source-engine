@@ -7,6 +7,7 @@
 #include "tf_notificationmanager.h"
 #include "engine/IEngineSound.h"
 #include "vgui_avatarimage.h"
+#include "git_info.h"
 
 using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
@@ -278,7 +279,11 @@ void CTFMainMenuPanel::SetVersionLabel()  //GetVersionString
 	if (m_pVersionLabel)
 	{
 		char verString[64];
+#if defined( GIT_COMMIT_HASH )
+		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d\nCommit: %s", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt(), GIT_COMMIT_HASH);
+#else
 		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt());
+#endif
 		m_pVersionLabel->SetText(verString);
 	}
 };

@@ -1,12 +1,9 @@
 // based on debug_dll_check.cpp
 
-#include "tier0/platform.h"
+#include "tier0/dbg.h"
 
 #if !defined( DLLNAME ) && defined( LIBNAME )
 #error "Should use this file ONLY with DLLs!"
 #endif
 
-#define _DEBUGONLYSTRING(x) #x
-#define DEBUGONLYSTRING(x) _DEBUGONLYSTRING(x) 
-
-DLL_GLOBAL_EXPORT char const *pGitInfoString = "[GIT] \"" DEBUGONLYSTRING(DLLNAME) "\" @GIT_COMMIT@ - @BUILD_START_DATE@";
+DLL_GLOBAL_EXPORT char const *pGitInfoString = "[GIT] \"" V_STRINGIFY( DLLNAME ) "\" @GIT_COMMIT_HASH@ - @BUILD_START_DATE@";

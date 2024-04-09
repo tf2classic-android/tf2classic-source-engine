@@ -40,6 +40,8 @@
 #include <android/log.h>
 #endif
 
+#include "git_info.h"
+
 #include "tier0/etwprof.h"
 
 #ifndef STEAM

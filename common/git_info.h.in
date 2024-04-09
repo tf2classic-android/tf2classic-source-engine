@@ -1,0 +1,8 @@
+// SanyaSho: this file allows us to add git commit in tier0/dbg.cpp and in mainmenu
+
+#if !defined( GIT_INFO_H )
+#define GIT_INFO_H
+
+#cmakedefine GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"
+
+#endif
