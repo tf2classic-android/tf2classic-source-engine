@@ -61,10 +61,7 @@ target_link_libraries(
 	tier2
 	vtf
 
-	"$<${IS_WINDOWS}:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
-	"$<${IS_WINDOWS}:${LIBCOMMON}/libz${STATIC_LIB_EXT}>"
-	"$<${IS_WINDOWS}:${LIBCOMMON}/libpng${STATIC_LIB_EXT}>"
-	"$<${IS_POSIX}:jpeg>"
-	"$<${IS_POSIX}:png>"
-	"$<${IS_POSIX}:z>"
+	"${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}"
+	"${LIBCOMMON}/libz${STATIC_LIB_EXT}"
+	"${LIBCOMMON}/libpng${STATIC_LIB_EXT}"
 )

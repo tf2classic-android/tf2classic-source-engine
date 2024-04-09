@@ -1124,8 +1124,7 @@ target_link_libraries(
 	bitmap
 	bz2
 	#"${LIBCOMMON}/libbz2${STATIC_LIB_EXT}"
-	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_WINDOWS}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
-	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:jpeg>"
+	"$<$<NOT:${IS_DEDICATED}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
 
 	dmxloader
 	mathlib

@@ -486,8 +486,7 @@ target_link_libraries(
 	vgui_controls
 	vtf
 	mathlib
-	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_WINDOWS}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
-	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:jpeg>"
+	"$<$<NOT:${IS_DEDICATED}>:${LIBCOMMON}/libjpeg${STATIC_LIB_EXT}>"
 	# steam_api
 	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_WINDOWS}>:${LIBCOMMON}/libpng${STATIC_LIB_EXT}>"
 	"$<$<AND:$<NOT:${IS_DEDICATED}>,${IS_POSIX}>:png>"
