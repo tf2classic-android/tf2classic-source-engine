@@ -137,7 +137,7 @@ ConVar tf2c_player_powerup_allowdrop( "tf2c_player_powerup_allowdrop", "0", FCVA
 ConVar tf2c_player_powerup_throwforce( "tf2c_player_powerup_throwforce", "500", FCVAR_DEVELOPMENTONLY, "Force when the player 'throws' their powerup." );
 ConVar tf2c_player_powerup_explodeforce( "tf2c_player_powerup_explodeforce", "200", FCVAR_DEVELOPMENTONLY, "Force when the player 'explodes' with a powerup." );
 
-ConVar tf2c_chat_protection( "tf2c_chat_protection", "1", FCVAR_NOTIFY, "Enable chat protection. Invulnerability is applied while the chat window is open." );
+ConVar tf2c_chat_protection( "tf2c_chat_protection", "0", FCVAR_NOTIFY, "Enable chat protection. Invulnerability is applied while the chat window is open." );
 
 ConVar tf_nav_in_combat_range( "tf_nav_in_combat_range", "1000", FCVAR_CHEAT );
     
