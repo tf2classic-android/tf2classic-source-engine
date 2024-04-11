@@ -48,7 +48,7 @@ typedef __int128_t int128;
 #define TSLIST_NODE_ALIGNMENT 16
 
 #ifdef POSIX
-#if defined( __aarch64__ )
+#if defined( __aarch64__ ) && !defined( ANDROID )
 static bool bool_compare_and_swap( int128 volatile *a, const int128 *b, const int128 *c )
 {
 	register bool result = false;
@@ -80,7 +80,7 @@ inline bool ThreadInterlockedAssignIf128( int128 volatile * pDest, const int128 
 	// We do not want the original comparand modified by the swap
 	// so operate on a local copy.
 	int128 local_comparand = comparand;
-#if defined( __aarch64__ )
+#if defined( __aarch64__ ) && !defined( ANDROID )
 	return bool_compare_and_swap( pDest, &local_comparand, &value );
 #else
 	return  __sync_bool_compare_and_swap( pDest, local_comparand, value );
