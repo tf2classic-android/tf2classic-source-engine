@@ -135,7 +135,7 @@ set( _INTERNAL_PLATFORM "linux" )
 endif()
 
 if( ${IS_64BIT} )
-if( ${IS_ANDROID} )
+if( ${IS_ANDROID} OR ${IS_ARM64} )
 set( _INTERNAL_ARCH "aarch64" )
 else()
 set( _INTERNAL_ARCH "amd64" )

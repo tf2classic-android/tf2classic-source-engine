@@ -97,7 +97,7 @@ add_compile_options(
 
 endif()
 
-if( NOT ${IS_ANDROID} )
+if( NOT (${IS_ANDROID} OR ${IS_ARM64}) )
 
 if( ${IS_64BIT} )
 	add_compile_options( -m64 )
@@ -149,11 +149,16 @@ if( ${IS_LINUX} )
 endif()
 
 add_compile_options(
-	$<${IS_LINUX}:-march=x86-64-v2>
-	-mfpmath=sse
+	$<$<AND:${IS_LINUX},$<NOT:${IS_ARM64}>>:-march=x86-64-v2>
+	$<$<NOT:${IS_ARM64}>:-mfpmath=sse>
 	-mtune=generic
+
+	$<${IS_ARM64}:-march=armv8.2-a>
 )
 
+add_link_options(
+	$<${IS_ARM64}:-march=armv8.2-a>
+)
 endif()
 
 list(

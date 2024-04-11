@@ -11,6 +11,7 @@
 set( IS_GAME_TF2CLASSIC	0 )
 
 set( IS_64BIT		0 )
+set( IS_ARM64		0 )
 set( IS_DEDICATED	0 )
 set( IS_TOGLES		0 )
 
@@ -32,8 +33,13 @@ endif()
 if( UNIX )
 	set( IS_POSIX 1 )
 
+	if( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64" )
+		set( IS_ARM64 1 )
+	endif()
+
 	if( NOT APPLE )
 		set( IS_LINUX 1 )
+
 		if( ${CMAKE_SYSTEM_NAME} STREQUAL "Android" )
 			set( IS_ANDROID 1 )
 
