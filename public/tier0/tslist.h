@@ -48,12 +48,43 @@ typedef __int128_t int128;
 #define TSLIST_NODE_ALIGNMENT 16
 
 #ifdef POSIX
-inline bool ThreadInterlockedAssignIf128( int128 volatile * pDest, const int128 &value, const int128 &comparand ) 
+#if defined( __aarch64__ )
+static bool bool_compare_and_swap( int128 volatile *a, const int128 *b, const int128 *c )
 {
-    // We do not want the original comparand modified by the swap
-    // so operate on a local copy.
-    int128 local_comparand = comparand;
-	return __sync_bool_compare_and_swap( pDest, local_comparand, value );
+	register bool result = false;
+
+	asm(
+		"ldr x1, %0\n"
+		"ldr x2, %1\n"
+		"ldr x3, %2\n"
+		"ldxp x4, x5, [x2]\n"
+		"ldxp x6, x7, [x3]\n"
+		"bg%=:\n"
+
+		"mov x2, x4\n"
+		"mov x3, x5\n"
+		"caspal  x4, x5, x6, x7, [x1]\n"
+		"cmp x4, x2\n"
+		"ccmp x5, x3, 0, eq\n"
+		"cset %w3, eq\n"
+
+		: "+o"(a), "+o"(b), "+o"(c) ,"+r"(result) :: "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"
+	);
+
+	return result;
+}
+#endif
+
+inline bool ThreadInterlockedAssignIf128( int128 volatile * pDest, const int128 &value, const int128 &comparand )
+{
+	// We do not want the original comparand modified by the swap
+	// so operate on a local copy.
+	int128 local_comparand = comparand;
+#if defined( __aarch64__ )
+	return bool_compare_and_swap( pDest, &local_comparand, &value );
+#else
+	return  __sync_bool_compare_and_swap( pDest, local_comparand, value );
+#endif
 }
 #endif
 
