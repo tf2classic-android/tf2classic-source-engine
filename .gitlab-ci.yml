@@ -80,3 +80,34 @@ linux_server:
     - "game_tf2classic_dedicated/bin/*.a"
     - "game_tf2classic_dedicated/tf2classic/bin/*.dbg"
     - "game_tf2classic_dedicated/tf2classic/bin/*.a"
+
+linux_aarch64_client:
+  image: "debian:bookworm"
+  stage: build
+  tags:
+    - linux_aarch64
+  dependencies: []
+  script:
+    - apt update
+    - apt upgrade -y
+    - apt install cmake build-essential g++ libssl-dev libcurl4-openssl-dev libbz2-dev libopenal-dev ccache libfreetype6-dev libfontconfig-dev libsdl2-dev libjpeg-dev libpng-dev git -y
+    - export CCACHE_COMPILERCHECK=content
+    - cmake -S . -B build-linux_aarch64-client -G "Unix Makefiles" -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DBUILD_FOR_PUBLIC_USE=ON
+    - cmake --build build-linux_aarch64-client -j$(nproc --all) --config Release
+    - cmake --install build-linux_aarch64-client --config Release
+    - strip --strip-unneeded game_tf2classic/hl2_linux game_tf2classic/*/*.so game_tf2classic/*/*/*.so
+  cache:
+    key: ccache-$CI_COMMIT_REF_NAME-$CI_JOB_NAME
+    paths:
+      - ../.ccache
+  artifacts:
+    name: "aarch64-linclient-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
+    paths:
+    - game_tf2classic
+    exclude:
+    - "game_tf2classic/*.dbg"
+    - "game_tf2classic/*.a"
+    - "game_tf2classic/bin/*.dbg"
+    - "game_tf2classic/bin/*.a"
+    - "game_tf2classic/tf2classic/bin/*.dbg"
+    - "game_tf2classic/tf2classic/bin/*.a"
