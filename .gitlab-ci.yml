@@ -111,3 +111,57 @@ linux_aarch64_client:
     - "game_tf2classic/bin/*.a"
     - "game_tf2classic/tf2classic/bin/*.dbg"
     - "game_tf2classic/tf2classic/bin/*.a"
+
+android32_client:
+  image: "registry.gitlab.com/mr0maks/debian_android_sdk:master"
+  stage: build
+  tags:
+    - linux
+  dependencies: []
+  script:
+    - export CCACHE_COMPILERCHECK=content
+    - export ANDROID_NDK_HOME="/opt/android-ndk-r25c"
+    - export ANDROID_PLATFORM_VERSION=26
+    - export ANDROID_PLATFORM="android-$ANDROID_PLATFORM_VERSION"
+    - export ANDROID_ARCH="armeabi-v7a"
+    - export _CMAKE_SOURCE_ENGINE_FLAGS="-DBUILD_GROUP=game -DCMAKE_BUILD_TYPE=Release -DBUILD_64BIT=OFF -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE=IVP -DBUILD_FOLDER=tf2classic -DENABLE_TOGLES=ON -DBUILD_FOR_PUBLIC_USE=ON -DDISABLE_WARNINGS=ON -DGAMEDIR=$PWD/game_tf2classic_android32"
+    - export _CMAKE_ANDROID_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$ANDROID_PLATFORM_VERSION -DANDROID_PLATFORM=$ANDROID_PLATFORM -DANDROID_ABI=$ANDROID_ARCH -DCMAKE_ANDROID_ARCH_ABI=$ANDROID_ARCH -DANDROID_NDK=$ANDROID_NDK_HOME -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME -DANDROID_ARM_MODE=arm -DCMAKE_ANDROID_ARM_MODE=arm -DANDROID_LD=lld -DCMAKE_ANDROID_LD=lld"
+    - cmake -S . -B build_android32 -G "Unix Makefiles" $_CMAKE_SOURCE_ENGINE_FLAGS $_CMAKE_ANDROID_FLAGS $@
+    - cmake --build build_android32 -j$(nproc --all) --config Release
+    - cmake --install build_android32 --config Release
+    - $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip game_tf2classic_android32/bin/*.so game_tf2classic_android32/tf2classic/bin/*.so
+  cache:
+    key: ccache-$CI_COMMIT_REF_NAME-$CI_JOB_NAME
+    paths:
+      - ../.ccache
+  artifacts:
+    name: "droidclient-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
+    paths:
+    - game_tf2classic_android32
+
+android64_client:
+  image: "registry.gitlab.com/mr0maks/debian_android_sdk:master"
+  stage: build
+  tags:
+    - linux
+  dependencies: []
+  script:
+    - export CCACHE_COMPILERCHECK=content
+    - export ANDROID_NDK_HOME="/opt/android-ndk-r25c"
+    - export ANDROID_PLATFORM_VERSION=26
+    - export ANDROID_PLATFORM="android-$ANDROID_PLATFORM_VERSION"
+    - export ANDROID_ARCH="arm64-v8a"
+    - export _CMAKE_SOURCE_ENGINE_FLAGS="-DBUILD_GROUP=game -DCMAKE_BUILD_TYPE=Release -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE=IVP -DBUILD_FOLDER=tf2classic -DENABLE_TOGLES=ON -DBUILD_FOR_PUBLIC_USE=ON -DDISABLE_WARNINGS=ON -DGAMEDIR=$PWD/game_tf2classic_android64"
+    - export _CMAKE_ANDROID_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$ANDROID_PLATFORM_VERSION -DANDROID_PLATFORM=$ANDROID_PLATFORM -DANDROID_ABI=$ANDROID_ARCH -DCMAKE_ANDROID_ARCH_ABI=$ANDROID_ARCH -DANDROID_NDK=$ANDROID_NDK_HOME -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME -DANDROID_LD=lld -DCMAKE_ANDROID_LD=lld"
+    - cmake -S . -B build_android64 -G "Unix Makefiles" $_CMAKE_SOURCE_ENGINE_FLAGS $_CMAKE_ANDROID_FLAGS $@
+    - cmake --build build_android64 -j$(nproc --all) --config Release
+    - cmake --install build_android64 --config Release
+    - $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip game_tf2classic_android64/bin/*.so game_tf2classic_android64/tf2classic/bin/*.so
+  cache:
+    key: ccache-$CI_COMMIT_REF_NAME-$CI_JOB_NAME
+    paths:
+      - ../.ccache
+  artifacts:
+    name: "droidclient-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
+    paths:
+    - game_tf2classic_android64
