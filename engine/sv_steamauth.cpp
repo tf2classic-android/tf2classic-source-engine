@@ -243,14 +243,7 @@ void CSteam3Server::Activate( EServerType serverType )
 			GetSteamInfIDVersionInfo().szVersionString ) )
 	{
 steam_no_good:
-#if !defined( NO_STEAM )
-		WarningAndLog( "*********************************************************\n" );
-		WarningAndLog( "*\tUnable to load Steam support library.*\n" );
-		WarningAndLog( "*\tThis server will operate in LAN mode only.*\n" );
-		WarningAndLog( "*********************************************************\n" );
-#endif
 		m_eServerMode = eServerModeNoAuthentication;
-		sv_lan.SetValue( true );
 		return;
 	}
 	Init(); // Steam API context init
