@@ -33,7 +33,7 @@ public:
 public:
 	string_t m_teamName;
 	bool m_bAllowClassChanges;
-	bool m_bAllowedClasses[TF_LAST_NORMAL_CLASS];
+	bool m_bAllowedClasses[TF_LAST_NORMAL_CLASS + 1];
 };
 
 #endif // TF_BOT_ROSTER_H
