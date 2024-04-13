@@ -90,9 +90,9 @@ linux_aarch64_client:
   script:
     - apt update
     - apt upgrade -y
-    - apt install cmake build-essential g++ libssl-dev libcurl4-openssl-dev libbz2-dev libopenal-dev ccache libfreetype6-dev libfontconfig-dev libsdl2-dev libjpeg-dev libpng-dev git -y
+    - apt install cmake build-essential g++ libssl-dev libcurl4-openssl-dev libbz2-dev libopenal-dev ccache libfreetype6-dev libfontconfig-dev libsdl2-dev libjpeg-dev libpng-dev git clang -y
     - export CCACHE_COMPILERCHECK=content
-    - cmake -S . -B build-linux_aarch64-client -G "Unix Makefiles" -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DBUILD_FOR_PUBLIC_USE=ON
+    - cmake -S . -B build-linux_aarch64-client -G "Unix Makefiles" -DBUILD_GROUP=game -DCMAKE_BUILD_TYPE="Release" -DBUILD_64BIT=ON -DBUILD_VPHYSICS=ON -DBUILD_VPHYSICS_TYPE="IVP" -DBUILD_FOLDER=tf2classic -DBUILD_FOR_PUBLIC_USE=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
     - cmake --build build-linux_aarch64-client -j$(nproc --all) --config Release
     - cmake --install build-linux_aarch64-client --config Release
     - strip --strip-unneeded game_tf2classic/hl2_linux game_tf2classic/*/*.so game_tf2classic/*/*/*.so
