@@ -1997,7 +1997,7 @@ CBaseEntity *CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, CEconI
 	if ( Weapon_OwnsThisType( pszEntName ) )
 		return NULL;
 
-	CBaseEntity *pEntity = CBaseEntity::CreateNoSpawn( pszName, GetAbsOrigin(), vec3_angle );
+	CBaseEntity *pEntity = CBaseEntity::CreateNoSpawn( pszEntName, GetAbsOrigin(), vec3_angle );
 	if ( !pEntity )
 	{
 		Msg( "NULL Ent in GiveNamedItem!\n" );
