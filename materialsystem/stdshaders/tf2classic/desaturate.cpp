@@ -65,8 +65,9 @@ SHADER_DRAW
 		// Set up shader data
 		BindTexture(SHADER_SAMPLER0, BASETEXTURE);
 
-		float amount = params[AMOUNT]->GetFloatValue();
-		pShaderAPI->SetPixelShaderConstant(0, &amount);
+		float amount[4] = { 0.f, 0.f, 0.f, 0.f };
+		amount[0] = params[AMOUNT]->GetFloatValue();
+		pShaderAPI->SetPixelShaderConstant(0, &amount[0]);
 
 		DECLARE_DYNAMIC_VERTEX_SHADER(desaturate_vs20);
 		SET_DYNAMIC_VERTEX_SHADER(desaturate_vs20);
