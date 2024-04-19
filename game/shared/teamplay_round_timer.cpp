@@ -1539,14 +1539,14 @@ void CTeamRoundTimer::InputAddTeamTime( inputdata_t &input )
 	int			nSeconds = 0;
 
 	// get the team
-	p = nexttoken( token, p, ' ' );
+	p = nexttoken( token, sizeof( token ), p, ' ' );
 	if ( token[0] )
 	{
 		nTeam = Q_atoi( token );
 	}
 
 	// get the time
-	p = nexttoken( token, p, ' ' );
+	p = nexttoken( token, sizeof( token ), p, ' ' );
 	if ( token[0] )
 	{
 		nSeconds = Q_atoi( token );

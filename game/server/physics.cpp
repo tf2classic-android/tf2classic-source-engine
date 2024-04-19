@@ -1148,13 +1148,13 @@ void PhysSolidOverride( solid_t &solid, string_t overrideScript )
 
 		// suck out the comma delimited tokens and turn them into quoted key/values
 		char szToken[256];
-		const char *pStr = nexttoken(szToken, STRING(overrideScript), ',');
+		const char *pStr = nexttoken(szToken, sizeof(szToken), STRING(overrideScript), ',');
 		while ( szToken[0] != 0 )
 		{
 			Q_strncat( pTmpString, "\"", sizeof(pTmpString), COPY_ALL_CHARACTERS );
 			Q_strncat( pTmpString, szToken, sizeof(pTmpString), COPY_ALL_CHARACTERS );
 			Q_strncat( pTmpString, "\" ", sizeof(pTmpString), COPY_ALL_CHARACTERS );
-			pStr = nexttoken(szToken, pStr, ',');
+			pStr = nexttoken(szToken, sizeof(szToken), pStr, ',');
 		}
 		// terminate the script
 		Q_strncat( pTmpString, "}", sizeof(pTmpString), COPY_ALL_CHARACTERS );
