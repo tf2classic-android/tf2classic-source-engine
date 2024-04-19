@@ -398,7 +398,7 @@ inline vec_t RoundInt (vec_t in)
 	return floor(in + 0.5f);
 }
 
-inline int Q_log2(int val)
+inline constexpr int Q_log2(int val)
 {
 	int answer = 0;
 	while( val >>= 1 )
@@ -1867,21 +1867,17 @@ inline void MatrixITransformPlane( const matrix3x4_t &src, const cplane_t &inPla
 	outPlane.dist -= outPlane.normal.x * vecInvTranslation[0] + outPlane.normal.y * vecInvTranslation[1] + outPlane.normal.z * vecInvTranslation[2];
 }
 
-inline int CeilPow2( int in )
+inline constexpr int CeilPow2( int in )
 {
-	int retval;
-
-	retval = 1;
+	int retval = 1;
 	while( retval < in )
 		retval <<= 1;
 	return retval;
 }
 
-inline int FloorPow2( int in )
+inline constexpr int FloorPow2( int in )
 {
-	int retval;
-
-	retval = 1;
+	int retval = 1;
 	while( retval < in )
 		retval <<= 1;
 	return retval >> 1;
