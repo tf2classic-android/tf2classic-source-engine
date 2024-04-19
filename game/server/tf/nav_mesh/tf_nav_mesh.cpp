@@ -1422,7 +1422,6 @@ NavErrorType CTFNavMesh::LoadCustomDataPreArea( CUtlBuffer &fileBuffer, unsigned
 	return NAV_OK;
 }
 
-
 //-------------------------------------------------------------------------
 /**
  * Recompute travel distance from each team's spawn room for each nav area
@@ -1539,9 +1538,9 @@ void CTFNavMesh::ComputeIncursionDistances( void )
 	else
 	{
 		bool isFFAComputed = false;
-		for( int i = 0; i < ITFTeamSpawnAutoList::AutoList().Count(); ++i )
+		for( int i = 0; i < ITFDMStartAutoList::AutoList().Count(); ++i )
 		{
-			CTFTeamSpawn *spawnSpot = static_cast< CTFTeamSpawn * >( ITFTeamSpawnAutoList::AutoList()[i] );
+			CTFDMStart *spawnSpot = static_cast< CTFDMStart * >( ITFDMStartAutoList::AutoList()[i] );
 			
 			if( !spawnSpot->IsTriggered( NULL ) )
 				continue;

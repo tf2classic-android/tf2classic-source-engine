@@ -63,6 +63,35 @@ private:
 	DECLARE_DATADESC();
 };
 
+
+// DM SPAWNPOINT
+DECLARE_AUTO_LIST( ITFDMStartAutoList )
+class CTFDMStart : public CPointEntity, public ITFDMStartAutoList
+{
+public:
+	DECLARE_CLASS( CTFDMStart, CPointEntity );
+	DECLARE_DATADESC();
+
+	virtual bool IsTriggered( CBaseEntity *pEntity )
+	{
+		return UTIL_IsMasterTriggered( m_Master, pEntity );
+	}
+
+	void InputEnable( inputdata_t &inputdata )
+	{
+		m_bDisabled = false;
+	}
+	void InputDisable( inputdata_t &inputdata )
+	{
+		m_bDisabled = true;
+	}
+	
+	bool IsDisabled() { return m_bDisabled; }
+private:
+	string_t m_Master;
+	bool m_bDisabled; // Enabled/Disabled?
+};
+
 #endif // ENTITY_TFSTART_H
 
 

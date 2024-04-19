@@ -193,3 +193,20 @@ void CTFTeamSpawn::InputRoundSpawn( inputdata_t &input )
 		}
 	}
 }
+
+
+
+// DM SPAWNPOINT
+BEGIN_DATADESC( CTFDMStart )
+
+	DEFINE_KEYFIELD( m_Master, FIELD_STRING, "master" ),
+	DEFINE_KEYFIELD( m_bDisabled, FIELD_BOOLEAN, "StartDisabled" ),
+
+	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
+
+END_DATADESC()
+
+IMPLEMENT_AUTO_LIST( ITFDMStartAutoList )
+
+LINK_ENTITY_TO_CLASS( info_player_deathmatch, CTFDMStart );

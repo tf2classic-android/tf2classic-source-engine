@@ -38,6 +38,7 @@ void CNullEntity::Spawn( void )
 }
 LINK_ENTITY_TO_CLASS(info_null,CNullEntity);
 
+#if !defined( TF_CLASSIC )
 class CBaseDMStart : public CPointEntity
 {
 public:
@@ -57,20 +58,23 @@ BEGIN_DATADESC( CBaseDMStart )
 	DEFINE_KEYFIELD( m_Master, FIELD_STRING, "master" ),
 
 END_DATADESC()
-
+#endif
 
 // These are the new entry points to entities. 
+#if !defined( TF_CLASSIC )
 LINK_ENTITY_TO_CLASS(info_player_deathmatch,CBaseDMStart);
+#endif
 LINK_ENTITY_TO_CLASS(info_player_start,CPointEntity);
 LINK_ENTITY_TO_CLASS(info_landmark,CPointEntity);
 
+#if !defined( TF_CLASSIC )
 bool CBaseDMStart::IsTriggered( CBaseEntity *pEntity )
 {
 	bool master = UTIL_IsMasterTriggered( m_Master, pEntity );
 
 	return master;
 }
-
+#endif
 
 // Convenient way to delay removing oneself
 void CBaseEntity::SUB_Remove( void )
