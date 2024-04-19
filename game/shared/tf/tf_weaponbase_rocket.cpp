@@ -271,7 +271,7 @@ CTFBaseRocket *CTFBaseRocket::Create( CBaseEntity *pWeapon, const char *pszClass
 	pRocket->SetLauncher( pWeapon );
 
 	// Print rocket type.
-	DevMsg( 3, "[DEBUG]: CTFBaseRocket::Create : iType %d (%s)\n", iType, g_szProjectileNames[iType] );
+	//DevMsg( 3, "[DEBUG]: CTFBaseRocket::Create : iType %d (%s)\n", iType, g_szProjectileNames[iType] );
 
 	// Set rocket type.
 	pRocket->m_iType.Set( iType );
