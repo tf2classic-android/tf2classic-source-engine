@@ -18,6 +18,7 @@
 #include "filters.h"
 #include "NextBotUtil.h"
 #include "team_spawnpoint.h"
+#include "tf_team.h"
 
 // NOTE: nav_debug_blocked ConVar is also use for debugging NAV_MESH_NAV_BLOCKER and TF_NAV_BLOCKED...
 
@@ -91,9 +92,6 @@ public:
 
 		if ( wallCount >= 1 )
 		{
-			// good cover, are we also right next to enemy incursion areas?
-			const CUtlVector< CTFNavArea * > &invasionVector = area->GetEnemyInvasionAreaVector( GetEnemyTeam( m_teamToAmbush ) );
-
 			// don't use areas that are in plain sight of large amounts of incoming enemy space
 			NavAreaCollector collector( true );
 			area->ForAllPotentiallyVisibleAreas( collector );
@@ -118,9 +116,20 @@ public:
 			float nearRangeSq = tf_select_ambush_areas_close_range.GetFloat();
 			nearRangeSq *= nearRangeSq;
 
-			FOR_EACH_VEC( invasionVector, it )
+			// good cover, are we also right next to enemy incursion areas?
+			CUtlVector< CTFNavArea * > invasion_vector;
+			memset( &invasion_vector, 0, sizeof( invasion_vector ) );
+			
+			ForEachEnemyTFTeam( m_teamToAmbush, [&area,&invasion_vector](int enemyTeam)
 			{
-				CTFNavArea *invasionArea = invasionVector[ it ];
+				const CUtlVector< CTFNavArea * > &invasionVector = area->GetEnemyInvasionAreaVector( enemyTeam );
+				invasion_vector.AddVectorToTail( invasionVector );
+				return true;
+			} );
+
+			FOR_EACH_VEC( invasion_vector, it )
+			{
+				CTFNavArea *invasionArea = invasion_vector[ it ];
 
 				if ( invasionArea->GetIncursionDistance( m_teamToAmbush ) < enemyIncursionDistanceAtArea )
 				{
@@ -152,11 +161,13 @@ void CMD_SelectAmbushAreas( void )
 
 	CTFNavArea *searchSourceArea = static_cast< CTFNavArea * >( player->GetLastKnownArea() );
 
-	int teamToAmbush = GetEnemyTeam( player->GetTeamNumber() );
-
 	CUtlVector< CTFNavArea * > ambushAreaVector;
-	ScanSelectAmbushAreas selector( &ambushAreaVector, teamToAmbush, searchSourceArea->GetIncursionDistance( teamToAmbush ) + 300.0f );
-	SearchSurroundingAreas( searchSourceArea, searchSourceArea->GetCenter(), selector, tf_select_ambush_areas_radius.GetFloat() );
+	ForEachEnemyTFTeam( player->GetTeamNumber(), [&ambushAreaVector,&searchSourceArea](int enemyTeam)
+	{
+		ScanSelectAmbushAreas selector( &ambushAreaVector, enemyTeam, searchSourceArea->GetIncursionDistance( enemyTeam ) + 300.0f );
+		SearchSurroundingAreas( searchSourceArea, searchSourceArea->GetCenter(), selector, tf_select_ambush_areas_radius.GetFloat() );
+		return true;
+	} );
 
 	FOR_EACH_VEC( ambushAreaVector, it )
 	{
@@ -517,11 +528,12 @@ void CTFNavMesh::OnServerActivate( void )
 
 	m_setupGateDefenseAreaVector.RemoveAll();
 
-	m_redSpawnRoomAreaVector.RemoveAll();
-	m_blueSpawnRoomAreaVector.RemoveAll();
-
-	m_redSpawnRoomExitAreaVector.RemoveAll();
-	m_blueSpawnRoomExitAreaVector.RemoveAll();
+	for( int i = 0; i < TF_TEAM_COUNT; i++ )
+	{
+		m_SpawnRoomAreaVector[i].RemoveAll();
+		m_SpawnRoomExitAreaVector[i].RemoveAll();
+	}
+	
 	for( int i=0; i<MAX_CONTROL_POINTS; ++i )
 	{
 		m_controlPointAreaVector[i].RemoveAll();
@@ -1842,8 +1854,10 @@ void CTFNavMesh::DecorateMesh( void )
 	Extent extent;
 
 	// mark spawn rooms
-	m_redSpawnRoomAreaVector.RemoveAll();
-	m_blueSpawnRoomAreaVector.RemoveAll();
+	for( int i = 0; i < TF_TEAM_COUNT; i++ )
+	{
+		m_SpawnRoomAreaVector[i].RemoveAll();
+	}
 
 	for ( int iFuncRespawnRoom=0; iFuncRespawnRoom<IFuncRespawnRoomAutoList::AutoList().Count(); ++iFuncRespawnRoom )
 	{
@@ -1872,7 +1886,7 @@ void CTFNavMesh::DecorateMesh( void )
 			if ( respawnRoom->PointIsWithin( spawnSpot->GetAbsOrigin() ) )
 			{
 				// found a valid spawn spot in an active spawn room
-				collectAndLabel.Init( respawnRoom, spawnSpot->GetTeamNumber(), spawnSpot->GetTeamNumber() == TF_TEAM_RED ? &m_redSpawnRoomAreaVector : &m_blueSpawnRoomAreaVector );
+				collectAndLabel.Init( respawnRoom, spawnSpot->GetTeamNumber(), spawnSpot->GetTeamNumber() == TF_TEAM_RED ? &m_SpawnRoomAreaVector[TF_TEAM_RED] : &m_SpawnRoomAreaVector[TF_TEAM_BLUE] ); // FIXME: 4TEAM SUPPORT
 				extent.Init( respawnRoom );
 
 				TheNavMesh->ForAllAreasOverlappingExtent( collectAndLabel, extent );
@@ -1881,19 +1895,15 @@ void CTFNavMesh::DecorateMesh( void )
 	}
 
 	// mark each spawn room area adjacent to a non-spawn room area as an exit
-	m_redSpawnRoomExitAreaVector.RemoveAll();
-	m_blueSpawnRoomExitAreaVector.RemoveAll();
-
-	FOR_EACH_VEC( m_redSpawnRoomAreaVector, rit )
+	for( int i = 0; i < TF_TEAM_COUNT; i++ )
 	{
-		CollectAndMarkSpawnRoomExits( m_redSpawnRoomAreaVector[ rit ], &m_redSpawnRoomExitAreaVector );
+		m_SpawnRoomExitAreaVector[i].RemoveAll();
+		
+		FOR_EACH_VEC( m_SpawnRoomAreaVector[i], rit )
+		{
+			CollectAndMarkSpawnRoomExits( m_SpawnRoomAreaVector[i][ rit ], &m_SpawnRoomExitAreaVector[i] );
+		}
 	}
-
-	FOR_EACH_VEC( m_blueSpawnRoomAreaVector, bit )
-	{
-		CollectAndMarkSpawnRoomExits( m_blueSpawnRoomAreaVector[ bit ], &m_blueSpawnRoomExitAreaVector );
-	}
-
 
 	// mark ammo areas
 	entity = NULL;

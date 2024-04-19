@@ -354,6 +354,7 @@ public:
 	void SetMaxVisionRangeOverride( float range );
 	float GetMaxVisionRangeOverride( void ) const;
 
+	void DisguiseAsRandomClass( void );
 	void DisguiseAsMemberOfEnemyTeam( void );		// set Spy disguise to be a class that someone on the enemy team is actually using
 	CBaseObject *GetNearestKnownSappableTarget( void );
 
@@ -470,7 +471,7 @@ public:
 	float GetUberDeployDelayDuration();
 
 	void SetShouldSayHello( bool bSay ) { m_bDMChat_ShouldSayHello = bSay; }
-	bool ShouldSayHello() { return m_bDMChat_ShouldSayHello; }
+	bool ShouldSayHello() { if( !TFGameRules() || !TFGameRules()->IsDeathmatch() ) return false; return m_bDMChat_ShouldSayHello; }
 private:
 	bool m_bDMChat_ShouldSayHello;
 	

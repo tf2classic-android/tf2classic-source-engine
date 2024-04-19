@@ -10,6 +10,7 @@
 #include "tf_player.h"
 #include "tf_gamerules.h"
 #include "tf_projectile_rocket.h"
+#include "tf_team.h"
 #include "tf_weaponbase_grenadeproj.h"
 #include "tf_obj.h"
 #include "tf_obj_sentrygun.h"
@@ -234,7 +235,7 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 				if ( me->IsDifficulty( CTFBot::EASY ) || me->IsDifficulty( CTFBot::NORMAL ) )
 				{
 					// disguise as a random class
-					me->m_Shared.Disguise( GetEnemyTeam( me->GetTeamNumber() ), RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS-1 ) );
+					me->DisguiseAsRandomClass();
 				}
 				else
 				{
@@ -243,6 +244,7 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 			}
 			else
 			{
+				// FIXME: Replace by ForEachEnemyTFTeam
 				// disguise as the class we just killed
 				me->m_Shared.Disguise( GetEnemyTeam( me->GetTeamNumber() ), m_nextDisguise );
 				m_nextDisguise = TF_CLASS_UNDEFINED;
@@ -1305,8 +1307,15 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 	// if we're a heavy and just saw a bad guy, keep the barrel spinning (unless we're in a hurry)
 	if ( me->IsPlayerClass( TF_CLASS_HEAVYWEAPONS ) && !me->IsAmmoLow() && me->GetIntentionInterface()->ShouldHurry( me ) != ANSWER_YES )
 	{
-		const float spinTime = 3.0f;
-		if ( me->GetVisionInterface()->GetTimeSinceVisible( GetEnemyTeam( me->GetTeamNumber() ) ) < spinTime )
+		bool enemy_visible_recentry = false;
+		ForEachEnemyTFTeam( me->GetTeamNumber(), [&me,&enemy_visible_recentry](int enemyTeam)
+		{
+			const float spinTime = 3.0f;
+			enemy_visible_recentry = ( me->GetVisionInterface()->GetTimeSinceVisible( enemyTeam ) < spinTime );
+			return true;
+		} );
+		
+		if( enemy_visible_recentry )
 		{
 			me->PressAltFireButton();
 		}

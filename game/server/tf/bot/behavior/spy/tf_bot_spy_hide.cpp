@@ -28,6 +28,7 @@ ActionResult< CTFBot >	CTFBotSpyHide::OnStart( CTFBot *me, Action< CTFBot > *pri
 
 	CTFNavArea *myArea = me->GetLastKnownArea();
 
+	// FIXME: Replace by ForEachEnemyTFTeam
 	int enemyTeam = GetEnemyTeam( me->GetTeamNumber() );
 
 	m_incursionThreshold = myArea ? myArea->GetIncursionDistance( enemyTeam ) : FLT_MAX;
@@ -80,6 +81,7 @@ ActionResult< CTFBot >	CTFBotSpyHide::Update( CTFBot *me, float interval )
 		CTFNavArea *myArea = me->GetLastKnownArea();
 		if ( myArea )
 		{
+			// FIXME: Replace by ForEachEnemyTFTeam
 			int enemyTeam = GetEnemyTeam( me->GetTeamNumber() );
 
 	  		m_incursionThreshold = myArea->GetIncursionDistance( enemyTeam );
@@ -188,6 +190,7 @@ bool CTFBotSpyHide::FindHidingSpot( CTFBot *me )
 
 	float maxIncursion = m_incursionThreshold + 1000.0f;
 
+	// FIXME: Replace by ForEachEnemyTFTeam
 	int enemyTeam = GetEnemyTeam( me->GetTeamNumber() );
 
 	// if we are standing in an area the defenders can't reach, don't limit

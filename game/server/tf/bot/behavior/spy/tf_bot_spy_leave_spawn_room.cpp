@@ -8,6 +8,7 @@
 #include "bot/tf_bot.h"
 #include "bot/behavior/spy/tf_bot_spy_leave_spawn_room.h"
 #include "bot/behavior/spy/tf_bot_spy_hide.h"
+#include "tf_team.h"
 
 ConVar tf_debug_placement_failure( "tf_debug_placement_failure", "0", FCVAR_CHEAT );
 
@@ -128,7 +129,11 @@ ActionResult< CTFBot >	CTFBotSpyLeaveSpawnRoom::Update( CTFBot *me, float interv
 		CTFPlayer *victim = NULL;
 
 		CUtlVector< CTFPlayer * > enemyVector;
-		CollectPlayers( &enemyVector, GetEnemyTeam( me->GetTeamNumber() ), COLLECT_ONLY_LIVING_PLAYERS );
+		ForEachEnemyTFTeam( me->GetTeamNumber(), [&enemyVector](int enemyTeam)
+		{
+			CollectPlayers( &enemyVector, enemyTeam, COLLECT_ONLY_LIVING_PLAYERS );
+			return true;
+		} );
 
 		// randomly shuffle our enemies
 		CUtlVector< CTFPlayer * > shuffleVector;

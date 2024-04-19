@@ -259,12 +259,14 @@ public:
 class CollectInvasionAreas
 {
 public:
-	CollectInvasionAreas( unsigned int marker, CTFNavArea *homeArea, CUtlVector< CTFNavArea * > *redInvasionAreaVector, CUtlVector< CTFNavArea * > *blueInvasionAreaVector )
+	CollectInvasionAreas( unsigned int marker, CTFNavArea *homeArea, CUtlVector< CTFNavArea * > *redInvasionAreaVector, CUtlVector< CTFNavArea * > *blueInvasionAreaVector, CUtlVector< CTFNavArea * > *greenInvasionAreaVector, CUtlVector< CTFNavArea * > *yellowInvasionAreaVector )
 	{
 		m_homeArea = homeArea;
 		m_visibleMarker = marker;
 		m_redInvasionAreaVector = redInvasionAreaVector;
 		m_blueInvasionAreaVector = blueInvasionAreaVector;
+		m_greenInvasionAreaVector = greenInvasionAreaVector;
+		m_yellowInvasionAreaVector = yellowInvasionAreaVector;
 	}
 
 	void FilterArea( CTFNavArea *area, CTFNavArea *adjArea )
@@ -298,6 +300,28 @@ public:
 			}
 
 			m_blueInvasionAreaVector->AddToTail( adjArea );
+		}
+		
+		if ( area->GetIncursionDistance( TF_TEAM_GREEN ) > adjArea->GetIncursionDistance( TF_TEAM_GREEN ) )
+		{
+			if ( area->GetIncursionDistance( TF_TEAM_GREEN ) > m_homeArea->GetIncursionDistance( TF_TEAM_GREEN ) + behindTolerance )
+			{
+				// this area is farther "in" than we are - don't search further
+				return;
+			}
+
+			m_greenInvasionAreaVector->AddToTail( adjArea );
+		}
+		
+		if ( area->GetIncursionDistance( TF_TEAM_YELLOW ) > adjArea->GetIncursionDistance( TF_TEAM_YELLOW ) )
+		{
+			if ( area->GetIncursionDistance( TF_TEAM_YELLOW ) > m_homeArea->GetIncursionDistance( TF_TEAM_YELLOW ) + behindTolerance )
+			{
+				// this area is farther "in" than we are - don't search further
+				return;
+			}
+
+			m_yellowInvasionAreaVector->AddToTail( adjArea );
 		}
 	}
 
@@ -337,6 +361,8 @@ public:
 	CTFNavArea *m_homeArea;
 	CUtlVector< CTFNavArea * > *m_redInvasionAreaVector;
 	CUtlVector< CTFNavArea * > *m_blueInvasionAreaVector;
+	CUtlVector< CTFNavArea * > *m_greenInvasionAreaVector;
+	CUtlVector< CTFNavArea * > *m_yellowInvasionAreaVector;
 	unsigned int m_visibleMarker;
 };
 
@@ -347,12 +373,15 @@ public:
  */
 void CTFNavArea::ComputeInvasionAreaVectors( void )
 {
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+	{
+		ClearAllInvasionAreas();
+		return;
+	}
+
 	static unsigned int searchMarker = RandomInt( 0, 1024*1024 );
 
-	for( int i=0; i<TF_TEAM_COUNT; ++i )
-	{
-		m_invasionAreaVector[ i ].RemoveAll();
-	}
+	ClearAllInvasionAreas();
 
 	++searchMarker;
 
@@ -364,7 +393,7 @@ void CTFNavArea::ComputeInvasionAreaVectors( void )
 	// the area in the PVS has a higher incursion distance than an adjacent
 	// area outside of the PVS - an invasion area
 
-	CollectInvasionAreas collector( searchMarker, this, &m_invasionAreaVector[ TF_TEAM_RED ], &m_invasionAreaVector[ TF_TEAM_BLUE ] );
+	CollectInvasionAreas collector( searchMarker, this, &m_invasionAreaVector[ TF_TEAM_RED ], &m_invasionAreaVector[ TF_TEAM_BLUE ], &m_invasionAreaVector[ TF_TEAM_GREEN ], &m_invasionAreaVector[ TF_TEAM_YELLOW ] );
 	ForAllCompletelyVisibleAreas( collector );
 }
 
@@ -378,14 +407,25 @@ bool CTFNavArea::IsBlocked( int teamID, bool ignoreNavBlockers ) const
 	if ( HasAttributeTF( TF_NAV_BLOCKED ) )
 		return true;
 
-	// FIXME 4TEAM SUPPORT
-
-	// temporary fix:
-	if ( teamID == TF_TEAM_RED && HasAttributeTF( TF_NAV_BLUE_ONE_WAY_DOOR ) )
-		return true;
-
-	if ( teamID == TF_TEAM_BLUE && HasAttributeTF( TF_NAV_RED_ONE_WAY_DOOR ) )
-		return true;
+	switch( teamID )
+	{
+	case TF_TEAM_RED:
+		if( HasAttributeTF( TF_NAV_BLUE_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR ) )
+			return true;
+		break;
+	case TF_TEAM_BLUE:
+		if( HasAttributeTF( TF_NAV_RED_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR ) )
+			return true;
+		break;
+	case TF_TEAM_GREEN:
+		if( HasAttributeTF( TF_NAV_RED_ONE_WAY_DOOR | TF_NAV_BLUE_ONE_WAY_DOOR | TF_NAV_YELLOW_ONE_WAY_DOOR ) )
+			return true;
+		break;
+	case TF_TEAM_YELLOW:
+		if( HasAttributeTF( TF_NAV_RED_ONE_WAY_DOOR | TF_NAV_BLUE_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR ) )
+			return true;
+		break;
+	};
 
 	return CNavArea::IsBlocked( teamID, ignoreNavBlockers );
 }

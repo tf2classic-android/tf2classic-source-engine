@@ -162,7 +162,7 @@ ActionResult< CTFBot >	CTFBotSpyAttack::Update( CTFBot *me, float interval )
 	}
 
 	// does my threat know I'm a Spy?
-	if ( me->IsThreatAimingTowardMe( playerThreat, 0.99f ) && me->GetTimeSinceLastInjury( GetEnemyTeam( me->GetTeamNumber() ) ) < 1.0f )
+	if ( me->IsThreatAimingTowardMe( playerThreat, 0.99f ) && me->GetTimeSinceLastInjuryByAnyEnemyTeam() < 1.0f )
 	{
 		m_isCoverBlown |= ( playerThreat->GetTimeSinceWeaponFired() < 0.25f );
 	}

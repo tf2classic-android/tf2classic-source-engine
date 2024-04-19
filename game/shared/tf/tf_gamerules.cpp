@@ -1609,20 +1609,25 @@ void CTFGameRules::CollectDefendPoints( CBasePlayer *player, CUtlVector< CTeamCo
 			CTeamControlPoint *point = pMaster->GetControlPoint( i );
 			if ( point && pMaster->IsInRound( point ) )
 			{
-				if ( ObjectiveResource()->GetOwningTeam( point->GetPointIndex() ) != player->GetTeamNumber() )
+				int TeamNumber = player->GetTeamNumber();
+				if ( ObjectiveResource()->GetOwningTeam( point->GetPointIndex() ) != TeamNumber )
 					continue;
 					
 				if ( player && player->IsBot() && point->ShouldBotsIgnore() )
 					continue;
 
-				if ( ObjectiveResource()->TeamCanCapPoint( point->GetPointIndex(), GetEnemyTeam( player->GetTeamNumber() ) ) )
+				ForEachEnemyTFTeam( TeamNumber, [&point,&defendVector](int enemyTeam)
 				{
-					if ( TeamplayGameRules()->TeamMayCapturePoint( GetEnemyTeam( player->GetTeamNumber() ), point->GetPointIndex() ) )
+					if ( ObjectiveResource()->TeamCanCapPoint( point->GetPointIndex(), enemyTeam ) )
 					{
-						// unlocked point on our team vulnerable to capture
-						defendVector->AddToTail( point );
+						if ( TeamplayGameRules()->TeamMayCapturePoint( enemyTeam, point->GetPointIndex() ) )
+						{
+							// unlocked point on our team vulnerable to capture
+							defendVector->AddToTail( point );
+						}
 					}
-				}
+					return true;
+				} );
 			}
 		}
 	}

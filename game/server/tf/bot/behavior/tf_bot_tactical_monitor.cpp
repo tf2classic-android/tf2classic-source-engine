@@ -7,6 +7,7 @@
 #include "fmtstr.h"
 
 #include "tf_gamerules.h"
+#include "tf_team.h"
 #include "tf_weapon_pipebomblauncher.h"
 #include "NextBot/NavMeshEntities/func_nav_prerequisite.h"
 
@@ -93,6 +94,7 @@ void CTFBotTacticalMonitor::MonitorArmedStickyBombs( CTFBot *me )
 							continue;
 						}
 
+						// FIXME: Replace by ForEachEnemyTFTeam
 						if ( sticky->GetTeamNumber() != GetEnemyTeam( knownVector[k].GetEntity()->GetTeamNumber() ) )
 						{
 							// "known" is either a spectator, or on our team
@@ -123,7 +125,11 @@ void CTFBotTacticalMonitor::AvoidBumpingEnemies( CTFBot *me )
 	const float avoidRange = 200.0f;
 
 	CUtlVector< CTFPlayer * > enemyVector;
-	CollectPlayers( &enemyVector, GetEnemyTeam( me->GetTeamNumber() ), COLLECT_ONLY_LIVING_PLAYERS );
+	ForEachEnemyTFTeam( me->GetTeamNumber(), [&enemyVector](int enemyTeam)
+	{
+		CollectPlayers( &enemyVector, enemyTeam, COLLECT_ONLY_LIVING_PLAYERS );
+		return true;
+	} );
 
 	CTFPlayer *closestEnemy = NULL;
 	float closestRangeSq = avoidRange * avoidRange;
@@ -448,7 +454,7 @@ EventDesiredResult< CTFBot > CTFBotTacticalMonitor::OnCommandString( CTFBot *me,
 		{
 			if ( me->CanDisguise() )
 			{
-				me->m_Shared.Disguise( GetEnemyTeam( me->GetTeamNumber() ), RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS-1 ) );
+				me->DisguiseAsRandomClass();
 			}
 		}
 	}

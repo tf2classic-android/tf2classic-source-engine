@@ -10,6 +10,7 @@
 #include "utlvector.h"
 #include "team.h"
 #include "tf_shareddefs.h"
+#include "tf_gamerules.h"
 #include "tf_player.h"
 
 class CBaseObject;
@@ -137,5 +138,40 @@ private:
 
 extern CTFTeamManager *TFTeamMgr();
 extern CTFTeam *GetGlobalTFTeam( int iIndex );
+
+template<typename Functor>
+bool ForEachTFTeam( Functor&& func )
+{
+	for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
+	{
+		if ( !func( i ) )
+			return false;
+	}
+	
+	return true;
+}
+
+template<typename Functor>
+bool ForEachEnemyTFTeam( int iTeam, Functor&& func )
+{
+	if ( !TFGameRules()->IsDeathmatch() )
+	{
+		// Iterate over every game team except for ourselves.
+		for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
+		{
+			if ( i != iTeam )
+			{
+				if ( !func( i ) )
+					return false;
+			}
+		}
+		
+		return true;
+	}
+	else
+	{
+		return func( FIRST_GAME_TEAM );
+	}
+}
 
 #endif // TF_TEAM_H

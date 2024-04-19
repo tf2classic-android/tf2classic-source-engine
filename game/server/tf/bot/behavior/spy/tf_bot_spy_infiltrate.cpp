@@ -199,6 +199,7 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *me )
 	}
 
 	int myTeam = me->GetTeamNumber();
+	// FIXME: Replace by ForEachEnemyTFTeam
 	const CUtlVector< CTFNavArea * > *enemySpawnExitVector = TheTFNavMesh()->GetSpawnRoomExitAreas( GetEnemyTeam( myTeam ) );
 
 #ifdef TF_RAID_MODE

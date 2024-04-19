@@ -9794,3 +9794,16 @@ void CTFPlayer::RemoveSpawnProtection( void )
 		m_Shared.RemoveCond( TF_COND_INVULNERABLE_SPAWN_PROTECT );
 	}
 }
+
+float CTFPlayer::GetTimeSinceLastInjuryByAnyEnemyTeam()
+{
+	float flTimeSinceInjured = FLT_MAX;
+	
+	ForEachEnemyTFTeam( GetTeamNumber(), [this,&flTimeSinceInjured](int enemyTeam)
+	{
+		flTimeSinceInjured = this->GetTimeSinceLastInjury( enemyTeam );
+		return true;
+	} );
+	
+	return flTimeSinceInjured;
+}

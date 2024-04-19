@@ -9,6 +9,7 @@
 #include "nav_mesh.h"
 #include "tf_nav_area.h"
 #include "tf_obj_teleporter.h"
+#include "tf_team.h"
 
 // little-endian "TF2C"
 #define TF2CHEADER (('C'<<24)+('2'<<16)+('F'<<8)+'T')
@@ -108,6 +109,8 @@ public:
 	const CUtlVector< CTFNavArea * > *GetSpawnRoomAreas( int team ) const;		// return vector of areas within the given team spawn room(s)
 	const CUtlVector< CTFNavArea * > *GetSpawnRoomExitAreas( int team ) const;	// return vector of areas where the given team exits their spawn room(s)
 
+	void GetEnemySpawnRoomExitAreas( CUtlVector< CTFNavArea * > *areas, int team );
+	
 	enum RecomputeReasonType
 	{
 		RESET,
@@ -152,11 +155,9 @@ private:
 	CUtlVector< CTFNavArea * > m_controlPointAreaVector[ MAX_CONTROL_POINTS ];
 	CTFNavArea *m_controlPointCenterAreaVector[ MAX_CONTROL_POINTS ];
 
-	CUtlVector< CTFNavArea * > m_redSpawnRoomAreaVector;
-	CUtlVector< CTFNavArea * > m_blueSpawnRoomAreaVector;
+	CUtlVector< CTFNavArea * > m_SpawnRoomAreaVector[TF_TEAM_COUNT];
+	CUtlVector< CTFNavArea * > m_SpawnRoomExitAreaVector[TF_TEAM_COUNT];
 
-	CUtlVector< CTFNavArea * > m_redSpawnRoomExitAreaVector;
-	CUtlVector< CTFNavArea * > m_blueSpawnRoomExitAreaVector;
 	void CollectAndMarkSpawnRoomExits( CTFNavArea *area, CUtlVector< CTFNavArea * > *exitAreaVector );
 
 	CountdownTimer m_watchCartTimer;
@@ -175,32 +176,53 @@ inline void CTFNavMesh::ScheduleRecomputationOfInternalData( CTFNavMesh::Recompu
 
 inline const CUtlVector< CTFNavArea * > *CTFNavMesh::GetSpawnRoomAreas( int team ) const
 {
-	if ( team == TF_TEAM_RED )
+	switch( team )
 	{
-		return &m_redSpawnRoomAreaVector;
-	}
-
-	if ( team == TF_TEAM_BLUE )
-	{
-		return &m_blueSpawnRoomAreaVector;
-	}
+	case TF_TEAM_RED:
+		return &m_SpawnRoomAreaVector[TF_TEAM_RED];
+		break;
+	case TF_TEAM_BLUE:
+		return &m_SpawnRoomAreaVector[TF_TEAM_BLUE];
+		break;
+	case TF_TEAM_GREEN:
+		return &m_SpawnRoomAreaVector[TF_TEAM_GREEN];
+		break;
+	case TF_TEAM_YELLOW:
+		return &m_SpawnRoomAreaVector[TF_TEAM_YELLOW];
+		break;
+	};
 
 	return NULL;
 }
 
 inline const CUtlVector< CTFNavArea * > *CTFNavMesh::GetSpawnRoomExitAreas( int team ) const
 {
-	if ( team == TF_TEAM_RED )
+	switch( team )
 	{
-		return &m_redSpawnRoomExitAreaVector;
-	}
-
-	if ( team == TF_TEAM_BLUE )
-	{
-		return &m_blueSpawnRoomExitAreaVector;
-	}
+	case TF_TEAM_RED:
+		return &m_SpawnRoomExitAreaVector[TF_TEAM_RED];
+		break;
+	case TF_TEAM_BLUE:
+		return &m_SpawnRoomExitAreaVector[TF_TEAM_BLUE];
+		break;
+	case TF_TEAM_GREEN:
+		return &m_SpawnRoomExitAreaVector[TF_TEAM_GREEN];
+		break;
+	case TF_TEAM_YELLOW:
+		return &m_SpawnRoomExitAreaVector[TF_TEAM_YELLOW];
+		break;
+	};
 
 	return NULL;
+}
+
+inline void CTFNavMesh::GetEnemySpawnRoomExitAreas( CUtlVector< CTFNavArea * > *areas, int team )
+{
+	ForEachEnemyTFTeam( team, [this,&areas](int enemyTeam)
+	{
+		areas->AddVectorToTail( m_SpawnRoomExitAreaVector[enemyTeam] );
+		return true;
+	} );
 }
 
 inline const CUtlVector< CTFNavArea * > *CTFNavMesh::GetControlPointAreas( int pointIndex ) const

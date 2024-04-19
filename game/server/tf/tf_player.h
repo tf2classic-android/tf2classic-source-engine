@@ -405,7 +405,9 @@ public:
 
 	void UpdatePlayerColor( void );
 	void RemoveSpawnProtection( void );
-
+	
+	float GetTimeSinceLastInjuryByAnyEnemyTeam();
+	
 	// Entity inputs
 	void	InputIgnitePlayer( inputdata_t &inputdata );
 	void	InputExtinguishPlayer( inputdata_t &inputdata );

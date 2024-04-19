@@ -4,6 +4,7 @@
 // Michael Booth, May 2009
 
 #include "cbase.h"
+#include "tf_team.h"
 #include "vprof.h"
 
 #include "tf_bot.h"
@@ -39,7 +40,11 @@ void CTFBotVision::Update( void )
 
 	// forget spies we have lost sight of
 	CUtlVector< CTFPlayer * > playerVector;
-	CollectPlayers( &playerVector, GetEnemyTeam( me->GetTeamNumber() ), COLLECT_ONLY_LIVING_PLAYERS );
+	ForEachEnemyTFTeam( me->GetTeamNumber(), [&playerVector](int enemyTeam)
+	{
+		CollectPlayers( &playerVector, enemyTeam, COLLECT_ONLY_LIVING_PLAYERS );
+		return true;
+	} );
 
 	for( int i=0; i<playerVector.Count(); ++i )
 	{

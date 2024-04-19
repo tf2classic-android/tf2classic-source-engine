@@ -1806,21 +1806,31 @@ CCaptureFlag *CTFBot::GetFlagToFetch( void ) const
 		switch( flag->GetGameType() ) // GetType()
 		{
 		case TF_FLAGTYPE_CTF:
-			if ( flag->GetTeamNumber() == GetEnemyTeam( GetTeamNumber() ) )
+			ForEachEnemyTFTeam( GetTeamNumber(), [&flag,&flagsVector](int enemyTeam)
 			{
-				// we want to steal the other team's flag
-				flagsVector.AddToTail( flag );
-			}
+				if ( flag->GetTeamNumber() == enemyTeam )
+				{
+					// we want to steal the other team's flag
+					flagsVector.AddToTail( flag );
+				}
+				
+				return true;
+			} );
 			break;
 
 		case TF_FLAGTYPE_ATTACK_DEFEND:
 		case TF_FLAGTYPE_TERRITORY_CONTROL:
 		case TF_FLAGTYPE_INVADE:
-			if ( flag->GetTeamNumber() != GetEnemyTeam( GetTeamNumber() ) )
+			ForEachEnemyTFTeam( GetTeamNumber(), [&flag,&flagsVector](int enemyTeam)
 			{
-				// we want to move our team's flag or a neutral flag
-				flagsVector.AddToTail( flag );
-			}
+				if ( flag->GetTeamNumber() != enemyTeam )
+				{
+					// we want to move our team's flag or a neutral flag
+					flagsVector.AddToTail( flag );
+				}
+				
+				return true;
+			} );
 			break;
 		}
 
@@ -2030,10 +2040,16 @@ float CTFBot::GetTimeLeftToCapture( void ) const
 {
 	if ( TFGameRules()->IsInKothMode() )
 	{
-		if ( TFGameRules()->GetKothTeamTimer( GetEnemyTeam( GetTeamNumber() ) ) )
+		float flTime = 0.f;
+		ForEachEnemyTFTeam( GetTeamNumber(), [&flTime](int enemyTeam)
 		{
-			return TFGameRules()->GetKothTeamTimer( GetEnemyTeam( GetTeamNumber() ) )->GetTimeRemaining();
-		}
+			if ( TFGameRules()->GetKothTeamTimer( enemyTeam ) )
+			{
+				flTime = TFGameRules()->GetKothTeamTimer( enemyTeam )->GetTimeRemaining();
+			}
+			return true;
+		} );
+		return flTime;
 	}
 	else if ( TFGameRules()->GetActiveRoundTimer() )
 	{
@@ -2093,6 +2109,7 @@ void CTFBot::SetupSniperSpotAccumulation( void )
 	ClearSniperSpots();
 
 	int myTeam = GetTeamNumber();
+	// FIXME: Replace by ForEachEnemyTFTeam
 	int enemyTeam = GetEnemyTeam( myTeam ); //( myTeam == TF_TEAM_BLUE ) ? TF_TEAM_RED : TF_TEAM_BLUE;
 
 	bool isDefendingPoint = false;
@@ -2210,8 +2227,12 @@ void CTFBot::AccumulateSniperSpots( void )
 			// valid spot
 
 			// maximize the time it takes the enemy to get to us
-			info.m_advantage = info.m_vantageArea->GetIncursionDistance( GetEnemyTeam( GetTeamNumber() ) ) - info.m_theaterArea->GetIncursionDistance( GetEnemyTeam( GetTeamNumber() ) );
-
+			ForEachEnemyTFTeam( GetTeamNumber(), [&info](int enemyTeam)
+			{
+				info.m_advantage = info.m_vantageArea->GetIncursionDistance( enemyTeam ) - info.m_theaterArea->GetIncursionDistance( enemyTeam );
+				return true;
+			} );
+			
 			// if we have already maxxed out our sniper spots, replace the worst one if this is better
 			if ( m_sniperSpotVector.Count() >= tf_bot_sniper_spot_max_count.GetInt() )
 			{
@@ -2543,28 +2564,38 @@ void CTFBot::UpdateLookingAroundForIncomingPlayers( bool lookForEnemies )
 
 	float minGazeRange = m_Shared.InCond( TF_COND_ZOOMED ) ? 750.0f : 150.0f;
 
+	CUtlVector< CTFNavArea * > invasion_areas;
+
 	CTFNavArea *myArea = GetLastKnownArea();
 	if ( myArea )
 	{
-		int team = GetTeamNumber();
-
-		// if we want to look where teammates come from, we need to pass in
-		// the *enemy* team, since the method collects *enemy* invasion areas
-		if ( !lookForEnemies )
+		memset( &invasion_areas, 0, sizeof( invasion_areas ) );
+		
+		int TeamNumber = GetTeamNumber();
+		if( lookForEnemies )
 		{
-			team = GetEnemyTeam( team );
+			const CUtlVector< CTFNavArea * > &invasionAreaVector = myArea->GetEnemyInvasionAreaVector( TeamNumber );
+			invasion_areas.AddVectorToTail( invasionAreaVector );
+		}
+		else
+		{
+			// lambda_494f2efbfa1ae94ce9393512f89b9ea7
+			ForEachEnemyTFTeam( TeamNumber, [&invasion_areas,&myArea](int enemyTeam)
+			{
+				const CUtlVector< CTFNavArea * > &invasionAreaVector = myArea->GetEnemyInvasionAreaVector( enemyTeam );
+				invasion_areas.AddVectorToTail( invasionAreaVector );
+				return true;
+			} );
 		}
 
-		const CUtlVector< CTFNavArea * > &invasionAreaVector = myArea->GetEnemyInvasionAreaVector( team );
-
-		if ( invasionAreaVector.Count() > 0 )
+		if ( invasion_areas.Count() > 0 )
 		{
 			// try to not look directly at walls
 			const int retryCount = 20.0f;
 			for( int r=0; r<retryCount; ++r )
 			{
-				int which = RandomInt( 0, invasionAreaVector.Count()-1 );
-				Vector gazeSpot = invasionAreaVector[ which ]->GetRandomPoint() + Vector( 0, 0, 0.75f * HumanHeight );
+				int which = RandomInt( 0, invasion_areas.Count()-1 );
+				Vector gazeSpot = invasion_areas[ which ]->GetRandomPoint() + Vector( 0, 0, 0.75f * HumanHeight );
 
 				if ( IsRangeGreaterThan( gazeSpot, minGazeRange ) && GetVisionInterface()->IsLineOfSightClear( gazeSpot ) )
 				{
@@ -2748,6 +2779,7 @@ public:
 // Return a nearby area where we can see a member of the enemy team
 CTFNavArea *CTFBot::FindVantagePoint( float maxTravelDistance ) const
 {
+	// FIXME: Replace by ForEachEnemyTFTeam
 	CFindVantagePoint find( GetEnemyTeam( GetTeamNumber() ) ); //find( GetTeamNumber() == TF_TEAM_BLUE ? TF_TEAM_RED : TF_TEAM_BLUE );
 	SearchSurroundingAreas( GetLastKnownArea(), find, maxTravelDistance );
 	return find.m_vantageArea;
@@ -4148,22 +4180,45 @@ bool CTFBot::IsSquadmate( CTFPlayer *who ) const
 	return GetSquad() == ToTFBot( who )->GetSquad();
 }
 
+void CTFBot::DisguiseAsRandomClass( void )
+{
+	CUtlVector< int > enemy_teams;
+	ForEachEnemyTFTeam( GetTeamNumber(), [&enemy_teams](int enemyTeam)
+	{
+		enemy_teams.AddToTail( enemyTeam );
+		return true;
+	} );
+	
+	int enemyTeam = GetTeamNumber();
+	if( enemy_teams.Count() > 0 )
+	{
+		enemyTeam = enemy_teams[ RandomInt( 0, enemy_teams.Count()-1 ) ];
+	}
+
+	int disguise = RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS-1 );
+	m_Shared.Disguise( enemyTeam, disguise );
+}
 
 //---------------------------------------------------------------------------------------------
 // Set Spy disguise to be a class that someone on the enemy team is actually using
 void CTFBot::DisguiseAsMemberOfEnemyTeam( void )
 {
 	CUtlVector< CTFPlayer * > enemyVector;
-	CollectPlayers( &enemyVector, GetEnemyTeam( GetTeamNumber() ) );
+	ForEachEnemyTFTeam( GetTeamNumber(), [&enemyVector](int enemyTeam)
+	{
+		CollectPlayers( &enemyVector, enemyTeam );
+		return true;
+	} );
 
 	int disguise = RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS-1 );
-
+	int enemyTeam = GetTeamNumber();
 	if ( enemyVector.Count() > 0 )
 	{
 		disguise = enemyVector[ RandomInt( 0, enemyVector.Count()-1 ) ]->GetPlayerClass()->GetClassIndex();
+		enemyTeam = enemyVector[ RandomInt( 0, enemyVector.Count()-1 ) ]->GetTeamNumber();
 	}
-
-	m_Shared.Disguise( GetEnemyTeam( GetTeamNumber() ), disguise );
+	
+	m_Shared.Disguise( enemyTeam, disguise );
 }
 
 
@@ -4357,7 +4412,11 @@ Action< CTFBot > *CTFBot::OpportunisticallyUseWeaponAbilities( void )
 CTFPlayer *CTFBot::SelectRandomReachableEnemy( void )
 {
 	CUtlVector< CTFPlayer * > livePlayerVector;
-	CollectPlayers( &livePlayerVector, GetEnemyTeam( GetTeamNumber() ), COLLECT_ONLY_LIVING_PLAYERS );
+	ForEachEnemyTFTeam( GetTeamNumber(), [&livePlayerVector](int enemyTeam)
+	{
+		CollectPlayers( &livePlayerVector, enemyTeam, COLLECT_ONLY_LIVING_PLAYERS );
+		return true;
+	} );
 
 	// only consider players who have left their spawn
 	CUtlVector< CTFPlayer * > playerVector;

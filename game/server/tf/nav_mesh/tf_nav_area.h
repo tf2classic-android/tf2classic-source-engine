@@ -7,7 +7,10 @@
 #define TF_NAV_AREA_H
 
 #include "nav_area.h"
+#include "shareddefs.h"
 #include "tf_shareddefs.h"
+#include "tf_gamerules.h"
+#include "utlvector.h"
 
 enum TFNavAttributeType : uint64
 {
@@ -120,6 +123,7 @@ public:
 	void ComputeInvasionAreaVectors( void );
 	void SetInvasionSearchMarker( unsigned int marker );
 	bool IsInvasionSearchMarked( unsigned int marker ) const;
+	void ClearAllInvasionAreas();
 
 	void SetAttributeTF( uint64 flags );
 	void ClearAttributeTF( uint64 flags );
@@ -168,6 +172,7 @@ private:
 	float m_distanceFromSpawnRoom[ TF_TEAM_COUNT ];
 	float m_distanceFromSpawnRoomFFA;
 	CUtlVector< CTFNavArea * > m_invasionAreaVector[ TF_TEAM_COUNT ];	// use our team as index to get list of areas the enemy is invading from
+	CUtlVector< CTFNavArea * > m_invasionAreaVectorFFA;	// use our team as index to get list of areas the enemy is invading from
 	unsigned int m_invasionSearchMarker;
 
 	uint64 m_attributeFlags;
@@ -298,8 +303,11 @@ inline const CUtlVector< CTFNavArea * > &CTFNavArea::GetEnemyInvasionAreaVector(
 {
 	if ( myTeam < 0 || myTeam >= TF_TEAM_COUNT )
 	{
-		myTeam = 0.0f;
+		myTeam = 0;
 	}
+	
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		return m_invasionAreaVectorFFA;
 
 	return m_invasionAreaVector[ myTeam ];
 }
@@ -312,6 +320,15 @@ inline void CTFNavArea::SetInvasionSearchMarker( unsigned int marker )
 inline bool CTFNavArea::IsInvasionSearchMarked( unsigned int marker ) const
 {
 	return marker == m_invasionSearchMarker;
+}
+
+inline void CTFNavArea::ClearAllInvasionAreas()
+{
+	for( int i = 0; i < TF_TEAM_COUNT; i++ )
+	{
+		m_invasionAreaVector[i].RemoveAll();
+	}
+	m_invasionAreaVectorFFA.RemoveAll();
 }
 
 inline void CTFNavArea::SetAttributeTF( uint64 flags )

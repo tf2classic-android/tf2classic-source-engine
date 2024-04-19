@@ -304,7 +304,7 @@ bool CTFBotMedicHeal::IsStable( CTFPlayer *patient ) const
 	const float safeTime = 3.0f;
 
 	// if they are in combat, they are not stable
-	if ( patient->GetTimeSinceLastInjury( GetEnemyTeam( patient->GetTeamNumber() ) ) < safeTime )
+	if ( patient->GetTimeSinceLastInjuryByAnyEnemyTeam() < safeTime )
 		return false;
 
 	const float healthyRatio = 1.0f; // can be buffed higher
@@ -673,7 +673,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 				// uber if I'm getting low and have recently taken damage
 				if ( me->GetHealth() < me->GetUberHealthThreshold() )
 				{
-					if ( me->GetTimeSinceLastInjury( GetEnemyTeam( me->GetTeamNumber() ) ) < 1.0f || TFGameRules()->IsMannVsMachineMode() )
+					if ( me->GetTimeSinceLastInjuryByAnyEnemyTeam() < 1.0f || TFGameRules()->IsMannVsMachineMode() )
 					{
 						useUber = true;
 					}

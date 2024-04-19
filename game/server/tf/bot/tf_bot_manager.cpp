@@ -15,6 +15,7 @@
 #include "bot/map_entities/tf_bot_hint.h"
 #include "bot/map_entities/tf_bot_hint_sentrygun.h"
 #include "bot/map_entities/tf_bot_hint_teleporter_exit.h"
+#include "tf_team.h"
 
 
 //----------------------------------------------------------------------------------------------------------------
@@ -501,10 +502,7 @@ void CTFBotManager::MaintainBotQuota()
 	if ( desiredBotCount > nTFBotsOnGameTeams )
 	{
 		// don't try to add a bot if it would unbalance
-		if ( !TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_BLUE, TEAM_UNASSIGNED ) ||
-			 !TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_RED, TEAM_UNASSIGNED ) ||
-			!TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_GREEN, TEAM_UNASSIGNED ) ||
-			!TFGameRules()->WouldChangeUnbalanceTeams( TF_TEAM_YELLOW, TEAM_UNASSIGNED ) )
+		if( !ForEachTFTeam( [](int team) { return TFGameRules()->WouldChangeUnbalanceTeams( team, TEAM_UNASSIGNED ); } ) )
 		{
 			CTFBot *pBot = GetAvailableBotFromPool();
 			if ( pBot == NULL )

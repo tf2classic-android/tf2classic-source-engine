@@ -157,6 +157,7 @@ bool CTFBotGetHealth::IsPossible( CTFBot *me )
 	CBaseEntity *health = healthVector[0];
 	for( int i=0; i<healthVector.Count(); ++i )
 	{
+		// FIXME: Replace by ForEachEnemyTFTeam
 		if ( healthVector[i]->GetTeamNumber() != GetEnemyTeam( me->GetTeamNumber() ) )
 		{
 			health = healthVector[i];

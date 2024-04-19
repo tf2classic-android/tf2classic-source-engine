@@ -12,6 +12,7 @@
 #include "bot/behavior/tf_bot_seek_and_destroy.h"
 #include "bot/behavior/sniper/tf_bot_sniper_attack.h"
 #include "nav_mesh.h"
+#include "tf_team.h"
 
 extern ConVar tf_bot_path_lookahead_range;
 extern ConVar tf_bot_offense_must_push_time;
@@ -181,7 +182,11 @@ CTFNavArea *CTFBotSeekAndDestroy::ChooseGoalArea( CTFBot *me )
 {
 	CUtlVector< CTFNavArea * > goalVector;
 
-	TheTFNavMesh()->CollectSpawnRoomThresholdAreas( &goalVector, GetEnemyTeam( me->GetTeamNumber() ) );
+	ForEachEnemyTFTeam( me->GetTeamNumber(), [&goalVector](int enemyTeam)
+	{
+		TheTFNavMesh()->CollectSpawnRoomThresholdAreas( &goalVector, enemyTeam );
+		return true;
+	} );
 
 	CTeamControlPoint *point = me->GetMyControlPoint();
 	if ( point && !point->IsLocked() )

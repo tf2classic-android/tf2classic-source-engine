@@ -16,6 +16,7 @@
 #include "bot/behavior/tf_bot_retreat_to_cover.h"
 #include "bot/behavior/tf_bot_melee_attack.h"
 #include "bot/map_entities/tf_bot_hint.h"
+#include "tf_team.h"
 
 #include "nav_mesh.h"
 
@@ -365,7 +366,11 @@ bool CTFBotSniperLurk::FindHint( CTFBot *me )
 	{
 		// picking either our first hint, or we haven't seen a victim in a long time - pick a hint that can actually see someone
 		CUtlVector< CTFPlayer * > victimVector;
-		CollectPlayers( &victimVector, GetEnemyTeam( me->GetTeamNumber() ), COLLECT_ONLY_LIVING_PLAYERS );
+		ForEachEnemyTFTeam( me->GetTeamNumber(), [&victimVector](int enemyTeam)
+		{
+			CollectPlayers( &victimVector, enemyTeam, COLLECT_ONLY_LIVING_PLAYERS );
+			return true;
+		} );
 
 		CUtlVector< CTFBotHint * > hotHintVector;
 		CUtlVector< CTFBotHint * > freeHintVector;
@@ -498,7 +503,11 @@ bool CTFBotSniperLurk::FindNewHome( CTFBot *me )
 
 	// no available point at the moment - head toward the enemy spawn room and opportunistically snipe
 	CUtlVector< CTFNavArea * > enemySpawnThresholdVector;
-	TheTFNavMesh()->CollectSpawnRoomThresholdAreas( &enemySpawnThresholdVector, GetEnemyTeam( me->GetTeamNumber() ) );
+	ForEachEnemyTFTeam( me->GetTeamNumber(), [&enemySpawnThresholdVector](int enemyTeam)
+	{
+		TheTFNavMesh()->CollectSpawnRoomThresholdAreas( &enemySpawnThresholdVector, enemyTeam );
+		return true;
+	} );
 
 	if ( enemySpawnThresholdVector.Count() > 0 )
 	{
