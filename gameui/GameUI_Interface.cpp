@@ -107,8 +107,6 @@ vgui::DHANDLE<CLoadingDialog> g_hLoadingDialog;
 vgui::VPANEL g_hLoadingBackgroundDialog = NULL;
 
 static CGameUI g_GameUI;
-static WHANDLE g_hMutex = NULL;
-static WHANDLE g_hWaitMutex = NULL;
 
 static IGameClientExports *g_pGameClientExports = NULL;
 IGameClientExports *GameClientExports()
@@ -539,45 +537,6 @@ void CGameUI::Start()
 
 	if ( IsPC() )
 	{
-		if ( !IsPosix() )
-		{
-			// Alfred says this is really, really old code that does some wacky crap that only
-			//  happened in the first version of HL and it's the only game that does this and
-			//  it was a steam testing type thing and we don't need to do it on Posix, etc.
-
-			g_hMutex = Sys_CreateMutex( "ValvePlatformUIMutex" );
-			g_hWaitMutex = Sys_CreateMutex( "ValvePlatformWaitMutex" );
-			if ( g_hMutex == 0 || g_hWaitMutex == 0 || Sys_GetLastError() == SYS_ERROR_INVALID_HANDLE )
-			{
-				// error, can't get handle to mutex
-				if (g_hMutex)
-				{
-					Sys_ReleaseMutex(g_hMutex);
-				}
-				if (g_hWaitMutex)
-				{
-					Sys_ReleaseMutex(g_hWaitMutex);
-				}
-				g_hMutex = NULL;
-				g_hWaitMutex = NULL;
-				Error("Steam Error: Could not access Steam, bad mutex\n");
-				return;
-			}
-			unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
-			if (!(waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED))
-			{
-				// mutex locked, need to deactivate Steam (so we have the Friends/ServerBrowser data files)
-				// get the wait mutex, so that Steam.exe knows that we're trying to acquire ValveTrackerMutex
-				waitResult = Sys_WaitForSingleObject(g_hWaitMutex, 0);
-#ifdef WIN32
-				if (waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED)
-				{
-					Sys_EnumWindows(SendShutdownMsgFunc, 1);
-				}
-#endif
-			}
-		}
-			
 		// Delay playing the startup music until the first frame
 		m_bPlayGameStartupSound = true;
 
@@ -673,17 +632,6 @@ void CGameUI::Shutdown()
 	g_VModuleLoader.UnloadPlatformModules();
 
 	ModInfo().FreeModInfo();
-	
-	// release platform mutex
-	// close the mutex
-	if (g_hMutex)
-	{
-		Sys_ReleaseMutex(g_hMutex);
-	}
-	if (g_hWaitMutex)
-	{
-		Sys_ReleaseMutex(g_hWaitMutex);
-	}
 	
 	BonusMapsDatabase()->WriteSaveData();
 
@@ -811,49 +759,40 @@ void CGameUI::RunFrame()
 		m_bPlayGameStartupSound = false;
 	}
 
-	if ( IsPC() && ( ( IsPosix() && m_bTryingToLoadFriends ) || 
-					( m_bTryingToLoadFriends && m_iFriendsLoadPauseFrames-- < 1 && g_hMutex && g_hWaitMutex ) ) )
+	// try and load Steam platform files
+	if ( IsPC() && m_bTryingToLoadFriends && m_iFriendsLoadPauseFrames-- < 1 )
 	{
-		// try and load Steam platform files
-		unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
-		if ( IsPosix() || ( waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED ))
+		// clear the loading flag
+		m_bTryingToLoadFriends = false;
+		g_VModuleLoader.LoadPlatformModules(&m_GameFactory, 1, false);
+
+		// notify the game of our game name
+		const char *fullGamePath = engine->GetGameDirectory();
+		const char *pathSep = strrchr( fullGamePath, '/' );
+		if ( !pathSep )
 		{
-			// we got the mutex, so load Friends/Serverbrowser
-			// clear the loading flag
-			m_bTryingToLoadFriends = false;
-			g_VModuleLoader.LoadPlatformModules(&m_GameFactory, 1, false);
+			pathSep = strrchr( fullGamePath, '\\' );
+		}
 
-			// release the wait mutex
-			if ( !IsPosix() )
-				Sys_ReleaseMutex(g_hWaitMutex);
-
-			// notify the game of our game name
-			const char *fullGamePath = engine->GetGameDirectory();
-			const char *pathSep = strrchr( fullGamePath, '/' );
-			if ( !pathSep )
+		if ( pathSep )
+		{
+			KeyValues *pKV = new KeyValues("ActiveGameName" );
+			pKV->SetString( "name", pathSep + 1 );
+			pKV->SetInt( "appid", engine->GetAppID() );
+			KeyValues *modinfo = new KeyValues("ModInfo");
+			if ( modinfo->LoadFromFile( g_pFullFileSystem, "gameinfo.txt" ) )
 			{
-				pathSep = strrchr( fullGamePath, '\\' );
+				pKV->SetString( "game", modinfo->GetString( "game", "" ) );
 			}
-			if ( pathSep )
-			{
-				KeyValues *pKV = new KeyValues("ActiveGameName" );
-				pKV->SetString( "name", pathSep + 1 );
-				pKV->SetInt( "appid", engine->GetAppID() );
-				KeyValues *modinfo = new KeyValues("ModInfo");
-				if ( modinfo->LoadFromFile( g_pFullFileSystem, "gameinfo.txt" ) )
-				{
-					pKV->SetString( "game", modinfo->GetString( "game", "" ) );
-				}
-				modinfo->deleteThis();
+			modinfo->deleteThis();
 				
-				g_VModuleLoader.PostMessageToAllModules( pKV );
-			}
+			g_VModuleLoader.PostMessageToAllModules( pKV );
+		}
 
-			// notify the ui of a game connect if we're already in a game
-			if (m_iGameIP)
-			{
-				SendConnectedToGameMessage();
-			}
+		// notify the ui of a game connect if we're already in a game
+		if (m_iGameIP)
+		{
+			SendConnectedToGameMessage();
 		}
 	}
 }
