@@ -69,12 +69,6 @@ void CTFLunchBox::SecondaryAttack( void )
 	if ( !pPowerup )
 		return;
 
-	// Don't collide with the player owner for the first portion of its life
-	pPowerup->m_flNextCollideTime = gpGlobals->curtime + 0.5f;
-
-	pPowerup->SetModel( TF_SANDVICH_PLATE_MODEL );
-	UTIL_SetSize( pPowerup, -Vector( 17, 17, 10 ), Vector( 17, 17, 10 ) );
-
 	// Throw it down.
 	angThrow = pOwner->EyeAngles();
 	angThrow[PITCH] -= 10.0f;
@@ -82,6 +76,12 @@ void CTFLunchBox::SecondaryAttack( void )
 	vecThrow *= 500;
 
 	pPowerup->DropSingleInstance( vecThrow, pOwner, 0.3f, 0.1f );
+
+	// Don't collide with the player owner for the first portion of its life
+	pPowerup->m_flNextCollideTime = gpGlobals->curtime + 0.5f;
+
+	pPowerup->SetModel( TF_SANDVICH_PLATE_MODEL );
+	UTIL_SetSize( pPowerup, -Vector( 17, 17, 10 ), Vector( 17, 17, 10 ) );
 
 	m_hDroppedLunch = pPowerup;
 #endif
