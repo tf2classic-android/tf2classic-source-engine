@@ -207,6 +207,8 @@ void CTFFourTeamScoreBoardDialog::InitPlayerList(SectionedListPanel *pPlayerList
 	pPlayerList->SetBgColor( Color( 0, 0, 0, 0 ) );
 	pPlayerList->SetBorder( NULL );
 
+	pPlayerList->AddColumnToSection( 0, "platform", "", 0, m_iPlatformWidth );
+
 	// Avatars are always displayed at 32x32 regardless of resolution
 	if ( ShowAvatars() )
 	{
@@ -391,12 +393,14 @@ void CTFFourTeamScoreBoardDialog::UpdatePlayerList()
 			if ( null == pPlayerList )
 				continue;			
 
+			const char *szPlatform = g_TF_PR->GetPlayerPlatform( playerIndex );
 			const char *szName = g_TF_PR->GetPlayerName( playerIndex );
 			int score = g_TF_PR->GetTotalScore( playerIndex );
 
 			KeyValues *pKeyValues = new KeyValues( "data" );
 
 			pKeyValues->SetInt( "playerIndex", playerIndex );
+			pKeyValues->SetString( "platform", szPlatform );
 			pKeyValues->SetString( "name", szName );
 			pKeyValues->SetInt( "score", score );
 

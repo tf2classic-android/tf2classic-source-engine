@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 #include "cbase.h"
+#include "sendproxy.h"
 #include "tf_player.h"
 #include "player_resource.h"
 #include "tf_player_resource.h"
@@ -17,8 +18,9 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayerResource, DT_TFPlayerResource )
 	SendPropArray3( SENDINFO_ARRAY3( m_iTotalScore ), SendPropInt( SENDINFO_ARRAY( m_iTotalScore ), 13 ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iMaxHealth ), SendPropInt( SENDINFO_ARRAY( m_iMaxHealth ), 10, SPROP_UNSIGNED ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iPlayerClass ), SendPropInt( SENDINFO_ARRAY( m_iPlayerClass ), 5, SPROP_UNSIGNED ) ),
-	SendPropArray3( SENDINFO_ARRAY3( m_vecColors ), SendPropVector( SENDINFO_ARRAY3( m_vecColors ), 12, SPROP_COORD ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iKillstreak ), SendPropInt( SENDINFO_ARRAY( m_iKillstreak ), 10, SPROP_UNSIGNED ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_vecColors ), SendPropVector( SENDINFO_ARRAY3( m_vecColors ), 12, SPROP_COORD ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_bIsMobile ), SendPropBool( SENDINFO_ARRAY( m_bIsMobile ) ) ),
 END_SEND_TABLE()
 
 LINK_ENTITY_TO_CLASS( tf_player_manager, CTFPlayerResource );
@@ -48,10 +50,9 @@ void CTFPlayerResource::UpdatePlayerData( void )
 				m_iPlayerClass.Set( i, pPlayer->GetPlayerClass()->GetClassIndex() );
 				int iTotalScore = CTFGameRules::CalcPlayerScore( &pPlayerStats->statsAccumulated );
 				m_iTotalScore.Set( i, iTotalScore );
-
-				m_vecColors.Set( i, pPlayer->m_vecPlayerColor );
-
 				m_iKillstreak.Set( i, pPlayer->m_Shared.GetKillstreak() );
+				m_vecColors.Set( i, pPlayer->m_vecPlayerColor );
+				m_bIsMobile.Set( i, pPlayer->IsMobilePlayer() );
 			}
 		}
 	}
@@ -66,8 +67,9 @@ void CTFPlayerResource::Spawn( void )
 		m_iTotalScore.Set( i, 0 );
 		m_iMaxHealth.Set( i, TF_HEALTH_UNDEFINED );
 		m_iPlayerClass.Set( i, TF_CLASS_UNDEFINED );
-		m_vecColors.Set( i, Vector( 0.0, 0.0, 0.0 ) );
 		m_iKillstreak.Set( i, 0 );
+		m_vecColors.Set( i, Vector( 0.0, 0.0, 0.0 ) );
+		m_bIsMobile.Set( i, false );
 	}
 
 	BaseClass::Spawn();

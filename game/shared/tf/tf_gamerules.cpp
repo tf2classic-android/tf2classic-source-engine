@@ -3814,6 +3814,8 @@ void CTFGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 	// keep track of their tf2c_zoom_hold value.
 	bool bHoldToZoom = Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf2c_zoom_hold" ) );
 	pTFPlayer->SetHoldToZoom( bHoldToZoom );
+	
+	pTFPlayer->SetIsMobilePlayer( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf2c_is_mobile_build" ) ) );
 
 	const char *pszFov = engine->GetClientConVarValue( pPlayer->entindex(), "fov_desired" );
 	int iFov = atoi( pszFov );

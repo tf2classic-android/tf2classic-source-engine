@@ -72,6 +72,15 @@ ConVar tf2c_coloredhud("tf2c_coloredhud", "0", FCVAR_ARCHIVE, "Set to 1 to turn 
 #endif
 ConVar tf2c_cl_items_crc32( "tf2c_cl_items_crc32", "uninitialized", TF2C_ITEMS_CRC32_FLAGS );
 
+#if defined( ANDROID )
+#define IS_MOBILE "1"
+#else
+#define IS_MOBILE "0"
+#endif
+
+#define FCVAR_TF2C_IS_MOBILE FCVAR_HIDDEN | FCVAR_USERINFO | FCVAR_DEVELOPMENTONLY
+ConVar tf2c_is_mobile_build( "tf2c_is_mobile_build", IS_MOBILE, FCVAR_TF2C_IS_MOBILE, "Determine player's platform" );
+
 IClientMode *g_pClientMode = NULL;
 // --------------------------------------------------------------------------------- //
 // CTFModeManager.

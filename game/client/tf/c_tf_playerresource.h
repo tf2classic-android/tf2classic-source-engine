@@ -14,6 +14,10 @@
 #include "tf_shareddefs.h"
 #include "c_playerresource.h"
 
+#if !defined( PUBLIC_BUILD )
+extern ConVar tf2c_dev_platform_override;
+#endif
+
 class C_TF_PlayerResource : public C_PlayerResource
 {
 	DECLARE_CLASS( C_TF_PlayerResource, C_PlayerResource );
@@ -23,7 +27,7 @@ public:
 	C_TF_PlayerResource();
 	virtual ~C_TF_PlayerResource();
 
-	int	GetTotalScore( int iIndex ) { return GetArrayValue( iIndex, m_iTotalScore, 0 ); }
+	int GetTotalScore( int iIndex ) { return GetArrayValue( iIndex, m_iTotalScore, 0 ); }
 	int GetMaxHealth( int iIndex ) { return GetArrayValue( iIndex, m_iMaxHealth, TF_HEALTH_UNDEFINED ); }
 	int GetPlayerClass( int iIndex ) { return GetArrayValue( iIndex, m_iPlayerClass, TF_CLASS_UNDEFINED ); }
 	const Vector &GetPlayerColorVector( int iIndex );
@@ -31,15 +35,26 @@ public:
 	int GetKillstreak( int iIndex ) { return GetArrayValue( iIndex, m_iKillstreak, 0 ); }
 
 	int GetCountForPlayerClass( int iTeam, int iClass, bool bExcludeLocalPlayer = false );
+	
+	const char *GetPlayerPlatform( int iIndex ) const
+	{
+#if !defined( PUBLIC_BUILD )
+		if( tf2c_dev_platform_override.GetString()[0] )
+			return tf2c_dev_platform_override.GetString();
+#endif
+
+		return m_bIsMobile[iIndex] ? "M" : "P";
+	}
 
 protected:
 	int GetArrayValue( int iIndex, int *pArray, int defaultVal );
 
-	int		m_iTotalScore[MAX_PLAYERS + 1];
-	int		m_iMaxHealth[MAX_PLAYERS + 1];
-	int		m_iPlayerClass[MAX_PLAYERS + 1];
-	int		m_iKillstreak[MAX_PLAYERS + 1];
+	int	m_iTotalScore[MAX_PLAYERS + 1];
+	int	m_iMaxHealth[MAX_PLAYERS + 1];
+	int	m_iPlayerClass[MAX_PLAYERS + 1];
+	int	m_iKillstreak[MAX_PLAYERS + 1];
 	Vector	m_vecColors[MAX_PLAYERS + 1];
+	bool	m_bIsMobile[MAX_PLAYERS + 1];
 };
 
 extern C_TF_PlayerResource *g_TF_PR;

@@ -106,9 +106,16 @@ protected:
 
 	vgui::ImageList				*m_pImageList;
 	CUtlMap<CSteamID,int>		m_mapAvatarsToImageList;
-
+	
+#if defined( TF_CLASSIC_CLIENT )
+	CPanelAnimationVar( int, m_iPlatformWidth, "platform_width", "8" );
+#endif
 	CPanelAnimationVar( int, m_iAvatarWidth, "avatar_width", "34" );		// Avatar width doesn't scale with resolution
+#if defined( TF_CLASSIC_CLIENT )
+	CPanelAnimationVarAliasType( int, m_iNameWidth, "name_width", "128", "proportional_int" );
+#else
 	CPanelAnimationVarAliasType( int, m_iNameWidth, "name_width", "136", "proportional_int" );
+#endif
 	CPanelAnimationVarAliasType( int, m_iClassWidth, "class_width", "35", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iScoreWidth, "score_width", "35", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iDeathWidth, "death_width", "35", "proportional_int" );

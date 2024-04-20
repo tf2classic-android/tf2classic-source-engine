@@ -414,6 +414,14 @@ public:
 	void	InputSpeakResponseConcept( inputdata_t &inputdata );
 	void	InputSetForcedTauntCam( inputdata_t &inputdata );
 
+	bool IsMobilePlayer()
+	{
+		return m_bIsMobilePlayer;
+	}
+	void SetIsMobilePlayer( bool bMobile )
+	{
+		m_bIsMobilePlayer = bMobile;
+	}
 public:
 
 	CNetworkVector( m_vecPlayerColor );
@@ -668,6 +676,8 @@ private:
 	bool				m_bFlipViewModel;
 
 	bool				m_bHoldZoom;
+	
+	bool m_bIsMobilePlayer;
 
 	float				m_flTauntAttackTime;
 	int					m_iTauntAttack;
