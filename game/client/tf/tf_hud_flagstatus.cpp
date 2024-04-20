@@ -558,16 +558,16 @@ void CTFHudFlagObjectives::OnTick()
 					switch (pPlayerFlag->GetTeamNumber())
 					{
 						case TF_TEAM_RED:
-							m_pSpecCarriedImage->SetImage(("%s_red", STRING(pPlayerFlag->m_szHudIcon)));
+							m_pSpecCarriedImage->SetImage( "../hud/objectives_flagpanel_carried_red" );
 							break;
 						case TF_TEAM_BLUE:
-							m_pSpecCarriedImage->SetImage(("%s_blue", STRING(pPlayerFlag->m_szHudIcon)));
+							m_pSpecCarriedImage->SetImage( "../hud/objectives_flagpanel_carried_blue" );
 							break;
 						case TF_TEAM_GREEN:
-							m_pSpecCarriedImage->SetImage(("%s_green", STRING(pPlayerFlag->m_szHudIcon)));
+							m_pSpecCarriedImage->SetImage( "../hud/objectives_flagpanel_carried_green" );
 							break;
 						case TF_TEAM_YELLOW:
-							m_pSpecCarriedImage->SetImage(("%s_yellow", STRING(pPlayerFlag->m_szHudIcon)));
+							m_pSpecCarriedImage->SetImage( "../hud/objectives_flagpanel_carried_yellow" );
 							break;
 					}
 				}
