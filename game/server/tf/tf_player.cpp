@@ -583,6 +583,15 @@ void CTFPlayer::RegenThink( void )
 			float flScale = RemapValClamped( flTimeSinceDamage, 5.0f, 10.0f, 1.0f, 2.0f );
 
 			int iHealAmount = TF_MEDIC_REGEN_AMOUNT * flScale;
+
+			// If you are healing a hurt patient, increase your base regen
+			CTFPlayer *pPatient = ToTFPlayer( MedicGetHealTarget() );
+			if( pPatient && pPatient->GetHealth() < pPatient->GetMaxHealth() )
+			{
+				// Double regen amount
+				iHealAmount += TF_MEDIC_REGEN_AMOUNT;
+			}
+
 			//ceil( iHealAmount );
 			m_flAccumulatedHealthRegen += ceil( iHealAmount ); //iHealAmount;
 		}
