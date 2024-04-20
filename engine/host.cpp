@@ -3670,62 +3670,6 @@ bool IsLowViolence_Secure()
 	return false;
 }
 
-
-//-----------------------------------------------------------------------------
-// If "User Token 2" exists in HKEY_CURRENT_USER/Software/Valve/Half-Life/Settings
-// then we disable gore. Obviously not very secure.
-//-----------------------------------------------------------------------------
-bool IsLowViolence_Registry()
-{
-	char szSubKey[128];
-	int nBufferLen;
-	char szBuffer[128];
-	bool bReducedGore = false;
-
-	memset( szBuffer, 0, 128 );
-
-	char const *appname = "Source";
-	Q_snprintf(szSubKey, sizeof( szSubKey ), "Software\\Valve\\%s\\Settings", appname );
-
-	nBufferLen = 127;
-	Q_strncpy( szBuffer, "", sizeof( szBuffer ) );
-
-	Sys_GetRegKeyValue( szSubKey, "User Token 2", szBuffer,	nBufferLen, szBuffer );
-
-	// Gore reduction active?
-	bReducedGore = ( Q_strlen( szBuffer ) > 0 ) ? true : false;
-	if ( !bReducedGore )
-	{
-		Sys_GetRegKeyValue( szSubKey, "User Token 3", szBuffer, nBufferLen, szBuffer );
-
-		bReducedGore = ( Q_strlen( szBuffer ) > 0 ) ? true : false;
-	}
-
-	char gamedir[MAX_OSPATH];
-	Q_FileBase( com_gamedir, gamedir, sizeof( gamedir ) );
-
-	// also check mod specific directories for LV changes
-	Q_snprintf(szSubKey, sizeof( szSubKey ), "Software\\Valve\\%s\\%s\\Settings", appname, gamedir );
-
-	nBufferLen = 127;
-	Q_strncpy( szBuffer, "", sizeof( szBuffer ) );
-
-	Sys_GetRegKeyValue( szSubKey, "User Token 2", szBuffer,	nBufferLen, szBuffer );
-	if ( Q_strlen( szBuffer ) > 0 )
-	{
-		bReducedGore = true;
-	}
-
-	Sys_GetRegKeyValue( szSubKey, "User Token 3", szBuffer,	nBufferLen, szBuffer );
-	if ( Q_strlen( szBuffer ) > 0 )
-	{
-		bReducedGore = true;
-	}
-	
-	return bReducedGore;
-}
-
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void Host_CheckGore( void )
@@ -3733,12 +3677,6 @@ void Host_CheckGore( void )
 	bool bLowViolenceRegistry = false;
 	bool bLowViolenceSecure = false;
 
-	//
-	// First check the old method of enabling low violence via the registry.
-	//
-#ifdef WIN32
-	bLowViolenceRegistry = IsLowViolence_Registry();
-#endif
 	//
 	// Next check the new method of enabling low violence based on country of purchase
 	// and other means that are inaccessible by the user.
