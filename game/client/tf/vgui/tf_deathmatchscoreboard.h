@@ -69,6 +69,7 @@ private:
 	int							m_iImageNemesis;
 	int							m_iClassEmblem[TF_CLASS_COUNT_ALL];
 	int							m_iClassEmblemDead[TF_CLASS_COUNT_ALL];
+	int							m_iImageDominations[TF_SCOREBOARD_MAX_DOMINATIONS];
 
 	int		iDefaultTall;
 	int		iSelectedPlayerIndex;

@@ -16,6 +16,8 @@
 #include "tf_hud_playerstatus.h"
 #include "clientscoreboarddialog.h"
 
+#define TF_SCOREBOARD_MAX_DOMINATIONS 16
+
 bool AreEnemyTeams(int iTeam1, int iTeam2);
 const wchar_t *GetPointsString(int iPoints);
 
@@ -81,6 +83,7 @@ private:
 	int							m_iImageNemesis;
 	int							m_iClassEmblem[TF_CLASS_COUNT_ALL];
 	int							m_iClassEmblemDead[TF_CLASS_COUNT_ALL];
+	int							m_iImageDominations[TF_SCOREBOARD_MAX_DOMINATIONS];
 	
 	CPanelAnimationVarAliasType( int, m_iStatusWidth, "status_width", "12", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iNemesisWidth, "nemesis_width", "20", "proportional_int" );

@@ -4071,13 +4071,14 @@ void CTFGameRules::CalcDominationAndRevenge( CTFPlayer *pAttacker, CTFPlayer *pV
 	PlayerStats_t *pStatsVictim = CTF_GameStats.FindPlayerStats( pVictim );
 
 	// calculate # of unanswered kills between killer & victim - add 1 to include current kill
-	int iKillsUnanswered = pStatsVictim->statsKills.iNumKilledByUnanswered[pAttacker->entindex()] + 1;		
+	int iKillsUnanswered = pStatsVictim->statsKills.iNumKilledByUnanswered[pAttacker->entindex()] + 1;
 	if ( TF_KILLS_DOMINATION == iKillsUnanswered )
-	{			
+	{
 		// this is the Nth unanswered kill between killer and victim, killer is now dominating victim
 		*piDeathFlags |= ( bIsAssist ? TF_DEATH_ASSISTER_DOMINATION : TF_DEATH_DOMINATION );
 		// set victim to be dominated by killer
 		pAttacker->m_Shared.SetPlayerDominated( pVictim, true );
+		pAttacker->UpdateDominationsCount();
 		// record stats
 		CTF_GameStats.Event_PlayerDominatedOther( pAttacker );
 	}
@@ -4087,6 +4088,7 @@ void CTFGameRules::CalcDominationAndRevenge( CTFPlayer *pAttacker, CTFPlayer *pV
 		*piDeathFlags |= ( bIsAssist ? TF_DEATH_ASSISTER_REVENGE : TF_DEATH_REVENGE );
 		// set victim to no longer be dominating the killer
 		pVictim->m_Shared.SetPlayerDominated( pAttacker, false );
+		pVictim->UpdateDominationsCount();
 		// record stats
 		CTF_GameStats.Event_PlayerRevenge( pAttacker );
 	}
@@ -4737,12 +4739,13 @@ void CTFGameRules::SendWinPanelInfo( void )
 
 	if ( winEvent )
 	{
-		int iBlueScore = GetGlobalTeam( TF_TEAM_BLUE )->GetScore();
-		int iRedScore = GetGlobalTeam( TF_TEAM_RED )->GetScore();
+		// TODO(SanyaSho): implement Deathmatch winpanel
+		int iBlueScore = GetGlobalTeam( TF_TEAM_BLUE ) ? GetGlobalTeam( TF_TEAM_BLUE )->GetScore() : 0;
+		int iRedScore = GetGlobalTeam( TF_TEAM_RED ) ? GetGlobalTeam( TF_TEAM_RED )->GetScore() : 0;
 		int iBlueScorePrev = iBlueScore;
 		int iRedScorePrev = iRedScore;
-		int iGreenScore = GetGlobalTeam(TF_TEAM_GREEN)->GetScore();
-		int iYellowScore = GetGlobalTeam(TF_TEAM_YELLOW)->GetScore();
+		int iGreenScore = GetGlobalTeam( TF_TEAM_GREEN ) ? GetGlobalTeam( TF_TEAM_GREEN )->GetScore() : 0;
+		int iYellowScore = GetGlobalTeam( TF_TEAM_YELLOW ) ? GetGlobalTeam( TF_TEAM_YELLOW )->GetScore() : 0;
 		int iGreenScorePrev = iGreenScore;
 		int iYellowScorePrev = iYellowScore;
 

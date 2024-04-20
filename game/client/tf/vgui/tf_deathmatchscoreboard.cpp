@@ -133,6 +133,11 @@ void CTFDeathMatchScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme 
 			m_iClassEmblem[i] = m_pImageList->AddImage( scheme()->GetImage( g_aPlayerClassEmblems[i - 1], true ) );
 			m_iClassEmblemDead[i] = m_pImageList->AddImage( scheme()->GetImage( g_aPlayerClassEmblemsDead[i - 1], true ) );
 		}
+		
+		for ( int i = 0; i < TF_SCOREBOARD_MAX_DOMINATIONS; i++ )
+		{
+			m_iImageDominations[i] = m_pImageList->AddImage( scheme()->GetImage( VarArgs( "../hud/leaderboard_dom%d", i + 1 ), true ) );
+		}
 
 		// resize the images to our resolution
 		for ( int i = 1; i < m_pImageList->GetImageCount(); i++ )
@@ -298,6 +303,7 @@ void CTFDeathMatchScoreBoardDialog::InitPlayerList( SectionedListPanel *pPlayerL
 
 	pPlayerList->AddColumnToSection( 0, "name", "#TF_Scoreboard_Name", 0, m_iNameWidth );
 	pPlayerList->AddColumnToSection( 0, "status", "", SectionedListPanel::COLUMN_IMAGE, m_iStatusWidth );
+	pPlayerList->AddColumnToSection( 0, "domination", "", SectionedListPanel::COLUMN_IMAGE, m_iNemesisWidth );
 	pPlayerList->AddColumnToSection( 0, "nemesis", "", SectionedListPanel::COLUMN_IMAGE, m_iNemesisWidth );
 	pPlayerList->AddColumnToSection( 0, "kills", "#TF_ScoreBoard_KillsLabel", 0, m_iKillsWidth );
 	pPlayerList->AddColumnToSection( 0, "deaths", "#TF_ScoreBoard_DeathsLabel", 0, m_iDeathsWidth );
@@ -497,6 +503,10 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 
 			// display whether player is alive or dead (all players see this for all other players on both teams)
 			pKeyValues->SetInt( "status", g_TF_PR->IsAlive( playerIndex ) ? 0 : m_iImageDead );
+			
+			// Show number of dominations.
+			int iDominations = Min( g_TF_PR->GetNumberOfDominations( playerIndex ), TF_SCOREBOARD_MAX_DOMINATIONS );
+			pKeyValues->SetInt( "domination", iDominations > 0 ? m_iImageDominations[iDominations - 1] : 0 );
 
 			if ( g_PR->GetPing( playerIndex ) < 1 )
 			{

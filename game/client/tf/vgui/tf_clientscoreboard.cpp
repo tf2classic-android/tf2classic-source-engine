@@ -117,7 +117,12 @@ void CTFClientScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme )
 			m_iClassEmblem[i] = m_pImageList->AddImage(scheme()->GetImage(g_aPlayerClassEmblems[i - 1], true));
 			m_iClassEmblemDead[i] = m_pImageList->AddImage(scheme()->GetImage(g_aPlayerClassEmblemsDead[i - 1], true));
 		}
-
+		
+		for ( int i = 0; i < TF_SCOREBOARD_MAX_DOMINATIONS; i++ )
+		{
+			m_iImageDominations[i] = m_pImageList->AddImage( scheme()->GetImage( VarArgs( "../hud/leaderboard_dom%d", i + 1 ), true ) );
+		}
+		
 		// resize the images to our resolution
 		for (int i = 1; i < m_pImageList->GetImageCount(); i++ )
 		{
@@ -251,9 +256,9 @@ void CTFClientScoreBoardDialog::InitPlayerList( SectionedListPanel *pPlayerList 
 		pPlayerList->AddColumnToSection( 0, "avatar", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iAvatarWidth );
 	}
 
-	pPlayerList->AddColumnToSection( 0, "name", "#TF_Scoreboard_Name", 0, m_iNameWidth );	
-	pPlayerList->AddColumnToSection( 0, "dominating", "", SectionedListPanel::COLUMN_IMAGE, m_iNemesisWidth );
+	pPlayerList->AddColumnToSection( 0, "name", "#TF_Scoreboard_Name", 0, m_iNameWidth );
 	//pPlayerList->AddColumnToSection( 0, "status", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iStatusWidth );
+	pPlayerList->AddColumnToSection( 0, "domination", "", SectionedListPanel::COLUMN_IMAGE, m_iNemesisWidth );
 	pPlayerList->AddColumnToSection( 0, "nemesis", "", SectionedListPanel::COLUMN_IMAGE, m_iNemesisWidth );
 	pPlayerList->AddColumnToSection( 0, "class", "", SectionedListPanel::COLUMN_IMAGE, m_iClassWidth );
 	pPlayerList->AddColumnToSection( 0, "score", "#TF_Scoreboard_Score", SectionedListPanel::COLUMN_RIGHT, m_iScoreWidth );
@@ -551,7 +556,11 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 
 			// display whether player is alive or dead (all players see this for all other players on both teams)
 			//pKeyValues->SetInt( "status", g_TF_PR->IsAlive( playerIndex ) ?  0 : m_iImageDead );
-
+			
+			// Show number of dominations.
+			int iDominations = Min( g_TF_PR->GetNumberOfDominations( playerIndex ), TF_SCOREBOARD_MAX_DOMINATIONS );
+			pKeyValues->SetInt( "domination", iDominations > 0 ? m_iImageDominations[iDominations - 1] : 0 );
+                
 			if ( g_PR->GetPing( playerIndex ) < 1 )
 			{
 				if ( g_PR->IsFakePlayer( playerIndex ) )

@@ -478,6 +478,8 @@ CTFPlayer::CTFPlayer()
 	m_bBlastLaunched = false;
 	m_bJumpEffect = false;
 
+	m_iDominations = 0;
+
 	m_Shared.m_hUrineAttacker = NULL;
 
 	memset( m_WeaponPreset, 0, TF_CLASS_COUNT_ALL * TF_LOADOUT_SLOT_COUNT * sizeof( int ) );
@@ -1321,8 +1323,12 @@ void CTFPlayer::RemoveNemesisRelationships()
 
 			// set no one else to be dominating this player
 			pTemp->m_Shared.SetPlayerDominated( this, false );
+			pTemp->UpdateDominationsCount();
 		}
-	}	
+	}
+
+	UpdateDominationsCount();
+
 	// reset the matrix of who has killed whom with respect to this player
 	CTF_GameStats.ResetKillHistory( this );
 }
@@ -9777,6 +9783,22 @@ bool CTFPlayer::ShouldAnnouceAchievement( void )
 	}
 
 	return true; 
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::UpdateDominationsCount( void )
+{
+	m_iDominations = 0;
+
+	for ( int i = 0; i <= MAX_PLAYERS; i++ )
+	{
+		if ( m_Shared.m_bPlayerDominated[i] )
+		{
+			m_iDominations++;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

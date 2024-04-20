@@ -398,6 +398,9 @@ public:
 
 	void JumpSound();
 
+	int GetNumberOfDominations( void ) { return m_iDominations; }
+	void UpdateDominationsCount( void );
+
 	virtual CAttributeManager *GetAttributeManager( void ) { return &m_AttributeManager; }
 	virtual CAttributeContainer *GetAttributeContainer( void ) { return NULL; }
 	virtual CBaseEntity *GetAttributeOwner( void ) { return NULL; }
@@ -686,6 +689,8 @@ private:
 
 	int					m_nBlastJumpFlags;
 	bool				m_bJumpEffect;
+
+	int				m_iDominations;
 
 	CNetworkVar( int, m_nForceTauntCam );
 	CNetworkVar( bool, m_bTyping );
