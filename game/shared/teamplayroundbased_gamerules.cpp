@@ -3088,7 +3088,7 @@ void CTeamplayRoundBasedRules::BalanceTeams( bool bRequireSwitcheesToBeDead )
 {
 #ifdef TF_CLASSIC
 	// No team balancing in DM since everybody should be on RED.
-	if ( IsDeathmatch() )
+	if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 	{
 		return;
 	}
