@@ -3544,6 +3544,20 @@ void CTFPlayer::TeamFortress_SetSpeed()
 		maxfbspeed *= 0.6f;
 	}
 
+	// If we're healing a scout, boost our speed
+	if ( IsPlayerClass( TF_CLASS_MEDIC ) )
+	{
+		CTFPlayer *pPatient = ToTFPlayer( MedicGetHealTarget() );
+
+		if( pPatient )
+		{
+			if( pPatient->IsPlayerClass( TF_CLASS_SCOUT ) )
+			{
+				maxfbspeed *= 1.20f;
+			}
+		}
+	}
+
 	// if we're in bonus time because a team has won, give the winners 110% speed and the losers 90% speed
 	if ( TFGameRules()->State_Get() == GR_STATE_TEAM_WIN )
 	{

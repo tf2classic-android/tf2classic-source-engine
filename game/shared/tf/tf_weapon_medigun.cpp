@@ -549,6 +549,7 @@ void CWeaponMedigun::FindNewTargetForSlot()
 #endif
 
 			m_hHealingTarget.Set( tr.m_pEnt );
+			pOwner->TeamFortress_SetSpeed();
 			m_flNextTargetCheckTime = gpGlobals->curtime + 1.0f;
 		}			
 	}
@@ -907,6 +908,8 @@ void CWeaponMedigun::RemoveHealingTarget( bool bSilent )
 		SendWeaponAnim( ACT_MP_ATTACK_STAND_POSTFIRE );
 		pOwner->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_POST );
 	}
+
+	pOwner->TeamFortress_SetSpeed();
 
 #ifndef CLIENT_DLL
 	m_DamageModifier.RemoveModifier();
