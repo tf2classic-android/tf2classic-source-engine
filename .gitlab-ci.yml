@@ -14,7 +14,7 @@ windows_client:
     - cmake --build build-windows-client --config Release
     - cmake --install build-windows-client --config Release
   artifacts:
-    name: "winclient-$env:CI_PROJECT_NAME-$env:CI_COMMIT_SHORT_SHA"
+    name: "winclient-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
     paths:
     - game_tf2classic
     exclude:
@@ -135,7 +135,7 @@ android32_client:
     paths:
       - ../.ccache
   artifacts:
-    name: "droidclient-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
+    name: "droidclient32-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
     paths:
     - game_tf2classic_android32
 
@@ -162,6 +162,6 @@ android64_client:
     paths:
       - ../.ccache
   artifacts:
-    name: "droidclient-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
+    name: "droidclient64-$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
     paths:
     - game_tf2classic_android64
