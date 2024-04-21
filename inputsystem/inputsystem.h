@@ -16,6 +16,7 @@
 #if !defined( _X360 )
 #define _WIN32_WINNT 0x502
 #include <windows.h>
+#include <hidusage.h>
 #include <zmouse.h>
 #include "xbox/xboxstubs.h"
 #include "../../dx9sdk/include/XInput.h"
@@ -430,7 +431,6 @@ public:
 	HANDLE m_hEvent;
 
 	CSysModule   *m_pXInputDLL;
-	CSysModule   *m_pRawInputDLL;
 
 	bool m_bConsoleTextMode;
 

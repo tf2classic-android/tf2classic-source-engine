@@ -30,30 +30,6 @@ static CInputSystem g_InputSystem;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CInputSystem, IInputSystem, 
 						INPUTSYSTEM_INTERFACE_VERSION, g_InputSystem );
 
-
-#if defined( WIN32 ) && !defined( _X360 )
-typedef BOOL (WINAPI *RegisterRawInputDevices_t)
-(
-	PCRAWINPUTDEVICE pRawInputDevices,
-	UINT uiNumDevices,
-	UINT cbSize
-);
-
-typedef UINT (WINAPI *GetRawInputData_t)
-(
-	HRAWINPUT hRawInput,
-	UINT uiCommand,
-	LPVOID pData,
-	PUINT pcbSize,
-	UINT cbSizeHeader
-);
-
-RegisterRawInputDevices_t pfnRegisterRawInputDevices;
-GetRawInputData_t pfnGetRawInputData;
-#endif
-
-
-
 //-----------------------------------------------------------------------------
 // Constructor, destructor
 //-----------------------------------------------------------------------------
@@ -82,7 +58,6 @@ CInputSystem::CInputSystem()
 	Assert( (MAX_JOYSTICKS + 7) >> 3 << sizeof(unsigned short) ); 
 
 	m_pXInputDLL = NULL;
-	m_pRawInputDLL = NULL;
 	m_bConsoleTextMode = false;
 	m_bSkipControllerInitialization = false;
 
@@ -98,12 +73,6 @@ CInputSystem::~CInputSystem()
 	{
 		Sys_UnloadModule( m_pXInputDLL );
 		m_pXInputDLL = NULL;
-	}
-
-	if ( m_pRawInputDLL )
-	{
-		Sys_UnloadModule( m_pRawInputDLL );
-		m_pRawInputDLL = NULL;
 	}
 }
 
@@ -175,17 +144,8 @@ InitReturnVal_t CInputSystem::Init()
 
 #elif defined( WIN32 ) && !defined( _X360 )
 
-	// Check if this version of windows supports raw mouse input (later than win2k)
-	m_bRawInputSupported = false;
-
-	CSysModule *m_pRawInputDLL = Sys_LoadModule( "USER32.dll" );
-	if ( m_pRawInputDLL )
-	{
-		pfnRegisterRawInputDevices = (RegisterRawInputDevices_t)GetProcAddress( (HMODULE)m_pRawInputDLL, "RegisterRawInputDevices" );
-		pfnGetRawInputData = (GetRawInputData_t)GetProcAddress( (HMODULE)m_pRawInputDLL, "GetRawInputData" );
-		if ( pfnRegisterRawInputDevices && pfnGetRawInputData )
-			m_bRawInputSupported = true;
-	}
+	// tyabus: RawInput was added back in win2k.
+	m_bRawInputSupported = true;
 
 #endif
 
@@ -280,14 +240,6 @@ void CInputSystem::AttachToWindow( void* hWnd )
 
 #if defined( PLATFORM_WINDOWS_PC ) && !defined( USE_SDL )
 	// register to read raw mouse input
-
-#if !defined(HID_USAGE_PAGE_GENERIC)
-#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
-#endif
-#if !defined(HID_USAGE_GENERIC_MOUSE)
-#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
-#endif
-
 	if ( m_bRawInputSupported )
 	{
 		RAWINPUTDEVICE Rid[1];
@@ -295,7 +247,7 @@ void CInputSystem::AttachToWindow( void* hWnd )
 		Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE; 
 		Rid[0].dwFlags = RIDEV_INPUTSINK;   
 		Rid[0].hwndTarget = g_InputSystem.m_hAttachedHWnd; // GetHhWnd;
-		pfnRegisterRawInputDevices(Rid, ARRAYSIZE(Rid), sizeof(Rid[0]));
+		RegisterRawInputDevices(Rid, ARRAYSIZE(Rid), sizeof(Rid[0]));
 	}
 #endif
 
@@ -1421,7 +1373,7 @@ LRESULT CInputSystem::WindowProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				UINT dwSize = sizeof( RAWINPUT );
 				static BYTE lpb[sizeof( RAWINPUT )];
 
-				pfnGetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
+				GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
 
 				RAWINPUT* raw = (RAWINPUT*)lpb;
 				if (raw->header.dwType == RIM_TYPEMOUSE) 
