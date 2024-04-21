@@ -235,7 +235,7 @@ CPanelMetaClassMgrImp::CPanelMetaClassMgrImp() : m_PanelTypeDict( true, 0, 32 )
 CPanelMetaClassMgrImp::~CPanelMetaClassMgrImp()
 {
 	// tyabus: Memory leak fix from VDC
-	FOR_EACH_VEC( m_MetaClassKeyValues, i )
+	FOR_EACH_DICT( m_MetaClassKeyValues, i )
 	{
 		m_MetaClassKeyValues[i]->deleteThis();
 	}
