@@ -1415,8 +1415,11 @@ LRESULT CInputSystem::WindowProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		{
 			if ( m_bRawInputSupported )
 			{
-				UINT dwSize = 40;
-				static BYTE lpb[40];
+				// The official Microsoft examples are pretty terrible about this.
+				// Size needs to be non-constant because GetRawInputData() can return the
+				// size necessary for the RAWINPUT data, which is a weird feature.
+				UINT dwSize = sizeof( RAWINPUT );
+				static BYTE lpb[sizeof( RAWINPUT )];
 
 				pfnGetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
 
