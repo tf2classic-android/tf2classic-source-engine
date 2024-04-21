@@ -109,9 +109,6 @@ private:
 	};
 
 private:
-	// hackhack: remove this when VAC2 is online.
-	void VerifyBaseShaderDLL( CSysModule *pModule );
-
 	// Load up the shader DLLs...
 	void LoadAllShaderDLLs();
 
@@ -445,59 +442,6 @@ bool CShaderSystem::LoadShaderDLL( const char *pFullPath )
 	return LoadShaderDLL( pFullPath, NULL, false );
 }
 
-// HACKHACK: remove me when VAC2 is online.
-//#if defined( _WIN32 ) && !defined( _X360 )
-#if 0
-// Instead of including windows.h
-extern "C"
-{
-	extern void * __stdcall GetProcAddress( void *hModule, const char *pszProcName );
-};
-#endif
-
-void CShaderSystem::VerifyBaseShaderDLL( CSysModule *pModule )
-{
-//#if defined( _WIN32 ) && !defined( _X360 )
-#if 0
-	const char *pErrorStr = "Corrupt save data settings.";
-
-	unsigned char *testData1 = new unsigned char[SHADER_DLL_VERIFY_DATA_LEN1];
-
-	ShaderDLLVerifyFn fn = (ShaderDLLVerifyFn)GetProcAddress( (void *)pModule, SHADER_DLL_FNNAME_1 );
-	if ( !fn )
-		Error( pErrorStr );
-
-	IShaderDLLVerification *pVerify;
-	char *pPtr = (char*)(void*)&pVerify;
-	pPtr -= SHADER_DLL_VERIFY_DATA_PTR_OFFSET;
-	fn( pPtr );
-
-	// Test the first CRC.
-	CRC32_t testCRC;
-	CRC32_Init( &testCRC );
-	CRC32_ProcessBuffer( &testCRC, testData1, SHADER_DLL_VERIFY_DATA_LEN1 );
-	CRC32_ProcessBuffer( &testCRC, &pModule, 4 );
-	CRC32_ProcessBuffer( &testCRC, &pVerify, 4 );
-	CRC32_Final( &testCRC );
-	if ( testCRC != pVerify->Function1( testData1 - SHADER_DLL_VERIFY_DATA_PTR_OFFSET ) )
-		Error( pErrorStr );
-
-	// Test the next one.
-	unsigned char digest[MD5_DIGEST_LENGTH];
-	MD5Context_t md5Context;
-	MD5Init( &md5Context );
-	MD5Update( &md5Context, testData1 + SHADER_DLL_VERIFY_DATA_PTR_OFFSET, SHADER_DLL_VERIFY_DATA_LEN1 - SHADER_DLL_VERIFY_DATA_PTR_OFFSET );
-	MD5Final( digest, &md5Context );
-	pVerify->Function2( 2, 3, 3 ); // fn2 is supposed to place the result in testData1.
-	if ( memcmp( digest, testData1, MD5_DIGEST_LENGTH ) != 0 )
-		Error( pErrorStr );
-
-	pVerify->Function5();
-
-	delete [] testData1;
-#endif
-}
-
 //-----------------------------------------------------------------------------
 // Methods related to reading in shader DLLs
 //-----------------------------------------------------------------------------
@@ -528,13 +472,6 @@ bool CShaderSystem::LoadShaderDLL( const char *pFullPath, const char *pPathID, b
 	{
 		g_pFullFileSystem->UnloadModule( hInstance );
 		return false;
-	}
-
-	// Make sure it's a valid base shader DLL if necessary.
-	//HACKHACK get rid of this when VAC2 comes online.
-	if ( !bModShaderDLL )
-	{
-		VerifyBaseShaderDLL( hInstance );
 	}
 
 	// Allow the DLL to try to connect to interfaces it needs
