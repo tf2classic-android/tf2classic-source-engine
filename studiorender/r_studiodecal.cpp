@@ -1192,19 +1192,11 @@ void CStudioRender::AddDecal( StudioDecalHandle_t hDecal, const StudioRenderCont
 		return;
 	}
 
-	if ( !IsX360() )
-	{
-		buildInfo.m_pMeshVertices = (MeshVertexInfo_t*)stackalloc( nMeshCount * sizeof(MeshVertexInfo_t) );	
-		int nVertexCount = ComputeVertexAllocation( iMaxLOD, body, list.m_pHardwareData, buildInfo.m_pMeshVertices );
-		buildInfo.m_pVertexBuffer = (DecalBuildVertexInfo_t*)stackalloc( nVertexCount * sizeof(DecalBuildVertexInfo_t) );
-	}
-	else
-	{
-		// Don't allocate on the stack
-		buildInfo.m_pMeshVertices = (MeshVertexInfo_t*)malloc( nMeshCount * sizeof(MeshVertexInfo_t) );	
-		int nVertexCount = ComputeVertexAllocation( iMaxLOD, body, list.m_pHardwareData, buildInfo.m_pMeshVertices );
-		buildInfo.m_pVertexBuffer = (DecalBuildVertexInfo_t*)malloc( nVertexCount * sizeof(DecalBuildVertexInfo_t) );
-	}
+	// tyabus: Don't allocate on the stack because it causes crashes.
+	// If we do not allocate on the stack the engine will show indices error instead.
+	buildInfo.m_pMeshVertices = (MeshVertexInfo_t*)malloc( nMeshCount * sizeof( MeshVertexInfo_t ) );
+	int nVertexCount = ComputeVertexAllocation( iMaxLOD, body, list.m_pHardwareData, buildInfo.m_pMeshVertices );
+	buildInfo.m_pVertexBuffer = (DecalBuildVertexInfo_t*)malloc( nVertexCount * sizeof( DecalBuildVertexInfo_t ) );
 
 	// Project all mesh vertices
 	ProjectDecalsOntoMeshes( buildInfo, nMeshCount );
