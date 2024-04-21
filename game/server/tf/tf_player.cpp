@@ -4028,6 +4028,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	CBaseEntity *pAttacker = info.GetAttacker();
 	CBaseEntity *pInflictor = info.GetInflictor();
 	CTFWeaponBase *pWeapon = NULL;
+	CTFPlayer *pTFAttacker = ToTFPlayer( pAttacker );
 
 	if ( inputInfo.GetWeapon() )
 	{
@@ -4197,8 +4198,6 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 
 		int nCritWhileAirborne = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, nCritWhileAirborne, crit_while_airborne );
-
-		CTFPlayer *pTFAttacker = ToTFPlayer( pAttacker );
 
 		if ( pTFAttacker )
 		{
@@ -4456,8 +4455,6 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	m_bitsDamageType |= bitsDamage; // Save this so we can report it to the client
 	m_bitsHUDDamage = -1;  // make sure the damage bits get resent
 
-	m_Local.m_vecPunchAngle.SetX( -2 );
-
 	// Do special explosion damage effect
 	if ( bitsDamage & DMG_BLAST )
 	{
@@ -4466,7 +4463,29 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 
 	PainSound( info );
 
-	PlayFlinch( info );
+	if( bitsDamage != DMG_GENERIC )
+	{
+		bool bFlinch = true;
+
+		// If we're a aiming sniper and we get damaged by minigun from afar, don't flinch.
+		if( IsPlayerClass( TF_CLASS_SNIPER ) && m_Shared.InCond( TF_COND_AIMING ) )
+		{
+			if( pTFAttacker && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_MINIGUN )
+			{
+				float flDistSqr = (pTFAttacker->GetAbsOrigin() - GetAbsOrigin()).LengthSqr();
+				if( flDistSqr > 750 * 750 )
+				{
+					bFlinch = false;
+				}
+			}
+		}
+
+		if( bFlinch )
+		{
+			m_Local.m_vecPunchAngle.SetX( -2 );
+			PlayFlinch( info );
+		}
+	}
 
 	// Detect drops below 25% health and restart expression, so that characters look worried.
 	int iHealthBoundary = (GetMaxHealth() * 0.25);
