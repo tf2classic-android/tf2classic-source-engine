@@ -152,5 +152,5 @@ target_link_libraries(
 
 	# strtools depends on this, so make it an interface
 	# instead of linking it everywhere
-	$<$<OR:${IS_OSX},${IS_ANDROID}>:iconv> # SanyaSho: link with our custom iconv build for Android and OSX
+	$<$<OR:${IS_OSX},${IS_ANDROID},$<AND:${IS_ARM64},${IS_LINUX}>>:iconv> # SanyaSho: link with our custom iconv build for Android, OSX and Linux aarch64
 )
