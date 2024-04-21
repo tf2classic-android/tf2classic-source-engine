@@ -134,7 +134,6 @@ def build(bld):
 		'host.cpp',
 		'host_cmd.cpp',
 		'host_listmaps.cpp',
-		'host_phonehome.cpp',
 		'host_state.cpp',
 		'initmathlib.cpp',
 		'../common/language.cpp',

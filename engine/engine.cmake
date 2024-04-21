@@ -244,7 +244,6 @@ set(
 	"${ENGINE_DIR}/host.cpp"
 	"${ENGINE_DIR}/host_cmd.cpp"
 	"${ENGINE_DIR}/host_listmaps.cpp"
-	"${ENGINE_DIR}/host_phonehome.cpp"
 	"${ENGINE_DIR}/host_state.cpp"
 	"${ENGINE_DIR}/initmathlib.cpp"
 	"${SRCDIR}/common/language.cpp"
