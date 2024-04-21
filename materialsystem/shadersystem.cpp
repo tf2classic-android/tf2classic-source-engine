@@ -325,8 +325,12 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	Assert( dxSupportLevel >= 60 );
 	dxSupportLevel /= 10;
 
-	// 360 only supports its dx9 dll
-	int dxStart = IsX360() ? 9 : 6;
+#if defined( WIN32 )
+	int dxStart = 8;
+#else
+	int dxStart = 9;
+#endif
+
 	char buf[32];
 	for ( i = dxStart; i <= dxSupportLevel; ++i )
 	{
@@ -394,7 +398,12 @@ void CShaderSystem::LoadModShaderDLLs( int dxSupportLevel )
 	// First load the ones with dx_ prefix.
 	char buf[256];
 
-	int dxStart = 6;
+#if defined( WIN32 )
+	int dxStart = 8;
+#else
+	int dxStart = 9;
+#endif
+
 	for ( int i = dxStart; i <= dxSupportLevel; ++i )
 	{
 		Q_snprintf( buf, sizeof( buf ), "game_shader_dx%d%s", i, DLL_EXT_STRING );
