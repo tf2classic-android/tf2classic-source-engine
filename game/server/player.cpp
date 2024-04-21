@@ -5658,19 +5658,15 @@ void CBloodSplat::Spawn ( CBaseEntity *pOwner )
 void CBloodSplat::Think( void )
 {
 	trace_t	tr;	
-	
-	if ( g_Language.GetInt() != LANGUAGE_GERMAN )
-	{
-		CBasePlayer *pPlayer;
-		pPlayer = ToBasePlayer( GetOwnerEntity() );
+	CBasePlayer *pPlayer;
+	Vector forward;
 
-		Vector forward;
-		AngleVectors( GetAbsAngles(), &forward );
-		UTIL_TraceLine ( GetAbsOrigin(), GetAbsOrigin() + forward * 128, 
-			MASK_SOLID_BRUSHONLY, pPlayer, COLLISION_GROUP_NONE, & tr);
+	pPlayer = ToBasePlayer( GetOwnerEntity() );
 
-		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
-	}
+	AngleVectors( GetAbsAngles(), &forward );
+	UTIL_TraceLine ( GetAbsOrigin(), GetAbsOrigin() + forward * 128, MASK_SOLID_BRUSHONLY, pPlayer, COLLISION_GROUP_NONE, & tr);
+	UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
+
 	UTIL_Remove( this );
 }
 

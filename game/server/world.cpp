@@ -634,17 +634,6 @@ void CWorld::Precache( void )
 	// precache all temp ent stuff
 	CBaseTempEntity::PrecacheTempEnts();
 
-	g_Language.SetValue( LANGUAGE_ENGLISH );	// TODO use VGUI to get current language
-
-	if ( g_Language.GetInt() == LANGUAGE_GERMAN )
-	{
-		PrecacheModel( "models/germangibs.mdl" );
-	}
-	else
-	{
-		PrecacheModel( "models/gibs/hgibs.mdl" );
-	}
-
 	PrecacheScriptSound( "BaseEntity.EnterWater" );
 	PrecacheScriptSound( "BaseEntity.ExitWater" );
 

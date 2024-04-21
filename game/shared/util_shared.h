@@ -35,16 +35,6 @@ typedef CGameTrace trace_t;
 
 extern ConVar developer;	// developer mode
 
-
-//-----------------------------------------------------------------------------
-// Language IDs.
-//-----------------------------------------------------------------------------
-#define LANGUAGE_ENGLISH				0
-#define LANGUAGE_GERMAN					1
-#define LANGUAGE_FRENCH					2
-#define LANGUAGE_BRITISH				3
-
-
 //-----------------------------------------------------------------------------
 // Pitch + yaw
 //-----------------------------------------------------------------------------
