@@ -859,7 +859,7 @@ void RichText::Paint()
 			m_FormatStream[renderState.formatStreamIndex].textStreamIndex >= i &&
 			m_FormatStream[renderState.formatStreamIndex].textStreamIndex )
 		{
-			iLim = m_FormatStream[renderState.formatStreamIndex].textStreamIndex;
+			iLim = m_FormatStream[renderState.formatStreamIndex].textStreamIndex - 1;
 		}
 
 		// Stop when entering or exiting the selected range
