@@ -55,9 +55,15 @@ enum
 // Internal maximums for sizes. Don't use directly, use IMaterialSystem::GetMaxToRender()
 enum
 {
+#if defined( GAME_TF2CLASSIC ) // SanyaSho: extend buffer size for TF2C
+	INDEX_BUFFER_SIZE  = 65536,
+	DYNAMIC_VERTEX_BUFFER_MEMORY = ( 2048 + 512 ) * 1024,
+	DYNAMIC_VERTEX_BUFFER_MEMORY_SMALL = 512 * 1024, // Only allocate this much during map transitions
+#else
 	INDEX_BUFFER_SIZE  = 32768,
 	DYNAMIC_VERTEX_BUFFER_MEMORY = ( 1024 + 512 ) * 1024,
 	DYNAMIC_VERTEX_BUFFER_MEMORY_SMALL = 384 * 1024, // Only allocate this much during map transitions
+#endif
 };
 
 // Vertex fields must be written in well-defined order to achieve write combining, 
