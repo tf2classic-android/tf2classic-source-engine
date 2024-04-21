@@ -47,6 +47,7 @@ public:
 
 	virtual float	GetViewModelFOV( void );
 	virtual bool	ShouldDrawViewModel();
+	virtual bool	ShouldDrawCrosshair( void );
 
 	int				GetDeathMessageStartHeight( void );
 

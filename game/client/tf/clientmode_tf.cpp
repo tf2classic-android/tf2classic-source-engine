@@ -359,6 +359,31 @@ bool ClientModeTFNormal::ShouldDrawViewModel()
 	return true;
 }
 
+ConVar tf_hud_no_crosshair_on_scope_zoom( "tf_hud_no_crosshair_on_scope_zoom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool ClientModeTFNormal::ShouldDrawCrosshair()
+{
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if( !pPlayer )
+	{
+		return false;
+	}
+
+	if( pPlayer->GetPlayerClass() &&
+		(pPlayer->IsPlayerClass( TF_CLASS_SNIPER ) || pPlayer->IsPlayerClass( TF_CLASS_MERCENARY )) &&
+		pPlayer->m_Shared.InCond( TF_COND_ZOOMED ) &&
+		tf_hud_no_crosshair_on_scope_zoom.GetBool()
+	)
+	{
+		return false;
+	}
+
+	return ClientModeShared::ShouldDrawCrosshair();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

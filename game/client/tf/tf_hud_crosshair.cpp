@@ -95,15 +95,16 @@ bool CHudTFCrosshair::ShouldDraw()
 	if ( !pPlayer )
 		return false;
 
-	CTFWeaponBase *pWeapon = pPlayer->GetActiveTFWeapon();
+	//CTFWeaponBase *pWeapon = pPlayer->GetActiveTFWeapon();
 
-	if ( !pWeapon )
-		return false;
+	//if ( !pWeapon )
+	//	return false;
 
 	if ( pPlayer->m_Shared.InCond( TF_COND_TAUNTING ) || pPlayer->m_Shared.IsLoser() )
 		return false;
 
-	return pWeapon->ShouldDrawCrosshair();
+	//return pWeapon->ShouldDrawCrosshair(); // SanyaSho: i think that's another :ded: code from 2007
+	return BaseClass::ShouldDraw();
 }
 
 void CHudTFCrosshair::Paint()
