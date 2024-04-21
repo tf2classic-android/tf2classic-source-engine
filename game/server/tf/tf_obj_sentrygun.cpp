@@ -1077,18 +1077,7 @@ bool CObjectSentrygun::Fire()
 		Vector vecSrc;
 		QAngle vecAng;
 
-		int iAttachment;
-
-		if ( m_iUpgradeLevel > 1 && (m_iAmmoShells & 1) )
-		{
-			// level 2 and 3 turrets alternate muzzles each time they fizzy fizzy fire.
-			iAttachment = m_iAttachments[SENTRYGUN_ATTACHMENT_MUZZLE_ALT];
-		}
-		else
-		{
-			iAttachment = m_iAttachments[SENTRYGUN_ATTACHMENT_MUZZLE];
-		}
-
+		int iAttachment = GetTracerAttachment();
 		GetAttachment( iAttachment, vecSrc, vecAng );
 
 		Vector vecMidEnemy = m_hEnemy->WorldSpaceCenter();
@@ -1211,15 +1200,19 @@ int CObjectSentrygun::GetMaxUpgradeLevel( void )
 //-----------------------------------------------------------------------------
 int	CObjectSentrygun::GetTracerAttachment( void )
 {
-	if ( m_iUpgradeLevel > 1 && (m_iAmmoShells & 1) )
+	int iAttachment;
+
+	if( m_iUpgradeLevel > 1 && (m_iAmmoShells & 1) )
 	{
 		// level 2 and 3 turrets alternate muzzles each time they fizzy fizzy fire.
-		return m_iAttachments[SENTRYGUN_ATTACHMENT_MUZZLE_ALT];
+		iAttachment = m_iAttachments[SENTRYGUN_ATTACHMENT_MUZZLE_ALT];
 	}
 	else
 	{
-		return m_iAttachments[SENTRYGUN_ATTACHMENT_MUZZLE];
+		iAttachment = m_iAttachments[SENTRYGUN_ATTACHMENT_MUZZLE];
 	}
+
+	return iAttachment;
 }
 
 //-----------------------------------------------------------------------------
