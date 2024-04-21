@@ -274,15 +274,20 @@ protected:
  					);
  			}
  
- 			return true;
+ 		    return true;
  		}
 		else if ( FStrEq( eventName, "tf_game_over" ) || FStrEq( eventName, "teamplay_game_over" ) )
 		{
 			UTIL_LogPrintf( "World triggered \"Game_Over\" reason \"%s\"\n", event->GetString( "reason" ) );
-			UTIL_LogPrintf( "Team \"Red\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam( TF_TEAM_RED )->GetScore(), GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() );
-			UTIL_LogPrintf( "Team \"Blue\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam( TF_TEAM_BLUE )->GetScore(), GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() );
-			UTIL_LogPrintf(" Team \"Green\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam(TF_TEAM_GREEN)->GetScore(), GetGlobalTeam(TF_TEAM_GREEN)->GetNumPlayers());
-			UTIL_LogPrintf(" Team \"Yellow\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam(TF_TEAM_YELLOW)->GetScore(), GetGlobalTeam(TF_TEAM_YELLOW)->GetNumPlayers());
+
+			if( TFGameRules() && !TFGameRules()->IsDeathmatch() )
+			{
+				UTIL_LogPrintf( "Team \"Red\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam( TF_TEAM_RED )->GetScore(), GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() );
+				UTIL_LogPrintf( "Team \"Blue\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam( TF_TEAM_BLUE )->GetScore(), GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() );
+				UTIL_LogPrintf( "Team \"Green\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam( TF_TEAM_GREEN )->GetScore(), GetGlobalTeam( TF_TEAM_GREEN )->GetNumPlayers() );
+				UTIL_LogPrintf( "Team \"Yellow\" final score \"%d\" with \"%d\" players\n", GetGlobalTeam( TF_TEAM_YELLOW )->GetScore(), GetGlobalTeam( TF_TEAM_YELLOW )->GetNumPlayers() );
+			}
+
  			return true;		
  		}
  		else if ( FStrEq( eventName, "player_chargedeployed" ) )
