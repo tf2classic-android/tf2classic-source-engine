@@ -542,6 +542,10 @@ void CCaptureFlag::FlagTouch( CBaseEntity *pOther )
 	if ( pPlayer->m_Shared.IsInvulnerable() )
 		return;
 
+	// Don't let stealthed spies pickup the flag
+	if( pPlayer->m_Shared.IsStealthed() || pPlayer->m_Shared.InCond( TF_COND_STEALTHED_BLINK ) || pPlayer->m_Shared.GetPercentInvisible() > 0.25f )
+		return;
+
 #ifdef GAME_DLL
 	if ( PointInRespawnRoom(pPlayer,pPlayer->WorldSpaceCenter()) )
 		return;
