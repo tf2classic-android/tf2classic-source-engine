@@ -1092,13 +1092,22 @@ void CTFPlayer::InitialSpawn( void )
 	engine->SetFakeClientConVarValue( edict(), "viewmodel_offset_x", "0" );
 	engine->SetFakeClientConVarValue( edict(), "viewmodel_offset_y", "0" );
 	engine->SetFakeClientConVarValue( edict(), "viewmodel_offset_z", "0" );
+#if SOONSOON
 	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_color_r", "255" );
 	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_color_g", "255" );
 	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_color_b", "255" );
 	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_particle", "1" );
 	//engine->SetFakeClientConVarValue( edict(), "tf2c_merc_winanim", "1" );
+#else
+	engine->SetFakeClientConVarValue( edict(), "tf2c_setmerccolor_r", "255" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_setmerccolor_g", "255" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_setmerccolor_b", "255" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_setmercparticle", "1" );
+#endif
 	engine->SetFakeClientConVarValue( edict(), "tf2c_proximity_voice", "0" );
 	engine->SetFakeClientConVarValue( edict(), "tf2c_dev_mark", "1" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_zoom_hold", "0" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_is_mobile_build", "0" );
 
 	m_AttributeManager.InitializeAttributes( this );
 
