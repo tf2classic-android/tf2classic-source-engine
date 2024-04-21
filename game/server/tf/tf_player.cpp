@@ -328,13 +328,14 @@ END_SEND_TABLE()
 // all players except the local player
 BEGIN_SEND_TABLE_NOBASE( CTFPlayer, DT_TFNonLocalPlayerExclusive )
 	// send a lo-res origin to other players
-	SendPropVector	(SENDINFO(m_vecOrigin), -1,  SPROP_COORD_MP_LOWPRECISION|SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin ),
+	SendPropVector	(SENDINFO(m_vecOrigin), -1, SPROP_COORD_MP|SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin ),
 
 	SendPropBool( SENDINFO( m_bIsPlayerADev ) ),
 	SendPropBool( SENDINFO( m_bIsPlayerChatProtected ) ),
 
-	SendPropFloat( SENDINFO_VECTORELEM(m_angEyeAngles, 0), 8, SPROP_CHANGES_OFTEN, -90.0f, 90.0f ),
-	SendPropAngle( SENDINFO_VECTORELEM(m_angEyeAngles, 1), 10, SPROP_CHANGES_OFTEN ),
+	// Same precision as DOD
+	SendPropFloat( SENDINFO_VECTORELEM(m_angEyeAngles, 0), 13, SPROP_CHANGES_OFTEN, -90.0f, 90.0f ),
+	SendPropAngle( SENDINFO_VECTORELEM(m_angEyeAngles, 1), 13, SPROP_CHANGES_OFTEN ),
 
 END_SEND_TABLE()
 
