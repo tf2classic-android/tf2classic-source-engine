@@ -49,6 +49,7 @@
 #include "tf_hud_chat.h"
 #include "c_tf_team.h"
 #include "c_tf_playerresource.h"
+#include "tf_clientscoreboard.h"
 
 #if defined( _X360 )
 #include "tf_clientscoreboard.h"
@@ -71,6 +72,8 @@ ConVar tf2c_coloredhud("tf2c_coloredhud", "0", FCVAR_ARCHIVE, "Set to 1 to turn 
 #define TF2C_ITEMS_CRC32_FLAGS	FCVAR_DEVELOPMENTONLY | FCVAR_DONTRECORD | FCVAR_USERINFO
 #endif
 ConVar tf2c_cl_items_crc32( "tf2c_cl_items_crc32", "uninitialized", TF2C_ITEMS_CRC32_FLAGS );
+
+extern ConVar tf_scoreboard_mouse_mode;
 
 #if defined( ANDROID )
 #define IS_MOBILE "1"
@@ -186,9 +189,7 @@ ClientModeTFNormal::ClientModeTFNormal()
 	m_pGameUI = NULL;
 	m_pFreezePanel = NULL;
 
-#if defined( _X360 )
 	m_pScoreboard = NULL;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -418,8 +419,7 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 	{
 		return; // server sends a colorized text string for this
 	}
-
-	if ( V_strcmp( "player_team", eventname ) == 0 )
+	else if ( V_strcmp( "player_team", eventname ) == 0 )
 	{
 		// Using our own strings here.
 		int iPlayerIndex = engine->GetPlayerForUserID( event->GetInt( "userid" ) );
@@ -506,6 +506,11 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 
 		return;
 	}
+	else if ( V_strcmp( "game_maploaded", eventname ) == 0 )
+	{
+		// Remember which scoreboard should be used on this map.
+		m_pScoreboard = (CTFClientScoreBoardDialog *)GetTFViewPort()->FindPanelByName( GetTFViewPort()->GetModeSpecificScoreboardName() );
+	}
 
 	BaseClass::FireGameEvent( event );
 }
@@ -526,19 +531,15 @@ bool ClientModeTFNormal::CreateMove( float flInputSampleTime, CUserCmd *cmd )
 //-----------------------------------------------------------------------------
 // Purpose: See if hud elements want key input. Return 0 if the key is swallowed
 //-----------------------------------------------------------------------------
-int	ClientModeTFNormal::HudElementKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding )
+int ClientModeTFNormal::HudElementKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding )
 {
-	// Let scoreboard handle input first because on X360 we need gamertags and
-	// gamercards accessible at all times when gamertag is visible.
-#if defined( _X360 )
-	if ( m_pScoreboard )
+	if ( tf_scoreboard_mouse_mode.GetInt() == 2 )
 	{
-		if ( !m_pScoreboard->HudElementKeyInput( down, keynum, pszCurrentBinding ) )
+		if ( m_pScoreboard && !m_pScoreboard->HudElementKeyInput( down, keynum, pszCurrentBinding ) )
 		{
 			return 0;
 		}
 	}
-#endif
 
 	// check for hud menus
 	if ( m_pMenuEngyBuild )
@@ -578,17 +579,14 @@ int	ClientModeTFNormal::HudElementKeyInput( int down, ButtonCode_t keynum, const
 //-----------------------------------------------------------------------------
 int ClientModeTFNormal::HandleSpectatorKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding )
 {
-#if defined( _X360 )
-	// On X360 when we have scoreboard up in spectator menu we cannot
-	// steal any input because gamertags must be selectable and gamercards
-	// must be accessible.
-	// We cannot rely on any keybindings in this case since user could have
-	// remapped everything.
-	if ( m_pScoreboard && m_pScoreboard->IsVisible() )
+	if ( tf_scoreboard_mouse_mode.GetInt() == 2 )
 	{
-		return 1;
+		// Scoreboard allows enabling mouse input with right click so don't steal input from it.
+		if ( m_pScoreboard && m_pScoreboard->IsVisible() )
+		{
+			return 1;
+		}
 	}
-#endif
 
 	return BaseClass::HandleSpectatorKeyInput( down, keynum, pszCurrentBinding );
 }

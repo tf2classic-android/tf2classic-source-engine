@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2003, Valve Corporation, All rights reserved. =======
+//====== Copyright ? 1996-2003, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -8,6 +8,7 @@
 #include "c_tf_player.h"
 #include "c_user_message_register.h"
 #include "mathlib/mathlib.h"
+#include "tf_shareddefs.h"
 #include "view.h"
 #include "iclientvehicle.h"
 #include "ivieweffects.h"
@@ -61,6 +62,7 @@
 #include "materialsystem/imaterialvar.h"
 #include "c_tf_team.h"
 #include "tf_viewmodel.h"
+#include "tf_playermodelpanel.h"
 
 #include "tf_inventory.h"
 
@@ -94,21 +96,9 @@ ConVar tf2c_zoom_hold( "tf2c_zoom_hold", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
 
 ConVar tf2c_dev_mark( "tf2c_dev_mark", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
 
-static void OnMercParticleChange( IConVar *var, const char *pOldValue, float flOldValue )
-{
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( !pLocalPlayer )
-		return;
-
-	ConVar *pCvar = (ConVar *)var;
-
-	pLocalPlayer->m_Shared.SetRespawnParticleID( pCvar->GetInt() );
-}
-
 ConVar tf2c_setmerccolor_r( "tf2c_setmerccolor_r", "0", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets merc color's red channel value", true, 0, true, 255 );
 ConVar tf2c_setmerccolor_g( "tf2c_setmerccolor_g", "0", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets merc color's green channel value", true, 0, true, 255 );
 ConVar tf2c_setmerccolor_b( "tf2c_setmerccolor_b", "0", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets merc color's blue channel value", true, 0, true, 255 );
-ConVar tf2c_setmercparticle( "tf2c_setmercparticle", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets merc's respawn particle index", OnMercParticleChange );
 
 
 #define BDAY_HAT_MODEL		"models/effects/bday_hat.mdl"
@@ -990,17 +980,17 @@ class CPlayerTintColor : public CResultProxy
 			C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
 
 			// If not tied to an entity assume we're used on a model panel.
-			// TODO(SanyaSho): Implement CTFPlayerModelPanel
 			if ( !pEntity )
 			{
 				if ( pC_BaseEntity || !engine->IsConnected() )
 				{
-					/*CTFPlayerModelPanel *pPanel = dynamic_cast<CTFPlayerModelPanel *>( (IClientRenderable *)pC_BaseEntity );
+					CTFPlayerModelPanel *pPanel = dynamic_cast<CTFPlayerModelPanel *>( (IClientRenderable *)pC_BaseEntity );
 					if( pPanel )
 					{
 						m_pResult->SetVecValue( pPanel->GetModelTintColor().Base(), 3 );
 						return;
-					}*/
+					}
+
 					// Assuming we're at the menus... Use cvar values.
 					float r = floorf( tf2c_setmerccolor_r.GetFloat() ) / 255.0f;
 					float g = floorf( tf2c_setmerccolor_g.GetFloat() ) / 255.0f;
@@ -4101,6 +4091,8 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 		LoadInventory();
 	}
 
+	// SanyaSho: was moved to server
+	/*
 	if ( TFGameRules()->IsDeathmatch() && GetTeamNumber() == TF_TEAM_RED && ( !IsLocalPlayer() || !InFirstPersonView() ) )
 	{
 		char szParticleName[128];
@@ -4111,6 +4103,7 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 
 		m_Shared.SetParticleToMercColor( pEffect );
 	}
+	*/
 
 	UpdateVisibility();
 
@@ -4228,31 +4221,6 @@ void C_TFPlayer::SetHealer( C_TFPlayer *pHealer, float flChargeLevel )
 
 	m_hHealer = pHealer;
 	m_flHealerChargeLevel = flChargeLevel;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-bool C_TFPlayer::CanShowClassMenu( void )
-{
-#if 0
-	// TODO: Arena check
-
-	if( GetTeamNumber() > LAST_SHARED_TEAM );
-		return false;
-
-	if( !TFGameRules() )
-		return false;
-
-	if( ((TFGameRules()->GetGameType() == TF_GAMETYPE_DM) /*&& !tf2c_dm_allow_normal_classes.GetBool()*/) ||
-		( (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP) && (GetTFTeam() && GetTFTeam()->IsEscorting()) && IsPlayerClass( TF_CLASS_CIVILIAN )) )
-		return false;
-
-	return true;
-#else
-	// FIXME
-	return ( GetTeamNumber() > LAST_SHARED_TEAM );
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4929,5 +4897,30 @@ vgui::IImage* GetDefaultAvatarImage( C_BasePlayer *pPlayer )
 		}
 	}
 
+	return NULL;
+}
+
+// TODO: rewrite everything to use this
+vgui::IImage* GetDefaultAvatarImage( int iPlayerIndex )
+{
+	if ( g_PR && g_PR->IsConnected( iPlayerIndex ) && g_PR->GetTeam( iPlayerIndex ) >= FIRST_GAME_TEAM )
+	{
+		const char *pszImage = NULL;
+		
+		if ( TFGameRules() && !TFGameRules()->IsDeathmatch() )
+		{
+			pszImage = VarArgs( "../vgui/avatar_default_%s", g_aTeamParticleNames[g_PR->GetTeam( iPlayerIndex )] ); // g_aTeamLowerNames
+		}
+		else
+		{
+			pszImage = "../vgui/avatar_default";
+		}
+		
+		if ( pszImage )
+		{
+			return vgui::scheme()->GetImage( pszImage, true );
+		}
+	}
+	
 	return NULL;
 }

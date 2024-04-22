@@ -6,33 +6,18 @@
 //=============================================================================
 
 #include "cbase.h"
-
-#include <vgui_controls/Label.h>
-#include <vgui_controls/Button.h>
-#include <vgui_controls/ImagePanel.h>
-#include <vgui_controls/RichText.h>
-#include <vgui_controls/Frame.h>
-#include <vgui/IScheme.h>
-#include <game/client/iviewport.h>
-#include <vgui/IVGui.h>
-#include <KeyValues.h>
-#include <filesystem.h>
-#include "iclientmode.h"
-#include <vgui_controls/AnimationController.h>
-
-#include "vguicenterprint.h"
-#include "tf_controls.h"
-#include "basemodelpanel.h"
 #include "tf_teammenu.h"
-#include <convar.h>
+#include "iclientmode.h"
+#include "basemodelpanel.h"
+#include <vgui_controls/AnimationController.h>
 #include "IGameUIFuncs.h" // for key bindings
-#include "hud.h" // for gEngfuncs
-#include "c_tf_player.h"
 #include "tf_gamerules.h"
 #include "c_team.h"
-#include "tf_hud_notification_panel.h"
+#include "tf_viewport.h"
 
 using namespace vgui;
+
+DECLARE_BUILD_FACTORY( CTFTeamButton );
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -56,7 +41,7 @@ void CTFTeamButton::ApplySettings( KeyValues *inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
 
-	Q_strncpy( m_szModelPanel, inResourceData->GetString( "associated_model", "" ), sizeof( m_szModelPanel ) );
+	V_strcpy_safe( m_szModelPanel, inResourceData->GetString( "associated_model", "" ) );
 	m_iTeam = inResourceData->GetInt( "team", TEAM_UNASSIGNED );
 	m_flHoverTimeToWait = inResourceData->GetFloat( "hover", -1 );
 }
@@ -78,10 +63,13 @@ void CTFTeamButton::ApplySchemeSettings( vgui::IScheme *pScheme )
 //-----------------------------------------------------------------------------
 void CTFTeamButton::SendAnimation( const char *pszAnimation )
 {
+	if ( !m_szModelPanel[0] )
+		return;
+
 	Panel *pParent = GetParent();
 	if ( pParent )
 	{
-		CModelPanel *pModel = dynamic_cast< CModelPanel* >( pParent->FindChildByName( m_szModelPanel ) );
+		CModelPanel *pModel = dynamic_cast<CModelPanel*>( pParent->FindChildByName( m_szModelPanel ) );
 		if ( pModel )
 		{
 			KeyValues *kvParms = new KeyValues( "SetAnimation" );
@@ -99,10 +87,13 @@ void CTFTeamButton::SendAnimation( const char *pszAnimation )
 //-----------------------------------------------------------------------------
 void CTFTeamButton::SetDefaultAnimation( const char *pszName )
 {
+	if ( !m_szModelPanel[0] )
+		return;
+
 	Panel *pParent = GetParent();
 	if ( pParent )
 	{
-		CModelPanel *pModel = dynamic_cast< CModelPanel* >( pParent->FindChildByName( m_szModelPanel ) );
+		CModelPanel *pModel = dynamic_cast<CModelPanel*>( pParent->FindChildByName( m_szModelPanel ) );
 		if ( pModel )
 		{
 			pModel->SetDefaultAnimation( pszName );
@@ -115,18 +106,9 @@ void CTFTeamButton::SetDefaultAnimation( const char *pszName )
 //-----------------------------------------------------------------------------
 bool CTFTeamButton::IsTeamFull()
 {
-	bool bRetVal = false;
-
-	if ( ( m_iTeam > TEAM_UNASSIGNED ) && GetParent() )
-	{
-		CTFTeamMenu *pTeamMenu = dynamic_cast< CTFTeamMenu* >( GetParent() );
-		if ( pTeamMenu )
-		{
-			bRetVal = ( m_iTeam == TF_TEAM_BLUE ) ? pTeamMenu->IsBlueTeamDisabled() : pTeamMenu->IsRedTeamDisabled();
-		}
-	}
-
-	return bRetVal;
+	return ( m_iTeam > TEAM_UNASSIGNED &&
+		TFGameRules() &&
+		TFGameRules()->WouldChangeUnbalanceTeams( m_iTeam, GetLocalPlayerTeam() ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -239,10 +221,37 @@ void CTFTeamButton::OnTick()
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFTeamButton::FireActionSignal( void )
+{
+	// Don't fire the command if the button is disabled.
+	if ( m_bTeamDisabled )
+		return;
+
+	BaseClass::FireActionSignal();
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFTeamMenu::CTFTeamMenu( IViewPort *pViewPort ) : CTeamMenu( pViewPort )
+CTFTeamMenu::CTFTeamMenu( IViewPort *pViewPort, const char *pName ) : BaseClass( NULL, pName )
 {
+	m_iScoreBoardKey = BUTTON_CODE_INVALID; // this is looked up in Activate()
+	m_iTeamMenuKey = BUTTON_CODE_INVALID;
+
+	// initialize dialog
+	SetTitle( "", true );
+
+	// load the new scheme early!!
+	SetScheme( "ClientScheme" );
+	SetMoveable( false );
+	SetSizeable( false );
+
+	// hide the system buttons
+	SetTitleBarVisible( false );
+	SetProportional( true );
+
 	SetMinimizeButtonVisible( false );
 	SetMaximizeButtonVisible( false );
 	SetCloseButtonVisible( false );
@@ -250,12 +259,8 @@ CTFTeamMenu::CTFTeamMenu( IViewPort *pViewPort ) : CTeamMenu( pViewPort )
 	SetKeyBoardInputEnabled( true );
 	SetMouseInputEnabled( true );
 
-	m_iTeamMenuKey = BUTTON_CODE_INVALID;
+	memset( m_pTeamButtons, 0, sizeof( m_pTeamButtons ) );
 
-	m_pBlueTeamButton = new CTFTeamButton( this, "teambutton0" );
-	m_pRedTeamButton = new CTFTeamButton( this, "teambutton1" );
-	m_pAutoTeamButton = new CTFTeamButton( this, "teambutton2" );
-	m_pSpecTeamButton = new CTFTeamButton( this, "teambutton3" );
 	m_pSpecLabel = new CExLabel( this, "TeamMenuSpectate", "" );
 
 	m_pHighlanderLabel = new CExLabel( this, "HighlanderLabel", "" );
@@ -270,13 +275,8 @@ CTFTeamMenu::CTFTeamMenu( IViewPort *pViewPort ) : CTeamMenu( pViewPort )
 #else
 	m_pCancelButton = new CExButton( this, "CancelButton", "#TF_Cancel" );
 #endif
-
+	
 	vgui::ivgui()->AddTickSignal( GetVPanel() );
-
-	m_bRedDisabled = false;
-	m_bBlueDisabled = false;
-
-	LoadControlSettings( "Resource/UI/Teammenu.res" );
 }
 
 //-----------------------------------------------------------------------------
@@ -293,9 +293,21 @@ void CTFTeamMenu::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	LoadControlSettings( "Resource/UI/Teammenu.res" );
+	LoadControlSettings( GetResFilename() );
 
-	Update();
+	SetHighlanderTeamsFullPanels( false );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFTeamMenu::CreateTeamButtons( void )
+{
+	// Using Unassigned for Auto Team button.
+	m_pTeamButtons[TEAM_UNASSIGNED] = new CTFTeamButton( this, "teambutton2" );
+	m_pTeamButtons[TEAM_SPECTATOR] = new CTFTeamButton( this, "teambutton3" );
+	m_pTeamButtons[TF_TEAM_RED] = new CTFTeamButton( this, "teambutton0" );
+	m_pTeamButtons[TF_TEAM_BLUE] = new CTFTeamButton( this, "teambutton1" );
 }
 
 //-----------------------------------------------------------------------------
@@ -303,10 +315,7 @@ void CTFTeamMenu::ApplySchemeSettings( IScheme *pScheme )
 //-----------------------------------------------------------------------------
 void CTFTeamMenu::ShowPanel( bool bShow )
 {
-	if ( BaseClass::IsVisible() == bShow )
-		return;
-
-	if ( !C_TFPlayer::GetLocalTFPlayer() )
+	if ( bShow == IsVisible() )
 		return;
 
 	if ( !gameuifuncs || !gViewPortInterface || !engine )
@@ -314,104 +323,48 @@ void CTFTeamMenu::ShowPanel( bool bShow )
 
 	if ( bShow )
 	{
-		if (TFGameRules()->IsFourTeamGame())
+		GetTFViewPort()->ShowClassMenu( false );
+		engine->CheckPoint( "TeamMenu" );
+
+		Activate();
+		SetMouseInputEnabled( true );
+
+		// get key bindings if shown
+		m_iTeamMenuKey = gameuifuncs->GetButtonCodeForBind( "changeteam" );
+		m_iScoreBoardKey = gameuifuncs->GetButtonCodeForBind( "showscores" );
+
+		// Highlight the button matching the player's team.
+		int iTeam = GetLocalPlayerTeam();
+
+		if ( iTeam < FIRST_GAME_TEAM )
 		{
-			gViewPortInterface->ShowPanel( PANEL_FOURTEAMSELECT, true );
+			iTeam = TEAM_UNASSIGNED;
 		}
-		else if (TFGameRules()->IsDeathmatch())
+
+		if ( m_pTeamButtons[iTeam] )
 		{
-			gViewPortInterface->ShowPanel( PANEL_DEATHMATCHTEAMSELECT, true );
-		}
-		else
-		{
-			if (TFGameRules()->State_Get() == GR_STATE_TEAM_WIN &&
-				C_TFPlayer::GetLocalTFPlayer() &&
-				C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TFGameRules()->GetWinningTeam()
-				&& C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_SPECTATOR
-				&& C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_UNASSIGNED)
+			if ( IsConsole() )
 			{
-				SetVisible(false);
-				SetMouseInputEnabled(false);
-
-				CHudNotificationPanel *pNotifyPanel = GET_HUDELEMENT(CHudNotificationPanel);
-				if (pNotifyPanel)
-				{
-					pNotifyPanel->SetupNotifyCustom("#TF_CantChangeTeamNow", "ico_notify_flag_moving", C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber());
-				}
-
-				return;
+				m_pTeamButtons[iTeam]->OnCursorEntered();
+				m_pTeamButtons[iTeam]->SetDefaultAnimation( "enter_enabled" );
 			}
-
-			gViewPortInterface->ShowPanel(PANEL_CLASS_RED, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_BLUE, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_GREEN, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_YELLOW, false);
-
-			engine->CheckPoint("TeamMenu");
-
-			Activate();
-			SetMouseInputEnabled(true);
-
-			// get key bindings if shown
-			m_iTeamMenuKey = gameuifuncs->GetButtonCodeForBind("changeteam");
-			m_iScoreBoardKey = gameuifuncs->GetButtonCodeForBind("showscores");
-
-			switch (C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber())
-			{
-			case TF_TEAM_BLUE:
-				if (IsConsole())
-				{
-					m_pBlueTeamButton->OnCursorEntered();
-					m_pBlueTeamButton->SetDefaultAnimation( "enter_enabled" );
-				}
-				GetFocusNavGroup().SetCurrentFocus( m_pBlueTeamButton->GetVPanel(), m_pBlueTeamButton->GetVPanel() );
-				break;
-
-			case TF_TEAM_RED:
-				if (IsConsole())
-				{
-					m_pRedTeamButton->OnCursorEntered();
-					m_pRedTeamButton->SetDefaultAnimation( "enter_enabled" );
-				}
-				GetFocusNavGroup().SetCurrentFocus( m_pRedTeamButton->GetVPanel(), m_pRedTeamButton->GetVPanel() );
-				break;
-
-			default:
-				if ( IsConsole() )
-				{
-					m_pAutoTeamButton->OnCursorEntered();
-					m_pAutoTeamButton->SetDefaultAnimation( "enter_enabled" );
-				}
-				GetFocusNavGroup().SetCurrentFocus(m_pAutoTeamButton->GetVPanel(), m_pAutoTeamButton->GetVPanel());
-				break;
-			}
+			GetFocusNavGroup().SetCurrentFocus( m_pTeamButtons[iTeam]->GetVPanel(), m_pTeamButtons[iTeam]->GetVPanel() );
 		}
 	}
 	else
 	{
-		if ( TFGameRules()->IsFourTeamGame() )
-		{
-			gViewPortInterface->ShowPanel( PANEL_FOURTEAMSELECT, false );
-		}
-		else if ( TFGameRules()->IsDeathmatch() )
-		{
-			gViewPortInterface->ShowPanel( PANEL_DEATHMATCHTEAMSELECT, false );
-		}
-		else
-		{
-			SetHighlanderTeamsFullPanels( false );
+		SetHighlanderTeamsFullPanels( false );
 
-			SetVisible( false );
-			SetMouseInputEnabled( false );
+		SetVisible( false );
+		SetMouseInputEnabled( false );
 
-			if (IsConsole())
+		if ( IsConsole() )
+		{
+			// Close the door behind us
+			CTFTeamButton *pButton = dynamic_cast<CTFTeamButton *> ( GetFocusNavGroup().GetCurrentFocus() );
+			if ( pButton )
 			{
-				// Close the door behind us
-				CTFTeamButton *pButton = dynamic_cast< CTFTeamButton *> (GetFocusNavGroup().GetCurrentFocus());
-				if (pButton)
-				{
-					pButton->OnCursorExited();
-				}
+				pButton->OnCursorExited();
 			}
 		}
 	}
@@ -422,13 +375,17 @@ void CTFTeamMenu::ShowPanel( bool bShow )
 //-----------------------------------------------------------------------------
 void CTFTeamMenu::SetHighlanderTeamsFullPanels( bool bEnabled )
 {
-	C_Team *pRed = GetGlobalTeam( TF_TEAM_RED );
-	C_Team *pBlue = GetGlobalTeam( TF_TEAM_BLUE );
+	bool bTeamsDisabled = true;
 
-	bool bTeamsDisabled = false;
-
-	if ( pBlue->GetNumPlayers() >= 9 && pRed->GetNumPlayers() >= 9 )
-		bTeamsDisabled = true;
+	for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
+	{
+		C_Team *pTeam = GetGlobalTeam( i );
+		if ( pTeam && pTeam->Get_Number_Players() < 9 )
+		{
+			bTeamsDisabled = false;
+			break;
+		}
+	}
 
 	m_pHighlanderLabel->SetVisible( bEnabled );
 	m_pHighlanderLabelShadow->SetVisible( bEnabled );
@@ -454,36 +411,20 @@ void CTFTeamMenu::SetHighlanderTeamsFullPanels( bool bEnabled )
 //-----------------------------------------------------------------------------
 void CTFTeamMenu::Update( void )
 {
-	BaseClass::Update();
-
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if ( pLocalPlayer && ( pLocalPlayer->GetTeamNumber() != TEAM_UNASSIGNED ) )
+	if ( GetLocalPlayerTeam() != TEAM_UNASSIGNED )
 	{
 #ifdef _X360
-		if ( m_pFooter )
-		{
-			m_pFooter->ShowButtonLabel( "cancel", true );
-		}
+		m_pFooter->ShowButtonLabel( "cancel", true );
 #else
-		if ( m_pCancelButton )
-		{
-			m_pCancelButton->SetVisible( true );
-		}
+		m_pCancelButton->SetVisible( true );
 #endif
 	}
 	else
 	{
 #ifdef _X360
-		if ( m_pFooter )
-		{
-			m_pFooter->ShowButtonLabel( "cancel", false );
-		}
+		m_pFooter->ShowButtonLabel( "cancel", false );
 #else
-		if ( m_pCancelButton && m_pCancelButton->IsVisible() )
-		{
-			m_pCancelButton->SetVisible( false );
-		}
+		m_pCancelButton->SetVisible( false );
 #endif
 	}
 }
@@ -497,19 +438,11 @@ void CTFTeamMenu::Join_Team( const CCommand &args )
 	if ( args.ArgC() > 1 )
 	{
 		char cmd[256];
-		Q_snprintf( cmd, sizeof( cmd ), "jointeam_nomenus %s", args.Arg( 1 ) );
+		V_sprintf_safe( cmd, "jointeam_nomenus %s", args.Arg( 1 ) );
 		OnCommand( cmd );
 	}
 }
 #endif
-
-//-----------------------------------------------------------------------------
-// Purpose: chooses and loads the text page to display that describes mapName map
-//-----------------------------------------------------------------------------
-void CTFTeamMenu::LoadMapPage( const char *mapName )
-{
-
-}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -517,24 +450,20 @@ void CTFTeamMenu::LoadMapPage( const char *mapName )
 void CTFTeamMenu::OnKeyCodePressed( KeyCode code )
 {
 	if ( ( m_iTeamMenuKey != BUTTON_CODE_INVALID && m_iTeamMenuKey == code ) ||
-		   code == KEY_XBUTTON_BACK || 
-		   code == KEY_XBUTTON_B )
+		code == KEY_XBUTTON_BACK ||
+		code == KEY_XBUTTON_B )
 	{
-		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-		if ( pLocalPlayer && ( pLocalPlayer->GetTeamNumber() != TEAM_UNASSIGNED ) )
+		if ( GetLocalPlayerTeam() != TEAM_UNASSIGNED )
 		{
 			ShowPanel( false );
 		}
 	}
-	else if( code == KEY_SPACE )
+	else if ( code == KEY_SPACE )
 	{
 		engine->ClientCmd( "jointeam auto" );
-
-		ShowPanel( false );
-		OnClose();
+		Close();
 	}
-	else if( code == KEY_XBUTTON_A || code == KEY_XBUTTON_RTRIGGER )
+	else if ( code == KEY_XBUTTON_A || code == KEY_XBUTTON_RTRIGGER )
 	{
 		// select the active focus
 		if ( GetFocusNavGroup().GetCurrentFocus() )
@@ -542,11 +471,11 @@ void CTFTeamMenu::OnKeyCodePressed( KeyCode code )
 			ipanel()->SendMessage( GetFocusNavGroup().GetCurrentFocus()->GetVPanel(), new KeyValues( "PressButton" ), GetVPanel() );
 		}
 	}
-	else if( code == KEY_XBUTTON_RIGHT || code == KEY_XSTICK1_RIGHT )
+	else if ( code == KEY_XBUTTON_RIGHT || code == KEY_XSTICK1_RIGHT )
 	{
 		CTFTeamButton *pButton;
-			
-		pButton = dynamic_cast< CTFTeamButton *> ( GetFocusNavGroup().GetCurrentFocus() );
+
+		pButton = dynamic_cast<CTFTeamButton *> ( GetFocusNavGroup().GetCurrentFocus() );
 		if ( pButton )
 		{
 			pButton->OnCursorExited();
@@ -557,17 +486,17 @@ void CTFTeamMenu::OnKeyCodePressed( KeyCode code )
 			GetFocusNavGroup().RequestFocusNext( NULL );
 		}
 
-		pButton = dynamic_cast< CTFTeamButton * > ( GetFocusNavGroup().GetCurrentFocus() );
+		pButton = dynamic_cast<CTFTeamButton *> ( GetFocusNavGroup().GetCurrentFocus() );
 		if ( pButton )
 		{
 			pButton->OnCursorEntered();
 		}
 	}
-	else if( code == KEY_XBUTTON_LEFT || code == KEY_XSTICK1_LEFT )
+	else if ( code == KEY_XBUTTON_LEFT || code == KEY_XSTICK1_LEFT )
 	{
 		CTFTeamButton *pButton;
 
-		pButton = dynamic_cast< CTFTeamButton *> ( GetFocusNavGroup().GetCurrentFocus() );
+		pButton = dynamic_cast<CTFTeamButton *> ( GetFocusNavGroup().GetCurrentFocus() );
 		if ( pButton )
 		{
 			pButton->OnCursorExited();
@@ -578,7 +507,7 @@ void CTFTeamMenu::OnKeyCodePressed( KeyCode code )
 			GetFocusNavGroup().RequestFocusPrev( NULL );
 		}
 
-		pButton = dynamic_cast< CTFTeamButton * > ( GetFocusNavGroup().GetCurrentFocus() );
+		pButton = dynamic_cast<CTFTeamButton *> ( GetFocusNavGroup().GetCurrentFocus() );
 		if ( pButton )
 		{
 			pButton->OnCursorEntered();
@@ -586,8 +515,7 @@ void CTFTeamMenu::OnKeyCodePressed( KeyCode code )
 	}
 	else if ( m_iScoreBoardKey != BUTTON_CODE_INVALID && m_iScoreBoardKey == code )
 	{
-		gViewPortInterface->ShowPanel( PANEL_SCOREBOARD, true );
-		gViewPortInterface->PostMessageToPanel( PANEL_SCOREBOARD, new KeyValues( "PollHideCode", "code", code ) );
+		GetTFViewPort()->ShowScoreboard( true, code );
 	}
 	else
 	{
@@ -600,794 +528,115 @@ void CTFTeamMenu::OnKeyCodePressed( KeyCode code )
 //-----------------------------------------------------------------------------
 void CTFTeamMenu::OnCommand( const char *command )
 {
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if ( Q_stricmp( command, "vguicancel" ) )
+	if ( Q_strstr( command, "jointeam " ) || Q_strstr( command, "jointeam_nomenus " ) )
 	{
-		// we're selecting a team, so make sure it's not the team we're already on before sending to the server
-		if ( pLocalPlayer && ( Q_strstr( command, "jointeam " ) ) )
-		{
-			const char *pTeam = command + Q_strlen( "jointeam " );
-			int iTeam = TEAM_INVALID;
-
-			if ( Q_stricmp( pTeam, "spectate" ) == 0 )
-			{
-				iTeam = TEAM_SPECTATOR;
-			}
-			else if ( Q_stricmp( pTeam, "red" ) == 0 )
-			{
-				iTeam = TF_TEAM_RED;
-			}
-			else if ( Q_stricmp( pTeam, "blue" ) == 0 )
-			{
-				iTeam = TF_TEAM_BLUE;
-			}
-	
-			if ( iTeam == TF_TEAM_RED && m_bRedDisabled )
-			{
-				return;
-			}
-
-			if ( iTeam == TF_TEAM_BLUE && m_bBlueDisabled )
-			{
-				return;
-			}
-
-			// are we selecting the team we're already on?
-			if ( pLocalPlayer->GetTeamNumber() != iTeam )
-			{
-				engine->ClientCmd( command );
-			}
-		}
-		else if ( pLocalPlayer && ( Q_strstr( command, "jointeam_nomenus " ) ) )
-		{
-			engine->ClientCmd( command );
-		}
+		engine->ClientCmd( command );
 	}
 
-	BaseClass::OnCommand( command );
-	ShowPanel( false );
-	OnClose();
+	Close();
 }
+
+extern const char *g_aTeamLowerNames[TF_TEAM_COUNT];
 
 //-----------------------------------------------------------------------------
 // Frame-based update
 //-----------------------------------------------------------------------------
 void CTFTeamMenu::OnTick()
 {
-	if (TFGameRules() && TFGameRules()->IsFourTeamGame())
+	if ( !IsVisible() || !TFGameRules() )
 		return;
 
 	// update the number of players on each team
-
-	// enable or disable buttons based on team limit
-
-	C_Team *pRed = GetGlobalTeam( TF_TEAM_RED );
-	C_Team *pBlue = GetGlobalTeam( TF_TEAM_BLUE );
-
-	if ( !pRed || !pBlue )
-		return;
-
-	// set our team counts
-	SetDialogVariable( "bluecount", pBlue->Get_Number_Players() );
-	SetDialogVariable( "redcount", pRed->Get_Number_Players() );
-
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if ( !pLocalPlayer )
-		return;
-
-	CTFGameRules *pRules = TFGameRules();
-
-	if ( !pRules )
-		return;
-
-	// check if teams are unbalanced
-	m_bRedDisabled = m_bBlueDisabled = false;
-
-	int iHeavyTeam, iLightTeam;
-
-	bool bUnbalanced = pRules->AreTeamsUnbalanced( iHeavyTeam, iLightTeam );
-	
-	int iCurrentTeam = pLocalPlayer->GetTeamNumber();
-
-	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_RED ) || ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_RED, iCurrentTeam ) ) )
+	for ( int i = FIRST_GAME_TEAM; i < GetNumberOfTeams(); i++ )
 	{
-		m_bRedDisabled = true;
+		C_Team *pTeam = GetGlobalTeam( i );
+		if ( !pTeam )
+			continue;
+
+		SetDialogVariable( VarArgs( "%scount", g_aTeamLowerNames[i] ), pTeam->Get_Number_Players() );
 	}
 
-	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_BLUE ) || ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_BLUE, iCurrentTeam ) ) )
-	{
-		m_bBlueDisabled = true;
-	}
-
-	if ( TFGameRules() )
-		SetHighlanderTeamsFullPanels( TFGameRules()->IsInHighlanderMode() );
-
-	if ( m_pSpecTeamButton && m_pSpecLabel )
+	if ( m_pTeamButtons[TEAM_SPECTATOR] )
 	{
 		ConVarRef mp_allowspectators( "mp_allowspectators" );
 		if ( mp_allowspectators.IsValid() )
 		{
 			if ( mp_allowspectators.GetBool() )
 			{
-				if ( !m_pSpecTeamButton->IsVisible() )
-				{
-					m_pSpecTeamButton->SetVisible( true );
-					m_pSpecLabel->SetVisible( true );
-				}
+				m_pTeamButtons[TEAM_SPECTATOR]->SetVisible( true );
+				m_pSpecLabel->SetVisible( true );
 			}
 			else
 			{
-				if ( m_pSpecTeamButton->IsVisible() )
-				{
-					m_pSpecTeamButton->SetVisible( false );
-					m_pSpecLabel->SetVisible( false );
-				}
+				m_pTeamButtons[TEAM_SPECTATOR]->SetVisible( false );
+				m_pSpecLabel->SetVisible( false );
 			}
 		}
 	}
 }
 
-//
-//	4 Team menu related code
-//
-
 //-----------------------------------------------------------------------------
-// Purpose: Constructor
+// Purpose:
 //-----------------------------------------------------------------------------
-CTFFourTeamMenu::CTFFourTeamMenu(IViewPort *pViewPort) : CTeamMenu(pViewPort)
+void CTFTeamMenu::OnThink( void )
 {
-	SetMinimizeButtonVisible(false);
-	SetMaximizeButtonVisible(false);
-	SetCloseButtonVisible(false);
-	SetVisible(false);
-	SetKeyBoardInputEnabled(true);
-	SetMouseInputEnabled(true);
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( pPlayer )
+	{
+		pPlayer->m_Local.m_iHideHUD |= HIDEHUD_HEALTH;
+	}
 
-	m_iTeamMenuKey = BUTTON_CODE_INVALID;
-
-	m_pBlueTeamButton = new CTFTeamButton(this, "teambutton0");
-	m_pRedTeamButton = new CTFTeamButton(this, "teambutton1");
-	m_pGreenTeamButton = new CTFTeamButton(this, "teambutton2");
-	m_pYellowTeamButton = new CTFTeamButton(this, "teambutton3");
-	m_pAutoTeamButton = new CTFTeamButton(this, "teambutton4");
-	m_pSpecTeamButton = new CTFTeamButton(this, "teambutton5");
-	m_pSpecLabel = new CExLabel(this, "TeamMenuSpectate", "");
-	m_pCancelButton = new CExButton(this, "CancelButton", "#TF_Cancel");
-
-	vgui::ivgui()->AddTickSignal(GetVPanel());
-
-	m_bRedDisabled = false;
-	m_bBlueDisabled = false;
-	m_bGreenDisabled = false;
-	m_bYellowDisabled = false;
-
-	LoadControlSettings("Resource/UI/FourTeamMenu.res");
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-void CTFFourTeamMenu::ApplySchemeSettings(IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	LoadControlSettings("Resource/UI/FourTeamMenu.res");
-
-	Update();
+	BaseClass::OnThink();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFFourTeamMenu::ShowPanel(bool bShow)
+void CTFTeamMenu::OnClose()
 {
-	if (BaseClass::IsVisible() == bShow)
-		return;
+	ShowPanel( false );
 
-	if (!C_TFPlayer::GetLocalTFPlayer())
-		return;
-
-	if (!gameuifuncs || !gViewPortInterface || !engine)
-		return;
-
-	if (bShow)
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( pPlayer )
 	{
-			if (TFGameRules()->State_Get() == GR_STATE_TEAM_WIN &&
-				C_TFPlayer::GetLocalTFPlayer() &&
-				C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TFGameRules()->GetWinningTeam()
-				&& C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_SPECTATOR
-				&& C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_UNASSIGNED)
-			{
-				SetVisible(false);
-				SetMouseInputEnabled(false);
-
-				CHudNotificationPanel *pNotifyPanel = GET_HUDELEMENT(CHudNotificationPanel);
-				if (pNotifyPanel)
-				{
-					pNotifyPanel->SetupNotifyCustom("#TF_CantChangeTeamNow", "ico_notify_flag_moving", C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber());
-				}
-
-				return;
-			}
-
-			gViewPortInterface->ShowPanel(PANEL_CLASS_RED, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_BLUE, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_GREEN, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_YELLOW, false);
-
-			engine->CheckPoint("TeamMenu");
-
-			Activate();
-			SetMouseInputEnabled(true);
-
-			// get key bindings if shown
-			m_iTeamMenuKey = gameuifuncs->GetButtonCodeForBind("changeteam");
-			m_iScoreBoardKey = gameuifuncs->GetButtonCodeForBind("showscores");
-
-			switch (C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber())
-			{
-			case TF_TEAM_RED:
-				GetFocusNavGroup().SetCurrentFocus( m_pRedTeamButton->GetVPanel(), m_pRedTeamButton->GetVPanel() );
-				break;
-
-			case TF_TEAM_BLUE:
-				GetFocusNavGroup().SetCurrentFocus( m_pBlueTeamButton->GetVPanel(), m_pBlueTeamButton->GetVPanel() );
-				break;
-
-			case TF_TEAM_GREEN:
-				GetFocusNavGroup().SetCurrentFocus( m_pGreenTeamButton->GetVPanel(), m_pGreenTeamButton->GetVPanel() );
-				break;
-
-			case TF_TEAM_YELLOW:
-				GetFocusNavGroup().SetCurrentFocus( m_pYellowTeamButton->GetVPanel(), m_pYellowTeamButton->GetVPanel() );
-				break;
-
-			default:
-				GetFocusNavGroup().SetCurrentFocus( m_pAutoTeamButton->GetVPanel(), m_pAutoTeamButton->GetVPanel() );
-				break;
-		}
+		pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_HEALTH;
 	}
-	else
-	{
-		SetVisible(false);
-		SetMouseInputEnabled(false);
-	}
+
+	BaseClass::OnClose();
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: called to update the menu with new information
+// Purpose: Four team menu
 //-----------------------------------------------------------------------------
-void CTFFourTeamMenu::Update(void)
-{
-	BaseClass::Update();
-
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if (pLocalPlayer && (pLocalPlayer->GetTeamNumber() != TEAM_UNASSIGNED))
-	{
-		if (m_pCancelButton)
-		{
-			m_pCancelButton->SetVisible(true);
-		}
-	}
-	else
-	{
-		if (m_pCancelButton && m_pCancelButton->IsVisible())
-		{
-			m_pCancelButton->SetVisible(false);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CTFFourTeamMenu::OnKeyCodePressed(KeyCode code)
-{
-	if ((m_iTeamMenuKey != BUTTON_CODE_INVALID && m_iTeamMenuKey == code) ||
-		code == KEY_XBUTTON_BACK ||
-		code == KEY_XBUTTON_B)
-	{
-		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-		if (pLocalPlayer && (pLocalPlayer->GetTeamNumber() != TEAM_UNASSIGNED))
-		{
-			ShowPanel(false);
-		}
-	}
-	else if (code == KEY_SPACE)
-	{
-		engine->ClientCmd("jointeam auto");
-
-		ShowPanel(false);
-		OnClose();
-	}
-	else if (code == KEY_XBUTTON_A || code == KEY_XBUTTON_RTRIGGER)
-	{
-		// select the active focus
-		if (GetFocusNavGroup().GetCurrentFocus())
-		{
-			ipanel()->SendMessage(GetFocusNavGroup().GetCurrentFocus()->GetVPanel(), new KeyValues("PressButton"), GetVPanel());
-		}
-	}
-	else if (code == KEY_XBUTTON_RIGHT || code == KEY_XSTICK1_RIGHT)
-	{
-		CTFTeamButton *pButton;
-
-		pButton = dynamic_cast< CTFTeamButton *> (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorExited();
-			GetFocusNavGroup().RequestFocusNext(pButton->GetVPanel());
-		}
-		else
-		{
-			GetFocusNavGroup().RequestFocusNext(NULL);
-		}
-
-		pButton = dynamic_cast< CTFTeamButton * > (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorEntered();
-		}
-	}
-	else if (code == KEY_XBUTTON_LEFT || code == KEY_XSTICK1_LEFT)
-	{
-		CTFTeamButton *pButton;
-
-		pButton = dynamic_cast< CTFTeamButton *> (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorExited();
-			GetFocusNavGroup().RequestFocusPrev(pButton->GetVPanel());
-		}
-		else
-		{
-			GetFocusNavGroup().RequestFocusPrev(NULL);
-		}
-
-		pButton = dynamic_cast< CTFTeamButton * > (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorEntered();
-		}
-	}
-	else if (m_iScoreBoardKey != BUTTON_CODE_INVALID && m_iScoreBoardKey == code)
-	{
-		gViewPortInterface->ShowPanel( PANEL_FOURTEAMSCOREBOARD, true );
-		gViewPortInterface->PostMessageToPanel( PANEL_FOURTEAMSCOREBOARD, new KeyValues( "PollHideCode", "code", code ) );
-	}
-	else
-	{
-		BaseClass::OnKeyCodePressed(code);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called when the user picks a team
-//-----------------------------------------------------------------------------
-void CTFFourTeamMenu::OnCommand(const char *command)
-{
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if (Q_stricmp(command, "vguicancel"))
-	{
-		// we're selecting a team, so make sure it's not the team we're already on before sending to the server
-		if (pLocalPlayer && (Q_strstr(command, "jointeam ")))
-		{
-			const char *pTeam = command + Q_strlen("jointeam ");
-			int iTeam = TEAM_INVALID;
-
-			if (Q_stricmp(pTeam, "spectate") == 0)
-			{
-				iTeam = TEAM_SPECTATOR;
-			}
-			else if (Q_stricmp(pTeam, "red") == 0)
-			{
-				iTeam = TF_TEAM_RED;
-			}
-			else if (Q_stricmp(pTeam, "blue") == 0)
-			{
-				iTeam = TF_TEAM_BLUE;
-			}
-			else if (Q_stricmp(pTeam, "green") == 0)
-			{
-			iTeam = TF_TEAM_GREEN;
-			}
-			else if (Q_stricmp(pTeam, "yellow") == 0)
-			{
-			iTeam = TF_TEAM_YELLOW;
-			}
-
-			if (iTeam == TF_TEAM_RED && m_bRedDisabled)
-			{
-				return;
-			}
-
-			if (iTeam == TF_TEAM_BLUE && m_bBlueDisabled)
-			{
-				return;
-			}
-			
-			if (iTeam == TF_TEAM_GREEN && m_bGreenDisabled)
-			{
-				return;
-			}
-
-			if (iTeam == TF_TEAM_YELLOW && m_bYellowDisabled)
-			{
-				return;
-			}
-
-			// are we selecting the team we're already on?
-			if (pLocalPlayer->GetTeamNumber() != iTeam)
-			{
-				engine->ClientCmd(command);
-			}
-		}
-		else if (pLocalPlayer && (Q_strstr(command, "jointeam_nomenus ")))
-		{
-			engine->ClientCmd(command);
-		}
-	}
-
-	BaseClass::OnCommand(command);
-	ShowPanel(false);
-	OnClose();
-}
-
-//-----------------------------------------------------------------------------
-// Frame-based update
-//-----------------------------------------------------------------------------
-void CTFFourTeamMenu::OnTick()
-{
-	if (TFGameRules() && !TFGameRules()->IsFourTeamGame())
-		return; // How did you even get here?
-
-	// update the number of players on each team
-	C_Team *pRed = GetGlobalTeam(TF_TEAM_RED);
-	C_Team *pBlue = GetGlobalTeam(TF_TEAM_BLUE);
-	C_Team *pGreen = GetGlobalTeam(TF_TEAM_GREEN);
-	C_Team *pYellow = GetGlobalTeam(TF_TEAM_YELLOW);
-
-	if (!pRed || !pBlue || !pGreen || !pYellow)
-		return;
-
-	// set our team counts
-	SetDialogVariable("redcount", pRed->Get_Number_Players());
-	SetDialogVariable("bluecount", pBlue->Get_Number_Players());
-	SetDialogVariable("greencount", pGreen->Get_Number_Players());
-	SetDialogVariable("yellowcount", pYellow->Get_Number_Players());
-
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if (!pLocalPlayer)
-		return;
-
-	CTFGameRules *pRules = TFGameRules();
-
-	if (!pRules)
-		return;
-
-	// check if teams are unbalanced
-	m_bRedDisabled = m_bBlueDisabled = false;
-
-	int iHeavyTeam, iLightTeam;
-
-	bool bUnbalanced = pRules->AreTeamsUnbalanced(iHeavyTeam, iLightTeam);
-
-	int iCurrentTeam = pLocalPlayer->GetTeamNumber();
-
-	if ((bUnbalanced && iHeavyTeam == TF_TEAM_RED) || (pRules->WouldChangeUnbalanceTeams(TF_TEAM_RED, iCurrentTeam)))
-	{
-		m_bRedDisabled = true;
-	}
-
-	if ((bUnbalanced && iHeavyTeam == TF_TEAM_BLUE) || (pRules->WouldChangeUnbalanceTeams(TF_TEAM_BLUE, iCurrentTeam)))
-	{
-		m_bBlueDisabled = true;
-	}
-
-	if (m_pSpecTeamButton && m_pSpecLabel)
-	{
-		ConVarRef mp_allowspectators("mp_allowspectators");
-		if (mp_allowspectators.IsValid())
-		{
-			if (mp_allowspectators.GetBool())
-			{
-				if (!m_pSpecTeamButton->IsVisible())
-				{
-					m_pSpecTeamButton->SetVisible(true);
-					m_pSpecLabel->SetVisible(true);
-				}
-			}
-			else
-			{
-				if (m_pSpecTeamButton->IsVisible())
-				{
-					m_pSpecTeamButton->SetVisible(false);
-					m_pSpecLabel->SetVisible(false);
-				}
-			}
-		}
-	}
-}
-
-
-///deathmatch shits
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
-CTFDeathmatchTeamMenu::CTFDeathmatchTeamMenu(IViewPort *pViewPort) : CTeamMenu(pViewPort)
-{
-	SetMinimizeButtonVisible(false);
-	SetMaximizeButtonVisible(false);
-	SetCloseButtonVisible(false);
-	SetVisible(false);
-	SetKeyBoardInputEnabled(true);
-	SetMouseInputEnabled(true);
-
-	m_iTeamMenuKey = BUTTON_CODE_INVALID;
-
-	m_pAutoTeamButton = new CTFTeamButton(this, "teambutton2");
-	m_pSpecTeamButton = new CTFTeamButton(this, "teambutton3");
-	m_pSpecLabel = new CExLabel(this, "TeamMenuSpectate", "");
-	m_pCancelButton = new CExButton(this, "CancelButton", "#TF_Cancel");
-
-	vgui::ivgui()->AddTickSignal(GetVPanel());
-	LoadControlSettings("Resource/UI/DeathmatchTeamMenu.res");
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-CTFDeathmatchTeamMenu::~CTFDeathmatchTeamMenu()
+CTFFourTeamMenu::CTFFourTeamMenu( IViewPort *pViewPort, const char *pName ) : BaseClass( pViewPort, pName )
 {
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Destructor
+// Purpose:
 //-----------------------------------------------------------------------------
-void CTFDeathmatchTeamMenu::ApplySchemeSettings(IScheme *pScheme)
+void CTFFourTeamMenu::CreateTeamButtons( void )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	LoadControlSettings("Resource/UI/DeathmatchTeamMenu.res");
-
-	Update();
+	m_pTeamButtons[TEAM_UNASSIGNED] = new CTFTeamButton( this, "teambutton4" );
+	m_pTeamButtons[TEAM_SPECTATOR] = new CTFTeamButton( this, "teambutton5" );
+	m_pTeamButtons[TF_TEAM_RED] = new CTFTeamButton( this, "teambutton0" );
+	m_pTeamButtons[TF_TEAM_BLUE] = new CTFTeamButton( this, "teambutton1" );
+	m_pTeamButtons[TF_TEAM_GREEN] = new CTFTeamButton( this, "teambutton2" );
+	m_pTeamButtons[TF_TEAM_YELLOW] = new CTFTeamButton( this, "teambutton3" );
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: FFA team menu
 //-----------------------------------------------------------------------------
-void CTFDeathmatchTeamMenu::ShowPanel(bool bShow)
+CTFDeathmatchTeamMenu::CTFDeathmatchTeamMenu( IViewPort *pViewPort, const char *pName ) : BaseClass( pViewPort, pName )
 {
-	if ( BaseClass::IsVisible() == bShow )
-		return;
-
-	if ( !C_TFPlayer::GetLocalTFPlayer() )
-		return;
-
-	if ( !gameuifuncs || !gViewPortInterface || !engine )
-		return;
-
-	if (bShow)
-	{
-
-			if (TFGameRules()->State_Get() == GR_STATE_TEAM_WIN &&
-				C_TFPlayer::GetLocalTFPlayer() &&
-				C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TFGameRules()->GetWinningTeam()
-				&& C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_SPECTATOR
-				&& C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_UNASSIGNED)
-			{
-				SetVisible(false);
-				SetMouseInputEnabled(false);
-
-				CHudNotificationPanel *pNotifyPanel = GET_HUDELEMENT(CHudNotificationPanel);
-				if (pNotifyPanel)
-				{
-					pNotifyPanel->SetupNotifyCustom("#TF_CantChangeTeamNow", "ico_notify_flag_moving", C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber());
-				}
-
-				return;
-			}
-
-			gViewPortInterface->ShowPanel(PANEL_CLASS_RED, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_BLUE, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_GREEN, false);
-			gViewPortInterface->ShowPanel(PANEL_CLASS_YELLOW, false);
-
-			engine->CheckPoint("TeamMenu");
-
-			Activate();
-			SetMouseInputEnabled(true);
-
-			// get key bindings if shown
-			m_iTeamMenuKey = gameuifuncs->GetButtonCodeForBind("changeteam");
-			m_iScoreBoardKey = gameuifuncs->GetButtonCodeForBind("showscores");
-
-	}
-	else
-	{
-			SetVisible(false);
-			SetMouseInputEnabled(false);
-
-			if (IsConsole())
-			{
-				// Close the door behind us
-				CTFTeamButton *pButton = dynamic_cast< CTFTeamButton *> (GetFocusNavGroup().GetCurrentFocus());
-				if (pButton)
-				{
-					pButton->OnCursorExited();
-				}
-			}
-	}
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: called to update the menu with new information
+// Purpose:
 //-----------------------------------------------------------------------------
-void CTFDeathmatchTeamMenu::Update(void)
+void CTFDeathmatchTeamMenu::CreateTeamButtons( void )
 {
-	BaseClass::Update();
-
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if (pLocalPlayer && (pLocalPlayer->GetTeamNumber() != TEAM_UNASSIGNED))
-	{
-		if (m_pCancelButton)
-		{
-			m_pCancelButton->SetVisible(true);
-		}
-	}
-	else
-	{
-		if (m_pCancelButton && m_pCancelButton->IsVisible())
-		{
-			m_pCancelButton->SetVisible(false);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: chooses and loads the text page to display that describes mapName map
-//-----------------------------------------------------------------------------
-void CTFDeathmatchTeamMenu::LoadMapPage(const char *mapName)
-{
-
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CTFDeathmatchTeamMenu::OnKeyCodePressed(KeyCode code)
-{
-	if ((m_iTeamMenuKey != BUTTON_CODE_INVALID && m_iTeamMenuKey == code) ||
-		code == KEY_XBUTTON_BACK ||
-		code == KEY_XBUTTON_B)
-	{
-		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-		if (pLocalPlayer && (pLocalPlayer->GetTeamNumber() != TEAM_UNASSIGNED))
-		{
-			ShowPanel(false);
-		}
-	}
-	else if (code == KEY_SPACE)
-	{
-		engine->ClientCmd("jointeam auto");
-
-		ShowPanel(false);
-		OnClose();
-	}
-	else if (code == KEY_XBUTTON_A || code == KEY_XBUTTON_RTRIGGER)
-	{
-		// select the active focus
-		if (GetFocusNavGroup().GetCurrentFocus())
-		{
-			ipanel()->SendMessage(GetFocusNavGroup().GetCurrentFocus()->GetVPanel(), new KeyValues("PressButton"), GetVPanel());
-		}
-	}
-	else if (code == KEY_XBUTTON_RIGHT || code == KEY_XSTICK1_RIGHT)
-	{
-		CTFTeamButton *pButton;
-
-		pButton = dynamic_cast< CTFTeamButton *> (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorExited();
-			GetFocusNavGroup().RequestFocusNext(pButton->GetVPanel());
-		}
-		else
-		{
-			GetFocusNavGroup().RequestFocusNext(NULL);
-		}
-
-		pButton = dynamic_cast< CTFTeamButton * > (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorEntered();
-		}
-	}
-	else if (code == KEY_XBUTTON_LEFT || code == KEY_XSTICK1_LEFT)
-	{
-		CTFTeamButton *pButton;
-
-		pButton = dynamic_cast< CTFTeamButton *> (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorExited();
-			GetFocusNavGroup().RequestFocusPrev(pButton->GetVPanel());
-		}
-		else
-		{
-			GetFocusNavGroup().RequestFocusPrev(NULL);
-		}
-
-		pButton = dynamic_cast< CTFTeamButton * > (GetFocusNavGroup().GetCurrentFocus());
-		if (pButton)
-		{
-			pButton->OnCursorEntered();
-		}
-	}
-	else if (m_iScoreBoardKey != BUTTON_CODE_INVALID && m_iScoreBoardKey == code)
-	{
-		gViewPortInterface->ShowPanel( PANEL_DEATHMATCHSCOREBOARD, true );
-		gViewPortInterface->PostMessageToPanel( PANEL_DEATHMATCHSCOREBOARD, new KeyValues("PollHideCode", "code", code) );
-	}
-	else
-	{
-		BaseClass::OnKeyCodePressed(code);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called when the user picks a team
-//-----------------------------------------------------------------------------
-void CTFDeathmatchTeamMenu::OnCommand(const char *command)
-{
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if (Q_stricmp(command, "vguicancel"))
-	{
-		// we're selecting a team, so make sure it's not the team we're already on before sending to the server
-		if (pLocalPlayer && (Q_strstr(command, "jointeam ")))
-		{
-			const char *pTeam = command + Q_strlen("jointeam ");
-			int iTeam = TEAM_INVALID;
-
-			if (Q_stricmp(pTeam, "spectate") == 0)
-			{
-				iTeam = TEAM_SPECTATOR;
-			}
-			else if (Q_stricmp(pTeam, "red") == 0)
-			{
-				iTeam = TF_TEAM_RED;
-			}
-
-			// are we selecting the team we're already on?
-			if (pLocalPlayer->GetTeamNumber() != iTeam)
-			{
-				engine->ClientCmd(command);
-			}
-		}
-		else if (pLocalPlayer && (Q_strstr(command, "jointeam_nomenus ")))
-		{
-			engine->ClientCmd(command);
-		}
-	}
-
-	BaseClass::OnCommand(command);
-	ShowPanel(false);
-	OnClose();
-}
-
-//-----------------------------------------------------------------------------
-// Frame-based update
-//-----------------------------------------------------------------------------
-void CTFDeathmatchTeamMenu::OnTick()
-{
-
+	m_pTeamButtons[TEAM_UNASSIGNED] = new CTFTeamButton( this, "teambutton2" );
+	m_pTeamButtons[TEAM_SPECTATOR] = new CTFTeamButton( this, "teambutton3" );
 }

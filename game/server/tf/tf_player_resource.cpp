@@ -5,13 +5,14 @@
 // $NoKeywords: $
 //=============================================================================//
 #include "cbase.h"
-#include "sendproxy.h"
-#include "tf_player.h"
-#include "player_resource.h"
+#include "tf_shareddefs.h"
 #include "tf_player_resource.h"
+#include "tf_player.h"
 #include "tf_gamestats.h"
 #include "tf_gamerules.h"
-#include <coordsize.h>
+
+// memdbgon must be the last include file in a .cpp file!!!
+#include "tier0/memdbgon.h"
 
 // Datatable
 IMPLEMENT_SERVERCLASS_ST( CTFPlayerResource, DT_TFPlayerResource )
@@ -19,8 +20,12 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayerResource, DT_TFPlayerResource )
 	SendPropArray3( SENDINFO_ARRAY3( m_iMaxHealth ), SendPropInt( SENDINFO_ARRAY( m_iMaxHealth ), 10, SPROP_UNSIGNED ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iPlayerClass ), SendPropInt( SENDINFO_ARRAY( m_iPlayerClass ), 5, SPROP_UNSIGNED ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iActiveDominations ), SendPropInt( SENDINFO_ARRAY( m_iActiveDominations ), Q_log2( MAX_PLAYERS ) + 1, SPROP_UNSIGNED ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_bArenaSpectator ), SendPropBool( SENDINFO_ARRAY( m_bArenaSpectator ) ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_iKillstreak ), SendPropInt( SENDINFO_ARRAY( m_iKillstreak ), 10, SPROP_UNSIGNED ) ),
-	SendPropArray3( SENDINFO_ARRAY3( m_vecColors ), SendPropVector( SENDINFO_ARRAY3( m_vecColors ), 12, SPROP_COORD ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_iWinAnimations ), SendPropInt( SENDINFO_ARRAY( m_iWinAnimations ), 8, SPROP_UNSIGNED ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_vecColors ), SendPropVector( SENDINFO_ARRAY( m_vecColors ), 8, 0, 0.0f, 1.0f ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_iDisguiseTeam ), SendPropInt( SENDINFO_ARRAY( m_iDisguiseTeam ), 3, SPROP_UNSIGNED ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_iDisguiseTarget ), SendPropInt( SENDINFO_ARRAY( m_iDisguiseTarget ), 7, SPROP_UNSIGNED ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_bIsMobile ), SendPropBool( SENDINFO_ARRAY( m_bIsMobile ) ) ),
 END_SEND_TABLE()
 
@@ -28,7 +33,20 @@ LINK_ENTITY_TO_CLASS( tf_player_manager, CTFPlayerResource );
 
 CTFPlayerResource::CTFPlayerResource( void )
 {
-
+	for( int i = 0; i < MAX_PLAYERS + 1; i++ )
+	{
+		m_iTotalScore.Set( i, 0 );
+		m_iMaxHealth.Set( i, 0 );
+		m_iPlayerClass.Set( i, 0 );
+		m_iActiveDominations.Set( i, 0 );
+		m_bArenaSpectator.Set( i, false );
+		m_iKillstreak.Set( i, 0 );
+		m_iWinAnimations.Set( i, 0 );
+		m_vecColors.Set( i, Vector( 1.f, 1.f, 1.f ) );
+		m_iDisguiseTeam.Set( i, 0 );
+		m_iDisguiseTarget.Set( i, 0 );
+		m_bIsMobile.Set( i, false );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -40,38 +58,51 @@ void CTFPlayerResource::UpdatePlayerData( void )
 
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
-		CTFPlayer *pPlayer = (CTFPlayer*)UTIL_PlayerByIndex( i );
-
+		CTFPlayer *pPlayer = (CTFPlayer *)UTIL_PlayerByIndex( i );
 		if ( pPlayer && pPlayer->IsConnected() )
 		{
-			PlayerStats_t *pPlayerStats = CTF_GameStats.FindPlayerStats( pPlayer );
-			if ( pPlayerStats )
+			CTFPlayerClass *pClass = pPlayer->GetPlayerClass();
+			m_iMaxHealth.Set( i, pClass->GetMaxHealth() );
+			m_iPlayerClass.Set( i, pClass->GetClassIndex() );
+
+			RoundStats_t *pRoundStats = &CTF_GameStats.FindPlayerStats( pPlayer )->statsAccumulated;
+#if SOONSOON
+			if ( TFGameRules()->GetRetroModeType() == TF_GAMESUBTYPE_DUEL )
 			{
-				int iTotalScore = CTFGameRules::CalcPlayerScore( &pPlayerStats->statsAccumulated );
-				m_iTotalScore.Set( i, iTotalScore );
-				m_iMaxHealth.Set( i, pPlayer->GetPlayerClass()->GetMaxHealth() );
-				m_iPlayerClass.Set( i, pPlayer->GetPlayerClass()->GetClassIndex() );
-				m_iActiveDominations.Set( i, pPlayer->GetNumberOfDominations() );
-				m_iKillstreak.Set( i, pPlayer->m_Shared.GetKillstreak() );
-				m_vecColors.Set( i, pPlayer->m_vecPlayerColor );
-				m_bIsMobile.Set( i, pPlayer->IsMobilePlayer() );
+				// In Duel, we want to show per-round stats instead.
+				pRoundStats = &CTF_GameStats.FindPlayerStats( pPlayer )->statsCurrentRound;
 			}
+#endif
+
+			int iTotalScore = CTFGameRules::CalcPlayerScore( pRoundStats );
+			m_iTotalScore.Set( i, iTotalScore );
+
+			m_iActiveDominations.Set( i, pPlayer->GetNumberOfDominations() );
+			m_bArenaSpectator.Set( i, /*pPlayer->IsArenaSpectator()*/ false ); // FIXME
+			m_iKillstreak.Set( i, pPlayer->m_Shared.GetKillstreak() );
+			m_iWinAnimations.Set( i, pPlayer->GetClientConVarIntValue( "tf2c_merc_winanim" ) );
+			m_vecColors.Set( i, pPlayer->m_vecPlayerColor );
+			m_iDisguiseTeam.Set( i, pPlayer->m_Shared.GetDisguiseTeam() );
+			m_iDisguiseTarget.Set( i, pPlayer->m_Shared.GetDisguiseTargetIndex() );
+			m_bIsMobile.Set( i, pPlayer->IsMobilePlayer() );
 		}
 	}
 }
 
 void CTFPlayerResource::Spawn( void )
 {
-	int i;
-
-	for ( i = 0; i < MAX_PLAYERS + 1; i++ )
+	for ( int i = 0; i < MAX_PLAYERS + 1; i++ )
 	{
 		m_iTotalScore.Set( i, 0 );
-		m_iMaxHealth.Set( i, TF_HEALTH_UNDEFINED );
+		m_iMaxHealth.Set( i, 1 );
 		m_iPlayerClass.Set( i, TF_CLASS_UNDEFINED );
 		m_iActiveDominations.Set( i, 0 );
+		m_bArenaSpectator.Set( i, false );
 		m_iKillstreak.Set( i, 0 );
+		m_iWinAnimations.Set( i, 0 );
 		m_vecColors.Set( i, Vector( 0.0, 0.0, 0.0 ) );
+		m_iDisguiseTeam.Set( i, 0 );
+		m_iDisguiseTarget.Set( i, 0 );
 		m_bIsMobile.Set( i, false );
 	}
 

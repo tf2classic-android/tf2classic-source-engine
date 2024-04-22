@@ -12,49 +12,31 @@
 //=============================================================================//
 
 #include "cbase.h"
-
-#pragma warning( disable : 4800  )  // disable forcing int to bool performance warning
-
-// VGUI panel includes
-#include <vgui_controls/Panel.h>
-#include <vgui/ISurface.h>
-#include <KeyValues.h>
-#include <vgui/Cursor.h>
-#include <vgui/IScheme.h>
-#include <vgui/IVGui.h>
-#include <vgui/ILocalize.h>
-#include <vgui/VGUI.h>
-
-// client dll/engine defines
-#include "hud.h"
-#include <voice_status.h>
-
-// viewport definitions
-#include <baseviewport.h>
+#include "input.h"
+#include "spectatorgui.h"
+#include "tf_shareddefs.h"
 #include "tf_viewport.h"
-#include "tf_teammenu.h"
-
-#include "vguicenterprint.h"
-#include "text_message.h"
-#include "tf_classmenu.h"
-
-#include "tf_textwindow.h"
+#include "c_tf_player.h"
+#include "tf_gamerules.h"
+#include "voice_status.h"
 #include "tf_clientscoreboard.h"
-#include "tf_spectatorgui.h"
+#include "tf_mapinfomenu.h"
+#include "tf_teammenu.h"
+#include "tf_classmenu.h"
 #include "intromenu.h"
 #include "tf_intromenu.h"
-
-#include "tf_controls.h"
-#include "tf_mapinfomenu.h"
-#include "tf_roundinfo.h"
-
-#include "tf_overview.h"
+#include "tf_hud_notification_panel.h"
 #include "tf_fourteamscoreboard.h"
 #include "tf_deathmatchscoreboard.h"
+#include "tf_spectatorgui.h"
+#include "tf_roundinfo.h"
+#include "tf_textwindow.h"
 
-#if !(defined( ANDROID ) || defined( PUBLIC_BUILD ))
+#if !defined( ANDROID )
 ConVar cl_tf2c_devkey( "cl_tf2c_devkey", "", FCVAR_HIDDEN | FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_DONTRECORD );
 #endif
+
+#define ENABLE_NEW_CLASSMENU 0
 
 /*
 CON_COMMAND( spec_help, "Show spectator help screen")
@@ -97,10 +79,15 @@ CON_COMMAND( showmapinfo, "Show map info panel" )
 		{
 			// close all the other panels that could be open
 			gViewPortInterface->ShowPanel( PANEL_TEAM, false );
+#if ENABLE_NEW_CLASSMENU
+			gViewPortInterface->ShowPanel( PANEL_CLASS, false );
+#else
 			gViewPortInterface->ShowPanel( PANEL_CLASS_RED, false );
 			gViewPortInterface->ShowPanel( PANEL_CLASS_BLUE, false );
 			gViewPortInterface->ShowPanel( PANEL_CLASS_GREEN, false );
 			gViewPortInterface->ShowPanel( PANEL_CLASS_YELLOW, false );
+
+#endif
 			gViewPortInterface->ShowPanel( PANEL_INTRO, false );
 			gViewPortInterface->ShowPanel( PANEL_ROUNDINFO, false );
 			gViewPortInterface->ShowPanel( PANEL_FOURTEAMSELECT, false );
@@ -111,68 +98,8 @@ CON_COMMAND( showmapinfo, "Show map info panel" )
 	}
 }
 
-CON_COMMAND( changeteam, "Choose a new team" )
+TFViewport::TFViewport()
 {
-	if ( !gViewPortInterface )
-		return;
-
-	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	// don't let the player open the team menu themselves until they're on a team
-	if ( pPlayer && ( pPlayer->GetTeamNumber() != TEAM_UNASSIGNED ) )
-	{
-		gViewPortInterface->ShowPanel( PANEL_TEAM, true );
-	}
-}
-
-CON_COMMAND( changeclass, "Choose a new class" )
-{
-	if ( !gViewPortInterface )
-		return;
-
-	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-
-	if ( pPlayer && pPlayer->CanShowClassMenu() )
-	{
-		switch( pPlayer->GetTeamNumber() )
-		{
-		case TF_TEAM_RED:
-			gViewPortInterface->ShowPanel( PANEL_CLASS_RED, true );
-			break;
-		case TF_TEAM_BLUE:
-			gViewPortInterface->ShowPanel( PANEL_CLASS_BLUE, true );
-			break;
-		case TF_TEAM_GREEN:
-			gViewPortInterface->ShowPanel( PANEL_CLASS_GREEN, true );
-			break;
-		case TF_TEAM_YELLOW:
-			gViewPortInterface->ShowPanel( PANEL_CLASS_YELLOW, true );
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-CON_COMMAND( togglescores, "Toggles score panel")
-{
-	if ( !gViewPortInterface )
-		return;
-
-	IViewPortPanel *scoreboard = gViewPortInterface->FindPanelByName( PANEL_SCOREBOARD );
-
-	if ( !scoreboard )
-		return;
-
-	if ( scoreboard->IsVisible() )
-	{
-		gViewPortInterface->ShowPanel( scoreboard, false );
-		GetClientVoiceMgr()->StopSquelchMode();
-	}
-	else
-	{
-		gViewPortInterface->ShowPanel( scoreboard, true );
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -217,29 +144,28 @@ void TFViewport::ApplySchemeSettings( vgui::IScheme *pScheme )
 // This is the main function of the viewport. Right here is where we create our class menu, 
 // team menu, and anything else that we want to turn on and off in the UI.
 //
-IViewPortPanel* TFViewport::CreatePanelByName(const char *szPanelName)
+IViewPortPanel* TFViewport::CreatePanelByName( const char *szPanelName )
 {
 	IViewPortPanel* newpanel = NULL;
 
 	// overwrite MOD specific panel creation
-
 	if ( Q_strcmp( PANEL_SCOREBOARD, szPanelName ) == 0 )
 	{
-		newpanel = new CTFClientScoreBoardDialog( this );
+		newpanel = new CTFClientScoreBoardDialog( this, szPanelName, 4 );
 	}
-	else if ( Q_strcmp( PANEL_SPECGUI, szPanelName ) == 0 )
+	else if( Q_strcmp( PANEL_SPECGUI, szPanelName ) == 0 )
 	{
-		newpanel = new CTFSpectatorGUI( this );	
+		newpanel = new CTFSpectatorGUI( this );
 	}
-	else if ( Q_strcmp( PANEL_SPECMENU, szPanelName ) == 0 )
+	else if( Q_strcmp( PANEL_SPECMENU, szPanelName ) == 0 )
 	{
-//		newpanel = new CTFSpectatorGUI( this );	
+		// FIXME: Should it be empty?
 	}
-	else if ( Q_strcmp( PANEL_OVERVIEW, szPanelName ) == 0 )
+	else if( Q_strcmp( PANEL_OVERVIEW, szPanelName ) == 0 )
 	{
-//		newpanel = new CTFMapOverview( this );
+		// FIXME: Should it be empty?
 	}
-	else if ( Q_strcmp( PANEL_INFO, szPanelName ) == 0 )
+	else if( Q_strcmp( PANEL_INFO, szPanelName ) == 0 )
 	{
 		newpanel = new CTFTextWindow( this );
 	}
@@ -247,14 +173,37 @@ IViewPortPanel* TFViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CTFMapInfoMenu( this );
 	}
-	else if ( Q_strcmp( PANEL_ROUNDINFO, szPanelName ) == 0 )
+	else if( Q_strcmp( PANEL_ROUNDINFO, szPanelName ) == 0 )
 	{
 		newpanel = new CTFRoundInfo( this );
 	}
 	else if ( Q_strcmp( PANEL_TEAM, szPanelName ) == 0 )
 	{
-		newpanel = new CTFTeamMenu( this );	
+		CTFTeamMenu *pTeamMenu = new CTFTeamMenu( this, szPanelName );	
+		pTeamMenu->CreateTeamButtons();
+		newpanel = pTeamMenu;
 	}
+	//else if( Q_strcmp( PANEL_TEAM_ARENA, szPanelName ) == 0 ) // CTFArenaTeamMenu
+	//{
+	//}
+	else if ( Q_strcmp( PANEL_FOURTEAMSELECT, szPanelName ) == 0 )
+	{
+		CTFTeamMenu *pTeamMenu = new CTFFourTeamMenu( this, szPanelName );
+		pTeamMenu->CreateTeamButtons();
+		newpanel = pTeamMenu;
+	}
+	else if ( Q_strcmp( PANEL_DEATHMATCHTEAMSELECT, szPanelName ) == 0 )
+	{
+		CTFTeamMenu *pTeamMenu = new CTFDeathmatchTeamMenu( this, szPanelName );
+		pTeamMenu->CreateTeamButtons();
+		newpanel = pTeamMenu;
+	}
+#if ENABLE_NEW_CLASSMENU
+	else if ( Q_strcmp( PANEL_CLASS, szPanelName ) == 0 )
+	{
+		newpanel = new CTFClassMenu( this );	
+	}
+#else
 	else if ( Q_strcmp( PANEL_CLASS_RED, szPanelName ) == 0 )
 	{
 		newpanel = new CTFClassMenu_Red( this );	
@@ -271,25 +220,18 @@ IViewPortPanel* TFViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CTFClassMenu_Yellow(this);
 	}
+#endif
 	else if ( Q_strcmp( PANEL_INTRO, szPanelName ) == 0 )
 	{
 		newpanel = new CTFIntroMenu( this );
 	}
-	else if ( Q_strcmp( PANEL_FOURTEAMSCOREBOARD, szPanelName ) == 0 )
+	else if( Q_strcmp( PANEL_FOURTEAMSCOREBOARD, szPanelName ) == 0 )
 	{
-		newpanel = new CTFFourTeamScoreBoardDialog(this);
+		newpanel = new CTFFourTeamScoreBoardDialog( this, szPanelName );
 	}
-	else if ( Q_strcmp( PANEL_FOURTEAMSELECT, szPanelName) == 0 )
+	else if( Q_strcmp( PANEL_DEATHMATCHSCOREBOARD, szPanelName ) == 0 )
 	{
-		newpanel = new CTFFourTeamMenu(this);
-	}
-	else if (Q_strcmp(PANEL_DEATHMATCHSCOREBOARD, szPanelName) == 0)
-	{
-		newpanel = new CTFDeathMatchScoreBoardDialog(this);
-	}
-	else if (Q_strcmp(PANEL_DEATHMATCHTEAMSELECT, szPanelName) == 0)
-	{
-		newpanel = new CTFDeathmatchTeamMenu(this);
+		newpanel = new CTFDeathMatchScoreBoardDialog( this, szPanelName );
 	}
 	else
 	{
@@ -304,35 +246,229 @@ void TFViewport::CreateDefaultPanels( void )
 {
 	AddNewPanel( CreatePanelByName( PANEL_MAPINFO ), "PANEL_MAPINFO" );
 	AddNewPanel( CreatePanelByName( PANEL_TEAM ), "PANEL_TEAM" );
+	// PANEL_ARENA_TEAM
+#if ENABLE_NEW_CLASSMENU
+	AddNewPanel( CreatePanelByName( PANEL_CLASS ), "PANEL_CLASS" );
+#else
 	AddNewPanel( CreatePanelByName( PANEL_CLASS_RED ), "PANEL_CLASS_RED" );
 	AddNewPanel( CreatePanelByName( PANEL_CLASS_BLUE ), "PANEL_CLASS_BLUE" );
 	AddNewPanel( CreatePanelByName( PANEL_CLASS_GREEN ), "PANEL_CLASS_GREEN" );
 	AddNewPanel( CreatePanelByName( PANEL_CLASS_YELLOW ), "PANEL_CLASS_YELLOW" );
+#endif
 	AddNewPanel( CreatePanelByName( PANEL_INTRO ), "PANEL_INTRO" );
 	AddNewPanel( CreatePanelByName( PANEL_ROUNDINFO ), "PANEL_ROUNDINFO" );
-	AddNewPanel( CreatePanelByName( PANEL_FOURTEAMSCOREBOARD ), "PANEL_FOURTEAMSCOREBOARD" );
+	
 	AddNewPanel( CreatePanelByName( PANEL_FOURTEAMSELECT ), "PANEL_FOURTEAMSELECT" );
-	AddNewPanel( CreatePanelByName( PANEL_DEATHMATCHSCOREBOARD ), "PANEL_DEATHMATCHSCOREBOARD" );
 	AddNewPanel( CreatePanelByName( PANEL_DEATHMATCHTEAMSELECT ), "PANEL_DEATHMATCHTEAMSELECT" );
-
+	AddNewPanel( CreatePanelByName( PANEL_FOURTEAMSCOREBOARD ), "PANEL_FOURTEAMSCOREBOARD" );
+	AddNewPanel( CreatePanelByName( PANEL_DEATHMATCHSCOREBOARD ), "PANEL_DEATHMATCHSCOREBOARD" );
+	
 	BaseClass::CreateDefaultPanels();
 }
 
 int TFViewport::GetDeathMessageStartHeight( void )
 {
 	int y = YRES(2);
-
-	if ( IsX360() )
+	
+	if( g_pSpectatorGUI && g_pSpectatorGUI->IsVisible() )
 	{
-		y = YRES(36);
+		return YRES(2) + g_pSpectatorGUI->GetTopBarHeight();
 	}
-
-	if ( g_pSpectatorGUI && g_pSpectatorGUI->IsVisible() )
+	else if( TFGameRules() && TFGameRules()->IsFourTeamGame() /*&& (TFGameRules()->IsInKothMode())*/ ) // FIXME: TFGameRules()->IsInKothMode() || LOBYTE(g_pGameRules[123].__vftable)
 	{
-		y = YRES(2) + g_pSpectatorGUI->GetTopBarHeight();
+		return YRES( 30 );
 	}
-
+	
 	return y;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Helper function for handling multiple scoreboard.
+//-----------------------------------------------------------------------------
+const char *TFViewport::GetModeSpecificScoreboardName( void )
+{
+#if SOONSOON
+	if( TFGameRules() && TFGameRules()->IsFreeForAll() )
+#else
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+#endif
+		return PANEL_DEATHMATCHSCOREBOARD;
+	else if( TFGameRules() && TFGameRules()->IsFourTeamGame() )
+		return PANEL_FOURTEAMSCOREBOARD;
+
+	return PANEL_SCOREBOARD;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Use this when you need to open the scoreboard unless you want a specific scoreboard panel.
+//-----------------------------------------------------------------------------
+void TFViewport::ShowScoreboard( bool bState, int nPollHideCode /*= BUTTON_CODE_INVALID*/ )
+{
+	const char *pszScoreboard = GetModeSpecificScoreboardName();
+	ShowPanel( pszScoreboard, bState );
+
+	if ( bState && nPollHideCode != BUTTON_CODE_INVALID )
+	{
+		// The scoreboard was opened by another dialog so we need to send the close button code.
+		// See CTFClientScoreBoardDialog::OnThink for the explanation.
+		PostMessageToPanel( pszScoreboard, new KeyValues( "PollHideCode", "code", nPollHideCode ) );
+	}
+}
+
+void TFViewport::CC_ScoresDown( const CCommand &args )
+{
+	if( !TFGameRules() )
+		return;
+	
+	ShowPanel( GetModeSpecificScoreboardName(), true );
+	GetClientVoiceMgr()->StopSquelchMode();
+}
+
+void TFViewport::CC_ScoresUp( const CCommand &args )
+{
+	if( !TFGameRules() )
+		return;
+		
+	ShowPanel( GetModeSpecificScoreboardName(), false );
+	GetClientVoiceMgr()->StopSquelchMode();
+}
+
+void TFViewport::CC_ToggleScores( const CCommand &args )
+{
+	if( !TFGameRules() )
+		return;
+		
+	if ( !gViewPortInterface )
+		return;
+	
+	IViewPortPanel *scoreboard = gViewPortInterface->FindPanelByName( GetModeSpecificScoreboardName() );
+	
+	if ( !scoreboard )
+		return;
+	
+	if ( scoreboard->IsVisible() )
+	{
+		gViewPortInterface->ShowPanel( scoreboard, false );
+		GetClientVoiceMgr()->StopSquelchMode();
+	}
+	else
+	{
+		gViewPortInterface->ShowPanel( scoreboard, true );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void TFViewport::ShowTeamMenu( bool bState )
+{
+	if ( !TFGameRules() )
+		return;
+
+#if SOONSOON
+	if( TFGameRules()->IsFreeForAll() || TFGameRules()->GetRetroModeType() == TF_GAMESUBTYPE_INFECTION )
+#else
+	if( TFGameRules()->IsDeathmatch() )
+#endif
+	{
+		ShowPanel( PANEL_DEATHMATCHTEAMSELECT, bState );
+	}
+	// else if arena && !arena queue
+	else if( TFGameRules()->IsFourTeamGame() )
+	{
+		ShowPanel( PANEL_FOURTEAMSELECT, bState );
+	}
+	else
+	{
+		ShowPanel( PANEL_TEAM, bState );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void TFViewport::CC_ChangeTeam( const CCommand &args )
+{
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( !pPlayer )
+		return;
+
+	if ( engine->IsHLTV() )
+		return;
+
+	// don't let the player open the team menu themselves until they're on a team
+	if ( pPlayer->GetTeamNumber() == TEAM_UNASSIGNED )
+		return;
+
+	// Losers can't change team during bonus time.
+	if ( TFGameRules()->State_Get() == GR_STATE_TEAM_WIN &&
+		pPlayer->GetTeamNumber() >= FIRST_GAME_TEAM &&
+		pPlayer->GetTeamNumber() != TFGameRules()->GetWinningTeam() )
+		return;
+
+	ShowTeamMenu( true );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void TFViewport::ShowClassMenu( bool bState )
+{
+#if ENABLE_NEW_CLASSMENU
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( bState && ( pPlayer && pPlayer->CanShowClassMenu() ) )
+	{
+		// Need to set the class menu to the proper team when showing it.
+		PostMessageToPanel( PANEL_CLASS, new KeyValues( "ShowToTeam", "iTeam", pPlayer->GetTeamNumber() ) );
+	}
+	else
+	{
+		ShowPanel( PANEL_CLASS, false );
+	}
+#else
+	// SanyaSho: get rid of this when we've rewrite CTFClassMenu
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	
+	if ( pPlayer && pPlayer->CanShowClassMenu() )
+	{
+		switch( pPlayer->GetTeamNumber() )
+		{
+			case TF_TEAM_RED:
+				gViewPortInterface->ShowPanel( PANEL_CLASS_RED, bState );
+				break;
+			case TF_TEAM_BLUE:
+				gViewPortInterface->ShowPanel( PANEL_CLASS_BLUE, bState );
+				break;
+			case TF_TEAM_GREEN:
+				gViewPortInterface->ShowPanel( PANEL_CLASS_GREEN, bState );
+				break;
+			case TF_TEAM_YELLOW:
+				gViewPortInterface->ShowPanel( PANEL_CLASS_YELLOW, bState );
+				break;
+			default:
+				break;
+		}
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void TFViewport::CC_ChangeClass( const CCommand &args )
+{
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( !pPlayer )
+		return;
+
+	if ( engine->IsHLTV() )
+		return;
+
+	// TODO: ARENA
+	if ( pPlayer->CanShowClassMenu() )
+	{
+		ShowClassMenu( true );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -347,7 +483,6 @@ void TFViewport::OnScreenSizeChanged( int iOldWide, int iOldTall )
 		return;
 
 	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-
 	if ( pPlayer )
 	{
 		// are we on a team yet?
@@ -357,21 +492,7 @@ void TFViewport::OnScreenSizeChanged( int iOldWide, int iOldTall )
 		}
 		else if ( ( pPlayer->GetTeamNumber() != TEAM_SPECTATOR ) && ( pPlayer->m_Shared.GetDesiredPlayerClassIndex() == TF_CLASS_UNDEFINED ) )
 		{
-			switch( pPlayer->GetTeamNumber() )
-			{
-			case TF_TEAM_RED:
-				gViewPortInterface->ShowPanel( PANEL_CLASS_RED, true );
-				break;
-			case TF_TEAM_BLUE:
-				gViewPortInterface->ShowPanel( PANEL_CLASS_BLUE, true );
-				break;
-			case TF_TEAM_GREEN:
-				gViewPortInterface->ShowPanel( PANEL_CLASS_GREEN, true );
-				break;
-			case TF_TEAM_YELLOW:
-				gViewPortInterface->ShowPanel( PANEL_CLASS_YELLOW, true );
-				break;
-			}
+			ShowClassMenu( true );
 		}
 	}
 }

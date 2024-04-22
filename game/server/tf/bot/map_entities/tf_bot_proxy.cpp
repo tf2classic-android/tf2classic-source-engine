@@ -8,6 +8,7 @@
 #include "bot/tf_bot.h"
 #include "tf_bot_proxy.h"
 #include "tf_bot_generator.h"
+#include "tf_merc_customizations.h"
 
 
 BEGIN_DATADESC( CTFBotProxy )
@@ -127,8 +128,14 @@ void CTFBotProxy::InputSpawn( inputdata_t &inputdata )
 			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 			engine->SetFakeClientConVarValue( m_bot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+
+			respawn_particle_t *particle = g_TFMercCustomizations.GetRandomParticle();
+			if( particle )
+			{
+				m_bot->SetRespawnEffect( particle->szEffect );
+			}
 		}
-		
+
 		m_bot.Get()->SetShouldSayHello( false ); // don't print anything when spawned from bot proxy
 
 		m_onSpawned.FireOutput( m_bot, m_bot );

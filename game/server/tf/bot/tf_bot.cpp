@@ -25,6 +25,7 @@
 #include "tf_weapon_lunchbox.h"
 #include "func_respawnroom.h"
 #include "soundenvelope.h"
+#include "tf_merc_customizations.h"
 
 #include "bot/behavior/tf_bot_behavior.h"
 #include "bot/map_entities/tf_bot_generator.h"
@@ -455,8 +456,14 @@ CON_COMMAND_F( tf_bot_add, "Add a bot.", FCVAR_GAMEDLL )
 				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 				engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+
+				respawn_particle_t *particle = g_TFMercCustomizations.GetRandomParticle();
+				if( particle )
+				{
+					pBot->SetRespawnEffect( particle->szEffect );
+				}
 			}
-			
+
 			pBot->SetShouldSayHello( true );
 
 			++iNumAdded;

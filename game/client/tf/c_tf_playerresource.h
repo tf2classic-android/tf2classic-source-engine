@@ -27,15 +27,24 @@ public:
 	C_TF_PlayerResource();
 	virtual ~C_TF_PlayerResource();
 
-	int GetTotalScore( int iIndex ) { return GetArrayValue( iIndex, m_iTotalScore, 0 ); }
-	int GetMaxHealth( int iIndex ) { return GetArrayValue( iIndex, m_iMaxHealth, TF_HEALTH_UNDEFINED ); }
-	int GetPlayerClass( int iIndex ) { return GetArrayValue( iIndex, m_iPlayerClass, TF_CLASS_UNDEFINED ); }
-	int GetNumberOfDominations( int iIndex ) { return GetArrayValue( iIndex, m_iActiveDominations, 0 ); }
-	const Vector &GetPlayerColorVector( int iIndex );
-	Color GetPlayerColor( int iIndex );
-	int GetKillstreak( int iIndex ) { return GetArrayValue( iIndex, m_iKillstreak, 0 ); }
+	int		GetTotalScore( int iIndex ) { return GetArrayValue( iIndex, m_iTotalScore, 0 ); }
+	int		GetMaxHealth( int iIndex ) { return GetArrayValue( iIndex, m_iMaxHealth, 1 ); }
+	int		GetPlayerClass( int iIndex ) { return GetArrayValue( iIndex, m_iPlayerClass, TF_CLASS_UNDEFINED ); }
+	int		GetNumberOfDominations( int iIndex ) { return GetArrayValue( iIndex, m_iActiveDominations, 0 ); }
+	bool		IsArenaSpectator( int iIndex ) { return GetArrayValue( iIndex, m_bArenaSpectator ); }
+	const Vector	&GetPlayerColorVector( int iIndex );
+	Color		GetPlayerColor( int iIndex );
+	int		GetWinAnimation( int iIndex ) { return GetArrayValue( iIndex, m_iWinAnimations, 1 ); }
+	int		GetKillstreak( int iIndex ) { return GetArrayValue( iIndex, m_iKillstreak, 0 ); }
 
-	int GetCountForPlayerClass( int iTeam, int iClass, bool bExcludeLocalPlayer = false );
+	bool		IsPlayerDominated( int iIndex );
+	bool		IsPlayerDominating( int iIndex );
+	bool		IsEnemyPlayer( int iIndex );
+	int		GetUserID( int iIndex );
+	bool		GetSteamID( int iIndex, CSteamID *pID );
+
+	int		GetCountForPlayerClass( int iTeam, int iClass, bool bExcludeLocalPlayer = false );
+	int		GetNumPlayersForTeam( int iTeam, bool bAlive = false );
 
 	const char *GetPlayerPlatform( int iIndex ) const
 	{
@@ -49,14 +58,19 @@ public:
 
 protected:
 	int GetArrayValue( int iIndex, int *pArray, int defaultVal );
+	bool GetArrayValue( int iIndex, bool *pArray, bool defaultVal = false );
 
-	int	m_iTotalScore[MAX_PLAYERS + 1];
-	int	m_iMaxHealth[MAX_PLAYERS + 1];
-	int	m_iPlayerClass[MAX_PLAYERS + 1];
-	int	m_iActiveDominations[MAX_PLAYERS + 1];
-	int	m_iKillstreak[MAX_PLAYERS + 1];
-	Vector	m_vecColors[MAX_PLAYERS + 1];
-	bool	m_bIsMobile[MAX_PLAYERS + 1];
+	int		m_iTotalScore[MAX_PLAYERS + 1];
+	int		m_iMaxHealth[MAX_PLAYERS + 1];
+	int		m_iPlayerClass[MAX_PLAYERS + 1];
+	int		m_iActiveDominations[MAX_PLAYERS + 1];
+	bool		m_bArenaSpectator[MAX_PLAYERS + 1];
+	int		m_iKillstreak[MAX_PLAYERS + 1];
+	int		m_iWinAnimations[MAX_PLAYERS + 1];
+	Vector		m_vecColors[MAX_PLAYERS + 1];
+	int		m_iDisguiseTeam[MAX_PLAYERS + 1];
+	int		m_iDisguiseTarget[MAX_PLAYERS + 1];
+	bool		m_bIsMobile[MAX_PLAYERS + 1];
 };
 
 extern C_TF_PlayerResource *g_TF_PR;

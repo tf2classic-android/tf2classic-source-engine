@@ -13,6 +13,7 @@
 #include "tf_gamerules.h"
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"
+#include "tf_merc_customizations.h"
 
 extern ConVar tf_bot_prefix_name_with_difficulty;
 extern ConVar tf_bot_difficulty;
@@ -394,6 +395,12 @@ void CTFBotGenerator::SpawnBot( void )
 			engine->SetFakeClientConVarValue( bot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 			engine->SetFakeClientConVarValue( bot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 			engine->SetFakeClientConVarValue( bot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+
+			respawn_particle_t *particle = g_TFMercCustomizations.GetRandomParticle();
+			if( particle )
+			{
+				bot->SetRespawnEffect( particle->szEffect );
+			}
 		}
 
 		if ( bot->IsAlive() == false )

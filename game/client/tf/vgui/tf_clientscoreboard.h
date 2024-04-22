@@ -11,72 +11,87 @@
 #pragma once
 #endif
 
-#include "hud.h"
-#include "hudelement.h"
-#include "tf_hud_playerstatus.h"
-#include "clientscoreboarddialog.h"
+#include <vgui_controls/EditablePanel.h>
+#include <game/client/iviewport.h>
+#include "GameEventListener.h"
+#include "tf_controls.h"
+#include "tf_shareddefs.h"
 
 #define TF_SCOREBOARD_MAX_DOMINATIONS 16
 
-bool AreEnemyTeams(int iTeam1, int iTeam2);
-const wchar_t *GetPointsString(int iPoints);
+class CTFClassImage;
+class CTFPlayerModelPanel;
 
 //-----------------------------------------------------------------------------
 // Purpose: displays the MapInfo menu
 //-----------------------------------------------------------------------------
 
-class CTFClientScoreBoardDialog : public CClientScoreBoardDialog
+class CTFClientScoreBoardDialog : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener
 {
-private:
-	DECLARE_CLASS_SIMPLE( CTFClientScoreBoardDialog, CClientScoreBoardDialog );
-
 public:
-	CTFClientScoreBoardDialog( IViewPort *pViewPort );
+	DECLARE_CLASS_SIMPLE( CTFClientScoreBoardDialog, vgui::EditablePanel );
+
+	CTFClientScoreBoardDialog( IViewPort *pViewPort, const char *pszName, int iTeamCount = 4 ); // default is 4 (unassign,spec,red,blue)
 	virtual ~CTFClientScoreBoardDialog();
 
-	virtual void Reset();
-	virtual void Update();
-	virtual void ShowPanel( bool bShow );
-
-#if defined( _X360 )
-	int	HudElementKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
-#endif
-	
-protected:
 	virtual void PerformLayout();
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 
-	virtual void PostApplySchemeSettings( vgui::IScheme *pScheme ) {};
+	virtual const char *GetName( void ) { return PANEL_SCOREBOARD; }
+	virtual void SetData( KeyValues *data ) {}
+	virtual void Reset();
+	virtual void Update();
+	virtual bool NeedsUpdate( void );
+	virtual bool HasInputElements( void ) { return true; }
+	virtual void ShowPanel( bool bShow );
+	virtual void OnCommand( const char *command );
+	virtual void OnThink( void );
 
-private:
-	void InitPlayerList( vgui::SectionedListPanel *pPlayerList );
-	void SetPlayerListImages( vgui::SectionedListPanel *pPlayerList );
-	void UpdateTeamInfo();
-	void UpdatePlayerList();
-	void UpdateSpectatorList();
-	void UpdatePlayerDetails();
-	void ClearPlayerDetails();
-	bool ShouldShowAsSpectator( int iPlayerIndex );
-	bool ShouldShowAsUnassigned( int iPlayerIndex );
+	virtual GameActionSet_t GetPreferredActionSet() { return GAME_ACTION_SET_NONE; }
+
+	// both vgui::EditablePanel and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
+	vgui::VPANEL GetVPanel( void ) { return BaseClass::GetVPanel(); }
+	virtual bool IsVisible() { return BaseClass::IsVisible(); }
+	virtual void SetParent( vgui::VPANEL parent ) { BaseClass::SetParent( parent ); }
+
+	void UpdatePlayerAvatar( int playerIndex, KeyValues *kv );
+	virtual int GetDefaultAvatar( int playerIndex );
+
+	int	HudElementKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
 	
-	virtual void FireGameEvent( IGameEvent *event );
+protected:
+	virtual void InitPlayerList( vgui::SectionedListPanel *pPlayerList );
+	void SetPlayerListImages( vgui::SectionedListPanel *pPlayerList );
+	virtual void UpdateTeamInfo();
+	virtual void UpdatePlayerList();
+	virtual void UpdateSpectatorList();
+	virtual void UpdatePlayerDetails( void );
+	virtual void UpdateArenaWaitingToPlayList();
+	void MoveToCenterOfScreen();
+	
+	virtual const char *GetResFilename()
+	{
+		return "Resource/UI/Scoreboard.res";
+	}
 
-	static bool TFPlayerSortFunc( vgui::SectionedListPanel *list, int itemID1, int itemID2 );
+	virtual void FireGameEvent( IGameEvent *event );
 
 	vgui::SectionedListPanel *GetSelectedPlayerList( void );
 
-	vgui::SectionedListPanel	*m_pPlayerListBlue;
-	vgui::SectionedListPanel	*m_pPlayerListRed;
-	CExLabel					*m_pLabelPlayerName;
-	CExLabel					*m_pLabelMapName;
-	vgui::ImagePanel			*m_pImagePanelHorizLine;
-	CTFClassImage				*m_pClassImage;
-	EditablePanel				*m_pLocalPlayerStatsPanel;
-	EditablePanel				*m_pLocalPlayerDuelStatsPanel;
-	CExLabel					*m_pSpectatorsInQueue;
-	CExLabel					*m_pServerTimeLeftValue;
-	vgui::HFont					m_hTimeLeftFont;
-	vgui::HFont					m_hTimeLeftNotSetFont;
+	static bool TFPlayerSortFunc( vgui::SectionedListPanel *list, int itemID1, int itemID2 );
+
+	vgui::SectionedListPanel	*m_pPlayerLists[TF_TEAM_COUNT];
+
+	vgui::ImageList				*m_pImageList;
+	CUtlMap<CSteamID, int>		m_mapAvatarsToImageList;
+
+	CPanelAnimationVar( int, m_iAvatarWidth, "avatar_width", "34" );		// Avatar width doesn't scale with resolution
+	CPanelAnimationVarAliasType( int, m_iNameWidth, "name_width", "136", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iClassWidth, "class_width", "35", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iScoreWidth, "score_width", "35", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iPingWidth, "ping_width", "23", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iStatusWidth, "status_width", "15", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iNemesisWidth, "nemesis_width", "15", "proportional_int" );
 
 	int							m_iImageDead;
 	int							m_iImageDominated;
@@ -84,11 +99,30 @@ private:
 	int							m_iClassEmblem[TF_CLASS_COUNT_ALL];
 	int							m_iClassEmblemDead[TF_CLASS_COUNT_ALL];
 	int							m_iImageDominations[TF_SCOREBOARD_MAX_DOMINATIONS];
-	
-	CPanelAnimationVarAliasType( int, m_iStatusWidth, "status_width", "12", "proportional_int" );
-	CPanelAnimationVarAliasType( int, m_iNemesisWidth, "nemesis_width", "20", "proportional_int" );
-};
+	int							m_iDefaultAvatars[TF_TEAM_COUNT];
 
-const wchar_t *GetPointsString( int iPoints );
+private:
+	MESSAGE_FUNC_INT( OnPollHideCode, "PollHideCode", code );
+	MESSAGE_FUNC_PARAMS( ShowContextMenu, "ItemContextMenu", data );
+	
+	int m_iTeamCount;
+	
+	CExLabel					*m_pLabelPlayerName;
+	CExLabel					*m_pLabelMapName;
+	vgui::ImagePanel				*m_pImagePanelHorizLine;
+	CTFClassImage				*m_pClassImage;
+	CTFPlayerModelPanel			*m_pClassModelPanel;
+	vgui::EditablePanel				*m_pLocalPlayerStatsPanel;
+	vgui::EditablePanel				*m_pLocalPlayerDuelStatsPanel;
+	CExLabel					*m_pSpectatorsInQueue;
+	CExLabel					*m_pServerTimeLeftValue;
+	vgui::HFont				m_hTimeLeftFont;
+	vgui::HFont				m_hTimeLeftNotSetFont;
+	vgui::Menu				*m_pContextMenu;
+
+	float					m_flNextUpdateTime;
+	ButtonCode_t				m_nCloseKey;
+	int					m_iSelectedPlayerIndex;
+};
 
 #endif // TF_SCOREBOARD_H

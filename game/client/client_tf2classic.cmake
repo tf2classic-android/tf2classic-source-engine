@@ -206,6 +206,8 @@ set(
 			"${CLIENT_BASE_DIR}/tf/tf_hud_weaponswitch.h"
 			"${CLIENT_BASE_DIR}/tf/tf_hud_winpanel.cpp"
 			"${CLIENT_BASE_DIR}/tf/tf_hud_winpanel.h"	
+			"${CLIENT_BASE_DIR}/tf/tf_hud_winpanel_deathmatch.cpp"
+			"${CLIENT_BASE_DIR}/tf/tf_hud_winpanel_deathmatch.h"	
 			"${CLIENT_BASE_DIR}/tf/tf_hud_damageaccount_panel.cpp"
 			"${CLIENT_BASE_DIR}/tf/tf_input_main.cpp"
 			"${CLIENT_BASE_DIR}/tf/tf_notificationmanager.cpp"
@@ -362,12 +364,16 @@ set(
 				"${CLIENT_BASE_DIR}/tf/vgui/vgui_rootpanel_tf.h"
 				"${CLIENT_BASE_DIR}/tf/vgui/vgui_rotation_slider.cpp"
 				"${CLIENT_BASE_DIR}/tf/vgui/vgui_rotation_slider.h"
+				"${CLIENT_BASE_DIR}/tf/vgui/tf_playermodelpanel.cpp"
+				"${CLIENT_BASE_DIR}/tf/vgui/tf_playermodelpanel.h"
 			#}
 			
 			#$Folder	"Shared"
 			#{
 				"${SHARED_BASE_DIR}/tf/tf_announcer.cpp"
 				"${SHARED_BASE_DIR}/tf/tf_announcer.h"
+				"${SHARED_BASE_DIR}/tf/tf_merc_customizations.cpp"
+				"${SHARED_BASE_DIR}/tf/tf_merc_customizations.h"
 				"${SHARED_BASE_DIR}/tf/buildnum.cpp"
 				"${SHARED_BASE_DIR}/tf/buildnum.h"
 

@@ -47,6 +47,9 @@
 #include "tf_weapon_builder.h"
 #endif
 
+// TF2C
+ConVar tf2c_random_weapons( "tf2c_random_weapons", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Makes players spawn with random loadout. CURRENTLY BROKEN!!!" );
+
 ConVar tf_spy_invis_time( "tf_spy_invis_time", "1.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
 ConVar tf_spy_invis_unstealth_time( "tf_spy_invis_unstealth_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
 
@@ -158,7 +161,6 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	RecvPropEHandle( RECVINFO( m_hCarriedObject ) ),
 	RecvPropBool( RECVINFO( m_bCarryingObject ) ),
 	RecvPropInt( RECVINFO( m_nTeamTeleporterUsed ) ),
-	RecvPropInt( RECVINFO( m_iRespawnParticleID ) ),
 	// Spy.
 	RecvPropTime( RECVINFO( m_flInvisChangeCompleteTime ) ),
 	RecvPropInt( RECVINFO( m_nDisguiseTeam ) ),
@@ -185,7 +187,6 @@ BEGIN_PREDICTION_DATA_NO_BASE( CTFPlayerShared )
 	DEFINE_PRED_FIELD( m_nAirDucked, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flInvisChangeCompleteTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_iDesiredWeaponID, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
-	DEFINE_PRED_FIELD( m_iRespawnParticleID, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 END_PREDICTION_DATA()
 
 // Server specific.
@@ -222,7 +223,6 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	SendPropEHandle( SENDINFO( m_hCarriedObject ) ),
 	SendPropBool( SENDINFO( m_bCarryingObject ) ),
 	SendPropInt( SENDINFO( m_nTeamTeleporterUsed ), 3, SPROP_UNSIGNED ),
-	SendPropInt( SENDINFO( m_iRespawnParticleID ), -1, SPROP_UNSIGNED ),
 	// Spy
 	SendPropTime( SENDINFO( m_flInvisChangeCompleteTime ) ),
 	SendPropInt( SENDINFO( m_nDisguiseTeam ), 3, SPROP_UNSIGNED ),
@@ -260,7 +260,6 @@ CTFPlayerShared::CTFPlayerShared()
 	m_flInvisibility = 0.0f;
 
 	m_iDesiredWeaponID = -1;
-	m_iRespawnParticleID = 0;
 
 	m_iStunPhase = 0;
 
@@ -3583,6 +3582,49 @@ void CTFPlayer::TeamFortress_SetSpeed()
 
 	// Set the speed
 	SetMaxSpeed( maxfbspeed );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::CanShowClassMenu( void )
+{
+#if SOONSOON
+	if( (TFGameRules()->GetGameType() == TF_GAMETYPE_ARENA) && tf_arena_use_queue.GetBool() )
+	{
+		return !IsArenaSpectator();
+	}
+#endif
+
+	if( GetTeamNumber() < FIRST_GAME_TEAM )
+	{
+		return false;
+	}
+	
+	if( !TFGameRules() )
+	{
+		return false;
+	}
+	
+#if SOONSOON
+	// if gametype == 4 and gamesubtype == 7
+		return !IsAlive();
+
+	// if gamesubtype == 5
+	{
+		//m_pszName = v2[4].m_pszName;
+		//if ( (const char *)this->GetTeamNumber(this) != m_pszName && this->IsAlive(this) )
+		{
+			return false;
+		}
+	}
+#endif
+
+	if( ((TFGameRules()->GetGameType() == TF_GAMETYPE_DM) /*&& !tf2c_dm_allow_normal_classes.GetBool()*/) ||
+		( (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP) && (GetTFTeam() && GetTFTeam()->IsEscorting()) && IsPlayerClass( TF_CLASS_CIVILIAN )) )
+		return false;
+
+	return !tf2c_random_weapons.GetBool();
 }
 
 //-----------------------------------------------------------------------------

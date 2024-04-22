@@ -31,7 +31,7 @@ using namespace vgui;
 extern ConVar tf_max_health_boost;
 
 
-static char *g_szClassImages[] =
+static const char *g_szClassImages[] =
 {
 	"",
 	"../hud/class_scout",

@@ -92,10 +92,39 @@ bool IsGameTeam( int iTeam )
 	return ( iTeam > LAST_SHARED_TEAM && iTeam < TF_TEAM_COUNT ); 
 }
 
+int GetTeamSkin( int iTeam, bool bFFAEnabled )
+{
+#if SOONSOON
+	if( bFFAEnabled && TFGameRules() && TFGameRules()->IsFreeForAll() )
+#else
+	if( bFFAEnabled && TFGameRules() && TFGameRules()->IsDeathmatch() )
+#endif
+	{
+		return 4;
+	}
+
+	switch( iTeam )
+	{
+	case TF_TEAM_RED:
+		return 0;
+		break;
+	case TF_TEAM_BLUE:
+		return 1;
+		break;
+	case TF_TEAM_GREEN:
+		return 2;
+		break;
+	case TF_TEAM_YELLOW:
+		return 3;
+		break;
+	};
+
+	return 0;
+}
+
 //-----------------------------------------------------------------------------
 // Classes.
 //-----------------------------------------------------------------------------
-
 const char *g_aPlayerClassNames[] =
 {
 	"#TF_Class_Name_Undefined",

@@ -14,6 +14,7 @@
 #include "viewport_panel_names.h"
 #include "tf_announcer.h"
 #include "tf_music_controller.h"
+#include "tf_merc_customizations.h"
 #ifdef CLIENT_DLL
 	#include <game/client/iviewport.h>
 	#include "c_tf_player.h"
@@ -3274,7 +3275,7 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 		if ( IsDeathmatch() )
 		{
 			// Deathmatch results panel needs this.
-			SendWinPanelInfo();
+			SendDeathmatchResults();
 		}
 
 		CTF_GameStats.Event_GameEnd();
@@ -3809,7 +3810,9 @@ void CTFGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 	pTFPlayer->SetFlipViewModel( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "cl_flipviewmodels" ) ) > 0 );
 
 	// Keep track of their spawn particle.
-	pTFPlayer->m_Shared.SetRespawnParticleID( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf2c_setmercparticle" ) ) );
+	respawn_particle_t *pszParticleID = g_TFMercCustomizations.GetParticleById( pTFPlayer->GetClientConVarIntValue( "tf2c_merc_particle" ) );
+	if( pszParticleID )
+		pTFPlayer->SetRespawnEffect( pszParticleID->szEffect );
 
 	// keep track of their tf2c_zoom_hold value.
 	bool bHoldToZoom = Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf2c_zoom_hold" ) );
@@ -4731,6 +4734,75 @@ float CTFGameRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 
 	// Fall caused no damage
 	return 0;
+}
+
+void CTFGameRules::SendDeathmatchResults( void )
+{
+	// LITE VERSION OF TEAMPLAY EVENT
+	IGameEvent *winEvent = gameeventmanager->CreateEvent( "deathmatch_results" );
+
+	if ( winEvent )
+	{
+		// determine the 3 players on winning team who scored the most points this round
+
+		// build a vector of players & round scores
+		CUtlVector<PlayerRoundScore_t> vecPlayerScore;
+		int iPlayerIndex;
+		for( iPlayerIndex = 1 ; iPlayerIndex <= MAX_PLAYERS; iPlayerIndex++ )
+		{
+			CTFPlayer *pTFPlayer = ToTFPlayer( UTIL_PlayerByIndex( iPlayerIndex ) );
+			if ( !pTFPlayer || !pTFPlayer->IsConnected() )
+				continue;
+
+			// filter out spectators and, if not stalemate, all players not on winning team
+			int iPlayerTeam = pTFPlayer->GetTeamNumber();
+			if ( ( iPlayerTeam < FIRST_GAME_TEAM ) || ( m_iWinningTeam != TEAM_UNASSIGNED && ( m_iWinningTeam != iPlayerTeam ) ) )
+				continue;
+
+			int iRoundScore = 0, iTotalScore = 0;
+			int iKills = 0, iDeaths = 0;
+			PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( pTFPlayer );
+			if ( pStats )
+			{
+				iRoundScore = CalcPlayerScore( &pStats->statsCurrentRound );
+				iTotalScore = CalcPlayerScore( &pStats->statsAccumulated );
+				iKills = pStats->statsCurrentRound.m_iStat[TFSTAT_KILLS];
+				iDeaths = pStats->statsCurrentRound.m_iStat[TFSTAT_DEATHS];
+			}
+			PlayerRoundScore_t &playerRoundScore = vecPlayerScore[vecPlayerScore.AddToTail()];
+			playerRoundScore.iPlayerIndex = iPlayerIndex;
+			playerRoundScore.iRoundScore = iRoundScore;
+			playerRoundScore.iTotalScore = iTotalScore;
+			playerRoundScore.iKills = iKills;
+			playerRoundScore.iDeaths = iDeaths;
+		}
+		// sort the players by round score
+		vecPlayerScore.Sort( PlayerRoundScoreSortFunc );
+
+		// set the top (up to) 3 players by round score in the event data
+		int numPlayers = MIN( 3, vecPlayerScore.Count() );
+		for ( int i = 0; i < numPlayers; i++ )
+		{
+			// only include players who have non-zero points this round; if we get to a player with 0 round points, stop
+			if ( 0 == vecPlayerScore[i].iRoundScore )
+				break;
+
+			// set the player index and their round score in the event
+			char szPlayerIndexVal[64] = "", szPlayerScoreVal[64] = "";
+			char szPlayerKillsVal[64] = "", szPlayerDeathsVal[64] = "";
+			Q_snprintf( szPlayerIndexVal, ARRAYSIZE( szPlayerIndexVal ), "player_%d", i + 1 );
+			Q_snprintf( szPlayerScoreVal, ARRAYSIZE( szPlayerScoreVal ), "player_%d_points", i + 1 );
+			Q_snprintf(szPlayerKillsVal, ARRAYSIZE(szPlayerKillsVal), "player_%d_kills", i + 1);
+			Q_snprintf(szPlayerDeathsVal, ARRAYSIZE(szPlayerDeathsVal), "player_%d_deaths", i + 1);
+			winEvent->SetInt( szPlayerIndexVal, vecPlayerScore[i].iPlayerIndex );
+			winEvent->SetInt( szPlayerScoreVal, vecPlayerScore[i].iRoundScore );				
+			winEvent->SetInt(szPlayerKillsVal, vecPlayerScore[i].iKills);
+			winEvent->SetInt(szPlayerDeathsVal, vecPlayerScore[i].iDeaths);
+		}
+
+		// Send the event
+		gameeventmanager->FireEvent( winEvent );
+	}
 }
 
 void CTFGameRules::SendWinPanelInfo( void )

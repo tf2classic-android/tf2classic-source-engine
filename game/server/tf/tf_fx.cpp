@@ -7,8 +7,11 @@
 #include "cbase.h"
 #include "basetempentity.h"
 #include "tf_fx.h"
+#include "dt_send.h"
+#include "recipientfilter.h"
 #include "tf_shareddefs.h"
 #include "coordsize.h"
+#include "toolframework/itoolentity.h"
 
 #define NUM_BULLET_SEED_BITS	8
 
@@ -334,4 +337,66 @@ void TE_TFParticleEffect( IRecipientFilter &filter, float flDelay, int iEffectIn
 
 	// Send it over the wire
 	g_TETFParticleEffect.Create( filter, flDelay );
+}
+
+// DM SPAWN EFFECT
+class CTETFSpawnEffect : public CBaseTempEntity
+{
+public:
+
+	DECLARE_CLASS( CTETFSpawnEffect, CBaseTempEntity );
+	DECLARE_SERVERCLASS();
+
+	CTETFSpawnEffect( const char *name );
+
+	void Init();
+public:
+	Vector m_vecOrigin;
+	QAngle m_vecAngles;
+	int m_iPlayerIndex;
+	int m_iParticleSystemIndex;
+	Vector m_vecColor;
+};
+
+CTETFSpawnEffect::CTETFSpawnEffect( const char *name ) : CBaseTempEntity( name )
+{
+	Init();
+}
+
+void CTETFSpawnEffect::Init()
+{
+	m_vecOrigin.Init();
+	m_vecAngles.Init();
+	m_iPlayerIndex = 0;
+	m_iParticleSystemIndex = 0;
+	m_vecColor.Init();
+}
+
+IMPLEMENT_SERVERCLASS_ST( CTETFSpawnEffect, DT_TETFSpawnEffect )
+	SendPropVector( SENDINFO_NOCHECK( m_vecOrigin ), 10 ),
+	SendPropQAngles( SENDINFO_NOCHECK( m_vecAngles ), 10 ),
+	SendPropInt( SENDINFO_NOCHECK( m_iPlayerIndex ), 16, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO_NOCHECK( m_iParticleSystemIndex ), 16, SPROP_UNSIGNED ),
+	SendPropVector( SENDINFO_NOCHECK( m_vecColor ), 10 ),
+END_SEND_TABLE()
+
+static CTETFSpawnEffect g_TETFSpawnEffect( "TFSpawnEffect" );
+
+void TE_TFSpawnEffect( CTFPlayer *pPlayer, const char *pszEffect )
+{
+	g_TETFSpawnEffect.Init();
+	
+	if( !pPlayer )
+		return;
+		
+	g_TETFSpawnEffect.m_vecOrigin = pPlayer->GetAbsOrigin();
+	g_TETFSpawnEffect.m_vecAngles = pPlayer->GetAbsAngles();
+	g_TETFSpawnEffect.m_iPlayerIndex = pPlayer->entindex();
+	g_TETFSpawnEffect.m_vecColor = pPlayer->m_vecPlayerColor;
+	g_TETFSpawnEffect.m_iParticleSystemIndex = GetParticleSystemIndex( pszEffect );
+	
+	CRecipientFilter filter;
+	filter.AddRecipientsByPVS( pPlayer->GetAbsOrigin() );
+	filter.MakeReliable();
+	g_TETFSpawnEffect.Create( filter );
 }

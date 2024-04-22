@@ -1884,6 +1884,17 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				if ( !pPlayer )
 					continue;
 
+#if defined( TF_CLASSIC )
+				if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+				{
+					pPlayer->ShowViewPortPanel( PANEL_DEATHMATCHSCOREBOARD );
+				}
+				else if( TFGameRules() && TFGameRules()->IsFourTeamGame() )
+				{
+					pPlayer->ShowViewPortPanel( PANEL_FOURTEAMSCOREBOARD );
+				}
+				else
+#endif
 				pPlayer->ShowViewPortPanel( PANEL_SCOREBOARD );
 			}
 

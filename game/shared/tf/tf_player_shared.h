@@ -162,13 +162,14 @@ public:
 #endif
 	}
 	int		GetDisguiseHealth( void )			{ return m_iDisguiseHealth; }
-	void	SetDisguiseHealth( int iDisguiseHealth );
+	int		GetDisguiseTargetIndex( void )			{ return m_iDisguiseTargetIndex; }
+	void		SetDisguiseHealth( int iDisguiseHealth );
 	int		AddDisguiseHealth( int iHealthToAdd, bool bOverheal = false );
-	int		GetDisguiseMaxHealth( void )		{ return m_iDisguiseMaxHealth; }
+	int		GetDisguiseMaxHealth( void )			{ return m_iDisguiseMaxHealth; }
 	int		GetDisguiseMaxBuffedHealth( void );
 
-	CEconItemView *GetDisguiseItem( void )			{ return &m_DisguiseItem; }
-	void	RecalcDisguiseWeapon( int iSlot = 0 );
+	CEconItemView	*GetDisguiseItem( void )			{ return &m_DisguiseItem; }
+	void		RecalcDisguiseWeapon( int iSlot = 0 );
 
 #ifdef CLIENT_DLL
 	void	OnDisguiseChanged( void );
@@ -222,8 +223,6 @@ public:
 
 	int		GetDesiredWeaponIndex( void ) { return m_iDesiredWeaponID; }
 	void	SetDesiredWeaponIndex( int iWeaponID ) { m_iDesiredWeaponID = iWeaponID; }
-	int		GetRespawnParticleID( void ) { return m_iRespawnParticleID; }
-	void	SetRespawnParticleID(int iParticleID) { m_iRespawnParticleID = iParticleID; }
 
 	float	GetSpyCloakMeter() const		{ return m_flCloakMeter; }
 	void	SetSpyCloakMeter( float val ) { m_flCloakMeter = val; }
@@ -398,7 +397,6 @@ private:
 
 	CNetworkVar( int, m_iDesiredPlayerClass );
 	CNetworkVar( int, m_iDesiredWeaponID );
-	CNetworkVar( int, m_iRespawnParticleID );
 
 	float m_flNextBurningSound;
 

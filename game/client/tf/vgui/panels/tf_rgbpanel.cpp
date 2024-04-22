@@ -5,6 +5,7 @@
 #include <vgui/ILocalize.h>
 #include "controls/tf_advmodelpanel.h"
 #include "c_tf_player.h"
+#include "tf_merc_customizations.h"
 
 using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
@@ -93,7 +94,7 @@ void CTFRGBPanel::OnDataChanged()
 
 	m_pParticlesPanel->Update();
 	char chParticleName[64];
-	ConVar *tf2c_setmercparticle = cvar->FindVar("tf2c_setmercparticle");
+	ConVar *tf2c_setmercparticle = cvar->FindVar("tf2c_merc_particle");
 	if (!tf2c_setmercparticle)
 		return;
 	int iParticleID = tf2c_setmercparticle->GetInt();

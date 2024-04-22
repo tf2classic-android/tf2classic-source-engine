@@ -230,6 +230,9 @@ public:
 	virtual void	SendTeamScoresEvent( void ) { return; }
 
 	// Send the end of round info displayed in the win panel
+	virtual void	SendDeathmatchResults( void );
+	
+	// Send the end of round info displayed in the win panel
 	virtual void	SendWinPanelInfo( void );
 
 	// Setup spawn points for the current round before it starts

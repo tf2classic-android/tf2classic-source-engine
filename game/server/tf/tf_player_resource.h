@@ -7,11 +7,11 @@
 
 #ifndef TF_PLAYER_RESOURCE_H
 #define TF_PLAYER_RESOURCE_H
+
 #ifdef _WIN32
 #pragma once
 #endif
 
-#include "tf_shareddefs.h"
 #include "player_resource.h"
 
 class CTFPlayerResource : public CPlayerResource
@@ -30,12 +30,16 @@ public:
 	Color GetPlayerColor( int iIndex );
 
 protected:
-	CNetworkArray( int, m_iTotalScore, MAX_PLAYERS+1 );
-	CNetworkArray( int, m_iMaxHealth, MAX_PLAYERS+1 );
-	CNetworkArray( int, m_iPlayerClass, MAX_PLAYERS+1 );
+	CNetworkArray( int, m_iTotalScore, MAX_PLAYERS + 1 );
+	CNetworkArray( int, m_iMaxHealth, MAX_PLAYERS + 1 );
+	CNetworkArray( int, m_iPlayerClass, MAX_PLAYERS + 1 );
 	CNetworkArray( int, m_iActiveDominations, MAX_PLAYERS + 1 );
-	CNetworkArray( int, m_iKillstreak, MAX_PLAYERS+1 );
-	CNetworkArray( Vector, m_vecColors, MAX_PLAYERS+1 );
+	CNetworkArray( bool, m_bArenaSpectator, MAX_PLAYERS + 1 );
+	CNetworkArray( int, m_iKillstreak, MAX_PLAYERS + 1 );
+	CNetworkArray( int, m_iWinAnimations, MAX_PLAYERS + 1 );
+	CNetworkArray( Vector, m_vecColors, MAX_PLAYERS + 1 );
+	CNetworkArray( int, m_iDisguiseTeam, MAX_PLAYERS + 1 );
+	CNetworkArray( int, m_iDisguiseTarget, MAX_PLAYERS + 1 );
 	CNetworkArray( bool, m_bIsMobile, MAX_PLAYERS+1 );
 };
 

@@ -38,7 +38,6 @@ extern ConVar tf2c_zoom_hold;
 extern ConVar tf2c_setmerccolor_r;
 extern ConVar tf2c_setmerccolor_g;
 extern ConVar tf2c_setmerccolor_b;
-extern ConVar tf2c_setmercparticle;
 
 //-----------------------------------------------------------------------------
 // Purpose: 

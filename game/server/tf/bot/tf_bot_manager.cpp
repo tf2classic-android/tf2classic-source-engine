@@ -16,6 +16,7 @@
 #include "bot/map_entities/tf_bot_hint_sentrygun.h"
 #include "bot/map_entities/tf_bot_hint_teleporter_exit.h"
 #include "tf_team.h"
+#include "tf_merc_customizations.h"
 
 
 //----------------------------------------------------------------------------------------------------------------
@@ -530,8 +531,14 @@ void CTFBotManager::MaintainBotQuota()
 					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_r", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_g", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
 					engine->SetFakeClientConVarValue( pBot->edict(), "tf2c_setmerccolor_b", UTIL_VarArgs( "%d", random->RandomInt( 1, 255 ) ) );
+
+					respawn_particle_t *particle = g_TFMercCustomizations.GetRandomParticle();
+					if( particle )
+					{
+						pBot->SetRespawnEffect( particle->szEffect );
+					}
 				}
-				
+
 				pBot->SetShouldSayHello( true );
 
 #if 0

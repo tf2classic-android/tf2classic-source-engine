@@ -68,6 +68,8 @@
 #include "voice_gamemgr.h"
 #include "nav_area.h"
 #include "bot/tf_bot.h"
+#include "tf_fx.h"
+#include "tf_merc_customizations.h"
 
 extern IVoiceGameMgrHelper *g_pVoiceGameMgrHelper;
 
@@ -125,9 +127,6 @@ extern ConVar sv_alltalk;
 extern ConVar tf_teamtalk;
 
 // Team Fortress 2 Classic commands
-ConVar tf2c_random_weapons( "tf2c_random_weapons", "0", FCVAR_NOTIFY, "Makes players spawn with random loadout. CURRENTLY BROKEN!!!" );
-
-
 ConVar tf2c_allow_special_classes( "tf2c_allow_special_classes", "0", FCVAR_NOTIFY, "Enables gamemode specific classes (Civilian, Mercenary, ...) in normal gameplay." );
 ConVar tf2c_force_stock_weapons( "tf2c_force_stock_weapons", "0", FCVAR_NOTIFY, "Forces players to use the stock loadout." );
 ConVar tf2c_legacy_weapons( "tf2c_legacy_weapons", "0", FCVAR_DEVELOPMENTONLY, "Disables all new weapons as well as Econ Item System." );
@@ -480,6 +479,8 @@ CTFPlayer::CTFPlayer()
 	m_bJumpEffect = false;
 
 	m_iDominations = 0;
+	
+	m_szRespawnEffect[0] = NULL;
 
 	m_Shared.m_hUrineAttacker = NULL;
 
@@ -1102,7 +1103,8 @@ void CTFPlayer::InitialSpawn( void )
 	engine->SetFakeClientConVarValue( edict(), "tf2c_setmerccolor_r", "255" );
 	engine->SetFakeClientConVarValue( edict(), "tf2c_setmerccolor_g", "255" );
 	engine->SetFakeClientConVarValue( edict(), "tf2c_setmerccolor_b", "255" );
-	engine->SetFakeClientConVarValue( edict(), "tf2c_setmercparticle", "1" );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_merc_particle", UTIL_VarArgs( "%d", RandomInt( 1, g_TFMercCustomizations.GetParticlesCount() - 1 ) ) );
+	engine->SetFakeClientConVarValue( edict(), "tf2c_merc_winanim", "1" );
 #endif
 	engine->SetFakeClientConVarValue( edict(), "tf2c_proximity_voice", "0" );
 	engine->SetFakeClientConVarValue( edict(), "tf2c_dev_mark", "1" );
@@ -1166,7 +1168,12 @@ void CTFPlayer::Spawn()
 			m_Shared.RemoveDisguise();
 		}
 
-		EmitSound( "Player.Spawn" );
+		if( TFGameRules()->IsDeathmatch() && TFGameRules()->State_Get() != GR_STATE_PREGAME )
+		{
+			EmitSound( "Player.Spawn" );
+			TE_TFSpawnEffect( this, m_szRespawnEffect );
+		}
+		
 		InitClass();
 		m_Shared.RemoveAllCond( NULL ); // Remove conc'd, burning, rotting, hallucinating, etc.
 
@@ -2634,7 +2641,18 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 		// come up with a better way to tell the player they tried to join a full team!
 		if ( TFGameRules()->WouldChangeUnbalanceTeams( iTeam, GetTeamNumber() ) )
 		{
-			ShowViewPortPanel( PANEL_TEAM );
+			if( TFGameRules()->IsDeathmatch() )
+			{
+				ShowViewPortPanel( PANEL_DEATHMATCHTEAMSELECT );
+			}
+			else if( TFGameRules()->IsFourTeamGame() )
+			{
+				ShowViewPortPanel( PANEL_FOURTEAMSELECT );
+			}
+			else
+			{
+				ShowViewPortPanel( PANEL_TEAM );
+			}
 			return;
 		}
 
@@ -3164,7 +3182,18 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	{
 		if ( GetTeamNumber() == TEAM_UNASSIGNED )
 		{
-			ShowViewPortPanel( PANEL_TEAM, true );
+			if( TFGameRules()->IsDeathmatch() )
+			{
+				ShowViewPortPanel( PANEL_DEATHMATCHTEAMSELECT );
+			}
+			else if( TFGameRules()->IsFourTeamGame() )
+			{
+				ShowViewPortPanel( PANEL_FOURTEAMSELECT );
+			}
+			else
+			{
+				ShowViewPortPanel( PANEL_TEAM );
+			}
 		}
 		else if ( IsPlayerClass( TF_CLASS_UNDEFINED ) )
 		{
@@ -8494,7 +8523,7 @@ void CTFPlayer::DoTauntAttack( void )
 
 				if ( bStun )
 				{
-					vecForce == vec3_origin;
+					vecForce = vec3_origin;
 				}
 				else
 				{
@@ -9828,6 +9857,30 @@ void CTFPlayer::UpdateDominationsCount( void )
 			m_iDominations++;
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::GetClientConVarBoolValue( const char *pszValue )
+{
+	return !!atoi( engine->GetClientConVarValue( entindex(), pszValue ) );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CTFPlayer::GetClientConVarIntValue( const char *pszValue )
+{
+	return atoi( engine->GetClientConVarValue( entindex(), pszValue ) );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+float CTFPlayer::GetClientConVarFloatValue( const char *pszValue )
+{
+	return atof( engine->GetClientConVarValue( entindex(), pszValue ) );
 }
 
 //-----------------------------------------------------------------------------

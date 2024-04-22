@@ -529,6 +529,7 @@ void IN_Impulse( const CCommand &args )
 	in_impulse = atoi( args[1] );
 }
 
+#if !defined( TF_CLASSIC_CLIENT )
 void IN_ScoreDown( const CCommand &args )
 {
 	KeyDown( &in_score, args[1] );
@@ -547,7 +548,7 @@ void IN_ScoreUp( const CCommand &args )
 		GetClientVoiceMgr()->StopSquelchMode();
 	}
 }
-
+#endif
 
 /*
 ============
@@ -1532,10 +1533,12 @@ static ConCommand startalt1("+alt1", IN_Alt1Down);
 static ConCommand endalt1("-alt1", IN_Alt1Up);
 static ConCommand startalt2("+alt2", IN_Alt2Down);
 static ConCommand endalt2("-alt2", IN_Alt2Up);
+#if !defined( TF_CLASSIC_CLIENT )
 static ConCommand startscore("+score", IN_ScoreDown);
 static ConCommand endscore("-score", IN_ScoreUp);
 static ConCommand startshowscores("+showscores", IN_ScoreDown);
 static ConCommand endshowscores("-showscores", IN_ScoreUp);
+#endif
 static ConCommand startgraph("+graph", IN_GraphDown);
 static ConCommand endgraph("-graph", IN_GraphUp);
 static ConCommand startbreak("+break",IN_BreakDown);

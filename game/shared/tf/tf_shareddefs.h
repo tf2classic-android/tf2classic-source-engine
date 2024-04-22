@@ -148,6 +148,8 @@ enum
 	TF_CLASS_RANDOM
 };
 
+extern int GetTeamSkin( int iTeam, bool bFFAEnabled = false );
+
 extern const char *g_aPlayerClassNames[];				// localized class names
 extern const char *g_aPlayerClassNames_NonLocalized[];	// non-localized class names
 

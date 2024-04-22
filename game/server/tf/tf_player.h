@@ -31,6 +31,8 @@ class CBaseObject;
 class CTFWeaponBase;
 class CIntroViewpoint;
 
+extern ConVar tf2c_random_weapons;
+
 //=============================================================================
 //
 // Player State Information
@@ -129,6 +131,8 @@ public:
 	virtual	bool		ShouldCollide( int collisionGroup, int contentsMask ) const;
 
 	void				SetHealthBuffTime( float flTime )		{ m_flHealthBuffTime = flTime; }
+
+	bool			CanShowClassMenu( void );
 
 	CTFWeaponBase		*GetActiveTFWeapon( void ) const;
 	bool				IsActiveTFWeapon(int iWeaponID);
@@ -400,11 +404,20 @@ public:
 
 	int GetNumberOfDominations( void ) { return m_iDominations; }
 	void UpdateDominationsCount( void );
-
+	
+	void SetRespawnEffect( const char *pszEffect )
+	{
+		V_strncpy( m_szRespawnEffect, pszEffect, sizeof( m_szRespawnEffect ) );
+	}
+	
 	virtual CAttributeManager *GetAttributeManager( void ) { return &m_AttributeManager; }
 	virtual CAttributeContainer *GetAttributeContainer( void ) { return NULL; }
 	virtual CBaseEntity *GetAttributeOwner( void ) { return NULL; }
 	virtual void ReapplyProvision( void ) { /*Do nothing*/ };
+
+	bool GetClientConVarBoolValue( const char *pszValue );
+	int GetClientConVarIntValue( const char *pszValue );
+	float GetClientConVarFloatValue( const char *pszValue );
 
 	void UpdatePlayerColor( void );
 	void RemoveSpawnProtection( void );
@@ -691,6 +704,8 @@ private:
 	bool				m_bJumpEffect;
 
 	int				m_iDominations;
+	
+	char m_szRespawnEffect[128];
 
 	CNetworkVar( int, m_nForceTauntCam );
 	CNetworkVar( bool, m_bTyping );

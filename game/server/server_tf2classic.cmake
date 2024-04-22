@@ -502,6 +502,8 @@ set(
 			#{
 				"${SHARED_BASE_DIR}/tf/tf_announcer.cpp"
 				"${SHARED_BASE_DIR}/tf/tf_announcer.h"
+				"${SHARED_BASE_DIR}/tf/tf_merc_customizations.cpp"
+				"${SHARED_BASE_DIR}/tf/tf_merc_customizations.h"
 				"${SHARED_BASE_DIR}/tf/buildnum.cpp"
 				"${SHARED_BASE_DIR}/tf/buildnum.h"
 

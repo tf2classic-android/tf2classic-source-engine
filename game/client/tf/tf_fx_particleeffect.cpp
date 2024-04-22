@@ -5,11 +5,17 @@
 //=============================================================================//
 #include "cbase.h"
 #include "c_te_effect_dispatch.h"
+#include "cdll_util.h"
+#include "dt_recv.h"
+#include "effect_dispatch_data.h"
+#include "iclientnetworkable.h"
 #include "tempent.h"
 #include "c_te_legacytempents.h"
 #include "tf_shareddefs.h"
 #include "c_basetempentity.h"
 #include "tier0/vprof.h"
+#include "util_shared.h"
+#include "c_tf_player.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -114,3 +120,66 @@ IMPLEMENT_CLIENTCLASS_EVENT_DT( C_TETFParticleEffect, DT_TETFParticleEffect, CTE
 	RecvPropInt( RECVINFO( m_iAttachmentPointIndex ) ),
 	RecvPropInt( RECVINFO( m_bResetParticles ) ),
 END_RECV_TABLE()
+
+
+// DM SPAWN PARTICLE
+ConVar tf2c_dm_show_spawneffect_in_first_person( "tf2c_dm_show_spawneffect_in_first_person", "0", FCVAR_ARCHIVE | FCVAR_USERINFO ); // SanyaSho: small addition to 2017 code
+
+class C_TETFSpawnEffect : public C_BaseTempEntity
+{
+public:
+	DECLARE_CLASS( C_TETFSpawnEffect, C_BaseTempEntity );
+	DECLARE_CLIENTCLASS();
+
+	C_TETFSpawnEffect();
+
+	virtual void PostDataUpdate( DataUpdateType_t updateType );
+public:
+	Vector m_vecOrigin;
+	QAngle m_vecAngles;
+	int m_iPlayerIndex;
+	int m_iParticleSystemIndex;
+	Vector m_vecColor;
+};
+
+IMPLEMENT_CLIENTCLASS_EVENT_DT( C_TETFSpawnEffect, DT_TETFSpawnEffect , CTETFSpawnEffect  )
+	RecvPropVector( RECVINFO( m_vecOrigin ) ),
+	RecvPropQAngles( RECVINFO( m_vecAngles ) ),
+	RecvPropInt( RECVINFO( m_iPlayerIndex ) ),
+	RecvPropInt( RECVINFO( m_iParticleSystemIndex ) ),
+	RecvPropVector( RECVINFO( m_vecColor ) ),
+END_RECV_TABLE()
+
+C_TETFSpawnEffect::C_TETFSpawnEffect()
+{
+
+}
+
+void C_TETFSpawnEffect::PostDataUpdate( DataUpdateType_t updateType )
+{
+	if( !IsPlayerIndex( m_iPlayerIndex ) )
+	{
+		return;
+	}
+	
+	C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( m_iPlayerIndex ) );
+	if( !pPlayer )
+	{
+		return;
+	}
+	
+	if( pPlayer->InFirstPersonView() && !tf2c_dm_show_spawneffect_in_first_person.GetBool() )
+	{
+		return;
+	}
+	
+	CEffectData data;
+	data.m_vOrigin = m_vecOrigin;
+	data.m_vAngles = m_vecAngles;
+	data.m_hEntity = pPlayer;
+	data.m_nHitBox = m_iParticleSystemIndex;
+	data.m_bCustomColors = true;
+	data.m_CustomColors.m_vecColor1 = m_vecColor;
+	
+	DispatchEffect( "ParticleEffect", data );
+}

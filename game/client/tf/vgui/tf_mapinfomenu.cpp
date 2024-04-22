@@ -23,6 +23,7 @@
 #include "tf_controls.h"
 #include "tf_shareddefs.h"
 #include "tf_mapinfomenu.h"
+#include "tf_viewport.h"
 
 using namespace vgui;
 
@@ -209,22 +210,20 @@ void CTFMapInfoMenu::OnCommand( const char *command )
 	else if ( !Q_strcmp( command, "continue" ) )
 	{
 		m_pViewPort->ShowPanel( this, false );
-
-		if ( CheckForIntroMovie() && !HasViewedMovieForMap() )
+		
+		if ( CheckForIntroMovie() && UTIL_GetMapKeyCount( "viewed" ) <= 0 )
 		{
 			m_pViewPort->ShowPanel( PANEL_INTRO, true );
-
-			UTIL_IncrementMapKey( "viewed" );
 		}
 		else
 		{
 			if ( GetLocalPlayerTeam() == TEAM_UNASSIGNED )
 			{
-				m_pViewPort->ShowPanel(PANEL_TEAM, true);
+				GetTFViewPort()->ShowTeamMenu( true );
 			}
-
-			UTIL_IncrementMapKey( "viewed" );
 		}
+		
+		UTIL_IncrementMapKey( "viewed" );
 	}
 	else if ( !Q_strcmp( command, "intro" ) )
 	{
@@ -236,7 +235,7 @@ void CTFMapInfoMenu::OnCommand( const char *command )
 		}
 		else
 		{
-			m_pViewPort->ShowPanel( PANEL_TEAM, true );
+			GetTFViewPort()->ShowTeamMenu( true );
 		}
 	}
 	else
@@ -316,7 +315,10 @@ void CTFMapInfoMenu::LoadMapPage( const char *mapName )
 			}
 			else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT )
 			{
-				pszGameTypeAbbreviation = "payload";
+				if( TFGameRules()->HasMultipleTrains() )
+					pszGameTypeAbbreviation = "payload_race";
+				else
+					pszGameTypeAbbreviation = "payload";
 			}
 			else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_DM )
 			{

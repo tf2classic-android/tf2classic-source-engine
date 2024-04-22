@@ -18,6 +18,7 @@
 
 #include "cbase.h"
 #include "player.h"
+#include "tf_merc_customizations.h"
 #include "tf_player.h"
 #include "tf_gamerules.h"
 #include "in_buttons.h"
@@ -118,7 +119,6 @@ CBasePlayer *BotPutInServer( bool bFrozen, int iTeam, int iClass, const char *ps
 		pPlayer->AddEFlags( EFL_BOT_FROZEN );
 
 	pPlayer->m_vecPlayerColor = vecColor;
-	pPlayer->m_Shared.SetRespawnParticleID( iRespawnParticle );
 
 	BotNumber++;
 
@@ -220,7 +220,15 @@ CON_COMMAND_F( bot, "Add a bot.", FCVAR_CHEAT )
 
 			vecColor /= 255.0f;
 
-			iRespawnParticle = args.FindArgInt( "-respawn", RandomInt( 1, 42 ) );
+			pVal = args.FindArg( "-spawneffect" );
+			if( pVal )
+			{
+				respawn_particle_t *pParticle = g_TFMercCustomizations.GetParticleById( Q_atoi( pVal ) );
+				if( !pParticle )
+					pParticle = g_TFMercCustomizations.GetRandomParticle();
+				
+				iRespawnParticle = pParticle->id;
+			}
 		}
 
 		BotPutInServer( bFrozen, iTeam, iClass, pName, vecColor, iRespawnParticle );

@@ -5,11 +5,11 @@
 // $NoKeywords: $
 //=============================================================================
 #include "cbase.h"
-#include "engine/IEngineSound.h"
-#include "hud.h"
-#include "recvproxy.h"
 #include "c_tf_team.h"
 #include "tf_shareddefs.h"
+#include <vgui_controls/Controls.h>
+#include <vgui/ILocalize.h>
+#include "c_baseobject.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -27,7 +27,7 @@ void RecvProxy_TeamObjectList( const CRecvProxyData *pData, void *pStruct, void 
 void RecvProxyArrayLength_TeamObjects( void *pStruct, int objectID, int currentArrayLength )
 {
 	C_TFTeam *pPlayer = (C_TFTeam*)pStruct;
-
+	
 	if ( pPlayer->m_aObjects.Count() != currentArrayLength )
 	{
 		pPlayer->m_aObjects.SetSize( currentArrayLength );
@@ -35,19 +35,12 @@ void RecvProxyArrayLength_TeamObjects( void *pStruct, int objectID, int currentA
 }
 
 IMPLEMENT_CLIENTCLASS_DT( C_TFTeam, DT_TFTeam, CTFTeam )
-
 	RecvPropInt( RECVINFO( m_nFlagCaptures ) ),
 	RecvPropInt( RECVINFO( m_iRole ) ),
 	RecvPropBool( RECVINFO( m_bEscorting ) ),
 	RecvPropInt( RECVINFO( m_iRoundScore ) ),
-
-	RecvPropArray2( 
-	RecvProxyArrayLength_TeamObjects,
-	RecvPropInt( "team_object_array_element", 0, SIZEOF_IGNORE, 0, RecvProxy_TeamObjectList ), 
-	MAX_PLAYERS * MAX_OBJECTS_PER_PLAYER, 
-	0, 
-	"team_object_array"	),
-
+	
+	RecvPropArray2( RecvProxyArrayLength_TeamObjects, RecvPropInt( "team_object_array_element", 0, SIZEOF_IGNORE, 0, RecvProxy_TeamObjectList ), MAX_PLAYERS * MAX_OBJECTS_PER_PLAYER, 0, "team_object_array" ),
 END_RECV_TABLE()
 
 //-----------------------------------------------------------------------------
@@ -56,8 +49,10 @@ END_RECV_TABLE()
 C_TFTeam::C_TFTeam()
 {
 	m_nFlagCaptures = 0;
+	m_iRole = 0;
 	m_bEscorting = false;
 	m_iRoundScore = 0;
+	m_wszLocalizedTeamName[0] = '\0';
 }
 
 //-----------------------------------------------------------------------------
@@ -68,48 +63,28 @@ C_TFTeam::~C_TFTeam()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Get the localized name for the team
+// Purpose: 
 //-----------------------------------------------------------------------------
-char* C_TFTeam::Get_Name( void )
+void C_TFTeam::OnDataChanged( DataUpdateType_t updateType )
 {
-	if ( Q_stricmp( m_szTeamname, "blue" ) == 0 )
-	{
-		return "BLU";
-	}
-	else if ( Q_stricmp( m_szTeamname, "red" ) == 0 )
-	{
-		return "RED";
-	}
-	else if (Q_stricmp(m_szTeamname, "green") == 0)
-	{
-		return "GRN";
-	}
-	else if (Q_stricmp(m_szTeamname, "yellow") == 0)
-	{
-		return "YLW";
-	}
+	BaseClass::OnDataChanged( updateType );
 
-	return m_szTeamname;
+	if ( updateType == DATA_UPDATE_CREATED )
+	{
+		UpdateTeamName();
+		SetNextClientThink( gpGlobals->curtime + 0.5f );
+	}
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Get the C_TFTeam for the specified team number
-//-----------------------------------------------------------------------------
-C_TFTeam *GetGlobalTFTeam( int iTeamNumber )
-{
-	for ( int i = 0; i < g_Teams.Count(); i++ )
-	{
-		if ( g_Teams[i]->GetTeamNumber() == iTeamNumber )
-			return ( dynamic_cast< C_TFTeam* >( g_Teams[i] ) );
-	}
-
-	return NULL;
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void C_TFTeam::ClientThink( void )
+{
+	UpdateTeamName();
+	SetNextClientThink( gpGlobals->curtime + 0.5f );
+}
+
 int C_TFTeam::GetNumObjects( int iObjectType )
 {
 	// Asking for a count of a specific object type?
@@ -118,7 +93,7 @@ int C_TFTeam::GetNumObjects( int iObjectType )
 		int iCount = 0;
 		for ( int i = 0; i < GetNumObjects(); i++ )
 		{
-			CBaseObject *pObject = GetObject(i);
+			C_BaseObject *pObject = GetObject(i);
 			if ( pObject && pObject->GetType() == iObjectType )
 			{
 				iCount++;
@@ -126,15 +101,68 @@ int C_TFTeam::GetNumObjects( int iObjectType )
 		}
 		return iCount;
 	}
-
+	
 	return m_aObjects.Count();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CBaseObject *C_TFTeam::GetObject( int num )
+C_BaseObject *C_TFTeam::GetObject( int num )
 {
 	Assert( num >= 0 && num < m_aObjects.Count() );
 	return m_aObjects[ num ];
+}
+	
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void C_TFTeam::UpdateTeamName( void )
+{
+	// TODO: Add tournament mode team name handling here.
+	const wchar_t *pwszLocalized = NULL;
+
+	switch ( GetTeamNumber() )
+	{
+	case TF_TEAM_RED:
+		pwszLocalized = g_pVGuiLocalize->Find( "#TF_RedTeam_Name" );
+		break;
+	case TF_TEAM_BLUE:
+		pwszLocalized = g_pVGuiLocalize->Find( "#TF_BlueTeam_Name" );
+		break;
+	case TF_TEAM_GREEN:
+		pwszLocalized = g_pVGuiLocalize->Find( "#TF_GreenTeam_Name" );
+		break;
+	case TF_TEAM_YELLOW:
+		pwszLocalized = g_pVGuiLocalize->Find( "#TF_YellowTeam_Name" );
+		break;
+	case TEAM_SPECTATOR:
+		pwszLocalized = g_pVGuiLocalize->Find( "#TF_Spectators" );
+		break;
+	}
+
+	if ( pwszLocalized )
+	{
+		V_wcscpy_safe( m_wszLocalizedTeamName, pwszLocalized );
+	}
+	else
+	{
+		g_pVGuiLocalize->ConvertANSIToUnicode( g_aTeamNames[GetTeamNumber()], m_wszLocalizedTeamName, sizeof( m_wszLocalizedTeamName ) );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Get the C_TFTeam for the specified team number
+//-----------------------------------------------------------------------------
+C_TFTeam *GetGlobalTFTeam( int iTeamNumber )
+{
+	return assert_cast<C_TFTeam *>( GetGlobalTeam( iTeamNumber ) );
+}
+
+const wchar_t *GetLocalizedTeamName( int iTeamNumber )
+{
+	C_TFTeam *pTeam = GetGlobalTFTeam( iTeamNumber );
+	if ( pTeam )
+	{
+		return pTeam->GetTeamName();
+	}
+
+	return L"";
 }

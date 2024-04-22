@@ -15,6 +15,10 @@
 #include "mp_shareddefs.h"
 #include "utlbuffer.h"
 
+#if defined( TF_CLASSIC )
+#include "tf_gamerules.h"
+#endif
+
 #ifdef CLIENT_DLL
 
 #else
@@ -1133,10 +1137,10 @@ ConVarRef suitcharger( "sk_suitcharger" );
 
 		if ( tv_delaymapchange.GetBool() )
 		{
-			if ( HLTVDirector()->IsActive() )	
+			if ( HLTVDirector()->IsActive() )
 				flWaitTime = MAX( flWaitTime, HLTVDirector()->GetDelay() );
 		}
-				
+
 		m_flIntermissionEndTime = gpGlobals->curtime + flWaitTime;
 
 		for ( int i = 1; i <= MAX_PLAYERS; i++ )
@@ -1146,6 +1150,17 @@ ConVarRef suitcharger( "sk_suitcharger" );
 			if ( !pPlayer )
 				continue;
 
+#if defined( TF_CLASSIC )
+			if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+			{
+				pPlayer->ShowViewPortPanel( PANEL_DEATHMATCHSCOREBOARD );
+			}
+			else if( TFGameRules() && TFGameRules()->IsFourTeamGame() )
+			{
+				pPlayer->ShowViewPortPanel( PANEL_FOURTEAMSCOREBOARD );
+			}
+			else
+#endif
 			pPlayer->ShowViewPortPanel( PANEL_SCOREBOARD );
 		}
 	}

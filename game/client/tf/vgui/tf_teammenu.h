@@ -7,12 +7,14 @@
 
 #ifndef TF_TEAMMENU_H
 #define TF_TEAMMENU_H
+
 #ifdef _WIN32
 #pragma once
 #endif
 
+#include <vgui_controls/Frame.h>
+#include <game/client/iviewport.h>
 #include "tf_controls.h"
-#include <teammenu.h>
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -25,13 +27,14 @@ private:
 public:
 	CTFTeamButton( vgui::Panel *parent, const char *panelName );
 
-	void ApplySettings( KeyValues *inResourceData );
-	void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void ApplySettings( KeyValues *inResourceData );
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 
-	void OnCursorExited();
-	void OnCursorEntered();
+	virtual void OnCursorExited();
+	virtual void OnCursorEntered();
 
-	void OnTick( void );
+	virtual void OnTick( void );
+	virtual void FireActionSignal( void );
 
 	void SetDefaultAnimation( const char *pszName );
 
@@ -53,45 +56,51 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: Displays the team menu
 //-----------------------------------------------------------------------------
-class CTFTeamMenu : public CTeamMenu
+class CTFTeamMenu : public vgui::Frame, public IViewPortPanel
 {
-private:
-	DECLARE_CLASS_SIMPLE( CTFTeamMenu, CTeamMenu );
-		
 public:
-	CTFTeamMenu( IViewPort *pViewPort );
+	DECLARE_CLASS_SIMPLE( CTFTeamMenu, vgui::Frame );
+
+	CTFTeamMenu( IViewPort *pViewPort, const char *pName );
 	~CTFTeamMenu();
 
-	void Update();
-	void ShowPanel( bool bShow );
+	virtual const char *GetName( void ) { return BaseClass::GetName(); }
+	virtual void SetData( KeyValues *data ) {}
+	virtual void Reset() {}
+	virtual void Update();
+	virtual bool NeedsUpdate( void ) { return false; }
+	virtual bool HasInputElements( void ) { return true; }
+	virtual void ShowPanel( bool bShow );
+	virtual void CreateTeamButtons( void );
+
+	virtual GameActionSet_t GetPreferredActionSet() { return GAME_ACTION_SET_NONE; }
+
+	// both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
+	vgui::VPANEL GetVPanel( void ) { return BaseClass::GetVPanel(); }
+	virtual bool IsVisible() { return BaseClass::IsVisible(); }
+	virtual void SetParent( vgui::VPANEL parent ) { BaseClass::SetParent( parent ); }
 
 #ifdef _X360
 	CON_COMMAND_MEMBER_F( CTFTeamMenu, "join_team", Join_Team, "Send a jointeam command", 0 );
 #endif
 
-
-	bool IsBlueTeamDisabled(){ return m_bBlueDisabled; }
-	bool IsRedTeamDisabled(){ return m_bRedDisabled; }
-
 protected:
-	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+	virtual const char *GetResFilename( void ) { return "Resource/UI/Teammenu.res"; }
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual void OnKeyCodePressed( vgui::KeyCode code );
 
 	virtual void SetHighlanderTeamsFullPanels( bool bEnabled );
 
 	// command callbacks
 	virtual void OnCommand( const char *command );
-
-	virtual void LoadMapPage( const char *mapName );
-
 	virtual void OnTick( void );
+	virtual void OnThink( void );
+	virtual void OnClose();
+
+protected:
+	CTFTeamButton	*m_pTeamButtons[TF_TEAM_COUNT];
 
 private:
-
-	CTFTeamButton	*m_pBlueTeamButton;
-	CTFTeamButton	*m_pRedTeamButton;
-	CTFTeamButton	*m_pAutoTeamButton;
-	CTFTeamButton	*m_pSpecTeamButton;
 	CExLabel		*m_pSpecLabel;
 
 	CExLabel		*m_pHighlanderLabel;
@@ -100,117 +109,45 @@ private:
 	CExLabel		*m_pTeamFullLabelShadow;
 	CTFImagePanel	*m_pTeamsFullArrow;
 
-
 #ifdef _X360
 	CTFFooter		*m_pFooter;
 #else
 	CExButton		*m_pCancelButton;
 #endif
 
-	bool m_bRedDisabled;
-	bool m_bBlueDisabled;
-
-
 private:
-	enum { NUM_TEAMS = 3 };
-
+	ButtonCode_t m_iScoreBoardKey;
 	ButtonCode_t m_iTeamMenuKey;
 };
 
 //-----------------------------------------------------------------------------
-// Purpose: Displays the 4 team menu
+// Purpose: Displays the four team menu
 //-----------------------------------------------------------------------------
-class CTFFourTeamMenu : public CTeamMenu
+class CTFFourTeamMenu : public CTFTeamMenu
 {
-private:
-	DECLARE_CLASS_SIMPLE(CTFFourTeamMenu, CTeamMenu);
-
 public:
-	CTFFourTeamMenu(IViewPort *pViewPort);
+	DECLARE_CLASS_SIMPLE( CTFFourTeamMenu, CTFTeamMenu );
 
-	virtual const char *GetName(void) { return PANEL_FOURTEAMSELECT; }
-
-	void Update();
-	void ShowPanel(bool bShow);
-
-	bool IsBlueTeamDisabled(){ return m_bBlueDisabled; }
-	bool IsRedTeamDisabled(){ return m_bRedDisabled; }
-	bool IsGreenTeamDisabled(){ return m_bGreenDisabled; }
-	bool IsYellowTeamDisabled(){ return m_bYellowDisabled; }
-
-
-protected:
-	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-	virtual void OnKeyCodePressed(vgui::KeyCode code);
-
-	// command callbacks
-	virtual void OnCommand(const char *command);
-
-	virtual void OnTick(void);
-
-private:
-
-	CTFTeamButton	*m_pBlueTeamButton;
-	CTFTeamButton	*m_pRedTeamButton;
-	CTFTeamButton	*m_pGreenTeamButton;
-	CTFTeamButton	*m_pYellowTeamButton;
-	CTFTeamButton	*m_pAutoTeamButton;
-	CTFTeamButton	*m_pSpecTeamButton;
-	CExLabel		*m_pSpecLabel;
-	CExButton		*m_pCancelButton;
-
-	bool m_bRedDisabled;
-	bool m_bBlueDisabled;
-	bool m_bGreenDisabled;
-	bool m_bYellowDisabled;
-
-
-private:
-	enum { NUM_TEAMS = 5 };
-
-	ButtonCode_t m_iTeamMenuKey;
+	CTFFourTeamMenu( IViewPort *pViewPort, const char *pName );
+	virtual const char *GetResFilename( void ) { return "Resource/UI/FourTeamMenu.res"; }
+	virtual void CreateTeamButtons( void );
+	
+	virtual GameActionSet_t GetPreferredActionSet() { return GAME_ACTION_SET_NONE; }
 };
 
-
 //-----------------------------------------------------------------------------
-// Purpose: Displays the arena team menu
+// Purpose: Displays the FFA team menu
 //-----------------------------------------------------------------------------
-class CTFDeathmatchTeamMenu : public CTeamMenu
+class CTFDeathmatchTeamMenu : public CTFTeamMenu
 {
-private:
-	DECLARE_CLASS_SIMPLE(CTFDeathmatchTeamMenu, CTeamMenu);
-
 public:
-	CTFDeathmatchTeamMenu(IViewPort *pViewPort);
-	~CTFDeathmatchTeamMenu();
+	DECLARE_CLASS_SIMPLE( CTFDeathmatchTeamMenu, CTFTeamMenu );
 
-	virtual const char *GetName(void) { return PANEL_DEATHMATCHTEAMSELECT; }
-	void Update();
-	void ShowPanel(bool bShow);
-
-protected:
-	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-	virtual void OnKeyCodePressed(vgui::KeyCode code);
-
-	// command callbacks
-	virtual void OnCommand(const char *command);
-
-	virtual void LoadMapPage(const char *mapName);
-
-	virtual void OnTick(void);
-
-private:
-
-	CTFTeamButton	*m_pAutoTeamButton;
-	CTFTeamButton	*m_pSpecTeamButton;
-	CExLabel		*m_pSpecLabel;
-	CExButton		*m_pCancelButton;
-
-
-private:
-	enum { NUM_TEAMS = 3 };
-
-	ButtonCode_t m_iTeamMenuKey;
+	CTFDeathmatchTeamMenu( IViewPort *pViewPort, const char *pName );
+	virtual const char *GetResFilename( void ) { return "Resource/UI/DeathmatchTeamMenu.res"; }
+	virtual void CreateTeamButtons( void );
+	
+	virtual GameActionSet_t GetPreferredActionSet() { return GAME_ACTION_SET_NONE; }
 };
 
 #endif // TF_TEAMMENU_H

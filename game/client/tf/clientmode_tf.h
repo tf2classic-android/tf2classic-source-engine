@@ -18,6 +18,7 @@ class CHudMenuEngyBuild;
 class CHudMenuEngyDestroy;
 class CHudMenuSpyDisguise;
 class CTFFreezePanel;
+class CTFClientScoreBoardDialog;
 
 #if defined( _X360 )
 class CTFClientScoreBoardDialog;
@@ -71,9 +72,7 @@ private:
 	CTFFreezePanel		*m_pFreezePanel;
 	IGameUI			*m_pGameUI;
 
-#if defined( _X360 )
 	CTFClientScoreBoardDialog	*m_pScoreboard;
-#endif
 };
 
 

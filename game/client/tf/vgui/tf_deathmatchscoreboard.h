@@ -1,12 +1,6 @@
-//========= Copyright © 1996-2006, Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================//
-
 #ifndef TF_DEATHMATCHSCOREBOARD_H
 #define TF_DEATHMATCHSCOREBOARD_H
+
 #ifdef _WIN32
 #pragma once
 #endif
@@ -17,77 +11,36 @@
 #include "clientscoreboarddialog.h"
 #include "tf_clientscoreboard.h"
 
-//-----------------------------------------------------------------------------
-// Purpose: displays the MapInfo menu
-//-----------------------------------------------------------------------------
-
-class CTFDeathMatchScoreBoardDialog : public CClientScoreBoardDialog
+class CTFDeathMatchScoreBoardDialog : public CTFClientScoreBoardDialog
 {
 private:
-	DECLARE_CLASS_SIMPLE(CTFDeathMatchScoreBoardDialog, CClientScoreBoardDialog);
-
+	DECLARE_CLASS_SIMPLE( CTFDeathMatchScoreBoardDialog, CTFClientScoreBoardDialog );
+	
 public:
-	CTFDeathMatchScoreBoardDialog(IViewPort *pViewPort);
-	virtual ~CTFDeathMatchScoreBoardDialog();
-	virtual void OnThink();
-	virtual const char *GetName(void) { return PANEL_DEATHMATCHSCOREBOARD; }
-	virtual void Reset();
+	CTFDeathMatchScoreBoardDialog( IViewPort *pViewPort, const char *pszName );
 	virtual void Update();
-	virtual void ShowPanel( bool bShow );
-	virtual void OnCommand(const char* command);
 
 protected:
-	virtual void PerformLayout();
+	virtual const char *GetName( void ) { return PANEL_DEATHMATCHSCOREBOARD; }
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 
-	virtual void PostApplySchemeSettings( vgui::IScheme *pScheme ) {};
+protected: // CTFClientScoreBoardDialog
+	virtual void InitPlayerList( vgui::SectionedListPanel *pPlayerList );
+	virtual void UpdatePlayerList();
+	virtual int GetDefaultAvatar( int playerIndex );
+	
+	virtual const char *GetResFilename() { return "Resource/UI/DeathMatchScoreBoard.res"; }
 
 private:
-	void InitPlayerList( vgui::SectionedListPanel *pPlayerList );
-	void SetPlayerListImages( vgui::SectionedListPanel *pPlayerList );
-	void UpdateTeamInfo();
-	void UpdatePlayerList();
-	void UpdateSpectatorList();
-	void UpdatePlayerDetails();
-	void ClearPlayerDetails();
-	bool ShouldShowAsSpectator( int iPlayerIndex );
 	void ResizeScoreboard();
 	
-	virtual void FireGameEvent( IGameEvent *event );
-
-	static bool TFPlayerSortFunc( vgui::SectionedListPanel *list, int itemID1, int itemID2 );
-
-	vgui::SectionedListPanel *GetSelectedPlayerList( void );
-
-	vgui::SectionedListPanel	*m_pPlayerListRed;
-	vgui::ImagePanel			*m_pRedScoreBG;
-	vgui::EditablePanel *m_pWinPanel;
-	vgui::Menu	*m_pContextMenu;
-
-	int							m_iImageDead;
-	int							m_iImageDominated;
-	int							m_iImageNemesis;
-	int							m_iClassEmblem[TF_CLASS_COUNT_ALL];
-	int							m_iClassEmblemDead[TF_CLASS_COUNT_ALL];
-	int							m_iImageDominations[TF_SCOREBOARD_MAX_DOMINATIONS];
-
-	int		iDefaultTall;
-	int		iSelectedPlayerIndex;
-
-	bool	bLockInput;
-	float	m_flTimeUpdateTeamScore;
-	CUtlVector< Vector > m_vecWinningPlayerColor;
+	vgui::SectionedListPanel *m_pPlayerList;
+	int m_iDefaultAvatar;
+	int m_iDefaultTall;
 	
-	CPanelAnimationVarAliasType( int, m_iStatusWidth, "status_width", "12", "proportional_int" );
-	CPanelAnimationVarAliasType( int, m_iNemesisWidth, "nemesis_width", "20", "proportional_int" );
-	CPanelAnimationVarAliasType(int, m_iNameWidth, "name_width", "236", "proportional_int");
-	CPanelAnimationVarAliasType(int, m_iKillsWidth, "kills_width", "23", "proportional_int");
-	CPanelAnimationVarAliasType(int, m_iDeathsWidth, "deaths_width", "23", "proportional_int");
-	CPanelAnimationVarAliasType(int, m_iKillstreakWidth, "killstreak_width", "23", "proportional_int");
-
-	MESSAGE_FUNC_PARAMS(ShowContextMenu, "ItemContextMenu", data);
+	CPanelAnimationVarAliasType( int, m_iKillsWidth, "kills_width", "23", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iDeathsWidth, "deaths_width", "23", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iKillstreakWidth, "killstreak_width", "23", "proportional_int" );
 };
-
-const wchar_t *GetPointsString( int iPoints );
 
 #endif // TF_DEATHMATCHSCOREBOARD_H
