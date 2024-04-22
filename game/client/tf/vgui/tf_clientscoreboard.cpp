@@ -185,6 +185,7 @@ void CTFClientScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme )
 	
 	m_iDeviceIcons[DEVICE_COMPUTER] = m_pImageList->AddImage( scheme()->GetImage( "../vgui/scoreboard/tango_computer", true ) );
 	m_iDeviceIcons[DEVICE_PHONE] = m_pImageList->AddImage( scheme()->GetImage( "../vgui/scoreboard/tango_phone", true ) );
+	m_iDeviceIcons[DEVICE_BOT] = m_pImageList->AddImage( scheme()->GetImage( "../vgui/scoreboard/tango_applications-system", true ) );
 
 	// resize the images to our resolution
 	for ( int i = 1; i < m_pImageList->GetImageCount(); i++ )
@@ -762,7 +763,7 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 		KeyValues *pKeyValues = new KeyValues( "data" );
 
 		pKeyValues->SetInt( "playerIndex", playerIndex );
-		pKeyValues->SetInt( "device", g_TF_PR->IsMobilePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_PHONE] : m_iDeviceIcons[DEVICE_COMPUTER] );
+		pKeyValues->SetInt( "device", g_TF_PR->IsFakePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_BOT] : g_TF_PR->IsMobilePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_PHONE] : m_iDeviceIcons[DEVICE_COMPUTER] );
 		pKeyValues->SetString( "name", g_TF_PR->GetPlayerName( playerIndex ) );
 		pKeyValues->SetInt( "score", g_TF_PR->GetTotalScore( playerIndex ) );
 

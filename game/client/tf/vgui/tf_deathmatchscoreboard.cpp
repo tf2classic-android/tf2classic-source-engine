@@ -117,7 +117,7 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 		KeyValues *pKeyValues = new KeyValues( "data" );
 
 		pKeyValues->SetInt( "playerIndex", playerIndex );
-		pKeyValues->SetInt( "device", g_TF_PR->IsMobilePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_PHONE] : m_iDeviceIcons[DEVICE_COMPUTER] );
+		pKeyValues->SetInt( "device", g_TF_PR->IsFakePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_BOT] : g_TF_PR->IsMobilePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_PHONE] : m_iDeviceIcons[DEVICE_COMPUTER] );
 		pKeyValues->SetString( "name", g_TF_PR->GetPlayerName( playerIndex ) );
 		pKeyValues->SetInt( "score", g_TF_PR->GetTotalScore( playerIndex ) );
 		pKeyValues->SetInt( "kills", g_TF_PR->GetPlayerScore( playerIndex ) );
