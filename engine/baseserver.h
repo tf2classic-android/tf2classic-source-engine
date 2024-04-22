@@ -225,8 +225,8 @@ public:
 
 private:
 
-	// Server responding to A2S_INFO
-	void		ReplyInfo( const netadr_t &adr );
+	void		ReplyInfo( const netadr_t &adr ); // Server responding to A2S_INFO
+	void		ReplyPlayers( const netadr_t &adr ); // Server responding to A2S_PLAYER
 
 	// Gets the next user ID mod SHRT_MAX and unique (not used by any active clients).
 	int			GetNextUserID();

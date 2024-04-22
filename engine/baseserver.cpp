@@ -57,6 +57,7 @@
 #include "cl_steamauth.h"
 #include "sv_filter.h"
 #include "master.h"
+#include "PlayerState.h"
 
 #if defined( _X360 )
 #include "xbox/xbox_win32stubs.h"
@@ -94,6 +95,9 @@ static CIPRateLimit s_connectRateChecker( &sv_max_connects_sec, &sv_max_connects
 #define S2A_EXTRA_DATA_HAS_GAMETAG_DATA		0x20		// Next bytes are the game tag string
 #define S2A_EXTRA_DATA_HAS_STEAMID			0x10		// Next 8 bytes are the steamID
 #define S2A_EXTRA_DATA_GAMEID				0x01		// Next 8 bytes are the gameID of the server
+
+// A2S_PLAYER data
+#define S2A_PLAYER                              'D' // + Playernum, name, frags, /*deaths*/, time on server
 
 int SortServerTags( char* const *p1, char* const *p2 )
 {
@@ -697,6 +701,15 @@ bool CBaseServer::ProcessConnectionlessPacket(netpacket_t * packet)
 			if ( !Q_stricmp( rgchInfoPostfix, A2S_KEY_STRING ) )
 			{
 				ReplyInfo( packet->from );
+				return true;
+			}
+
+			break;
+
+		case A2S_PLAYER:
+			if( sv.IsActive() )
+			{
+				ReplyPlayers( packet->from );
 				return true;
 			}
 
@@ -2684,4 +2697,52 @@ void CBaseServer::ReplyInfo( const netadr_t &adr )
 	}
 
 	NET_SendPacket( NULL, m_Socket, adr, (unsigned char *)buf.Base(), buf.TellPut() );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Server responds to the query (A2S_PLAYER)
+//-----------------------------------------------------------------------------
+void CBaseServer::ReplyPlayers( const netadr_t & adr )
+{
+	if( serverGameDLL && serverGameDLL->ShouldHideServer() )
+		return;
+
+	byte    data[1024 * 6];
+
+	bf_write buf( "SVC_PlayerInfo", data, sizeof( data ) );
+
+	buf.WriteLong( CONNECTIONLESS_HEADER );
+
+	// Find Player
+	buf.WriteByte( S2A_PLAYER );  // All players coming now.
+
+	buf.WriteByte( GetNumClients() );
+
+	for( int i = 0; i < GetClientCount(); i++ )
+	{
+		CGameClient     *client = sv.Client( i );
+
+		if( !client->IsConnected() )
+			continue;
+
+		CPlayerState *pl = serverGameClients->GetPlayerState( client->edict );
+		if( !pl )
+			continue;
+
+		buf.WriteByte( i );
+		buf.WriteString( client->GetClientName() );
+		buf.WriteLong( pl->frags );  // need to ask game dll for frags
+
+		if( client->IsFakeClient() )
+		{
+			buf.WriteFloat( -1.0f );
+		}
+		else
+		{
+			buf.WriteFloat( client->GetNetChannel()->GetTimeConnected() );
+		}
+	}
+
+	NET_SendPacket ( NULL, m_Socket, adr, buf.GetData(), buf.GetNumBytesWritten() );
+
 }
