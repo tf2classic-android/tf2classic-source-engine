@@ -22,6 +22,13 @@
 class CTFClassImage;
 class CTFPlayerModelPanel;
 
+enum
+{
+	DEVICE_COMPUTER = 0,
+	DEVICE_PHONE,
+	DEVICE_MAX
+};
+
 //-----------------------------------------------------------------------------
 // Purpose: displays the MapInfo menu
 //-----------------------------------------------------------------------------
@@ -85,8 +92,9 @@ protected:
 	vgui::ImageList				*m_pImageList;
 	CUtlMap<CSteamID, int>		m_mapAvatarsToImageList;
 
+	CPanelAnimationVar( int, m_iDeviceWidth, "device_width", "34" );		// Avatar width doesn't scale with resolution
 	CPanelAnimationVar( int, m_iAvatarWidth, "avatar_width", "34" );		// Avatar width doesn't scale with resolution
-	CPanelAnimationVarAliasType( int, m_iNameWidth, "name_width", "136", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iNameWidth, "name_width", "102", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iClassWidth, "class_width", "35", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iScoreWidth, "score_width", "35", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iPingWidth, "ping_width", "23", "proportional_int" );
@@ -100,6 +108,7 @@ protected:
 	int							m_iClassEmblemDead[TF_CLASS_COUNT_ALL];
 	int							m_iImageDominations[TF_SCOREBOARD_MAX_DOMINATIONS];
 	int							m_iDefaultAvatars[TF_TEAM_COUNT];
+	int							m_iDeviceIcons[DEVICE_MAX];
 
 private:
 	MESSAGE_FUNC_INT( OnPollHideCode, "PollHideCode", code );

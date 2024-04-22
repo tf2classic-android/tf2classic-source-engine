@@ -16,7 +16,7 @@
 #include "tier0/memdbgon.h"
 
 #if !defined( PUBLIC_BUILD )
-ConVar tf2c_dev_platform_override( "tf2c_dev_platform_override", "", FCVAR_NONE, "Override GetPlayerPlatform value." );
+ConVar tf2c_dev_platform_override( "tf2c_dev_platform_override", "-1", FCVAR_NONE, "Override IsMobilePlayer value. 0 - PC, 1 - MOBILE" );
 #endif
 
 IMPLEMENT_CLIENTCLASS_DT( C_TF_PlayerResource, DT_TFPlayerResource, CTFPlayerResource )

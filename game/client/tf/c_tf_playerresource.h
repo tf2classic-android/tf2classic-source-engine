@@ -46,14 +46,14 @@ public:
 	int		GetCountForPlayerClass( int iTeam, int iClass, bool bExcludeLocalPlayer = false );
 	int		GetNumPlayersForTeam( int iTeam, bool bAlive = false );
 
-	const char *GetPlayerPlatform( int iIndex ) const
+	bool IsMobilePlayer( int iIndex ) const
 	{
 #if !defined( PUBLIC_BUILD )
-		if( tf2c_dev_platform_override.GetString()[0] )
-			return tf2c_dev_platform_override.GetString();
+		if( tf2c_dev_platform_override.GetInt() != -1 )
+			return tf2c_dev_platform_override.GetBool();
 #endif
 
-		return m_bIsMobile[iIndex] ? "M" : "P";
+		return m_bIsMobile[iIndex];
 	}
 
 protected:

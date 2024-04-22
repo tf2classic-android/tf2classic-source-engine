@@ -65,6 +65,8 @@ void CTFDeathMatchScoreBoardDialog::InitPlayerList( vgui::SectionedListPanel *pP
 	pPlayerList->SetBgColor( Color( 0, 0, 0, 0 ) );
 	pPlayerList->SetBorder( NULL );
 	
+	pPlayerList->AddColumnToSection( 0, "device", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iDeviceWidth );
+
 	pPlayerList->AddColumnToSection( 0, "avatar", "", 2, this->m_iAvatarWidth, 0 );
 	pPlayerList->AddColumnToSection( 0, "name", "#TF_Scoreboard_Name", 0, this->m_iNameWidth, 0 );
 	pPlayerList->AddColumnToSection( 0, "status", "", 2, this->m_iStatusWidth, 0 );
@@ -115,6 +117,7 @@ void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
 		KeyValues *pKeyValues = new KeyValues( "data" );
 
 		pKeyValues->SetInt( "playerIndex", playerIndex );
+		pKeyValues->SetInt( "device", g_TF_PR->IsMobilePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_PHONE] : m_iDeviceIcons[DEVICE_COMPUTER] );
 		pKeyValues->SetString( "name", g_TF_PR->GetPlayerName( playerIndex ) );
 		pKeyValues->SetInt( "score", g_TF_PR->GetTotalScore( playerIndex ) );
 		pKeyValues->SetInt( "kills", g_TF_PR->GetPlayerScore( playerIndex ) );

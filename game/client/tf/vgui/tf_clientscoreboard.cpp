@@ -120,6 +120,7 @@ CTFClientScoreBoardDialog::CTFClientScoreBoardDialog( IViewPort *pViewPort, cons
 	memset( m_iClassEmblemDead, 0, sizeof( m_iClassEmblemDead ) );
 	memset( m_iImageDominations, 0, sizeof( m_iImageDominations ) );
 	memset( m_iDefaultAvatars, 0, sizeof( m_iDefaultAvatars ) );
+	memset( m_iDeviceIcons, 0, sizeof( m_iDeviceIcons ) );
 
 	m_iSelectedPlayerIndex = 0;
 
@@ -181,6 +182,9 @@ void CTFClientScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme )
 	{
 		m_iImageDominations[i] = m_pImageList->AddImage( scheme()->GetImage( VarArgs( "../hud/leaderboard_dom%d", i + 1 ), true ) );
 	}
+	
+	m_iDeviceIcons[DEVICE_COMPUTER] = m_pImageList->AddImage( scheme()->GetImage( "../vgui/scoreboard/tango_computer", true ) );
+	m_iDeviceIcons[DEVICE_PHONE] = m_pImageList->AddImage( scheme()->GetImage( "../vgui/scoreboard/tango_phone", true ) );
 
 	// resize the images to our resolution
 	for ( int i = 1; i < m_pImageList->GetImageCount(); i++ )
@@ -518,6 +522,7 @@ void CTFClientScoreBoardDialog::Reset()
 		}
 	}
 
+	// SanyaSho: this code is not in 2017
 	if ( m_pServerTimeLeftValue )
 		m_pServerTimeLeftValue->SetFgColor( Color( 255, 255, 0, 255 ) );
 }
@@ -535,6 +540,8 @@ void CTFClientScoreBoardDialog::InitPlayerList( SectionedListPanel *pPlayerList 
 	pPlayerList->SetSectionFgColor( 0, Color( 255, 255, 255, 255 ) );
 	pPlayerList->SetBgColor( Color( 0, 0, 0, 0 ) );
 	pPlayerList->SetBorder( NULL );
+	
+	pPlayerList->AddColumnToSection( 0, "device", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iDeviceWidth );
 
 	// Avatars are always displayed at 32x32 regardless of resolution
 	pPlayerList->AddColumnToSection( 0, "avatar", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iAvatarWidth );
@@ -548,6 +555,7 @@ void CTFClientScoreBoardDialog::InitPlayerList( SectionedListPanel *pPlayerList 
 				pPlayerList->GetWide()
 				+ -15
 				- 2 * this->m_iNemesisWidth
+				- this->m_iDeviceWidth
 				- this->m_iAvatarWidth
 				- this->m_iStatusWidth
 				- this->m_iPingWidth
@@ -754,6 +762,7 @@ void CTFClientScoreBoardDialog::UpdatePlayerList( void )
 		KeyValues *pKeyValues = new KeyValues( "data" );
 
 		pKeyValues->SetInt( "playerIndex", playerIndex );
+		pKeyValues->SetInt( "device", g_TF_PR->IsMobilePlayer( playerIndex ) ? m_iDeviceIcons[DEVICE_PHONE] : m_iDeviceIcons[DEVICE_COMPUTER] );
 		pKeyValues->SetString( "name", g_TF_PR->GetPlayerName( playerIndex ) );
 		pKeyValues->SetInt( "score", g_TF_PR->GetTotalScore( playerIndex ) );
 
