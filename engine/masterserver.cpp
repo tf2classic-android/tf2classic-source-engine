@@ -33,12 +33,6 @@ static char g_MasterServers[][64] =
 	"ms.tyabus.co.uk:27011"
 };
 
-#ifdef DEDICATED
-#define IsLan() false
-#else
-#define IsLan() sv_lan.GetInt()
-#endif
-
 //-----------------------------------------------------------------------------
 // Purpose: List of master servers and some state info about them
 //-----------------------------------------------------------------------------
@@ -427,7 +421,7 @@ void CMaster::CheckHeartbeat (void)
 	ALIGN4 char buf[256] ALIGN4_POST;
 
 	if ( m_bNoMasters ||      // We are ignoring heartbeats
-		IsLan() ||           // Lan servers don't heartbeat
+		sv_lan.GetBool() ||           // Lan servers don't heartbeat
 		(sv.GetMaxClients() <= 1) ||  // not a multiplayer server.
 		!sv.IsActive() )			  // only heartbeat if a server is running.
 		return;
@@ -479,7 +473,7 @@ void CMaster::ShutdownConnection( void )
 		return;
 
 	if ( m_bNoMasters ||      // We are ignoring heartbeats
-		IsLan() ||           // Lan servers don't heartbeat
+		sv_lan.GetBool() ||           // Lan servers don't heartbeat
 		(sv.GetMaxClients() <= 1) )   // not a multiplayer server.
 		return;
 
@@ -735,6 +729,15 @@ CON_COMMAND( setmaster, "" )
 void CMaster::Heartbeat_f (void)
 {
 	adrlist_t *p;
+
+	if( m_bNoMasters ||      // We are ignoring heartbeats
+		sv_lan.GetBool() ||           // Lan servers don't heartbeat
+		(sv.GetMaxClients() <= 1) ||  // not a multiplayer server.
+		!sv.IsActive() )			  // only heartbeat if a server is running.
+	{
+		Msg( "Your server is not eligible for heartbeat\n" );
+		return;
+	}
 
 	p = m_pMasterAddresses;
 	while ( p )
