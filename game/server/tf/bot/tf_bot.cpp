@@ -4190,12 +4190,19 @@ bool CTFBot::IsSquadmate( CTFPlayer *who ) const
 void CTFBot::DisguiseAsRandomClass( void )
 {
 	CUtlVector< int > enemy_teams;
-	ForEachEnemyTFTeam( GetTeamNumber(), [&enemy_teams](int enemyTeam)
+	if( TFGameRules()->IsFourTeamGame() )
 	{
-		enemy_teams.AddToTail( enemyTeam );
-		return true;
-	} );
-	
+		ForEachEnemyTFTeam( GetTeamNumber(), [&enemy_teams](int enemyTeam)
+		{
+			enemy_teams.AddToTail( enemyTeam );
+			return true;
+		} );
+	}
+	else
+	{
+		enemy_teams.AddToTail( GetTeamNumber() == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED ); // fixme
+	}
+
 	int enemyTeam = GetTeamNumber();
 	if( enemy_teams.Count() > 0 )
 	{
