@@ -110,7 +110,7 @@ void CTFBotDeathmatchReaction::LoadChatFile()
 	m_aLookAtMeMessages.RemoveAll();
 	
 	const char *pszChatFile = "scripts/tf_bot_chat.txt";
-	const char *pszMapChatFile = UTIL_VarArgs( "maps/%s_bot_chat.txt", gpGlobals->mapname );
+	const char *pszMapChatFile = UTIL_VarArgs( "maps/%s_bot_chat.txt", STRING( gpGlobals->mapname ) );
 	if( tf_bot_chat_use_map_chat.GetBool() && filesystem->FileExists( pszMapChatFile, "MOD" ) )
 	{
 		pszChatFile = pszMapChatFile;
