@@ -38,7 +38,7 @@ public:
 	// Sends the actual heartbeat to the master ( after challenge value is parsed )
 	virtual void SendHeartbeat( struct adrlist_s *p ) = 0;
 	// Add server to global master list
-	virtual void AddServer( struct netadr_s *adr ) = 0;
+	virtual bool AddServer( struct netadr_s *adr ) = 0;
 	// If parsing for server, etc. fails, always have at least one server around to use.
 	virtual void UseDefault ( void ) = 0;
 	// See if it's time to send the next heartbeat

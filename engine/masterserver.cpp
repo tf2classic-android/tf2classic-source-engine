@@ -67,7 +67,7 @@ public:
 	// Sets up master address
 	void ShutdownConnection(void);
 	void SendHeartbeat( struct adrlist_s *p );
-	void AddServer( struct netadr_s *adr );
+	bool AddServer( struct netadr_s *adr );
 	void RemoveServer( struct netadr_s *adr );
 	void UseDefault ( void );
 	void CheckHeartbeat (void);
@@ -492,26 +492,35 @@ void CMaster::ShutdownConnection( void )
 // Purpose: Add server to the master list
 // Input  : *adr - 
 //-----------------------------------------------------------------------------
-void CMaster::AddServer( netadr_t *adr )
+bool CMaster::AddServer( netadr_t *adr )
 {
 	adrlist_t *n;
+	bool bAlreadyExists = false;
 
 	// See if it's there
 	n = m_pMasterAddresses;
 	while ( n )
 	{
-		if ( n->adr.CompareAdr( *adr ) )
+		if( n->adr.CompareAdr( *adr ) )
+		{
+			bAlreadyExists = true;
 			break;
+		}
+
 		n = n->next;
 	}
 
 	// Found it in the list.
-	if ( n )
-		return;
+	//if ( n )
+	if( bAlreadyExists )
+		return false;
 
 	n = ( adrlist_t * ) malloc ( sizeof( adrlist_t ) );
-	if ( !n )
-		Sys_Error( "Error allocating %zd bytes for master address.", sizeof( adrlist_t ) );
+	if( !n )
+	{
+		Warning( "Error allocating %zd bytes for master address.", sizeof( adrlist_t ) );
+		return false;
+	}
 
 	memset( n, 0, sizeof( adrlist_t ) );
 
@@ -523,6 +532,8 @@ void CMaster::AddServer( netadr_t *adr )
 	// Link it in.
 	n->next = m_pMasterAddresses;
 	m_pMasterAddresses = n;
+
+	return true;
 }
 
 void CMaster::RemoveServer( netadr_s *adr )
@@ -652,10 +663,17 @@ void CMaster::SetMaster_f( const CCommand &args )
 
 	if ( Q_strlen( szMasterAddress ) > 0 )
 	{
+		// Check if address is valid before conversion
+		if( !adr.IsValid() )
+		{
+			ConMsg( "Invalid address \"%s\", setmaster command ignored\n", adr.ToString() );
+			return;
+		}
+
 		// Convert to a valid address
 		if ( !NET_StringToAdr ( szMasterAddress, &adr ) )
 		{
-			ConMsg(" Invalid address \"%s\", setmaster command ignored\n", szMasterAddress );
+			ConMsg( "Unable to convert address \"%s\", setmaster command ignored\n", szMasterAddress );
 			return;
 		}
 
@@ -678,9 +696,7 @@ void CMaster::SetMaster_f( const CCommand &args )
 	}
 	else if ( !Q_stricmp( pszCmd, "add" ) )
 	{
-		AddServer( &adr );
-		ConMsg( "Adding master at %s\n", adr.ToString() );
-		/*
+		// If we returned false that means master server already exists in the list
 		if ( AddServer( &adr ) )
 		{
 			ConMsg ( "Adding master at %s\n", adr.ToString() );
@@ -689,7 +705,7 @@ void CMaster::SetMaster_f( const CCommand &args )
 		{
 			ConMsg ( "Master at %s already in list\n", adr.ToString() );
 		}
-		*/
+		
 
 		// If we get here, masters are definitely being used.
 		//m_bNoMasters = false;
