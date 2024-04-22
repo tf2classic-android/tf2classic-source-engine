@@ -1448,19 +1448,8 @@ void CTFWeaponBase::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCh
 // -----------------------------------------------------------------------------
 bool CTFWeaponBase::CanFireAccurateShot( int nBulletsPerShot )
 {
-	float v2 = ( gpGlobals->curtime - m_flLastFireTime );
-	bool v3;
-
-	if( nBulletsPerShot = 1 )
-	{
-		v3 = ( v2 <= 1.25f );
-	}
-	else
-	{
-		v3 = ( v2 <= 0.25f );
-	}
-
-	return !v3;
+	float flFireInterval = gpGlobals->curtime - m_flLastFireTime;
+	return ( ( nBulletsPerShot == 1 ) ? flFireInterval > 1.25f : flFireInterval > 0.25f );
 }
 
 // -----------------------------------------------------------------------------
