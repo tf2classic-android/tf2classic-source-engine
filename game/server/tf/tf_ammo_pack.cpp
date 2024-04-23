@@ -67,6 +67,7 @@ void CTFAmmoPack::Spawn( void )
 void CTFAmmoPack::Precache( void )
 {
 	PrecacheScriptSound( TF_AMMOPACK_PICKUP_SOUND );
+	BaseClass::Precache();
 }
 
 CTFAmmoPack *CTFAmmoPack::Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, const char *pszModelName, bool bUseCustomAmmoCount )
