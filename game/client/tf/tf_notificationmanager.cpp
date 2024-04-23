@@ -16,6 +16,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+//#define USE_LOCAL_WEBSERVER
+
 #define TF_CLASSIC_VERSION "2.0.0b4+"
 
 const char *g_aRequestURLs[REQUEST_COUNT] =
@@ -29,8 +31,13 @@ const char *g_aRequestURLs[REQUEST_COUNT] =
 	"http://dev.tf2c.services.0x13.io/notifications.vdf",
 	"http://dev.tf2c.services.0x13.io/serverlist/official.vdf" // was removed with in-game official servers list
 #else
+#if defined( USE_LOCAL_WEBSERVER )
 	"http://127.0.0.1/tf2c/version.vdf",
 	"http://127.0.0.1/tf2c/notifications.vdf"
+#else
+	"http://147.78.67.219/tf2c/version.vdf",
+	"http://147.78.67.219/tf2c/notifications.vdf"
+#endif
 #endif
 };
 
