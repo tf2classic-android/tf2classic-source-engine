@@ -51,10 +51,6 @@ ConVar mat_supportflashlight( "mat_supportflashlight", "-1", FCVAR_HIDDEN, "0 - 
 ConVar mat_texture_reload_frame_swap_workaround( "mat_texture_reload_frame_swap_workaround", CV_FRAME_SWAP_WORKAROUND_DEFAULT, FCVAR_INTERNAL_USE,
                                                  "Workaround certain GL drivers holding unnecessary amounts of data when loading many materials by forcing synthetic frame swaps" );
 
-// This ConVar allows us to skip ~40% of our map load time, but it doesn't work on GPUs older
-// than ~2005. We set it automatically and don't expose it to players. 
-ConVar mat_requires_rt_alloc_first( "mat_requires_rt_alloc_first", "0", FCVAR_HIDDEN );
-
 // Make sure this convar gets created before videocfg.lib is initialized, so it can be driven by dxsupport.cfg
 static ConVar mat_tonemapping_occlusion_use_stencil( "mat_tonemapping_occlusion_use_stencil", "0" );
 
@@ -1906,7 +1902,6 @@ void CMaterialSystem::ReadConfigFromConVars( MaterialSystem_Config_t *pConfig )
 	}
 	if ( pConfig->dxSupportLevel < 90 )
 	{
-		mat_requires_rt_alloc_first.SetValue( 1 );
 		r_flashlightdepthtexture.SetValue( 0 );
 		mat_motion_blur_enabled.SetValue( 0 );
 		pConfig->m_bShadowDepthTexture = false;
