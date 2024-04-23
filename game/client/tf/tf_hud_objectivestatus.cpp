@@ -20,6 +20,7 @@
 
 #include "c_playerresource.h"
 #include "teamplay_round_timer.h"
+#include "tier3/tier3.h"
 #include "utlvector.h"
 #include "entity_capture_flag.h"
 #include "c_tf_player.h"
@@ -1072,6 +1073,9 @@ CTFHudKothTimeStatus::CTFHudKothTimeStatus( const char *pElementName ) : CHudEle
 
 	RegisterForRenderGroup( "mid" );
 	RegisterForRenderGroup( "commentary" );
+	
+	vgui::ivgui()->AddTickSignal( GetVPanel() );
+	ListenForGameEvent( "game_maploaded" );
 }
 
 //-----------------------------------------------------------------------------
@@ -1079,12 +1083,11 @@ CTFHudKothTimeStatus::CTFHudKothTimeStatus( const char *pElementName ) : CHudEle
 //-----------------------------------------------------------------------------
 void CTFHudKothTimeStatus::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
-	LoadControlSettings( "resource/UI/HudObjectiveKothTimePanel.res" );
-
 	BaseClass::ApplySchemeSettings( pScheme );
-
-	// Shitty hack
-	m_nOriginalActiveTimerBGYPos = m_pActiveTimerBG->GetYPos();
+	
+	KeyValues *pCond = new KeyValues( "conditions" );
+	if( pCond && (TFGameRules() && TFGameRules()->IsFourTeamGame()) ) AddSubKeyNamed( pCond, "if_4team" );
+	LoadControlSettings( "resource/UI/HudObjectiveKothTimePanel.res", NULL, NULL, pCond );
 }
 
 //-----------------------------------------------------------------------------
@@ -1131,27 +1134,50 @@ void CTFHudKothTimeStatus::UpdateActiveTeam( void )
 {
 	if ( m_pActiveTimerBG )
 	{
+		int nActiveXPos = 0;
+		int x = 0, y = 0;
 		if ( m_pActiveKothTimerPanel )
 		{
 			m_pActiveTimerBG->SetVisible( true );
-
-			if ( m_pActiveKothTimerPanel->m_iTeamIndex == TF_TEAM_BLUE )
+			m_pActiveTimerBG->GetPos( x, y );
+			if( TFGameRules() && TFGameRules()->IsFourTeamGame() )
 			{
-				m_pActiveTimerBG->SetPos( m_nBlueActiveXPos, m_nOriginalActiveTimerBGYPos );
+				switch( m_pActiveKothTimerPanel->m_iTeamIndex )
+				{
+					case TF_TEAM_RED:
+						nActiveXPos = m_n4RedActiveXPos;
+						break;
+					case TF_TEAM_BLUE:
+						nActiveXPos = m_n4BlueActiveXPos;
+						break;
+					case TF_TEAM_GREEN:
+						nActiveXPos = m_n4GreenActiveXPos;
+						break;
+					case TF_TEAM_YELLOW:
+						nActiveXPos = m_n4YellowActiveXPos;
+						break;
+					default:
+						nActiveXPos = x;
+						break;
+				};
 			}
-			else if  ( m_pActiveKothTimerPanel->m_iTeamIndex == TF_TEAM_RED )
+			else
 			{
-				m_pActiveTimerBG->SetPos( m_nRedActiveXPos, m_nOriginalActiveTimerBGYPos );
-			}
-			else if ( m_pActiveKothTimerPanel->m_iTeamIndex == TF_TEAM_GREEN )
-			{
-				m_pActiveTimerBG->SetPos( m_nGreenActiveXPos, m_nGreenActiveYPos );
-			}
-			else if ( m_pActiveKothTimerPanel->m_iTeamIndex == TF_TEAM_YELLOW )
-			{
-				m_pActiveTimerBG->SetPos( m_nYellowActiveXPos, m_nYellowActiveYPos );
+				switch( m_pActiveKothTimerPanel->m_iTeamIndex )
+				{
+					case TF_TEAM_RED:
+						nActiveXPos = m_nRedActiveXPos;
+						break;
+					case TF_TEAM_BLUE:
+						nActiveXPos = m_nBlueActiveXPos;
+						break;
+					default:
+						nActiveXPos = x;
+						break;
+				};
 			}
 			
+			m_pActiveTimerBG->SetPos( nActiveXPos, y );
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "ActiveTimerBGPulse" );
 		}
 		else
@@ -1318,5 +1344,13 @@ void CTFHudKothTimeStatus::Think( void )
 
 			m_pActiveTimerBG->SetVisible( false );
 		}
+	}
+}
+
+void CTFHudKothTimeStatus::FireGameEvent( IGameEvent *pEvent )
+{
+	if( !Q_stricmp( pEvent->GetName(), "game_maploaded" ) )
+	{
+		InvalidateLayout( false, true );
 	}
 }

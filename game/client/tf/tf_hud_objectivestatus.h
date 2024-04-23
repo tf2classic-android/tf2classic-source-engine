@@ -153,6 +153,7 @@ public:
 	virtual void Reset( void );
 	virtual void Think( void );
 	virtual void UpdateActiveTeam( void );
+	virtual void FireGameEvent( IGameEvent *pEvent );
 
 	virtual int GetRenderGroupPriority( void ) { return 60; }	// higher than build menus
 
@@ -160,11 +161,10 @@ private:
 
 	CPanelAnimationVarAliasType( int, m_nBlueActiveXPos, "blue_active_xpos", "0", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_nRedActiveXPos, "red_active_xpos", "0", "proportional_int" );
-	CPanelAnimationVarAliasType( int, m_nGreenActiveXPos, "green_active_xpos", "0", "proportional_int" );
-	CPanelAnimationVarAliasType( int, m_nYellowActiveXPos, "yellow_active_xpos", "0", "proportional_int" );
-	CPanelAnimationVarAliasType( int, m_nGreenActiveYPos, "green_active_ypos", "0", "proportional_int" );
-	CPanelAnimationVarAliasType( int, m_nYellowActiveYPos, "yellow_active_ypos", "0", "proportional_int" );
-
+	CPanelAnimationVarAliasType( int, m_n4BlueActiveXPos, "4team_blue_active_xpos", "0", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_n4RedActiveXPos, "4team_red_active_xpos", "0", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_n4GreenActiveXPos, "4team_green_active_xpos", "0", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_n4YellowActiveXPos, "4team_yellow_active_xpos", "0", "proportional_int" );
 
 	CTFHudTimeStatus		*m_pBlueKothTimer;
 	CTFHudTimeStatus		*m_pRedKothTimer;
@@ -172,7 +172,6 @@ private:
 	CTFHudTimeStatus		*m_pYellowKothTimer;
 	vgui::ImagePanel		*m_pActiveTimerBG;
 	CTFHudTimeStatus		*m_pActiveKothTimerPanel;
-	int						m_nOriginalActiveTimerBGYPos;
 };
 
 //-----------------------------------------------------------------------------
