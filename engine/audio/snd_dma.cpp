@@ -6566,7 +6566,7 @@ void S_Update_Thread()
 		// mixing (for 360) needs to be updated at a steady rate
 		// large update times causes the mixer to demand more audio data
 		// the 360 decoder has finite latency and cannot fulfill spike requests
-		float t0 = Plat_FloatTime();
+		double t0 = Plat_FloatTime();
 		S_Update_Guts( frameTime + snd_mixahead.GetFloat() );
 		int updateTime = ( Plat_FloatTime() - t0 ) * 1000.0f;
 
@@ -6602,7 +6602,7 @@ void S_ShutdownMixThread()
 
 void S_Update_( float mixAheadTime )
 {
-	if ( !IsConsole() || !snd_mix_async.GetBool() )
+	if ( !snd_mix_async.GetBool() )
 	{
 		S_ShutdownMixThread();
 		S_Update_Guts( mixAheadTime );
@@ -6613,10 +6613,10 @@ void S_Update_( float mixAheadTime )
 		{
 			g_bMixThreadExit = false;
 			g_hMixThread = ThreadExecuteSolo( "SndMix", S_Update_Thread );
-			if ( IsX360() )
-			{
-				ThreadSetAffinity( g_hMixThread, XBOX_PROCESSOR_5 );
-			}
+
+#ifdef _X360
+			ThreadSetAffinity( g_hMixThread, XBOX_PROCESSOR_5 );
+#endif
 		}
 	}
 }
