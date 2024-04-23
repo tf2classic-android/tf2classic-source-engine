@@ -1145,9 +1145,10 @@ target_link_libraries(
 
 	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:openal>"
 	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:${CURL_LIBRARIES}>"
-	"$<$<AND:${IS_ANDROID},$<NOT:${IS_64BIT}>>:ssl>"
-	"$<$<AND:${IS_ANDROID},$<NOT:${IS_64BIT}>>:crypto>"
 	"$<${IS_ANDROID}:curl>"
+	"$<${IS_ANDROID}:crypto>"
+	"$<${IS_ANDROID}:ssl>"
+	"$<${IS_ANDROID}:z>"
 )
 
 target_include_crypto(

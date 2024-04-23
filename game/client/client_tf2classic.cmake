@@ -581,8 +581,14 @@ target_link_libraries(
 	client_tf2classic PRIVATE
 
 	# libcurl for tf_noticiationmanager.cpp
-	"$<${IS_POSIX}:${CURL_LIBRARIES}>"
+	"$<$<AND:${IS_POSIX},$<NOT:${IS_ANDROID}>>:${CURL_LIBRARIES}>"
 	"$<${IS_WINDOWS}:${SRCDIR}/lib/win32/amd64/curl/RelWithDebInfo/libcurl_imp.lib>"
+
+	# android
+	"$<${IS_ANDROID}:curl>"
+	"$<${IS_ANDROID}:crypto>"
+	"$<${IS_ANDROID}:ssl>"
+	"$<${IS_ANDROID}:z>"
 )
 
 target_use_client_base(
