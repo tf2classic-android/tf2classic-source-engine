@@ -919,8 +919,8 @@ public:
 			}
 
 			// don't path through enemy spawn rooms
-			uint64 mask = area->GetAttr_SpawnRoom( m_me->GetTeamNumber() );
-			if( area->HasAttributeTF( mask ) || area->HasAttributeTF( mask ^ TF_NAV_MASK_SPAWN_ROOM ) )
+			uint64 spawnroom = area->GetAttr_SpawnRoom( m_me->GetTeamNumber() );
+			if( area->HasAttributeTF( spawnroom ^ TF_NAV_MASK_SPAWN_ROOM ) )
 			{
 				if ( !TFGameRules()->RoundHasBeenWon() )
 				{

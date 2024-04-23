@@ -8880,11 +8880,8 @@ public:
 			}
 
 			// don't path through enemy spawn rooms
-			// 4team
-			//if( ( m_me->GetTeamNumber() == TF_TEAM_RED && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE ) ) ||
-			//	( m_me->GetTeamNumber() == TF_TEAM_BLUE && area->HasAttributeTF( TF_NAV_SPAWN_ROOM_RED ) ) )
-			uint64 mask = area->GetAttr_SpawnRoom( m_me->GetTeamNumber() );
-			if( area->HasAttributeTF( mask ) || area->HasAttributeTF( mask ^ TF_NAV_MASK_SPAWN_ROOM ) )
+			uint64 spawnroom = area->GetAttr_SpawnRoom( m_me->GetTeamNumber() );
+			if( area->HasAttributeTF( spawnroom ^ TF_NAV_MASK_SPAWN_ROOM ) )
 			{
 				if( !TFGameRules()->RoundHasBeenWon() )
 				{
