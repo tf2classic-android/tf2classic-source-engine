@@ -758,7 +758,7 @@ void CTFOptionsVideoPanel::OnApplyChanges()
 		// set mode
 		char szCmd[ 256 ];
 		Q_snprintf( szCmd, sizeof( szCmd ), "mat_setvideomode %i %i %i\n", width, height, windowed ? 1 : 0 );
-		Msg(szCmd);
+		Msg("%s", szCmd);
 		engine->ClientCmd_Unrestricted( szCmd );
 	}
 
