@@ -566,6 +566,8 @@ target_include_directories(
 	"${SHARED_BASE_DIR}/econ"
 	"${CLIENT_BASE_DIR}/tf/bot"
 	"${CLIENT_BASE_DIR}/tf"
+
+	"${THIRDPARTYDIR}/curl/include"
 )
 
 target_compile_definitions(
@@ -573,6 +575,14 @@ target_compile_definitions(
 
 	TF_CLASSIC_CLIENT
 	GLOWS_ENABLE
+)
+
+target_link_libraries(
+	client_tf2classic PRIVATE
+
+	# libcurl for tf_noticiationmanager.cpp
+	"$<${IS_POSIX}:${CURL_LIBRARIES}>"
+	"$<${IS_WINDOWS}:${SRCDIR}/lib/win32/amd64/curl/RelWithDebInfo/libcurl_imp.lib>"
 )
 
 target_use_client_base(
