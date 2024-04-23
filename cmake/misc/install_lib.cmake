@@ -92,7 +92,7 @@ if( ${IS_WINDOWS} )
 	install(
 		FILES ${LIBPUBLIC}/curl/RelWithDebInfo/libcurl.dll
 
-		DETINATION ${GAMEDIR}/${BUILD_FOLDER}/bin
+		DESTINATION ${GAMEDIR}/${BUILD_FOLDER}/bin
 	)
 
 endif()
