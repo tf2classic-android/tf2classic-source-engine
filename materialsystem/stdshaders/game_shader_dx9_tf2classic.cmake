@@ -58,6 +58,6 @@ target_link_libraries(
 	"$<${IS_WINDOWS}:version>"
 	"$<${IS_WINDOWS}:winmm>"
 
-	mathlib
 	shaderlib
+	mathlib
 )
