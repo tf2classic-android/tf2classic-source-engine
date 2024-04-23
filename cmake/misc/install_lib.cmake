@@ -88,4 +88,11 @@ if( ${IS_WINDOWS} )
 		DESTINATION ${GAMEDIR}/bin
 	)
 
+	# libcurl (TF2Classic)
+	install(
+		FILES ${LIBPUBLIC}/curl/RelWithDebInfo/libcurl.dll
+
+		DETINATION ${GAMEDIR}/${BUILD_FOLDER}/bin
+	)
+
 endif()
