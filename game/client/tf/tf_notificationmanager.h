@@ -8,9 +8,8 @@
 #include "tf_shareddefs.h"
 #include "igamesystem.h"
 #include "GameEventListener.h"
-#include "steam/steam_api.h"
-#include "steam/isteamhttp.h"
 #include "time.h"
+#include "git_info.h"
 
 #define TF_NOTIFICATION_TITLE_SIZE 64
 #define TF_NOTIFICATION_MESSAGE_SIZE 256
@@ -19,7 +18,6 @@ class CTFNotificationManager;
 
 enum RequestType
 {
-	REQUEST_IDLE = -1,
 	REQUEST_VERSION = 0,
 	REQUEST_MESSAGE,
 
@@ -69,34 +67,36 @@ public:
 	virtual int GetUnreadNotificationsCount();
 	virtual void RemoveNotification( int iIndex );
 	virtual bool IsOutdated() { return m_bOutdated; };
-	const char *GetVersionName( void );
-	time_t GetVersionTimeStamp( void );
+	
+	const char *GetVersionName( void ) { return m_szVersionName; }
+	time_t GetVersionTimeStamp( void ) { return m_VersionTime; }
+	const char *GetVersionCommit( void )
+	{
+#if defined( GIT_COMMIT_HASH )
+		return GIT_COMMIT_HASH;
+#else
+		return "undefined";
+#endif
+	}
+	
+	void ParseVersionFile();
 
 private:
-	bool		m_bInited;
 	CUtlVector<MessageNotification>	m_Notifications;
-	CUtlMap<time_t, MessageNotification> m_NotificationsMap;
-
-	ISteamHTTP*			m_SteamHTTP;
-	HTTPRequestHandle	m_httpRequest;
 
 	bool				m_bOutdated;
-	bool				m_bCompleted;
 	bool				m_bPlayedSound;
 
-	CUtlMap<HTTPRequestHandle, RequestType> m_Requests;
-	RequestType			m_iCurrentRequest;
 	float				m_flLastCheck;
-	float				m_flUpdateLastCheck;
-	char				m_pzLastMessage[128];
 
-	void				OnMessageCheckCompleted( const char* pMessage );
-	void				OnVersionCheckCompleted( const char* pMessage );
+	void				OnMessageCheckCompleted( const char* pMessage, const char *pszSource );
+	void				OnVersionCheckCompleted( const char* pMessage, const char *pszSource );
 
-	CCallResult<CTFNotificationManager, HTTPRequestCompleted_t> m_CallResultVersion;
-	CCallResult<CTFNotificationManager, HTTPRequestCompleted_t> m_CallResultMessage;
-
-	void				OnHTTPRequestCompleted( HTTPRequestCompleted_t *CallResult, bool iofailure );
+	static size_t			WriteCallback( void *contents, size_t size, size_t nmemb, void *userp );
+	CUtlString m_response_data;
+	
+	time_t m_VersionTime;
+	char m_szVersionName[32];
 };
 
 CTFNotificationManager *GetNotificationManager();

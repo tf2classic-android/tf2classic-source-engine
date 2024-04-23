@@ -268,7 +268,7 @@ void CTFMainMenuPanel::OnNotificationUpdate()
 	{
 		if (m_pVersionLabel)
 		{
-			m_pVersionLabel->SetFgColor(Color(255, 20, 50, 100));
+			m_pVersionLabel->SetFgColor(Color(255, 20, 50, 200));
 		}
 	}
 };
@@ -278,12 +278,8 @@ void CTFMainMenuPanel::SetVersionLabel()  //GetVersionString
 {
 	if (m_pVersionLabel)
 	{
-		char verString[64];
-#if defined( GIT_COMMIT_HASH )
-		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d\nCommit: %s", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt(), GIT_COMMIT_HASH);
-#else
-		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt());
-#endif
+		char verString[128];
+		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d\nCommit: %s", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt(), GetNotificationManager()->GetVersionCommit());
 		m_pVersionLabel->SetText(verString);
 	}
 };

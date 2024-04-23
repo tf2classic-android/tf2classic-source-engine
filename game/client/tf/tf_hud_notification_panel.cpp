@@ -19,6 +19,7 @@
 #include "tf_shareddefs.h"
 #include "tf_hud_notification_panel.h"
 #include "tf_hud_freezepanel.h"
+#include "tf_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -128,25 +129,32 @@ void CHudNotificationPanel::SetupNotifyCustom( const char *pszText, const char *
 	m_pIcon->SetIcon( pszIcon );
 	m_pText->SetText( pszText );
 
-	if ( iBackgroundTeam == TF_TEAM_RED )
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
 	{
-		m_pBackground->SetImage( "../hud/score_panel_red_bg" );
-	}
-	else if ( iBackgroundTeam == TF_TEAM_BLUE )
-	{
-		m_pBackground->SetImage( "../hud/score_panel_blue_bg" );
-	}
-	else if ( iBackgroundTeam == TF_TEAM_GREEN )
-	{
-		m_pBackground->SetImage("../hud/score_panel_green_bg");
-	}
-	else if  (iBackgroundTeam == TF_TEAM_YELLOW )
-	{
-		m_pBackground->SetImage("../hud/score_panel_yellow_bg");
+		m_pBackground->SetImage( "../hud/notification_black" );
 	}
 	else
 	{
-		m_pBackground->SetImage( "../hud/notification_black" );
+		if ( iBackgroundTeam == TF_TEAM_RED )
+		{
+			m_pBackground->SetImage( "../hud/score_panel_red_bg" );
+		}
+		else if ( iBackgroundTeam == TF_TEAM_BLUE )
+		{
+			m_pBackground->SetImage( "../hud/score_panel_blue_bg" );
+		}
+		else if ( iBackgroundTeam == TF_TEAM_GREEN )
+		{
+			m_pBackground->SetImage("../hud/score_panel_green_bg");
+		}
+		else if  (iBackgroundTeam == TF_TEAM_YELLOW )
+		{
+			m_pBackground->SetImage("../hud/score_panel_yellow_bg");
+		}
+		else
+		{
+			m_pBackground->SetImage( "../hud/notification_black" );
+		}
 	}
 
 	// set up the fade time
@@ -453,7 +461,6 @@ const char *CHudNotificationPanel::GetNotificationByType( int iType )
 		break;
 
 	default:
-		DevMsg("Failed to load notification res file '%s' specified in %s.");
 		break;
 	}
 
