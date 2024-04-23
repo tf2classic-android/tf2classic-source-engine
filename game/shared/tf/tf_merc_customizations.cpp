@@ -12,8 +12,8 @@
 #endif
 
 #if defined( CLIENT_DLL )
-ConVar tf2c_merc_particle( "tf2c_merc_particle", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets merc's respawn particle index" );
-ConVar tf2c_merc_winanim( "tf2c_merc_winanim", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets FFA win animation." );
+ConVar tf2c_merc_particle( "tf2c_merc_particle", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets merc's respawn particle index", true, 1.f, false, 0.f );
+ConVar tf2c_merc_winanim( "tf2c_merc_winanim", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets FFA win animation.", true, 1.f, false, 0.f );
 #endif
 
 ConVar tf2c_dev_log_merc_customizations( "tf2c_dev_log_merc_customizations", "0", FCVAR_CHEAT | FCVAR_REPLICATED );
