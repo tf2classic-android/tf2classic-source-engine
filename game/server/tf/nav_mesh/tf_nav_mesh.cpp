@@ -1885,7 +1885,7 @@ void CTFNavMesh::DecorateMesh( void )
 			if ( respawnRoom->PointIsWithin( spawnSpot->GetAbsOrigin() ) )
 			{
 				// found a valid spawn spot in an active spawn room
-				collectAndLabel.Init( respawnRoom, spawnSpot->GetTeamNumber(), spawnSpot->GetTeamNumber() == TF_TEAM_RED ? &m_SpawnRoomAreaVector[TF_TEAM_RED] : &m_SpawnRoomAreaVector[TF_TEAM_BLUE] ); // FIXME: 4TEAM SUPPORT
+				collectAndLabel.Init( respawnRoom, spawnSpot->GetTeamNumber(), &m_SpawnRoomAreaVector[spawnSpot->GetTeamNumber()] );
 				extent.Init( respawnRoom );
 
 				TheNavMesh->ForAllAreasOverlappingExtent( collectAndLabel, extent );
