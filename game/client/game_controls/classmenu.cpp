@@ -32,6 +32,10 @@ extern IGameUIFuncs *gameuifuncs; // for key binding details
 #endif
 #include <game/client/iviewport.h>
 
+#if defined( TF_CLASSIC_CLIENT )
+#include "tf_viewport.h"
+#endif
+
 #include <stdlib.h> // MAX_PATH define
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -286,8 +290,13 @@ void CClassMenu::OnKeyCodePressed(KeyCode code)
 
 	if ( m_iScoreBoardKey != BUTTON_CODE_INVALID && m_iScoreBoardKey == code )
 	{
+#if defined( TF_CLASSIC_CLIENT ) // SanyaSho: this hack should be removed when we backport tf_classmenu from 2017 TF2C
+		gViewPortInterface->ShowPanel( GetTFViewPort()->GetModeSpecificScoreboardName(), true );
+		gViewPortInterface->PostMessageToPanel( GetTFViewPort()->GetModeSpecificScoreboardName(), new KeyValues( "PollHideCode", "code", code ) );
+#else
 		gViewPortInterface->ShowPanel( PANEL_SCOREBOARD, true );
 		gViewPortInterface->PostMessageToPanel( PANEL_SCOREBOARD, new KeyValues( "PollHideCode", "code", code ) );
+#endif
 	}
 	else if ( nDir != 0 )
 	{
