@@ -20,10 +20,8 @@
 #include "bone_setup.h"
 #include "tf_fx.h"
 #include "tf_obj.h"
-#endif
-
-#ifdef GAME_DLL
-ConVar tf_debug_arrows( "tf_debug_arrows", "0", FCVAR_CHEAT );
+#include "tf_gamestats.h"
+#include "tf_generic_bomb.h"
 #endif
 
 const char *g_pszArrowModels[] =
@@ -31,8 +29,11 @@ const char *g_pszArrowModels[] =
 	"models/weapons/w_models/w_arrow.mdl",
 	"models/weapons/w_models/w_syringe_proj.mdl",
 	"models/weapons/w_models/w_repair_claw.mdl",
-	//"models/weapons/w_models/w_arrow_xmas.mdl",
-	//"models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow_xmas_proj.mdl",
+	"models/weapons/w_models/w_arrow_xmas.mdl",
+	"models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow_xmas_proj.mdl",
+	"models/weapons/c_models/c_grapple_proj.mdl",
+	"models/weapons/w_models/w_breadmonster/w_breadmonster.mdl",
+	"models/workshop_partner/weapons/c_models/c_sd_cleaver/c_sd_cleaver.mdl", // TF_WEAPON_CLEAVER_MODEL
 };
 
 #define ARROW_FADE_TIME		3.f
@@ -70,6 +71,9 @@ public:
 		if ( iCollisionGroup == TFCOLLISION_GROUP_RESPAWNROOMS )
 			return false;
 
+		if ( iCollisionGroup == TFCOLLISION_GROUP_ARROWS )
+			return false;
+
 		return iCollisionGroup != COLLISION_GROUP_NONE;
 	}
 
@@ -82,9 +86,11 @@ IMPLEMENT_NETWORKCLASS_ALIASED( TFProjectile_Arrow, DT_TFProjectile_Arrow )
 BEGIN_NETWORK_TABLE( CTFProjectile_Arrow, DT_TFProjectile_Arrow )
 #ifdef CLIENT_DLL
 	RecvPropBool( RECVINFO( m_bCritical ) ),
+	RecvPropBool( RECVINFO( m_bFlame ) ),
 	RecvPropInt( RECVINFO( m_iProjType ) ),
 #else
 	SendPropBool( SENDINFO( m_bCritical ) ),
+	SendPropBool( SENDINFO( m_bFlame ) ),
 	SendPropInt( SENDINFO( m_iProjType ) ),
 #endif
 END_NETWORK_TABLE()
@@ -111,7 +117,7 @@ CTFProjectile_Arrow::~CTFProjectile_Arrow()
 
 #ifdef GAME_DLL
 
-CTFProjectile_Arrow *CTFProjectile_Arrow::Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, float flSpeed, float flGravity, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType )
+CTFProjectile_Arrow *CTFProjectile_Arrow::Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, float flSpeed, float flGravity, bool bFlame, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType )
 {
 	const char *pszEntClass = "tf_projectile_arrow";
 	switch ( iType )
@@ -137,6 +143,22 @@ CTFProjectile_Arrow *CTFProjectile_Arrow::Create( CBaseEntity *pWeapon, const Ve
 		// Set firing weapon.
 		pArrow->SetLauncher( pWeapon );
 		
+#if 0
+		// Compensate iTypes from shareddefs to a more usable range for our use.
+		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_Christmas ) )
+		{
+			switch ( iType )  // If it's the holidays, use festive projectiles.
+			{
+				case TF_PROJECTILE_ARROW:
+					iType = TF_PROJECTILE_FESTIVE_ARROW;
+					break;
+				case TF_PROJECTILE_HEALING_BOLT:
+					iType = TF_PROJECTILE_FESTIVE_HEALING_BOLT;
+					break;
+			}
+		}
+#endif
+		
 		const char *pszArrowModel = "";
 		switch ( iType )
 		{
@@ -149,18 +171,29 @@ CTFProjectile_Arrow *CTFProjectile_Arrow::Create( CBaseEntity *pWeapon, const Ve
 			case TF_PROJECTILE_BUILDING_REPAIR_BOLT:
 				pszArrowModel = "models/weapons/w_models/w_repair_claw.mdl";
 				break;
-			//case TF_PROJECTILE_FESTIVE_ARROW:
-				//pszArrowModel = "models/weapons/w_models/w_arrow_xmas.mdl";
-				//break;
-			//case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
-				//pszArrowModel = "models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow_xmas_proj.mdl";
-				//break;
+			case TF_PROJECTILE_FESTIVE_ARROW:
+				pszArrowModel = "models/weapons/w_models/w_arrow_xmas.mdl";
+				break;
+			case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
+				pszArrowModel = "models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow_xmas_proj.mdl";
+				break;
+			case TF_PROJECTILE_GRAPPLINGHOOK:
+				pszArrowModel = "models/weapons/c_models/c_grapple_proj.mdl";
+				break;
 		}
 		
 		if ( iType == TF_PROJECTILE_ARROW || iType == TF_PROJECTILE_FESTIVE_ARROW )	// Huntsman Arrows.
 		{
+			// Set flame arrow.
+			pArrow->SetFlameArrow( bFlame );
+			
 			// Use the default skin.
 			pArrow->m_nSkin = 0;
+		}
+		else
+		{
+			//Never light on fire.
+			pArrow->SetFlameArrow( false );
 		}
 
 		// Set arrow type.
@@ -215,6 +248,9 @@ void CTFProjectile_Arrow::Precache( void )
 		PrecacheModel( ConstructTeamParticle( "effects/repair_claw_trail_%s.vmt", i, false, g_aTeamParticleNames ) );
 	}
 
+	// Precache flame effects
+	PrecacheParticleSystem( "flying_flaming_arrow" );
+
 	PrecacheScriptSound( "Weapon_Arrow.ImpactFlesh" );
 	PrecacheScriptSound( "Weapon_Arrow.ImpactMetal" );
 	PrecacheScriptSound( "Weapon_Arrow.ImpactWood" );
@@ -232,7 +268,9 @@ void CTFProjectile_Arrow::Spawn( void )
 
 	BaseClass::Spawn();
 
+#ifdef TF_ARROW_FIX
 	SetSolidFlags( FSOLID_NOT_SOLID | FSOLID_TRIGGER );
+#endif
 
 	if ( m_iProjType == TF_PROJECTILE_HEALING_BOLT || m_iProjType == TF_PROJECTILE_FESTIVE_HEALING_BOLT )
 		SetModelScale( 3.0f );
@@ -306,7 +344,13 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 	if ( pOther->IsCombatItem() )
 		bImpactedItem = !InSameTeam( pOther );
 
+#if 0
+	CTFPumpkinBomb *pPumpkin = dynamic_cast<CTFPumpkinBomb *>( pOther );
+
+	if ( pOther->IsSolidFlagSet( FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS ) && !pPumpkin && !bImpactedItem )
+#else
 	if ( pOther->IsSolidFlagSet( FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS ) && !bImpactedItem )
+#endif
 	{
 		return;
 	}
@@ -324,8 +368,11 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 		pActor = dynamic_cast<CBaseCombatCharacter *>( pOther->GetOwnerEntity() );
 	}
 
+	//CTFRobotDestruction_Robot *pRobot = dynamic_cast<CTFRobotDestruction_Robot *>( pOther );
+	//CTFMerasmusTrickOrTreatProp *pMerasProp = dynamic_cast<CTFMerasmusTrickOrTreatProp *>( pOther );
+
 	if ( !FNullEnt( pOther->edict() ) &&
-		( pActor != nullptr || bImpactedItem ) )
+		( pActor != nullptr /*|| pPumpkin != nullptr*/ /*|| pMerasProp != nullptr*/ /*|| pRobot != nullptr*/ || bImpactedItem ) )
 	{
 		CBaseAnimating *pAnimating = dynamic_cast<CBaseAnimating *>( pOther );
 		if ( !pAnimating )
@@ -450,6 +497,8 @@ bool CTFProjectile_Arrow::StrikeTarget( mstudiobbox_t *pBox, CBaseEntity *pTarge
 		return false;
 
 	bool bBreakArrow = false;
+	//if ( dynamic_cast<CHalloweenBaseBoss *>( pTarget )/* || dynamic_cast<CTFTankBoss *>( pTarget )*/ )
+	//	bBreakArrow = true;
 
 	if ( !bBreakArrow )
 	{
@@ -495,6 +544,13 @@ bool CTFProjectile_Arrow::StrikeTarget( mstudiobbox_t *pBox, CBaseEntity *pTarge
 			IScorer *pScorer = dynamic_cast<IScorer *>( pAttacker );
 			if ( pScorer )
 				pAttacker = pScorer->GetScorer();
+
+			if ( m_bFlame )
+			{
+				iDmgType |= DMG_IGNITE;
+				//iDmgCustom = TF_DMG_CUSTOM_BURNING_ARROW;
+				iDmgCustom = TF_DMG_CUSTOM_BURNING;
+			}
 
 			if ( bHeadshot )
 			{
@@ -745,6 +801,10 @@ int	CTFProjectile_Arrow::GetDamageType()
 	if ( CanHeadshot() )
 	{
 		iDmgType |= DMG_USE_HITLOCATIONS;
+	}
+	if ( m_bFlame == true )
+	{
+		iDmgType |= DMG_IGNITE;	
 	}
 	if ( m_iDeflected > 0 )
 	{
@@ -1056,6 +1116,9 @@ void C_TFProjectile_Arrow::OnDataChanged( DataUpdateType_t updateType )
 	if ( updateType == DATA_UPDATE_CREATED )
 	{
 		SetNextClientThink( CLIENT_THINK_ALWAYS );
+
+		if ( m_bFlame )
+			ParticleProp()->Create( "flying_flaming_arrow", PATTACH_POINT_FOLLOW, "muzzle" );
 	}
 
 	if ( m_bCritical )
@@ -1192,3 +1255,4 @@ void C_TFProjectile_Arrow::NotifyBoneAttached( C_BaseAnimating* attachTarget )
 }
 
 #endif
+

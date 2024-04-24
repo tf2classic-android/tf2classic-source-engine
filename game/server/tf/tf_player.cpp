@@ -7070,22 +7070,16 @@ CBaseObject	*CTFPlayer::GetObject( int index ) const
 //-----------------------------------------------------------------------------
 CBaseObject *CTFPlayer::GetObjectOfType( int iObjectType, int iObjectMode ) const
 {
-	int iNumObjects = GetObjectCount();
-	for ( int i=0; i<iNumObjects; i++ )
+	FOR_EACH_VEC( m_aObjects, i )
 	{
-		CBaseObject *pObj = GetObject(i);
-
-		if ( !pObj )
+		CBaseObject *obj = GetObject( i );
+		if ( obj == NULL )
 			continue;
-
-		if ( pObj->GetType() != iObjectType )
-			continue;
-
-		if ( pObj->GetObjectMode() != iObjectMode )
-			continue;
-
-		return pObj;
+		
+		if ( obj->ObjectType() == iObjectType && obj->GetObjectMode() == iObjectMode )
+			return obj;
 	}
+	
 	return NULL;
 }
 

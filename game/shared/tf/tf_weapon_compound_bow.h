@@ -16,6 +16,13 @@
 #define CTFCompoundBow C_TFCompoundBow
 #endif
 
+#define TF_BOW_MIN_CHARGE_DAMAGE						50.0f
+#define TF_BOW_MIN_CHARGE_VEL							1800
+#define TF_BOW_MAX_CHARGE_VEL							2600
+#define TF_BOW_MAX_CHARGE_TIME						1.0f
+#define TF_BOW_CHARGE_TIRED_TIME						5.0f
+#define TF_BOW_TIRED_SPREAD							6.0f
+
 class CTFCompoundBow : public CTFWeaponBaseGun, public ITFChargeUpWeapon
 {
 public:
@@ -30,44 +37,57 @@ public:
 
 	CTFCompoundBow();
 
-	virtual ETFWeaponID GetWeaponID( void ) const { return TF_WEAPON_COMPOUND_BOW; }
+	virtual ETFWeaponID	GetWeaponID( void ) const { return TF_WEAPON_COMPOUND_BOW; }
 
-	virtual void	Precache( void );
+	virtual void		Precache( void );
 
-	virtual bool	Holster( CBaseCombatWeapon *pSwitchingTo );
-	virtual bool	Deploy( void );
-	virtual void	WeaponReset( void );
-	virtual void	PrimaryAttack( void );
-	virtual void	SecondaryAttack( void );
-	virtual void	LowerBow( void );
-	virtual void	WeaponIdle( void );
-	virtual void	ItemPostFrame( void );
+	virtual bool		Holster( CBaseCombatWeapon *pSwitchingTo );
+	virtual bool		Deploy( void );
+	virtual void		WeaponReset( void );
+	virtual void		PrimaryAttack( void );
+	virtual void		SecondaryAttack( void );
+	virtual void		LowerBow( void );
+	virtual void		WeaponIdle( void );
+	virtual void		ItemPostFrame( void );
 
-	virtual float	GetProjectileDamage( void );
-	virtual float	GetProjectileSpeed( void );
-	virtual float	GetProjectileGravity( void );
-	virtual void	GetProjectileFireSetup( CTFPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward, bool bHitTeammates = true, bool bUseHitboxes = false );
-	virtual bool	CalcIsAttackCriticalHelper( void );
+	virtual float		GetProjectileDamage( void );
+	virtual float		GetProjectileSpeed( void );
+	virtual float		GetProjectileGravity( void );
+	virtual void		GetProjectileFireSetup( CTFPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward, bool bHitTeammates = true, bool bUseHitboxes = false );
+	virtual bool		CalcIsAttackCriticalHelper( void );
+	virtual bool    	IsFlameArrow( void ) 		{ return m_bFlame; }
 
-	void			FireArrow( void );	
+	void				LightArrow( void );
+	void				Extinguish( void );
+	void				FireArrow( void );	
 
-	float GetCurrentCharge( void )
-	{
-		if( m_flChargeBeginTime == 0 )
-			return 0;
-		else
-			return MIN( gpGlobals->curtime - m_flChargeBeginTime, 1.f );
-	}
+	virtual bool		CanReload( void ) 			{ return false; }
 
+	float				GetCurrentCharge( void ) const;
+
+#ifdef CLIENT_DLL
+	void				CreateMove( float flInputSampleTime, CUserCmd *pCmd, const QAngle &vecOldViewAngles );
+	virtual void   	 	OnDataChanged( DataUpdateType_t updateType );
+	virtual void		ClientThink( void );
+#endif
 
 public:
 	// ITFChargeUpWeapon
-	virtual float	GetChargeBeginTime( void ) { return m_flChargeBeginTime; }
-	virtual float	GetChargeMaxTime( void );
-	virtual const char* GetChargeSound( void ) { return NULL; }
+	virtual float		GetChargeBeginTime( void ) 	{ return m_flChargeBeginTime; }
+	virtual float		GetChargeMaxTime( void );
+	virtual const char 	*GetChargeSound( void ) 	{ return NULL; }
 
 private:
 	CNetworkVar( float, m_flChargeBeginTime );
+	CNetworkVar( bool , m_bFlame );
+
+#ifdef CLIENT_DLL
+	bool 	bEmitting;
+	bool 	bFirstPerson;
+
+	EHANDLE	m_hFlameEffectHost;
+#endif
 };
 
 #endif // TF_WEAPON_COMPOUND_BOW_H
+

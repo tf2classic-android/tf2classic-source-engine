@@ -14,6 +14,7 @@
 #include "tf_weaponbase_rocket.h"
 
 #ifdef GAME_DLL
+#include "iscorer.h"
 #include "tf_player.h"
 #endif
 
@@ -21,7 +22,11 @@
 #define CTFProjectile_Arrow C_TFProjectile_Arrow
 #endif
 
-class CTFProjectile_Arrow : public CTFBaseRocket
+#ifdef GAME_DLL
+class CTFProjectile_Arrow : public CTFBaseRocket, public IScorer
+#else
+class CTFProjectile_Arrow : public C_TFBaseRocket
+#endif
 {
 public:
 	DECLARE_CLASS( CTFProjectile_Arrow, CTFBaseRocket );
@@ -33,12 +38,15 @@ public:
 	CTFProjectile_Arrow();
 	~CTFProjectile_Arrow();
 
-	void				SetType( int iType ) 			{ m_iProjType = iType; }
-	virtual ETFWeaponID		GetWeaponID( void ) const 		{ return TF_WEAPON_COMPOUND_BOW; }
+	void				SetType( int iType ) 				{ m_iProjType = iType; }
+	void				SetFlameArrow( bool bFlame ) 		{ m_bFlame = bFlame; }
+
+	virtual ETFWeaponID 		GetWeaponID( void ) const 			{ return TF_WEAPON_COMPOUND_BOW; }
+
 
 
 #ifdef GAME_DLL
-	static CTFProjectile_Arrow *Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, float flSpeed, float flGravity, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType );
+	static CTFProjectile_Arrow *Create( CBaseEntity *pWeapon, const Vector &vecOrigin, const QAngle &vecAngles, float flSpeed, float flGravity, bool bFlame, CBaseEntity *pOwner, CBaseEntity *pScorer, int iType );
 
 	// IScorer interface
 	virtual CBasePlayer *GetScorer( void );
@@ -106,6 +114,7 @@ protected:
 	EHANDLE m_Scorer;
 
 	CNetworkVar( bool, m_bCritical );
+	CNetworkVar( bool, m_bFlame);
 	CNetworkVar( int, m_iProjType );
 
 	bool m_bImpacted;
@@ -117,7 +126,8 @@ protected:
 	EHANDLE m_hSpriteTrail;
 #else
 	bool		m_bCritical;
-	int		m_iProjType;
+	bool		m_bFlame;
+	int			m_iProjType;
 
 	float		m_flDieTime;
 	bool		m_bAttachment;
@@ -129,3 +139,4 @@ protected:
 };
 
 #endif // TF_PROJECTILE_ARROW_H
+

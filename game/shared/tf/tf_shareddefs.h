@@ -996,6 +996,9 @@ enum
 	TFCOLLISION_GROUP_COMBATOBJECT,
 	TFCOLLISION_GROUP_ROCKETS,		// Solid to players, but not player movement. ensures touch calls are originating from rocket
 	TFCOLLISION_GROUP_RESPAWNROOMS,
+	TFCOLLISION_GROUP_PUMPKIN_BOMB, // Bombs
+	TFCOLLISION_GROUP_ARROWS, // Arrows
+	TFCOLLISION_GROUP_NONE, // Collides with nothing
 };
 
 //-----------------

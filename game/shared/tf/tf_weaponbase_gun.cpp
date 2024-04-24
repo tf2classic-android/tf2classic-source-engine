@@ -248,12 +248,6 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 
 		case TF_PROJECTILE_ROCKET:
 		case TF_PROJECTILE_FLARE:
-		case TF_PROJECTILE_ARROW:
-		case TF_PROJECTILE_HEALING_BOLT:
-		case TF_PROJECTILE_BUILDING_REPAIR_BOLT:
-		case TF_PROJECTILE_FESTIVE_ARROW:
-		case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
-		case TF_PROJECTILE_GRAPPLINGHOOK:
 		case TF_PROJECTILE_PLASMA:
 		case TF_PROJECTILE_CROSSBOW_BOLT:
 		case TF_PROJECTILE_ROCKET_CLASSIC:
@@ -287,6 +281,16 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 		case TF_PROJECTILE_BREADMONSTER_JARATE:
 		case TF_PROJECTILE_BREADMONSTER_MADMILK:
 			// TO-DO: Implement 'grenade' support
+			break;
+			
+		case TF_PROJECTILE_ARROW:
+		case TF_PROJECTILE_HEALING_BOLT:
+		case TF_PROJECTILE_BUILDING_REPAIR_BOLT:
+		case TF_PROJECTILE_FESTIVE_ARROW:
+		case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
+		case TF_PROJECTILE_GRAPPLINGHOOK:
+			pProjectile = FireArrow( pPlayer, iProjectile );
+			pPlayer->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
 			break;
 
 		case TF_PROJECTILE_NONE:
@@ -563,15 +567,6 @@ CBaseEntity *CTFWeaponBaseGun::FireRocket( CTFPlayer *pPlayer, int iType )
 	case TF_PROJECTILE_FLARE:
 		pProjectile = CTFProjectile_Flare::Create( this, vecSrc, angForward, pPlayer, pPlayer );
 		break;
-	case TF_PROJECTILE_ARROW:
-	case TF_PROJECTILE_HEALING_BOLT:
-	case TF_PROJECTILE_BUILDING_REPAIR_BOLT:
-	case TF_PROJECTILE_FESTIVE_ARROW:
-	case TF_PROJECTILE_FESTIVE_HEALING_BOLT:
-	case TF_PROJECTILE_CROSSBOW_BOLT:
-	//case TF_PROJECTILE_GRAPPLINGHOOK:
-		pProjectile = CTFProjectile_Arrow::Create( this, vecSrc, angForward, GetProjectileSpeed(), GetProjectileGravity(), pPlayer, pPlayer, iType );
-		break;
 	case TF_PROJECTILE_PLASMA:
 		pProjectile = CTFProjectile_Plasma::Create( this, vecSrc, angForward, pPlayer, pPlayer );
 		break;
@@ -646,6 +641,49 @@ CBaseEntity *CTFWeaponBaseGun::FireNail( CTFPlayer *pPlayer, int iSpecificNail )
 	}
 	
 	return pProjectile;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Fire an Arrow
+//-----------------------------------------------------------------------------
+CBaseEntity *CTFWeaponBaseGun::FireArrow( CTFPlayer *pPlayer, int iType )
+{
+	PlayWeaponShootSound();
+
+#ifdef GAME_DLL
+	Vector vecSrc;
+	QAngle angForward;
+	Vector vecOffset( 23.5f, 12.0f, -3.0f );
+	if ( pPlayer->GetFlags() & FL_DUCKING )
+	{
+		vecOffset.z = 8.0f;
+	}
+	/*if ( IsWeapon( TF_WEAPON_COMPOUND_BOW ) )
+	{
+		// Valve were apparently too lazy to fix the viewmodel and just flipped it through the code.
+		vecOffset.y *= -1.0f;
+	}*/
+	GetProjectileFireSetup( pPlayer, vecOffset, &vecSrc, &angForward, false, true );
+
+	CTFProjectile_Arrow *pProjectile = CTFProjectile_Arrow::Create( this, vecSrc, angForward, GetProjectileSpeed(), GetProjectileGravity(), IsFlameArrow(), pPlayer, pPlayer, iType );
+	if ( pProjectile )
+	{
+		pProjectile->SetCritical( IsCurrentAttackACrit() );
+		pProjectile->SetDamage( GetProjectileDamage() );
+		pProjectile->SetCollisionGroup( TFCOLLISION_GROUP_ARROWS );
+
+		int nCanPenetrate = 0;
+		CALL_ATTRIB_HOOK_INT( nCanPenetrate, projectile_penetration );
+		if ( nCanPenetrate == 1 )
+		{
+			pProjectile->SetCanPenetrate( true );
+			pProjectile->SetSolidFlags( FSOLID_NOT_SOLID | FSOLID_TRIGGER );
+		}
+	}
+	return pProjectile;
+#endif
+
+	return NULL;
 }
 
 //-----------------------------------------------------------------------------
