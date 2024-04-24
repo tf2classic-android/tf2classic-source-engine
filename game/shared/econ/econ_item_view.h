@@ -42,6 +42,7 @@ public:
 	const char* GetEntityName( void );
 	bool IsCosmetic( void );
 	ETFWeaponType GetAnimationSlot( void );
+	ETFLoadoutSlot GetLoadoutSlot( int iClass );
 	Activity GetActivityOverride( int iTeamNumber, Activity actOriginalActivity );
 	const char* GetActivityOverride( int iTeamNumber, const char *name );
 	const char* GetSoundOverride( int iIndex, int iTeamNum = TEAM_UNASSIGNED ) const;

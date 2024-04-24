@@ -24,9 +24,9 @@ public:
 	CTFPlayerModelPanel( vgui::Panel *pParent, const char *pName );
 	~CTFPlayerModelPanel();
 
-	virtual void ApplySettings( KeyValues *inResourceData );
-	virtual void PerformLayout( void );
-	virtual void RequestFocus( int direction = 0 ) {}
+	virtual void ApplySettings( KeyValues *inResourceData ) OVERRIDE;
+	virtual void PerformLayout( void ) OVERRIDE;
+	virtual void RequestFocus( int direction = 0 ) OVERRIDE {}
 
 	void LockStudioHdr();
 	void UnlockStudioHdr();
@@ -36,8 +36,8 @@ public:
 
 	virtual void PrePaint3D( IMatRenderContext *pRenderContext ) OVERRIDE;
 	virtual void PostPaint3D( IMatRenderContext *pRenderContext ) OVERRIDE;
-	virtual void SetupFlexWeights( void );
-	virtual void FireEvent( const char *pszEventName, const char *pszEventOptions );
+	virtual void SetupFlexWeights( void ) OVERRIDE;
+	virtual void FireEvent( const char *pszEventName, const char *pszEventOptions ) OVERRIDE;
 
 	void SetToRandomClass( int iTeam );
 	void SetToPlayerClass( int iClass );
@@ -63,7 +63,7 @@ public:
 	void ComputeBlendedSetting( Emphasized_Phoneme *classes, float emphasis_intensity );
 	
 	// IHasLocalToGlobalFlexSettings
-	virtual void EnsureTranslations( const flexsettinghdr_t *pSettinghdr );
+	virtual void EnsureTranslations( const flexsettinghdr_t *pSettinghdr ) OVERRIDE;
 
 	CChoreoScene *LoadScene( const char *filename );
 	void PlayVCD( const char *pszFile );
@@ -75,27 +75,27 @@ public:
 	void AddFlexSetting( const char *expr, float scale, const flexsettinghdr_t *pSettinghdr );
 
 	// IChoreoEventCallback
-	virtual void StartEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event );
-	virtual void EndEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event );
-	virtual void ProcessEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event );
-	virtual bool CheckEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event );
+	virtual void StartEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event ) OVERRIDE;
+	virtual void EndEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event ) OVERRIDE;
+	virtual void ProcessEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event ) OVERRIDE;
+	virtual bool CheckEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event ) OVERRIDE;
 
 	// IClientRenderable
-	virtual const Vector&			GetRenderOrigin( void ) { return vec3_origin; }
-	virtual const QAngle&			GetRenderAngles( void ) { return vec3_angle; }
-	virtual void					GetRenderBounds( Vector& mins, Vector& maxs )
+	virtual const Vector&			GetRenderOrigin( void ) OVERRIDE { return vec3_origin; }
+	virtual const QAngle&			GetRenderAngles( void ) OVERRIDE { return vec3_angle; }
+	virtual void					GetRenderBounds( Vector& mins, Vector& maxs ) OVERRIDE
 	{
 		GetBoundingBox( mins, maxs );
 	}
-	virtual const matrix3x4_t &		RenderableToWorldTransform()
+	virtual const matrix3x4_t &		RenderableToWorldTransform() OVERRIDE
 	{
 		static matrix3x4_t mat;
 		SetIdentityMatrix( mat );
 		return mat;
 	}
-	virtual bool					ShouldDraw( void ) { return false; }
-	virtual bool					IsTransparent( void ) { return false; }
-	virtual bool					ShouldReceiveProjectedTextures( int flags ) { return false; }
+	virtual bool					ShouldDraw( void ) OVERRIDE { return false; }
+	virtual bool					IsTransparent( void ) OVERRIDE { return false; }
+	virtual bool					ShouldReceiveProjectedTextures( int flags ) OVERRIDE { return false; }
 
 	const Vector &GetModelTintColor( void );
 	void SetModelTintColor( const Vector &vecColor );
@@ -117,7 +117,7 @@ private:
 
 	Vector m_vecModelTintColor;
 	bool m_bUseMercCvars;
-	particle_data_t *m_pSpawnEffectData;
+	CBaseModelPanel::particle_data_t *m_pSpawnEffectData;
 
 	CChoreoScene *m_pScene;
 	float m_flCurrentTime;

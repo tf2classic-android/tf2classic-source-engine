@@ -202,9 +202,9 @@ public:
 	//CUtlDict< EconItemStyle*, unsigned short > styles;
 };
 
-/*
 class CTFTauntInfo
 {
+public:
 	CTFTauntInfo()
 	{
 	}
@@ -230,7 +230,6 @@ class CTFTauntInfo
 	ETFLoadoutSlot taunt_force_weapon_slot;
 	bool taunt_mimic;
 };
-*/
 
 class CEconItemDefinition
 {
@@ -270,9 +269,10 @@ public:
 	}
 
 	EconItemVisuals *GetVisuals( int iTeamNum = TEAM_UNASSIGNED );
-	int GetLoadoutSlot( int iClass = TF_CLASS_UNDEFINED );
+	ETFLoadoutSlot GetLoadoutSlot( int iClass = TF_CLASS_UNDEFINED );
 	const wchar_t *GenerateLocalizedFullItemName( void );
 	CEconItemAttribute *IterateAttributes( string_t strClass );
+	bool IsAWearable();
 
 public:
 	char name[128];
@@ -304,7 +304,7 @@ public:
 	bool act_as_wearable;
 	CUtlVector<CEconItemAttribute> attributes;
 	EconItemVisuals visual[TF_TEAM_COUNT];
-	//CTFTauntInfo taunt;
+	CTFTauntInfo taunt;
 	char mouse_pressed_sound[128];
 	char drop_sound[128];
 };

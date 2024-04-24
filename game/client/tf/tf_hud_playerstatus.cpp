@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2006, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -17,16 +17,25 @@
 #include <vgui/IImage.h>
 #include <vgui_controls/Label.h>
 
-#include "tf_gamerules.h"
+#include "c_tf_playerresource.h"
+#include "shareddefs.h"
+#include "tf_playermodelpanel.h"
+
 #include "hud_numericdisplay.h"
 #include "c_team.h"
 #include "c_tf_player.h"
 #include "tf_shareddefs.h"
 #include "tf_hud_playerstatus.h"
-#include "tf_hud_target_id.h"
+#include "tf_gamerules.h"
+#include "econ_entity.h"
+#include "econ_wearable.h"
+
+#include "fmtstr.h"
 
 using namespace vgui;
 
+//ConVar cl_hud_playerclass_use_playermodel( "cl_hud_playerclass_use_playermodel", "1", FCVAR_ARCHIVE, "Use player model in player class HUD." );
+extern ConVar cl_hud_playerclass_use_playermodel;
 
 extern ConVar tf_max_health_boost;
 
@@ -47,29 +56,85 @@ static const char *g_szClassImages[] =
 	"../hud/class_merc"
 };
 
+enum
+{
+	HUD_HEALTH_NO_ANIM = 0,
+	HUD_HEALTH_BONUS_ANIM,
+	HUD_HEALTH_DYING_ANIM,
+};
+
+DECLARE_BUILD_FACTORY( CTFClassImage );
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFClassImage::SetClass( int iTeam, int iClass, int iCloakstate )
+{
+	char szImage[128];
+	szImage[0] = '\0';
+
+	if( iTeam >= FIRST_GAME_TEAM )
+	{
+		// copy base image name
+		V_strncpy( szImage, g_szClassImages[iClass], sizeof( szImage ) );
+
+		// if dethmatch - add "custom" suffix
+		if( iClass == TF_CLASS_MERCENARY && (TFGameRules() && TFGameRules()->IsDeathmatch()) )
+		{
+			V_strncat( szImage, "custom", sizeof( szImage ), COPY_ALL_CHARACTERS );
+		}
+		else // if not deathmatch - add player team color
+		{
+			V_strncat( szImage, g_aTeamParticleNames[iTeam], sizeof( szImage ), COPY_ALL_CHARACTERS );
+		}
+
+		switch( iCloakstate )
+		{
+		case 1:
+			V_strncat( szImage, "_halfcloak", sizeof(szImage), COPY_ALL_CHARACTERS );
+			break;
+		case 2:
+			V_strncat( szImage, "_cloak", sizeof(szImage), COPY_ALL_CHARACTERS );
+			break;
+		default:
+			break;
+		}
+
+		if ( Q_strlen( szImage ) > 0 )
+		{
+			SetImage( szImage );
+		}
+	}
+}
+
+
+
+///
+/// CTFHudPlayerClass
+///
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 CTFHudPlayerClass::CTFHudPlayerClass( Panel *parent, const char *name ) : EditablePanel( parent, name )
 {
 	m_pClassImage = new CTFClassImage( this, "PlayerStatusClassImage" );
-	//m_pClassImageBG = new CTFClassImage(this, "PlayerStatusClassImageBG");
+	m_pClassImageBG = new CTFImagePanel( this, "PlayerStatusClassImageBG" );
 	m_pSpyImage = new CTFImagePanel( this, "PlayerStatusSpyImage" );
 	m_pSpyOutlineImage = new CTFImagePanel( this, "PlayerStatusSpyOutlineImage" );
-
-	// This is used by retail TF2 to display the characters as models instead of images
-	//m_pClassModelPanel = new CTFPlayerModelPanel(this, "classmodelpanel");
-	//m_pClassModelPanelBG = new CTFImagePanel(this, "classmodelpanelBG");
-	// It's activated using cl_hud_playerclass_use_playermodel. The description for it is
-	// "Use player model in player class HUD."
+	m_pClassModelPanel = new CTFPlayerModelPanel( this, "classmodelpanel" );
+	m_pClassModelPanelBG = new CTFImagePanel( this, "classmodelpanelBG" );
+	m_pCarryingWeaponPanel = new vgui::EditablePanel( this, "CarryingWeapon" );
 
 	m_nTeam = TEAM_UNASSIGNED;
 	m_nClass = TF_CLASS_UNDEFINED;
 	m_nDisguiseTeam = TEAM_UNASSIGNED;
 	m_nDisguiseClass = TF_CLASS_UNDEFINED;
 	m_flNextThink = 0.0f;
+	m_iDisguiseItemIndex = -1;
 
 	ListenForGameEvent( "localplayer_changedisguise" );
+	ListenForGameEvent( "post_inventory_application" );
 }
 
 //-----------------------------------------------------------------------------
@@ -96,6 +161,10 @@ void CTFHudPlayerClass::ApplySchemeSettings( IScheme *pScheme )
 	m_nDisguiseClass = TF_CLASS_UNDEFINED;
 	m_flNextThink = 0.0f;
 	m_nCloakLevel = 0;
+	m_iDisguiseItemIndex = -1;
+	
+	// SanyaSho: hide annoying %carrying% panel
+	m_pCarryingWeaponPanel->SetVisible( false );
 
 	BaseClass::ApplySchemeSettings( pScheme );
 }
@@ -141,9 +210,13 @@ void CTFHudPlayerClass::OnThink()
 			// set our class image
 			if ( m_nClass != pPlayer->GetPlayerClass()->GetClassIndex() || bTeamChange || bCloakChange ||
 				( m_nClass == TF_CLASS_SPY && m_nDisguiseClass != pPlayer->m_Shared.GetDisguiseClass() ) ||
-				( m_nClass == TF_CLASS_SPY && m_nDisguiseTeam != pPlayer->m_Shared.GetDisguiseTeam() ) )
+				( m_nClass == TF_CLASS_SPY && m_nDisguiseTeam != pPlayer->m_Shared.GetDisguiseTeam() ) ||
+				( m_nClass == TF_CLASS_SPY && m_hWeapon != pPlayer->GetActiveTFWeapon() ) ||
+				( m_nClass == TF_CLASS_SPY && m_iDisguiseItemIndex != pPlayer->m_Shared.GetDisguiseItem()->GetItemDefIndex() ) )
 			{
 				m_nClass = pPlayer->GetPlayerClass()->GetClassIndex();
+				m_hWeapon = pPlayer->GetActiveTFWeapon() ? pPlayer->GetActiveTFWeapon() : NULL;
+				m_iDisguiseItemIndex = pPlayer->m_Shared.GetDisguiseItem()->GetItemDefIndex();
 
 				if ( m_nClass == TF_CLASS_SPY && pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) )
 				{
@@ -158,9 +231,24 @@ void CTFHudPlayerClass::OnThink()
 					m_nDisguiseTeam = TEAM_UNASSIGNED;
 					m_nDisguiseClass = TF_CLASS_UNDEFINED;
 				}
-
-				if ( m_pClassImage && m_pSpyImage )
+				
+				if ( cl_hud_playerclass_use_playermodel.GetBool() )
 				{
+					m_pClassImage->SetVisible( false );
+					m_pClassImageBG->SetVisible( false );
+					m_pSpyImage->SetVisible( false );
+					m_pClassModelPanel->SetVisible( true );
+					m_pClassModelPanelBG->SetVisible( true );
+					
+					UpdateModelPanel();
+				}
+				else
+				{
+					m_pClassImage->SetVisible( true );
+					m_pClassImageBG->SetVisible( true );
+					m_pClassModelPanel->SetVisible( false );
+					m_pClassModelPanelBG->SetVisible( false );
+
 					int iCloakState = 0;
 					if ( pPlayer->IsPlayerClass( TF_CLASS_SPY ) )
 					{
@@ -188,9 +276,70 @@ void CTFHudPlayerClass::OnThink()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void CTFHudPlayerClass::UpdateModelPanel()
+{
+	if( !cl_hud_playerclass_use_playermodel.GetBool() )
+	{
+		return;
+	}
+	
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( !pPlayer )
+	{
+		return;
+	}
+	
+	m_pClassModelPanel->ClearCarriedItems();
+	
+	ETFLoadoutSlot iSlot = TF_LOADOUT_SLOT_INVALID;
+	
+	if( m_nDisguiseTeam != TEAM_UNASSIGNED )
+	{
+		m_pClassModelPanel->SetToPlayerClass( m_nDisguiseClass );
+		m_pClassModelPanel->SetTeam( m_nDisguiseTeam, true, false );
+		m_pClassModelPanel->AddCarriedItem( pPlayer->m_Shared.GetDisguiseItem() );
+		iSlot = pPlayer->m_Shared.GetDisguiseItem()->GetLoadoutSlot( m_nDisguiseClass );
+	}
+	else
+	{
+		m_pClassModelPanel->SetToPlayerClass( m_nClass );
+		m_pClassModelPanel->SetTeam( m_nTeam, true, false );
+		if( m_hWeapon.IsValid() )
+		{
+			CEconItemView *pItem = m_hWeapon->GetItem();
+			if( !pItem )
+				return;
+			
+			m_pClassModelPanel->AddCarriedItem( pItem );
+			iSlot = pItem->GetLoadoutSlot( m_nClass );
+		}
+	}
+	
+	for( int i = 0; i < pPlayer->GetNumWearables(); i++ )
+	{
+		C_EconWearable *pWearable = pPlayer->GetWearable( i );
+		if( !pWearable )
+		{
+			continue;
+		}
+		
+		m_pClassModelPanel->AddCarriedItem( pWearable->GetItem() );
+	}
+	
+	m_pClassModelPanel->SetModelTintColor( pPlayer->m_vecPlayerColor );
+	
+	if( iSlot != TF_LOADOUT_SLOT_INVALID )
+		m_pClassModelPanel->HoldItemInSlot( iSlot );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFHudPlayerClass::FireGameEvent( IGameEvent * event )
 {
-	if ( FStrEq( "localplayer_changedisguise", event->GetName() ) )
+	const char* pszEventName = event->GetName();
+
+	if ( FStrEq( "localplayer_changedisguise", pszEventName ) )
 	{
 		if ( m_pSpyImage && m_pSpyOutlineImage )
 		{
@@ -212,9 +361,27 @@ void CTFHudPlayerClass::FireGameEvent( IGameEvent * event )
 
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( bFadeIn ? "HudSpyDisguiseFadeIn" : "HudSpyDisguiseFadeOut" );
 		}
+
+		UpdateModelPanel();
+	}
+	else if ( FStrEq( "post_inventory_application", pszEventName ) )
+	{
+		// Force a refresh. if this is for the local player
+		int iUserID = event->GetInt( "userid" );
+		C_TFPlayer* pPlayer = ToTFPlayer( C_TFPlayer::GetLocalPlayer() );
+		if ( pPlayer && pPlayer->GetUserID() == iUserID )
+		{
+			UpdateModelPanel();
+		}
 	}
 }
 
+
+
+///
+/// CTFHealthPanel
+///
+ 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -226,16 +393,15 @@ CTFHealthPanel::CTFHealthPanel( Panel *parent, const char *name ) : vgui::Panel(
 	if ( m_iMaterialIndex == -1 ) // we didn't find it, so create a new one
 	{
 		m_iMaterialIndex = surface()->CreateNewTextureID();	
+		surface()->DrawSetTextureFile( m_iMaterialIndex, "hud/health_color", true, false );
 	}
-
-	surface()->DrawSetTextureFile( m_iMaterialIndex, "hud/health_color", true, false );
 
 	m_iDeadMaterialIndex = surface()->DrawGetTextureId( "hud/health_dead" );
 	if ( m_iDeadMaterialIndex == -1 ) // we didn't find it, so create a new one
 	{
 		m_iDeadMaterialIndex = surface()->CreateNewTextureID();	
+		surface()->DrawSetTextureFile( m_iDeadMaterialIndex, "hud/health_dead", true, false );
 	}
-	surface()->DrawSetTextureFile( m_iDeadMaterialIndex, "hud/health_dead", true, false );
 }
 
 //-----------------------------------------------------------------------------
@@ -288,6 +454,12 @@ void CTFHealthPanel::Paint()
 	surface()->DrawTexturedPolygon( 4, vert );
 }
 
+
+
+///
+/// CTFHudPlayerHealth
+///
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -296,10 +468,21 @@ CTFHudPlayerHealth::CTFHudPlayerHealth( Panel *parent, const char *name ) : Edit
 	m_pHealthImage = new CTFHealthPanel( this, "PlayerStatusHealthImage" );	
 	m_pHealthImageBG = new ImagePanel( this, "PlayerStatusHealthImageBG" );
 	m_pHealthBonusImage = new ImagePanel( this, "PlayerStatusHealthBonusImage" );
-
-	m_pHealthImageBuildingBG = new ImagePanel( this, "BuildingStatusHealthImageBG" );	
+	m_pBuildingHealthImageBG = new ImagePanel( this, "BuildingStatusHealthImageBG" );
 
 	m_flNextThink = 0.0f;
+
+	m_nBonusHealthOrigX = -1;
+	m_nBonusHealthOrigY = -1;
+	m_nBonusHealthOrigW = -1;
+	m_nBonusHealthOrigH = -1;
+
+	m_iAnimState = HUD_HEALTH_NO_ANIM;
+	m_bAnimate = true;
+}
+
+CTFHudPlayerHealth::~CTFHudPlayerHealth()
+{
 }
 
 //-----------------------------------------------------------------------------
@@ -309,6 +492,9 @@ void CTFHudPlayerHealth::Reset()
 {
 	m_flNextThink = gpGlobals->curtime + 0.05f;
 	m_nHealth = -1;
+	m_bBuilding = false;
+
+	m_iAnimState = HUD_HEALTH_NO_ANIM;
 }
 
 //-----------------------------------------------------------------------------
@@ -327,6 +513,10 @@ void CTFHudPlayerHealth::ApplySchemeSettings( IScheme *pScheme )
 	m_flNextThink = 0.0f;
 
 	BaseClass::ApplySchemeSettings( pScheme );
+
+	m_pBuildingHealthImageBG->SetVisible( m_bBuilding );
+
+	m_pPlayerLevelLabel = dynamic_cast<CExLabel*>( FindChildByName( "PlayerStatusPlayerLevel" ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -334,8 +524,6 @@ void CTFHudPlayerHealth::ApplySchemeSettings( IScheme *pScheme )
 //-----------------------------------------------------------------------------
 void CTFHudPlayerHealth::SetHealth( int iNewHealth, int iMaxHealth, int	iMaxBuffedHealth )
 {
-	int nPrevHealth = m_nHealth;
-
 	// set our health
 	m_nHealth = iNewHealth;
 	m_nMaxHealth = iMaxHealth;
@@ -352,13 +540,10 @@ void CTFHudPlayerHealth::SetHealth( int iNewHealth, int iMaxHealth, int	iMaxBuff
 		{
 			m_pHealthImageBG->SetVisible( false );
 		}
-
-
-		if ( m_pHealthImageBuildingBG->IsVisible() )
+		if ( m_pBuildingHealthImageBG->IsVisible() )
 		{
-			m_pHealthImageBuildingBG->SetVisible( false );
+			m_pBuildingHealthImageBG->SetVisible( false );
 		}
-
 		HideHealthBonusImage();
 	}
 	else
@@ -367,32 +552,31 @@ void CTFHudPlayerHealth::SetHealth( int iNewHealth, int iMaxHealth, int	iMaxBuff
 		{
 			m_pHealthImageBG->SetVisible( true );
 		}
-
-		CTargetID *pTargetID = dynamic_cast<CTargetID *>( this->GetParent() );
-		if ( NULL != pTargetID )
-		{
-			if ( cl_entitylist->GetEnt( pTargetID->GetTargetIndex() )->IsBaseObject() )
-				m_pHealthImageBuildingBG->SetVisible( true );
-			else
-				m_pHealthImageBuildingBG->SetVisible( false );
-		}
+		m_pBuildingHealthImageBG->SetVisible( m_bBuilding );
 
 		// are we getting a health bonus?
 		if ( m_nHealth > m_nMaxHealth )
 		{
-			if ( m_pHealthBonusImage )
+			if ( m_pHealthBonusImage && m_nBonusHealthOrigW != -1 )
 			{
 				if ( !m_pHealthBonusImage->IsVisible() )
 				{
 					m_pHealthBonusImage->SetVisible( true );
+				}
+
+				if ( m_bAnimate && m_iAnimState != HUD_HEALTH_BONUS_ANIM )
+				{
+					g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudHealthDyingPulseStop" );
 					g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudHealthBonusPulse" );
+
+					m_iAnimState = HUD_HEALTH_BONUS_ANIM;
 				}
 
 				m_pHealthBonusImage->SetDrawColor( Color( 255, 255, 255, 255 ) );
 
 				// scale the flashing image based on how much health bonus we currently have
 				float flBoostMaxAmount = ( iMaxBuffedHealth ) - m_nMaxHealth;
-				float flPercent = MIN( 1.0 , ( m_nHealth - m_nMaxHealth ) / flBoostMaxAmount ); // clamped to 1 to not cut off for values above 150%
+				float flPercent = MIN( ( m_nHealth - m_nMaxHealth ) / flBoostMaxAmount, 1.0f );
 
 				int nPosAdj = RoundFloatToInt( flPercent * m_nHealthBonusPosAdj );
 				int nSizeAdj = 2 * nPosAdj;
@@ -406,12 +590,19 @@ void CTFHudPlayerHealth::SetHealth( int iNewHealth, int iMaxHealth, int	iMaxBuff
 		// are we close to dying?
 		else if ( m_nHealth < m_nMaxHealth * m_flHealthDeathWarning )
 		{
-			if ( m_pHealthBonusImage )
+			if ( m_pHealthBonusImage && m_nBonusHealthOrigW != -1 )
 			{
 				if ( !m_pHealthBonusImage->IsVisible() )
 				{
 					m_pHealthBonusImage->SetVisible( true );
+				}
+
+				if ( m_bAnimate && m_iAnimState != HUD_HEALTH_DYING_ANIM )
+				{
+					g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudHealthBonusPulseStop" );
 					g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudHealthDyingPulse" );
+
+					m_iAnimState = HUD_HEALTH_DYING_ANIM;
 				}
 
 				m_pHealthBonusImage->SetDrawColor( m_clrHealthDeathWarningColor );
@@ -442,18 +633,35 @@ void CTFHudPlayerHealth::SetHealth( int iNewHealth, int iMaxHealth, int	iMaxBuff
 	}
 
 	// set our health display value
-	if ( nPrevHealth != m_nHealth )
+	if ( m_nHealth > 0 )
 	{
-		if ( m_nHealth > 0 )
-		{
-			SetDialogVariable( "Health", m_nHealth );
-		}
-		else
-		{
-			SetDialogVariable( "Health", "" );
-		}	
+		SetDialogVariable( "Health", m_nHealth );
 	}
+	else
+	{
+		SetDialogVariable( "Health", "" );
+	}	
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudPlayerHealth::SetLevel( int nLevel )
+{
+	if ( m_pPlayerLevelLabel )
+	{
+		bool bVisible = ( nLevel >= 0 ) ? true : false;
+		if ( bVisible )
+		{
+			m_pPlayerLevelLabel->SetText( CFmtStr( "%d", nLevel ) );
+		}
+
+		if ( m_pPlayerLevelLabel->IsVisible() != bVisible )
+		{
+			m_pPlayerLevelLabel->SetVisible( bVisible );
+		}
+	}
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -462,16 +670,38 @@ void CTFHudPlayerHealth::HideHealthBonusImage( void )
 {
 	if ( m_pHealthBonusImage && m_pHealthBonusImage->IsVisible() )
 	{
-		m_pHealthBonusImage->SetBounds( m_nBonusHealthOrigX, m_nBonusHealthOrigY, m_nBonusHealthOrigW, m_nBonusHealthOrigH );
+		if ( m_nBonusHealthOrigW != -1 )
+		{
+			m_pHealthBonusImage->SetBounds( m_nBonusHealthOrigX, m_nBonusHealthOrigY, m_nBonusHealthOrigW, m_nBonusHealthOrigH );
+		}
 		m_pHealthBonusImage->SetVisible( false );
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudHealthBonusPulseStop" );
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudHealthDyingPulseStop" );
+
+		m_iAnimState = HUD_HEALTH_NO_ANIM;
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+static void SetPlayerHealthImagePanelVisibility( CTFPlayer *pPlayer, ETFCond eCond, vgui::ImagePanel *pImagePanel, int& nXOffset, const Color& colorIfVisible )
+{
+	Assert( pImagePanel != NULL );
+
+	if ( pPlayer->m_Shared.InCond( eCond ) && !pImagePanel->IsVisible() )
+	{
+		pImagePanel->SetVisible( true );
+		pImagePanel->SetDrawColor( colorIfVisible );
+		
+		// Reposition ourselves and increase the offset if we are active
+		int x,y;
+		pImagePanel->GetPos( x, y );
+		pImagePanel->SetPos( nXOffset, y );
+		nXOffset += 100.f;
+	}
+}
+
 void CTFHudPlayerHealth::OnThink()
 {
 	if ( m_flNextThink < gpGlobals->curtime )
@@ -480,13 +710,32 @@ void CTFHudPlayerHealth::OnThink()
 
 		if ( pPlayer )
 		{
-			SetHealth( pPlayer->GetHealth(), pPlayer->GetPlayerClass()->GetMaxHealth(), pPlayer->m_Shared.GetMaxBuffedHealth() );
+			SetHealth( pPlayer->GetHealth(), pPlayer->GetMaxHealth(), pPlayer->m_Shared.GetMaxBuffedHealth() );
+			
+			/*if ( tf2c_low_health_sound.m_pParent->m_nValue )
+			{
+				if ( (*(unsigned __int8 (__thiscall **)(int))(*(_DWORD *)v3 + 520))(v3) )
+				{
+					v6 = (float)this->m_nMaxHealth * tf2c_low_health_sound_threshold.m_pParent->m_fValue;
+					if ( (float)m_nHealth >= v6 && v6 > (float)this->m_nHealth )
+					{
+						CLocalPlayerFilter::CLocalPlayerFilter(&filter);
+						C_BaseEntity::EmitSound(&filter, -1, "TFPlayer.LowHealth", 0, 0.0, 0);
+						C_RecipientFilter::~C_RecipientFilter(&filter);
+					}
+				}
+			}*/
 		}
 
 		m_flNextThink = gpGlobals->curtime + 0.05f;
 	}
 }
 
+
+
+///
+/// CTFHudPlayerStatus
+///
 
 DECLARE_HUDELEMENT( CTFHudPlayerStatus );
 
@@ -513,11 +762,23 @@ void CTFHudPlayerStatus::ApplySchemeSettings( IScheme *pScheme )
 
 	// HACK: Work around the scheme application order failing
 	// to reload the player class hud element's scheme in minmode.
-	ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+	static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
 	if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
 	{
 		m_pHudPlayerClass->InvalidateLayout( false, true );
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFHudPlayerStatus::ShouldDraw( void )
+{
+	CTFPlayer *pTFPlayer = CTFPlayer::GetLocalTFPlayer();
+	if ( pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) )
+		return false;
+
+	return CHudElement::ShouldDraw();
 }
 
 //-----------------------------------------------------------------------------
@@ -533,93 +794,5 @@ void CTFHudPlayerStatus::Reset()
 	if ( m_pHudPlayerHealth )
 	{
 		m_pHudPlayerHealth->Reset();
-	}
-}
-
-/*
-const char *g_szClassImages[13] =
-{
-  &prType,
-  "../hud/class_scout",
-  "../hud/class_sniper",
-  "../hud/class_soldier",
-  "../hud/class_demo",
-  "../hud/class_medic",
-  "../hud/class_heavy",
-  "../hud/class_pyro",
-  "../hud/class_spy",
-  "../hud/class_engi",
-  "../hud/class_civ",
-  "../hud/class_merc",
-  "../hud/class_zombie"
-}; // idb
-
-//----- (10293350) --------------------------------------------------------
-void __thiscall CTFClassImage::SetClass(CTFClassImage *this, int iTeam, int iClass, int iCloakstate)
-{
-  char *v5; // [esp-8h] [ebp-98h]
-  char szImage[128]; // [esp+Ch] [ebp-84h] BYREF
-
-  if ( iTeam >= 2 && iClass && iClass != 14 ) // NOTE(SanyaSho): 14 iClass ?
-  {
-    v5 = (char *)g_szClassImages[iClass];
-    szImage[0] = 0;
-    V_strncpy(szImage, v5, 128);
-    if ( iClass == 11 && g_pGameRules && C_TFGameRules::IsFreeForAll((C_TFGameRules *)g_pGameRules) )
-      V_strncat(szImage, "custom", 0x80u, -1);
-    else
-      V_strncat(szImage, g_aTeamLowerNames[iTeam], 0x80u, -1);
-    if ( iCloakstate == 1 )
-    {
-      V_strncat(szImage, "_halfcloak", 0x80u, -1);
-    }
-    else if ( iCloakstate == 2 )
-    {
-      V_strncat(szImage, "_cloak", 0x80u, -1);
-    }
-    this->SetImage(this, szImage);
-  }
-}
-*/
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CTFClassImage::SetClass( int iTeam, int iClass, int iCloakstate )
-{
-	char szImage[128];
-	szImage[0] = '\0';
-
-	if( iTeam >= TF_TEAM_RED )
-	{
-		// copy base image name
-		V_strncpy( szImage, g_szClassImages[iClass], sizeof( szImage ) );
-
-		// if dethmatch - add "custom" suffix
-		if( iClass == TF_CLASS_MERCENARY && (TFGameRules() && TFGameRules()->IsDeathmatch()) )
-		{
-			V_strncat( szImage, "custom", sizeof( szImage ), COPY_ALL_CHARACTERS );
-		}
-		else // if not deathmatch - add player team color
-		{
-			V_strncat( szImage, g_aTeamParticleNames[iTeam], sizeof( szImage ), COPY_ALL_CHARACTERS );
-		}
-
-		switch( iCloakstate )
-		{
-		case 1:
-			V_strncat( szImage, "_halfcloak", sizeof(szImage), COPY_ALL_CHARACTERS );
-			break;
-		case 2:
-			V_strncat( szImage, "_cloak", sizeof(szImage), COPY_ALL_CHARACTERS );
-			break;
-		default:
-			break;
-		}
-
-		if ( Q_strlen( szImage ) > 0 )
-		{
-			SetImage( szImage );
-		}
 	}
 }

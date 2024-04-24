@@ -3,6 +3,7 @@
 #include "econ_item_view.h"
 #include "econ_item_system.h"
 #include "activitylist.h"
+#include "tf_shareddefs.h"
 
 #ifdef CLIENT_DLL
 #include "dt_utlvector_recv.h"
@@ -122,12 +123,19 @@ const char *CEconItemView::GetWorldDisplayModel( int iClass/* = 0*/ ) const
 
 	if ( pStatic )
 	{
-		pszModelName = pStatic->model_world;
-
-		// Assuming we're using same model for both 1st person and 3rd person view.
-		if ( !pszModelName[0] && pStatic->attach_to_hands == 1 )
+		if( pStatic->IsAWearable() )
 		{
-			pszModelName = pStatic->model_player;
+			pszModelName = GetPlayerDisplayModel( iClass );
+		}
+		else
+		{
+			pszModelName = pStatic->model_world;
+			
+			// Assuming we're using same model for both 1st person and 3rd person view.
+			if ( !pszModelName[0] && pStatic->attach_to_hands == 1 )
+			{
+				pszModelName = GetPlayerDisplayModel( iClass );
+			}
 		}
 	}
 
@@ -196,6 +204,17 @@ ETFWeaponType CEconItemView::GetAnimationSlot( void )
 	}
 
 	return TF_WPN_TYPE_INVALID;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+ETFLoadoutSlot CEconItemView::GetLoadoutSlot( int iClass )
+{
+	CEconItemDefinition *pItemDef = GetItemSchema()->GetItemDefinition( GetItemDefIndex() );
+	if( pItemDef )
+		return pItemDef->GetLoadoutSlot( iClass );
+	return TF_LOADOUT_SLOT_INVALID;
 }
 
 //-----------------------------------------------------------------------------

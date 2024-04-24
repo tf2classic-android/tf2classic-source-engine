@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2006, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -16,6 +16,13 @@
 #include "tf_imagepanel.h"
 #include "GameEventListener.h"
 #include "hudelement.h"
+
+class C_TFPlayer;
+class CTFPlayerModelPanel;
+namespace vgui
+{
+	class Label;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:  
@@ -54,19 +61,25 @@ protected:
 	virtual void OnThink();
 
 private:
+	void UpdateModelPanel();
 
-	float				m_flNextThink;
+	float			m_flNextThink;
 
 	CTFClassImage		*m_pClassImage;
-	CTFClassImage		*m_pClassImageBG;
+	CTFImagePanel		*m_pClassImageBG;
 	CTFImagePanel		*m_pSpyImage; // used when spies are disguised
 	CTFImagePanel		*m_pSpyOutlineImage;
+	CTFPlayerModelPanel	*m_pClassModelPanel;
+	CTFImagePanel		*m_pClassModelPanelBG;
+	vgui::EditablePanel	*m_pCarryingWeaponPanel;
 
-	int					m_nTeam;
-	int					m_nClass;
-	int					m_nDisguiseTeam;
-	int					m_nDisguiseClass;
-	int					m_nCloakLevel;
+	int			m_nTeam;
+	int			m_nClass;
+	int			m_nDisguiseTeam;
+	int			m_nDisguiseClass;
+	int			m_nCloakLevel;
+	CHandle<C_EconEntity>	m_hWeapon;
+	int			m_iDisguiseItemIndex;
 };
 
 //-----------------------------------------------------------------------------
@@ -98,13 +111,17 @@ class CTFHudPlayerHealth : public vgui::EditablePanel
 public:
 
 	CTFHudPlayerHealth( Panel *parent, const char *name );
+	~CTFHudPlayerHealth();
 
 	virtual const char *GetResFilename( void ) { return "resource/UI/HudPlayerHealth.res"; }
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual void Reset();
 
 	void	SetHealth( int iNewHealth, int iMaxHealth, int iMaxBuffedHealth );
+	void	SetLevel( int nLevel );
 	void	HideHealthBonusImage( void );
+	void	SetBuilding( bool bBuilding ) { m_bBuilding = bBuilding; }
+	void	SetAllowAnimations( bool bValue ) { m_bAnimate = bValue; }
 
 protected:
 
@@ -117,7 +134,8 @@ private:
 	CTFHealthPanel		*m_pHealthImage;
 	vgui::ImagePanel	*m_pHealthBonusImage;
 	vgui::ImagePanel	*m_pHealthImageBG;
-	vgui::ImagePanel	*m_pHealthImageBuildingBG;
+	vgui::ImagePanel	*m_pBuildingHealthImageBG;
+	CExLabel			*m_pPlayerLevelLabel;
 
 	int					m_nHealth;
 	int					m_nMaxHealth;
@@ -126,6 +144,10 @@ private:
 	int					m_nBonusHealthOrigY;
 	int					m_nBonusHealthOrigW;
 	int					m_nBonusHealthOrigH;
+	
+	bool				m_bBuilding;
+	int					m_iAnimState;
+	bool				m_bAnimate;
 
 	CPanelAnimationVar( int, m_nHealthBonusPosAdj, "HealthBonusPosAdj", "25" );
 	CPanelAnimationVar( float, m_flHealthDeathWarning, "HealthDeathWarning", "0.49" );
@@ -143,6 +165,7 @@ public:
 	CTFHudPlayerStatus( const char *pElementName );
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual void Reset();
+	virtual bool ShouldDraw( void ) OVERRIDE;
 
 private:
 

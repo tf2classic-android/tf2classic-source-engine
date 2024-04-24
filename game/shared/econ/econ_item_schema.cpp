@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "econ_item_schema.h"
 #include "econ_item_system.h"
+#include "tf_shareddefs.h"
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"
 
@@ -131,7 +132,7 @@ EconItemVisuals *CEconItemDefinition::GetVisuals( int iTeamNum /*= TEAM_UNASSIGN
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int CEconItemDefinition::GetLoadoutSlot( int iClass /*= TF_CLASS_UNDEFINED*/ )
+ETFLoadoutSlot CEconItemDefinition::GetLoadoutSlot( int iClass /*= TF_CLASS_UNDEFINED*/ )
 {
 	if ( iClass && item_slot_per_class[iClass] != -1 )
 	{
@@ -232,4 +233,12 @@ CEconItemAttribute *CEconItemDefinition::IterateAttributes( string_t strClass )
 	}
 
 	return NULL;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CEconItemDefinition::IsAWearable()
+{
+	return act_as_wearable || item_slot >= TF_LOADOUT_SLOT_HAT;
 }

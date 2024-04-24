@@ -400,7 +400,7 @@ void CTFPlayerModelPanel::SetTeam( int iTeam, bool bInGame, bool bForceFFA )
 	}
 	else
 	{
-		switch( GetLocalPlayerTeam() )
+		switch( iTeam )
 		{
 		case TF_TEAM_RED:
 			iLocalSkin = 0;
@@ -506,7 +506,7 @@ bool CTFPlayerModelPanel::HoldItemInSlot( ETFLoadoutSlot iSlot )
 		return false;
 	
 	CEconItemDefinition *pItemDef = pItem->GetStaticData();
-	if( !pItemDef /*|| pItemDef->IsAWearable()*/ )
+	if( !pItemDef || pItemDef->IsAWearable() )
 		return false;
 	
 	int anim_slot = pItemDef->anim_slot;
@@ -563,7 +563,7 @@ void CTFPlayerModelPanel::AddCarriedItem( CEconItemView *pItem )
 		m_aMergeMDLMap[iSlot] = GetMergeMDLIndex( hModel );
 
 		// Hide the model.
-		if ( m_aMergeMDLMap[iSlot] != -1 )
+		if ( m_aMergeMDLMap[iSlot] != -1 && !pStaticData->IsAWearable() )
 		{
 			m_aMergeMDLs[m_aMergeMDLMap[iSlot]].m_bDisabled = true;
 		}
