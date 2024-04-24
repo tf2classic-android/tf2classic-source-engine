@@ -5435,7 +5435,7 @@ void CTFGameRules::HandleScrambleTeams( void )
 	}
 
 	// sort the list
-	FOR_EACH_VEC( pListPlayers, i );
+	FOR_EACH_VEC( pListPlayers, i )
 	{
 		pListPlayers[i]->CalculateTeamScrambleScore();
 	}
