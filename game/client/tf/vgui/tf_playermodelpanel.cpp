@@ -444,15 +444,11 @@ void CTFPlayerModelPanel::LoadItems( ETFLoadoutSlot iHoldSlot /*= -1*/ )
 
 	if ( iHoldSlot != TF_LOADOUT_SLOT_INVALID )
 	{
-		if ( !HoldItemInSlot( iHoldSlot ) )
-		{
-			HoldFirstValidItem();
-		}
+		if ( HoldItemInSlot( iHoldSlot ) )
+			return;
 	}
-	else
-	{
-		HoldFirstValidItem();
-	}
+
+	HoldFirstValidItem();
 }
 
 //-----------------------------------------------------------------------------
