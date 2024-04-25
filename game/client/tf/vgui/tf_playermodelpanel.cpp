@@ -511,9 +511,7 @@ bool CTFPlayerModelPanel::HoldItemInSlot( ETFLoadoutSlot iSlot )
 	
 	int anim_slot = pItemDef->anim_slot;
 	if( anim_slot  == TF_WPN_TYPE_INVALID )
-		return false;
-	
-	anim_slot = g_iRemapLoadoutToAnim[ pItemDef->GetLoadoutSlot( m_iClass ) ];
+		anim_slot = g_iRemapLoadoutToAnim[ pItemDef->GetLoadoutSlot( m_iClass ) ];
 
 	if( anim_slot < 0 )
 		return false;
