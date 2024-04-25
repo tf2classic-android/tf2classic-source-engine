@@ -2583,6 +2583,60 @@ int CTFPlayer::GetAutoTeam( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void CTFPlayer::ShowTeamMenu( bool bShow )
+{
+	if( TFGameRules()->IsDeathmatch() )
+	{
+		ShowViewPortPanel( PANEL_DEATHMATCHTEAMSELECT, bShow );
+	}
+	else if( TFGameRules()->IsFourTeamGame() )
+	{
+		ShowViewPortPanel( PANEL_FOURTEAMSELECT, bShow );
+	}
+	else
+	{
+		ShowViewPortPanel( PANEL_TEAM, bShow );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::ShowClassMenu( bool bShow )
+{
+#if SOONSOON
+	KeyValues *data = new KeyValues( "data" );
+	data->SetInt( "team", GetTeamNumber() );
+	ShowViewPortPanel( PANEL_CLASS, bShow, data );
+	data->deleteThis();
+#else
+	switch( GetTeamNumber() )
+	{
+		case TF_TEAM_RED:
+			ShowViewPortPanel( PANEL_CLASS_RED, bShow );
+			break;
+			
+		case TF_TEAM_BLUE:
+			ShowViewPortPanel( PANEL_CLASS_BLUE, bShow );
+			break;
+			
+		case TF_TEAM_GREEN:
+			ShowViewPortPanel( PANEL_CLASS_GREEN, bShow );
+			break;
+			
+		case TF_TEAM_YELLOW:
+			ShowViewPortPanel( PANEL_CLASS_YELLOW, bShow );
+			break;
+			
+		default:
+			break;
+	};
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 {
 	if ( TFGameRules()->IsDeathmatch() && stricmp( pTeamName, "spectate" ) != 0 )
@@ -2658,41 +2712,13 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 		// come up with a better way to tell the player they tried to join a full team!
 		if ( TFGameRules()->WouldChangeUnbalanceTeams( iTeam, GetTeamNumber() ) )
 		{
-			if( TFGameRules()->IsDeathmatch() )
-			{
-				ShowViewPortPanel( PANEL_DEATHMATCHTEAMSELECT );
-			}
-			else if( TFGameRules()->IsFourTeamGame() )
-			{
-				ShowViewPortPanel( PANEL_FOURTEAMSELECT );
-			}
-			else
-			{
-				ShowViewPortPanel( PANEL_TEAM );
-			}
+			ShowTeamMenu( true );
 			return;
 		}
 
 		ChangeTeam( iTeam );
-
-		switch ( iTeam )
-		{
-		case TF_TEAM_RED:
-			ShowViewPortPanel( PANEL_CLASS_RED );
-			break;
-
-		case TF_TEAM_BLUE:
-			ShowViewPortPanel( PANEL_CLASS_BLUE );
-			break;
-
-		case TF_TEAM_GREEN:
-			ShowViewPortPanel( PANEL_CLASS_GREEN );
-			break;
-
-		case TF_TEAM_YELLOW:
-			ShowViewPortPanel( PANEL_CLASS_YELLOW );
-			break;
-		}
+		
+		ShowClassMenu( true );
 	}
 
 }
@@ -2918,15 +2944,8 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 	if ( GetNextChangeClassTime() > gpGlobals->curtime )
 		return;
 
-	// can only join a class after you join a valid team
-	if ( GetTeamNumber() <= LAST_SHARED_TEAM )
-		return;
-
-	// Can't change class if game is over
-	if ( TFGameRules()->State_Get() == GR_STATE_GAME_OVER )
-		return;
-
-	if ( TFGameRules()->IsDeathmatch() )
+	// Can't change class at all
+	if ( !CanShowClassMenu() )
 		return;
 
 	// In case we don't get the class menu message before the spawn timer
@@ -3199,42 +3218,11 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	{
 		if ( GetTeamNumber() == TEAM_UNASSIGNED )
 		{
-			if( TFGameRules()->IsDeathmatch() )
-			{
-				ShowViewPortPanel( PANEL_DEATHMATCHTEAMSELECT );
-			}
-			else if( TFGameRules()->IsFourTeamGame() )
-			{
-				ShowViewPortPanel( PANEL_FOURTEAMSELECT );
-			}
-			else
-			{
-				ShowViewPortPanel( PANEL_TEAM );
-			}
+			ShowTeamMenu( true );
 		}
 		else if ( IsPlayerClass( TF_CLASS_UNDEFINED ) )
 		{
-			switch( GetTeamNumber() )
-			{
-			case TF_TEAM_RED:
-				ShowViewPortPanel( PANEL_CLASS_RED, true );
-				break;
-
-			case TF_TEAM_BLUE:
-				ShowViewPortPanel( PANEL_CLASS_BLUE, true );
-				break;
-
-			case TF_TEAM_GREEN:
-				ShowViewPortPanel( PANEL_CLASS_GREEN, true );
-				break;
-
-			case TF_TEAM_YELLOW:
-				ShowViewPortPanel( PANEL_CLASS_YELLOW, true );
-				break;
-
-			default:
-				break;
-			}
+			ShowClassMenu( true );
 		}
 		return true;
 	}

@@ -49,6 +49,7 @@
 
 // TF2C
 ConVar tf2c_random_weapons( "tf2c_random_weapons", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Makes players spawn with random loadout. CURRENTLY BROKEN!!!" );
+ConVar tf2c_dm_allow_normal_classes( "tf2c_dm_allow_normal_classes", "0", FCVAR_NOTIFY | FCVAR_REPLICATED );
 
 ConVar tf_spy_invis_time( "tf_spy_invis_time", "1.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
 ConVar tf_spy_invis_unstealth_time( "tf_spy_invis_unstealth_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
@@ -3596,16 +3597,23 @@ bool CTFPlayer::CanShowClassMenu( void )
 	}
 #endif
 
-	if( GetTeamNumber() < FIRST_GAME_TEAM )
+	// can only join a class after you join a valid team
+	if( GetTeamNumber() <= LAST_SHARED_TEAM )
 	{
 		return false;
 	}
-	
+
 	if( !TFGameRules() )
 	{
 		return false;
 	}
-	
+
+	// Can't change class if game is over
+	if( TFGameRules()->State_Get() == GR_STATE_GAME_OVER )
+	{
+		return false;
+	}
+
 #if SOONSOON
 	// if gametype == 4 and gamesubtype == 7
 		return !IsAlive();
@@ -3620,7 +3628,7 @@ bool CTFPlayer::CanShowClassMenu( void )
 	}
 #endif
 
-	if( ((TFGameRules()->GetGameType() == TF_GAMETYPE_DM) /*&& !tf2c_dm_allow_normal_classes.GetBool()*/) ||
+	if( ((TFGameRules()->GetGameType() == TF_GAMETYPE_DM) && !tf2c_dm_allow_normal_classes.GetBool()) ||
 		( (TFGameRules()->GetGameType() == TF_GAMETYPE_VIP) && (GetTFTeam() && GetTFTeam()->IsEscorting()) && IsPlayerClass( TF_CLASS_CIVILIAN )) )
 		return false;
 

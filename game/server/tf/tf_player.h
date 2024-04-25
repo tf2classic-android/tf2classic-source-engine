@@ -546,6 +546,8 @@ public:
 	void				HandleCommand_JoinTeam_NoMenus( const char *pTeamName );
 	void				HandleCommand_JoinTeam_NoKill( const char *pTeamName );
 	int				GetAutoTeam( void );
+	void				ShowTeamMenu( bool bShow = true );
+	void				ShowClassMenu( bool bShow = true );
 
 	void				InitClass( void );
 
