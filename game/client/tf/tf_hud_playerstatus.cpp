@@ -388,7 +388,8 @@ void CTFHudPlayerClass::FireGameEvent( IGameEvent * event )
 
 			m_pSpyOutlineImage->SetAlpha( 0 );
 			
-			m_pSpyImage->SetVisible( true );
+			if( !cl_hud_playerclass_use_playermodel.GetBool() )
+				m_pSpyImage->SetVisible( true );
 			m_pSpyOutlineImage->SetVisible( true );
 
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( bFadeIn ? "HudSpyDisguiseFadeIn" : "HudSpyDisguiseFadeOut" );
