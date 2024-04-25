@@ -403,7 +403,7 @@ void CTFHudTimeStatus::SetTeamBackground( void )
 		{
 			if ( tf2c_coloredhud.GetBool() )
 			{
-				szImg = "../hud/objectives_timepanel_null_bg";
+				szImg = "../hud/objectives_timepanel_custom_bg";
 			}
 		}
 
