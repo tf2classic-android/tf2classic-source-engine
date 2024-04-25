@@ -454,7 +454,7 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 
 		for ( int i = 0; g_aPowerups[i].cond != TF_COND_LAST; i++ )
 		{
-			if ( ( nPowerupFlags & ( 1 << i ) ) && g_aPowerups[i].kill_bg[0] )
+			if ( ( nPowerupFlags & ( 1 << i ) ) && g_aPowerups[i].kill_bg && g_aPowerups[i].kill_bg[0] )
 			{
 				m_DeathNotices[iMsg].bCrit = true;
 				m_DeathNotices[iMsg].iconCritDeath = GetIcon( g_aPowerups[i].kill_bg, bLocalPlayerInvolved );
