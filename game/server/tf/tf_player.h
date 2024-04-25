@@ -483,6 +483,8 @@ public:
 	virtual bool Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex = 0 );
 	virtual void Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector *pvecTarget , const Vector *pVelocity );
 
+	bool				ItemIsAllowed( CEconItemView *pItem );
+	
 	bool				ItemsMatch( CEconItemView *pItem1, CEconItemView *pItem2, CTFWeaponBase *pWeapon );
 	void				ValidateWeapons( bool bRegenerate );
 	void				ValidateWearables( void );

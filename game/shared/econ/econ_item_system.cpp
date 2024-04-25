@@ -598,9 +598,9 @@ bool CEconItemSchema::ParseItemRec( KeyValues *pData, CEconItemDefinition* pItem
 		pItem->item_slot = (ETFLoadoutSlot)UTIL_StringFieldToInt( pszLoadoutSlot, g_LoadoutSlots, TF_LOADOUT_SLOT_COUNT );
 	}
 	
-	// SanyaSho: one new check from 2017 build
-	if ( pItem->item_slot == TF_LOADOUT_SLOT_INVALID )
-		return false;
+	// SanyaSho: one new check from 2017 build // this is a very weird check which brokes all types of shotgun, but in 2017 build it works fine
+	//if ( pItem->item_slot == TF_LOADOUT_SLOT_INVALID )
+	//	return false;
 	
 	const char *pszAnimSlot = pData->GetString( "anim_slot" );
 	if ( pszAnimSlot[0] )

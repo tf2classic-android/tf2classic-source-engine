@@ -56,6 +56,39 @@ static const char *g_szClassImages[] =
 	"../hud/class_merc"
 };
 
+const char *aStatusIcons[29] =
+{
+	"PlayerStatusBleedImage",
+	"PlayerStatusHookBleedImage",
+	"PlayerStatusMilkImage",
+	"PlayerStatusMarkedForDeathImage",
+	"PlayerStatusMarkedForDeathSilentImage",
+	"PlayerStatus_MedicUberBulletResistImage",
+	"PlayerStatus_MedicUberBlastResistImage",
+	"PlayerStatus_MedicUberFireResistImage",
+	"PlayerStatus_MedicSmallBulletResistImage",
+	"PlayerStatus_MedicSmallBlastResistImage",
+	"PlayerStatus_MedicSmallFireResistImage",
+	"PlayerStatus_WheelOfDoom",
+	"PlayerStatus_SoldierOffenseBuff",
+	"PlayerStatus_SoldierDefenseBuff",
+	"PlayerStatus_SoldierHealOnHitBuff",
+	"PlayerStatus_SpyMarked",
+	"PlayerStatus_Parachute",
+	"PlayerStatus_RuneStrength",
+	"PlayerStatus_RuneHaste",
+	"PlayerStatus_RuneRegen",
+	"PlayerStatus_RuneResist",
+	"PlayerStatus_RuneVampire",
+	"PlayerStatus_RuneReflect",
+	"PlayerStatus_RunePrecision",
+	"PlayerStatus_RuneAgility",
+	"PlayerStatus_RuneKnockout",
+	"PlayerStatus_RuneKing",
+	"PlayerStatus_RunePlague",
+	"PlayerStatus_RuneSupernova"
+}; // idb
+
 enum
 {
 	HUD_HEALTH_NO_ANIM = 0,
@@ -208,10 +241,9 @@ void CTFHudPlayerClass::OnThink()
 			}
 
 			// set our class image
-			if ( m_nClass != pPlayer->GetPlayerClass()->GetClassIndex() || bTeamChange || bCloakChange ||
+			if ( m_nClass != pPlayer->GetPlayerClass()->GetClassIndex() || bTeamChange || bCloakChange || ( m_hWeapon != pPlayer->GetActiveTFWeapon() ) ||
 				( m_nClass == TF_CLASS_SPY && m_nDisguiseClass != pPlayer->m_Shared.GetDisguiseClass() ) ||
 				( m_nClass == TF_CLASS_SPY && m_nDisguiseTeam != pPlayer->m_Shared.GetDisguiseTeam() ) ||
-				( m_nClass == TF_CLASS_SPY && m_hWeapon != pPlayer->GetActiveTFWeapon() ) ||
 				( m_nClass == TF_CLASS_SPY && m_iDisguiseItemIndex != pPlayer->m_Shared.GetDisguiseItem()->GetItemDefIndex() ) )
 			{
 				m_nClass = pPlayer->GetPlayerClass()->GetClassIndex();
@@ -306,24 +338,24 @@ void CTFHudPlayerClass::UpdateModelPanel()
 		m_pClassModelPanel->SetTeam( m_nTeam, true, false );
 		if( m_hWeapon.IsValid() )
 		{
-			CEconItemView *pItem = m_hWeapon->GetItem();
+			CEconItemView *pItem = m_hWeapon.Get()->GetItem();
 			if( !pItem )
 				return;
 			
 			m_pClassModelPanel->AddCarriedItem( pItem );
 			iSlot = pItem->GetLoadoutSlot( m_nClass );
 		}
-	}
-	
-	for( int i = 0; i < pPlayer->GetNumWearables(); i++ )
-	{
-		C_EconWearable *pWearable = pPlayer->GetWearable( i );
-		if( !pWearable )
-		{
-			continue;
-		}
 		
-		m_pClassModelPanel->AddCarriedItem( pWearable->GetItem() );
+		for( int i = 0; i < pPlayer->GetNumWearables(); i++ )
+		{
+			C_EconWearable *pWearable = pPlayer->GetWearable( i );
+			if( !pWearable )
+			{
+				continue;
+			}
+			
+			m_pClassModelPanel->AddCarriedItem( pWearable->GetItem() );
+		}
 	}
 	
 	m_pClassModelPanel->SetModelTintColor( pPlayer->m_vecPlayerColor );
@@ -364,6 +396,8 @@ void CTFHudPlayerClass::FireGameEvent( IGameEvent * event )
 
 		UpdateModelPanel();
 	}
+	/*
+	// FIXME(SanyaSho): causes weird crash with 0xc18 address
 	else if ( FStrEq( "post_inventory_application", pszEventName ) )
 	{
 		// Force a refresh. if this is for the local player
@@ -374,6 +408,7 @@ void CTFHudPlayerClass::FireGameEvent( IGameEvent * event )
 			UpdateModelPanel();
 		}
 	}
+	*/
 }
 
 
@@ -517,6 +552,13 @@ void CTFHudPlayerHealth::ApplySchemeSettings( IScheme *pScheme )
 	m_pBuildingHealthImageBG->SetVisible( m_bBuilding );
 
 	m_pPlayerLevelLabel = dynamic_cast<CExLabel*>( FindChildByName( "PlayerStatusPlayerLevel" ) );
+	
+	for( int i = 0; i < 29; i++ )
+	{
+		vgui::Panel *pChild = FindChildByName( aStatusIcons[i] );
+		if( pChild )
+			pChild->SetVisible( false );
+	}
 }
 
 //-----------------------------------------------------------------------------

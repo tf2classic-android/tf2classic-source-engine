@@ -171,13 +171,13 @@ static CTEPlayerAnimEvent g_TEPlayerAnimEvent( "PlayerAnimEvent" );
 
 void TE_PlayerAnimEvent( CBasePlayer *pPlayer, PlayerAnimEvent_t event, int nData )
 {
-    Vector vecEyePos = pPlayer->EyePosition();
+	Vector vecEyePos = pPlayer->EyePosition();
 	CPVSFilter filter( vecEyePos );
 	if ( !IsCustomPlayerAnimEvent( event ) && ( event != PLAYERANIMEVENT_SNAP_YAW ) && ( event != PLAYERANIMEVENT_VOICE_COMMAND_GESTURE ) )
 	{
 		filter.RemoveRecipient( pPlayer );
 	}
-
+	
 	Assert( pPlayer->entindex() >= 1 && pPlayer->entindex() <= MAX_PLAYERS );
 	g_TEPlayerAnimEvent.m_iPlayerIndex = pPlayer->entindex();
 	g_TEPlayerAnimEvent.m_iEvent = event;
@@ -1539,6 +1539,15 @@ void CTFPlayer::SendOffHandViewModelActivity( Activity activity )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
+bool CTFPlayer::ItemIsAllowed( CEconItemView *pItem )
+{
+	// TODO
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 bool CTFPlayer::ItemsMatch( CEconItemView *pItem1, CEconItemView *pItem2, CTFWeaponBase *pWeapon )
 {
 	if ( pItem1 && pItem2 )
@@ -1696,7 +1705,7 @@ void CTFPlayer::ValidateWeapons( bool bRegenerate )
 			int iSlot = pItemDef->GetLoadoutSlot( iClass );
 			CEconItemView *pLoadoutItem = GetLoadoutItem( iClass, iSlot );
 
-			if ( !ItemsMatch( pWeapon->GetItem(), pLoadoutItem, pWeapon ) )
+			if ( !ItemsMatch( pWeapon->GetItem(), pLoadoutItem, pWeapon ) || !ItemIsAllowed( pLoadoutItem ) )
 			{
 				// If this is not a weapon we're supposed to have in this loadout slot then nuke it.
 				// Either changed class or changed loadout.
@@ -1761,45 +1770,15 @@ void CTFPlayer::ManageRegularWeapons( TFPlayerClassData_t *pData )
 {
 	ValidateWeapons( true );
 	ValidateWearables();
-
-	for ( int iSlot = 0; iSlot < TF_LOADOUT_SLOT_COUNT; ++iSlot )
-	{
-		if ( iSlot == TF_LOADOUT_SLOT_BUILDING || GetEntityForLoadoutSlot( iSlot ) != NULL )
-		{
-			// Nothing to do here.
-			continue;
-		}
-
-		// Give us an item from the inventory.
-		CEconItemView *pItem = GetLoadoutItem( m_PlayerClass.GetClassIndex(), iSlot );
-
-		if ( pItem )
-		{
-			const char *pszClassname = pItem->GetEntityName();
-			Assert( pszClassname );
-
-#if 1
-			GiveNamedItem( pszClassname, 0, pItem );
-#else
-			CEconEntity *pEntity = dynamic_cast<CEconEntity *>( GiveNamedItem( pszClassname, 0, pItem ) );
-
-			if ( pEntity )
-			{
-				pEntity->GiveTo( this );
-			}
-#endif
-		}
-	}
 	
-	/*
-	for ( int i = TF_LOADOUT_SLOT_PRIMARY; i < TF_LOADOUT_SLOT_COUNT; ++i )
+	for ( int i = TF_LOADOUT_SLOT_PRIMARY; i < TF_LOADOUT_SLOT_COUNT; i++ )
 	{
 		if ( i != TF_LOADOUT_SLOT_BUILDING && !GetEntityForLoadoutSlot( i ) )
 		{
 			CEconItemView *pItem = GetLoadoutItem( m_PlayerClass.GetClassIndex(), i );
 			if ( pItem )
 			{
-				//if ( ItemIsAllowed( pItem ) )
+				if ( ItemIsAllowed( pItem ) )
 				{
 					const char *pszClassname = pItem->GetEntityName();
 					if( !pszClassname || !pszClassname[0] )
@@ -1811,7 +1790,6 @@ void CTFPlayer::ManageRegularWeapons( TFPlayerClassData_t *pData )
 			}
 		}
 	}
-	*/
 	
 	PostInventoryApplication();
 }
@@ -1822,6 +1800,14 @@ void CTFPlayer::ManageRegularWeapons( TFPlayerClassData_t *pData )
 void CTFPlayer::PostInventoryApplication( void )
 {
 	m_Shared.RecalculatePlayerBodygroups();
+	
+	// Notify the client.
+	IGameEvent *pEvent = gameeventmanager->CreateEvent( "post_inventory_application" );
+	if( pEvent )
+	{
+		pEvent->SetInt( "userid", GetUserID() );
+		gameeventmanager->FireEvent( pEvent );
+	}
 }
 
 //-----------------------------------------------------------------------------
