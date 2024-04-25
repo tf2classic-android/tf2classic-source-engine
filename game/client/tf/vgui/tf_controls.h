@@ -46,6 +46,39 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+class CExImageButton : public CExButton
+{
+public:
+	DECLARE_CLASS_SIMPLE( CExImageButton, CExButton );
+
+	CExImageButton( vgui::Panel *parent, const char *name, const char *text );
+	CExImageButton( vgui::Panel *parent, const char *name, const wchar_t *wszText );
+
+	virtual void ApplySettings( KeyValues *inResourceData );
+	virtual void PerformLayout( void );
+
+	void SetImageDefault( const char *pszImage );
+	void SetImageArmed( const char *pszImage );
+	void SetImageSelected( const char *pszImage );
+	void SetSubImage( const char *pszImage );
+
+private:
+	vgui::ImagePanel *m_pSubImage;
+
+	char m_szImageDefault[128];
+	char m_szImageArmed[128];
+	char m_szImageSelected[128];
+
+	Color m_clrImage;
+	Color m_clrImageArmed;
+	Color m_clrImageDepressed;
+	Color m_clrImageSelected;
+	Color m_clrImageDisabled;
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 class CExLabel : public vgui::Label
 {
 public:

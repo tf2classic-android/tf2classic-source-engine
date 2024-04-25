@@ -218,22 +218,26 @@ const char *g_AnimSlots[] =
 	"pda",
 	"item1",
 	"item2",
+	"head",
+	"misc",
 	"MELEE_ALLCLASS",
 	"secondary2",
 	"primary2"
 };
 
-const char *g_LoadoutSlots[] =
+const char *g_LoadoutSlots[TF_LOADOUT_SLOT_COUNT] =
 {
 	"primary",
 	"secondary",
 	"melee",
+	"utility",
+	"building",
 	"pda",
 	"pda2",
-	"building",
 	"head",
 	"misc",
-	"action"
+	"action",
+	"taunt"
 };
 
 //-----------------------------------------------------------------------------

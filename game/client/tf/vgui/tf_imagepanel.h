@@ -29,6 +29,7 @@ public:
 	CTFImagePanel(vgui::Panel *parent, const char *name);
 
 	virtual void ApplySettings( KeyValues *inResourceData );
+	void UpdateBGTeam( void );
 	void UpdateBGImage( void );
 	void SetBGImage( int iTeamNum );
 
@@ -39,7 +40,8 @@ public: // IGameEventListener Interface
 
 public:
 	char	m_szTeamBG[TF_TEAM_COUNT][MAX_BG_LENGTH];
-	int		m_iBGTeam;
+	int	m_iBGTeam;
+	bool	m_bAlwaysColored;
 };
 
 

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2007, Valve Corporation, All rights reserved. ============//
+//========= Copyright ? 1996-2007, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -13,9 +13,23 @@
 
 #include "tf_imagepanel.h"
 #include "econ_item_schema.h"
+#include "vgui_controls/EditablePanel.h"
 
 class CTFWeaponInfo;
 
+class CTFWeaponIcon : public vgui::Panel
+{
+public:
+	DECLARE_CLASS_SIMPLE( CTFWeaponIcon, vgui::Panel );
+	
+	CTFWeaponIcon( vgui::Panel *parent, const char *name );
+	
+	void SetIcon( const CHudTexture *pIcon );
+	void PaintBackground( void );
+	
+private:
+	const CHudTexture       *m_icon;
+};
 
 class CItemModelPanel : public vgui::EditablePanel
 {
@@ -33,10 +47,14 @@ public:
 
 	void SetShowQuality( bool bShow ) { m_bShowQuality = bShow; }
 private:
-	C_BaseCombatWeapon		*m_pWeapon;
-	vgui::Label			*m_pWeaponName;
-	vgui::Label			*m_pSlotID;
-	vgui::ImagePanel		*m_pWeaponImage;
+	CHandle<C_BaseCombatWeapon> m_hWeapon;
+	CEconItemDefinition *m_pItemDef;
+	int m_iBorderStyle;
+	int m_ID;
+	CTFWeaponIcon *m_pWeaponIcon;
+	vgui::Label *m_pWeaponName;
+	vgui::Label *m_pSlotID;
+	
 	vgui::HFont			m_pDefaultFont;
 	vgui::HFont			m_pSelectedFont;
 	vgui::HFont			m_pNumberDefaultFont;
@@ -44,10 +62,7 @@ private:
 	vgui::IBorder			*m_pDefaultBorder;
 	vgui::IBorder			*m_pSelectedRedBorder;
 	vgui::IBorder			*m_pSelectedBlueBorder;
-	int				m_iBorderStyle;
-	int				m_ID;
-	bool				m_bOldStyleIcon;
-	CEconItemDefinition		*m_pItemDef;
+	
 	bool				m_bModelOnly;
 	bool				m_bShowQuality;
 };

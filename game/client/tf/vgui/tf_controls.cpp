@@ -16,23 +16,21 @@
 using namespace vgui;
 
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CExButton, CExButton );
+DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CExImageButton, CExImageButton );
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CExLabel, CExLabel );
 DECLARE_BUILD_FACTORY( CExRichText );
 DECLARE_BUILD_FACTORY( CTFFooter );
 
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
+//=============================================================================//
+// CExButton
+//=============================================================================//
 CExButton::CExButton(Panel *parent, const char *name, const char *text) : Button(parent, name, text)
 {
 	m_szFont[0] = '\0';
 	m_szColor[0] = '\0';
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 CExButton::CExButton(Panel *parent, const char *name, const wchar_t *wszText) : Button(parent, name, wszText)
 {
 	m_szFont[0] = '\0';
@@ -46,8 +44,8 @@ void CExButton::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings( inResourceData );
 
-	Q_strncpy( m_szFont, inResourceData->GetString( "font", "Default" ), sizeof( m_szFont ) );
-	Q_strncpy( m_szColor, inResourceData->GetString( "fgcolor", "Button.TextColor" ), sizeof( m_szColor ) );
+	V_strcpy_safe( m_szFont, inResourceData->GetString( "font", "Default" ) );
+	V_strcpy_safe( m_szColor, inResourceData->GetString( "fgcolor", "Button.TextColor" ) );
 
 	InvalidateLayout( false, true ); // force ApplySchemeSettings to run
 }
@@ -63,9 +61,181 @@ void CExButton::ApplySchemeSettings(IScheme *pScheme)
 	SetFgColor( pScheme->GetColor( m_szColor, Color( 255, 255, 255, 255 ) ) );
 }
 
+
+//=============================================================================//
+// CExImageButton
+//=============================================================================//
+CExImageButton::CExImageButton( Panel *parent, const char *name, const char *text ) : CExButton( parent, name, text )
+{
+	m_pSubImage = new ImagePanel( this, "SubImage" );
+	m_pSubImage->SetKeyBoardInputEnabled( false );
+	m_pSubImage->SetMouseInputEnabled( false );
+
+	m_szImageDefault[0] = '\0';
+	m_szImageArmed[0] = '\0';
+	m_szImageSelected[0] = '\0';
+
+	m_clrImage = m_clrImageArmed = m_clrImageDepressed = m_clrImageSelected = m_clrImageDisabled = COLOR_WHITE;
+}
+
+CExImageButton::CExImageButton( Panel *parent, const char *name, const wchar_t *wszText ) : CExButton( parent, name, wszText )
+{
+	m_pSubImage = new ImagePanel( this, "SubImage" );
+
+	m_szImageDefault[0] = '\0';
+	m_szImageArmed[0] = '\0';
+	m_szImageSelected[0] = '\0';
+
+	m_clrImage = COLOR_WHITE;
+	m_clrImageArmed = m_clrImageDepressed = m_clrImageSelected = m_clrImageDisabled = Color( 0, 0, 0, 0 );
+}
+
+static void UTIL_StringToColor( Color &outColor, const char *pszString )
+{
+	int r = 0, g = 0, b = 0, a = 255;
+
+	if ( pszString[0] && sscanf( pszString, "%d %d %d %d", &r, &g, &b, &a ) >= 3 )
+	{
+		outColor.SetColor( r, g, b, a );
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void CExImageButton::ApplySettings( KeyValues *inResourceData )
+{
+	BaseClass::ApplySettings( inResourceData );
+
+	V_strcpy_safe( m_szImageDefault, inResourceData->GetString( "image_default" ) );
+	V_strcpy_safe( m_szImageArmed, inResourceData->GetString( "image_armed" ) );
+	V_strcpy_safe( m_szImageSelected, inResourceData->GetString( "image_selected" ) );
+
+	UTIL_StringToColor( m_clrImage, inResourceData->GetString( "image_drawcolor" ) );
+	UTIL_StringToColor( m_clrImageArmed, inResourceData->GetString( "image_armedcolor" ) );
+	UTIL_StringToColor( m_clrImageDepressed, inResourceData->GetString( "image_depressedcolor" ) );
+	UTIL_StringToColor( m_clrImageSelected, inResourceData->GetString( "image_selectedcolor" ) );
+	UTIL_StringToColor( m_clrImageDisabled, inResourceData->GetString( "image_disabledcolor" ) );
+
+	KeyValues *pImageKeys = inResourceData->FindKey( "SubImage" );
+	if ( pImageKeys )
+	{
+		m_pSubImage->ApplySettings( pImageKeys );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CExImageButton::PerformLayout( void )
+{
+	BaseClass::PerformLayout();
+
+	// Set the image.
+	if ( IsSelected() && m_szImageSelected[0] )
+	{
+		m_pSubImage->SetImage( m_szImageSelected );
+	}
+	else if ( IsArmed() && m_szImageArmed[0] )
+	{
+		m_pSubImage->SetImage( m_szImageArmed );
+	}
+	else if ( m_szImageDefault[0] )
+	{
+		m_pSubImage->SetImage( m_szImageDefault );
+	}
+
+	// Set the image color.
+	if ( !IsEnabled() )
+	{
+		if ( m_clrImageDisabled.GetRawColor() )
+		{
+			m_pSubImage->SetDrawColor( m_clrImageDisabled );
+		}
+		else
+		{
+			m_pSubImage->SetDrawColor( m_clrImage );
+		}
+	}
+	else if ( IsSelected() )
+	{
+		if ( m_clrImageSelected.GetRawColor() )
+		{
+			m_pSubImage->SetDrawColor( m_clrImageSelected );
+		}
+		else if ( m_clrImageArmed.GetRawColor() )
+		{
+			m_pSubImage->SetDrawColor( m_clrImageArmed );
+		}
+		else
+		{
+			m_pSubImage->SetDrawColor( m_clrImage );
+		}
+	}
+	else if ( IsDepressed() )
+	{
+		if ( m_clrImageDepressed.GetRawColor() )
+		{
+			m_pSubImage->SetDrawColor( m_clrImageDepressed );
+		}
+		else if ( m_clrImageArmed.GetRawColor() )
+		{
+			m_pSubImage->SetDrawColor( m_clrImageArmed );
+		}
+		else
+		{
+			m_pSubImage->SetDrawColor( m_clrImage );
+		}
+	}
+	else if ( IsArmed() && m_clrImageArmed.GetRawColor() )
+	{
+		m_pSubImage->SetDrawColor( m_clrImageArmed );
+	}
+	else
+	{
+		m_pSubImage->SetDrawColor( m_clrImage );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CExImageButton::SetSubImage( const char *pszImage )
+{
+	m_pSubImage->SetImage( pszImage );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CExImageButton::SetImageDefault( const char *pszImage )
+{
+	V_strcpy_safe( m_szImageDefault, pszImage );
+	InvalidateLayout();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CExImageButton::SetImageArmed( const char *pszImage )
+{
+	V_strcpy_safe( m_szImageArmed, pszImage );
+	InvalidateLayout();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CExImageButton::SetImageSelected( const char *pszImage )
+{
+	V_strcpy_safe( m_szImageSelected, pszImage );
+	InvalidateLayout();
+}
+
+
+//=============================================================================//
+// CExLabel
+//=============================================================================//
 CExLabel::CExLabel(Panel *parent, const char *name, const char *text) : Label(parent, name, text)
 {
 	m_szColor[0] = '\0';
@@ -86,7 +256,7 @@ void CExLabel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings( inResourceData );
 
-	Q_strncpy( m_szColor, inResourceData->GetString( "fgcolor", "Label.TextColor" ), sizeof( m_szColor ) );
+	V_strcpy_safe( m_szColor, inResourceData->GetString( "fgcolor", "Label.TextColor" ) );
 
 	InvalidateLayout( false, true ); // force ApplySchemeSettings to run
 }
@@ -101,9 +271,10 @@ void CExLabel::ApplySchemeSettings(IScheme *pScheme)
 	SetFgColor( pScheme->GetColor( m_szColor, Color( 255, 255, 255, 255 ) ) );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
+
+//=============================================================================//
+// CExRichText
+//=============================================================================//
 CExRichText::CExRichText(Panel *parent, const char *name) : RichText(parent, name)
 {
 	m_szFont[0] = '\0';
@@ -157,8 +328,8 @@ void CExRichText::ApplySettings( KeyValues *inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
 
-	Q_strncpy( m_szFont, inResourceData->GetString( "font", "Default" ), sizeof( m_szFont ) );
-	Q_strncpy( m_szColor, inResourceData->GetString( "fgcolor", "RichText.TextColor" ), sizeof( m_szColor ) );
+	V_strcpy_safe( m_szFont, inResourceData->GetString( "font", "Default" ) );
+	V_strcpy_safe( m_szColor, inResourceData->GetString( "fgcolor", "RichText.TextColor" ) );
 
 	InvalidateLayout( false, true ); // force ApplySchemeSettings to run
 }
@@ -240,7 +411,7 @@ void CExRichText::PerformLayout()
 void CExRichText::SetText(const wchar_t *text)
 {
 	wchar_t buffer[2048];
-	Q_wcsncpy( buffer, text, sizeof( buffer ) );
+	V_wcscpy_safe( buffer, text );
 
 	// transform '\r' to ' ' to eliminate double-spacing on line returns
 	for ( wchar_t *ch = buffer; *ch != 0; ch++ )
@@ -260,7 +431,7 @@ void CExRichText::SetText(const wchar_t *text)
 void CExRichText::SetText(const char *text)
 {
 	char buffer[2048];
-	Q_strncpy( buffer, text, sizeof( buffer ) );
+	V_strcpy_safe( buffer, text );
 
 	// transform '\r' to ' ' to eliminate double-spacing on line returns
 	for ( char *ch = buffer; *ch != 0; ch++ )
@@ -360,9 +531,10 @@ void CExRichText::OnTick()
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Xbox-specific panel that displays button icons text labels
-//-----------------------------------------------------------------------------
+
+//=============================================================================//
+// CTFFooter
+//=============================================================================//
 CTFFooter::CTFFooter( Panel *parent, const char *panelName ) : BaseClass( parent, panelName ) 
 {
 	SetVisible( true );
@@ -430,12 +602,12 @@ void CTFFooter::ApplySettings( KeyValues *inResourceData )
 	m_bPaintBackground = ( inResourceData->GetInt( "paintbackground", 0 ) == 1 );
 
 	// fonts for text and button
-	Q_strncpy( m_szTextFont, inResourceData->GetString( "fonttext", "MenuLarge" ), sizeof( m_szTextFont ) );
-	Q_strncpy( m_szButtonFont, inResourceData->GetString( "fontbutton", "GameUIButtons" ), sizeof( m_szButtonFont ) );
+	V_strcpy_safe( m_szTextFont, inResourceData->GetString( "fonttext", "MenuLarge" ) );
+	V_strcpy_safe( m_szButtonFont, inResourceData->GetString( "fontbutton", "GameUIButtons" ) );
 
 	// fg and bg colors
-	Q_strncpy( m_szFGColor, inResourceData->GetString( "fgcolor", "White" ), sizeof( m_szFGColor ) );
-	Q_strncpy( m_szBGColor, inResourceData->GetString( "bgcolor", "Black" ), sizeof( m_szBGColor ) );
+	V_strcpy_safe( m_szFGColor, inResourceData->GetString( "fgcolor", "White" ) );
+	V_strcpy_safe( m_szBGColor, inResourceData->GetString( "bgcolor", "Black" ) );
 
 	// clear the buttons because we're going to re-add them here
 	ClearButtons();
@@ -465,7 +637,7 @@ void CTFFooter::AddNewButtonLabel( const char *name, const char *text, const cha
 	FooterButton_t *button = new FooterButton_t;
 
 	button->bVisible = true;
-	Q_strncpy( button->name, name, sizeof( button->name ) );
+	V_strcpy_safe( button->name, name );
 
 	// Button icons are a single character
 	wchar_t *pIcon = g_pVGuiLocalize->Find( icon );
@@ -483,7 +655,7 @@ void CTFFooter::AddNewButtonLabel( const char *name, const char *text, const cha
 	wchar_t *pText = g_pVGuiLocalize->Find( text );
 	if ( pText )
 	{
-		wcsncpy( button->text, pText, wcslen( pText ) + 1 );
+		V_wcscpy_safe( button->text, pText );
 	}
 	else
 	{

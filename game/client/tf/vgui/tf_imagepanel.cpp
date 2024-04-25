@@ -4,7 +4,6 @@
 //
 //=============================================================================//
 
-
 #include "cbase.h"
 #include <KeyValues.h>
 #include <vgui/IScheme.h>
@@ -20,6 +19,7 @@
 
 #include "tf_imagepanel.h"
 #include "c_tf_player.h"
+#include "cdll_util.h"
 #include "tf_gamerules.h"
 #include "functionproxy.h"
 
@@ -39,10 +39,12 @@ CTFImagePanel::CTFImagePanel(Panel *parent, const char *name) : ScalableImagePan
 		m_szTeamBG[i][0] = '\0';
 	}
 
-	C_TFPlayer *pPlayer = ToTFPlayer( C_BasePlayer::GetLocalPlayer() );
-	m_iBGTeam = pPlayer ? pPlayer->GetTeamNumber() : TEAM_UNASSIGNED;
+	m_bAlwaysColored = false;
+
+	UpdateBGTeam();
 
 	ListenForGameEvent( "localplayer_changeteam" );
+	ListenForGameEvent( "server_spawn" );
 }
 
 //-----------------------------------------------------------------------------
@@ -54,11 +56,13 @@ void CTFImagePanel::ApplySettings(KeyValues *inResourceData)
 	{
 		Q_strncpy( m_szTeamBG[i], inResourceData->GetString( VarArgs("teambg_%d", i), "" ), sizeof( m_szTeamBG[i] ) );
 	}
+	
+	m_bAlwaysColored = inResourceData->GetBool( "alwaysColored", false );
+	
 	BaseClass::ApplySettings( inResourceData );
 
 	UpdateBGImage();
 }
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -66,15 +70,7 @@ void CTFImagePanel::UpdateBGImage( void )
 {
 	if ( m_iBGTeam >= 0 && m_iBGTeam < TF_TEAM_COUNT )
 	{
-		if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
-		{
-			int iColorIndex = ( tf2c_coloredhud.GetBool() ? IMAGE_BG_EMPTY : IMAGE_BG_DEATHMATCH );
-			if ( m_szTeamBG[iColorIndex][0] != '\0' )
-			{
-				SetImage( m_szTeamBG[iColorIndex] );
-			}
-		}
-		else if ( m_szTeamBG[m_iBGTeam] && m_szTeamBG[m_iBGTeam][0] )
+		if ( m_szTeamBG[m_iBGTeam][0] != '\0' )
 		{
 			SetImage( m_szTeamBG[m_iBGTeam] );
 		}
@@ -86,13 +82,19 @@ void CTFImagePanel::UpdateBGImage( void )
 //-----------------------------------------------------------------------------
 void CTFImagePanel::SetBGImage( int iTeamNum )
 {
-	if ( m_iBGTeam >= 0 && m_iBGTeam < TF_TEAM_COUNT )
-	{
-		if ( m_szTeamBG[iTeamNum] && m_szTeamBG[iTeamNum][0] )
-		{
-			SetImage( m_szTeamBG[iTeamNum] );
-		}
-	}
+	m_iBGTeam = iTeamNum;
+	UpdateBGImage();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFImagePanel::UpdateBGTeam( void )
+{
+	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		m_iBGTeam = m_iBGTeam = tf2c_coloredhud.GetBool() || m_bAlwaysColored ? TEAM_UNASSIGNED : TEAM_SPECTATOR;
+	else
+		m_iBGTeam = GetLocalPlayerTeam();
 }
 
 //-----------------------------------------------------------------------------
@@ -102,8 +104,12 @@ void CTFImagePanel::FireGameEvent(IGameEvent * event)
 {
 	if ( FStrEq( "localplayer_changeteam", event->GetName() ) )
 	{
-		C_TFPlayer *pPlayer = ToTFPlayer( C_BasePlayer::GetLocalPlayer() );
-		m_iBGTeam = pPlayer ? pPlayer->GetTeamNumber() : TEAM_UNASSIGNED;
+		UpdateBGTeam();
+		UpdateBGImage();
+	}
+	else if ( FStrEq( "server_spawn", event->GetName() ) )
+	{
+		m_iBGTeam = TEAM_SPECTATOR;
 		UpdateBGImage();
 	}
 }

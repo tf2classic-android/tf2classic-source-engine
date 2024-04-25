@@ -207,6 +207,26 @@ class CTFTauntInfo
 public:
 	CTFTauntInfo()
 	{
+		for ( int i = 0; i < TF_CLASS_COUNT_ALL; i++ )
+		{
+			custom_taunt_prop_per_class[i] = NULL;
+			custom_taunt_prop_scene_per_class[i] = NULL;
+			custom_taunt_prop_outro_scene_per_class[i] = NULL;
+		}
+		
+		is_hold_taunt = false;
+		is_partner_taunt = false;
+		taunt_attack = 0;
+		taunt_attack_time = 0.f;
+		taunt_separation_forward_distance = 0.f;
+		stop_taunt_if_moved = false;
+		taunt_success_sound = NULL;
+		taunt_success_sound_loop = NULL;
+		taunt_move_speed = 0.f;
+		taunt_turn_speed = 0.f;
+		taunt_force_move_forward = false;
+		taunt_force_weapon_slot = TF_LOADOUT_SLOT_INVALID;
+		taunt_mimic = false;
 	}
 	
 	CUtlVector<char const *> custom_taunt_scene_per_class[TF_CLASS_COUNT];
@@ -266,6 +286,9 @@ public:
 		act_as_wearable = false;
 		CLEAR_STR(mouse_pressed_sound);
 		CLEAR_STR(drop_sound);
+#if defined( CLIENT_DLL )
+		pIcon = NULL;
+#endif
 	}
 
 	EconItemVisuals *GetVisuals( int iTeamNum = TEAM_UNASSIGNED );
@@ -307,6 +330,9 @@ public:
 	CTFTauntInfo taunt;
 	char mouse_pressed_sound[128];
 	char drop_sound[128];
+#if defined( CLIENT_DLL )
+	CHudTexture *pIcon;
+#endif
 };
 
 #endif // ECON_ITEM_SCHEMA_H
