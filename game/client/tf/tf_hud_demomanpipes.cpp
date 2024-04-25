@@ -15,7 +15,8 @@
 #include <vgui/ISurface.h>
 #include <vgui/IVGui.h>
 #include <vgui_controls/EditablePanel.h>
-//#include <vgui_controls/ProgressBar.h>
+#include "tf_controls.h"
+#include <vgui_controls/ProgressBar.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -39,6 +40,8 @@ public:
 private:
 	vgui::EditablePanel *m_pPipesPresent;
 	vgui::EditablePanel *m_pNoPipesPresent;
+	CExLabel *m_pChargeLabel;
+	vgui::ContinuousProgressBar *m_pChargeMeter;
 };
 
 DECLARE_HUDELEMENT( CHudDemomanPipes );
@@ -53,6 +56,8 @@ CHudDemomanPipes::CHudDemomanPipes( const char *pElementName ) : CHudElement( pE
 
 	m_pPipesPresent = new EditablePanel( this, "PipesPresentPanel" );
 	m_pNoPipesPresent = new EditablePanel( this, "NoPipesPresentPanel" );
+	m_pChargeLabel = new CExLabel( this, "ChargeLabel", "" );
+	m_pChargeMeter = new ContinuousProgressBar( this, "ChargeMeter" );
 
 	SetHiddenBits( HIDEHUD_MISCSTATUS );
 
@@ -66,6 +71,9 @@ void CHudDemomanPipes::ApplySchemeSettings( IScheme *pScheme )
 {
 	// load control settings...
 	LoadControlSettings( "resource/UI/HudDemomanPipes.res" );
+	
+	m_pChargeLabel->SetVisible( false );
+	m_pChargeMeter->SetVisible( false );
 
 	BaseClass::ApplySchemeSettings( pScheme );
 }

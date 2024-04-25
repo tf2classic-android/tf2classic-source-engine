@@ -4542,7 +4542,7 @@ bool C_TFPlayer::StartGestureSceneEvent( CSceneEventInfo *info, CChoreoScene *sc
 //-----------------------------------------------------------------------------
 int C_TFPlayer::GetNumActivePipebombs( void )
 {
-	if ( IsPlayerClass( TF_CLASS_DEMOMAN ) )
+	if ( IsPlayerClass( TF_CLASS_DEMOMAN ) || IsPlayerClass( TF_CLASS_MERCENARY ) )
 	{
 		CTFPipebombLauncher *pWeapon = dynamic_cast < CTFPipebombLauncher*>( Weapon_OwnsThisID( TF_WEAPON_PIPEBOMBLAUNCHER ) );
 
