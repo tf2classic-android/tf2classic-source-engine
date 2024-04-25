@@ -6,6 +6,7 @@
 //=============================================================================
 
 #include "cbase.h"
+#include "teamplayroundbased_gamerules.h"
 #include "tf_shareddefs.h"
 #include "trigger_area_capture.h"
 #include "tf_player.h"
@@ -1541,7 +1542,37 @@ void CTFPlayer::SendOffHandViewModelActivity( Activity activity )
 //-----------------------------------------------------------------------------
 bool CTFPlayer::ItemIsAllowed( CEconItemView *pItem )
 {
-	// TODO
+	if( !pItem || !pItem->GetStaticData() )
+		return false; // non-econ items is not allowed.
+
+	CEconItemDefinition *pItemData = pItem->GetStaticData();
+	if( !pItemData )
+		return false;
+	
+	int iClass = GetPlayerClass()->GetClassIndex();
+	ETFLoadoutSlot iSlot = pItem->GetStaticData()->GetLoadoutSlot( iClass );
+
+	if( TFGameRules() && TFGameRules()->InStalemate() && (TFGameRules()->GetGameType() != TF_GAMETYPE_ARENA) && mp_stalemate_meleeonly.GetBool() )
+	{
+		bool bMeleeOnlyAllowed = (iSlot == TF_LOADOUT_SLOT_MELEE) || ( iClass == TF_CLASS_SPY && ( iSlot == TF_LOADOUT_SLOT_PDA1 || iSlot == TF_LOADOUT_SLOT_PDA2 ) );
+
+		if ( !bMeleeOnlyAllowed )
+			return false;
+	}
+
+#if 0 // medieval mode check here... we don't have it.
+  if ( BYTE1(v5[158].m_flNextVerboseLogOutput) )
+  {
+    v7 = CEconItemDefinition::GetLoadoutSlot(StaticData, this->m_PlayerClass.m_iClass.m_Value);
+    if ( v7 < 7
+      && v7 != 2
+      && (this->m_PlayerClass.m_iClass.m_Value != 8 || v7 < 5)
+      && !CAttributeManager::AttribHookValue<int>(0, "allowed_in_medieval_mode", pItem) )
+    {
+      return 0;
+    }
+#endif
+
 	return true;
 }
 
