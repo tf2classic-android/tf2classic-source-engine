@@ -741,10 +741,13 @@ bool CSourceAppSystemGroup::Create()
 	// Load up the appropriate shader DLL
 	// This has to be done before connection.
 	char const* pDLLName = "shaderapidx9" DLL_EXT_STRING;
+
+#if !defined( PUBLIC_BUILD )
 	if ( CommandLine()->FindParm( "-noshaderapi" ) )
 	{
 		pDLLName = "shaderapiempty" DLL_EXT_STRING;
 	}
+#endif
 
 	pMaterialSystem->SetShaderAPI( pDLLName );
 
