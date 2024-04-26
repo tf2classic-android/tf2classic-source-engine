@@ -10,6 +10,8 @@
 
 //----------------------------------------------------------------------------------------
 
+#if defined( REPLAY_ENABLED )
+
 #include "replay/ireplaysystem.h"
 #include "replay/iserverreplaycontext.h"
 
@@ -53,5 +55,7 @@ void ReplaySystem_Shutdown();
 bool Replay_IsSupportedModAndPlatform();
 
 //----------------------------------------------------------------------------------------
+
+#endif // REPLAY_ENABLED
 
 #endif // REPLAY_INTERNAL_H

@@ -1667,7 +1667,11 @@ public:
 
 	virtual IReplaySystem *GetReplay()
 	{
+#if defined( REPLAY_ENABLED )
 		return g_pReplay;
+#else
+		return NULL;
+#endif
 	}
 
 	virtual int GetClusterCount()

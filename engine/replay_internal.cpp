@@ -2,6 +2,8 @@
 //
 //=======================================================================================//
 
+#if defined( REPLAY_ENABLED )
+
 #include "replay_internal.h"
 #include "replay/ireplaysystem.h"
 #include "replayserver.h"
@@ -33,7 +35,7 @@ IReplayMovieManager				*g_pReplayMovieManager = NULL;
 //----------------------------------------------------------------------------------------
 
 ConVar replay_debug( "replay_debug", "0", FCVAR_DONTRECORD );
-	
+
 //----------------------------------------------------------------------------------------
 
 // If you modify this list, you will also need to add the following line to the game's
@@ -41,11 +43,13 @@ ConVar replay_debug( "replay_debug", "0", FCVAR_DONTRECORD );
 //
 //    $include "$SRCDIR\vpc_scripts\source_replay.vpc"
 //
+#if defined( REPLAY_ENABLED )
 static const char *s_pSupportedReplayGames[] =
 {
 	"tf",
 	"tf_beta",
 };
+#endif
 
 //----------------------------------------------------------------------------------------
 
@@ -122,6 +126,7 @@ void ReplaySystem_Shutdown()
 
 bool Replay_IsSupportedModAndPlatform()
 {
+#if defined( REPLAY_ENABLED )
 	if ( !IsPC() )
 		return false;
 
@@ -132,7 +137,11 @@ bool Replay_IsSupportedModAndPlatform()
 		if ( !Q_stricmp( COM_GetModDirectory(), pCurGame ) )
 			return true;
 	}
+#endif
+
 	return false;
 }
+
+#endif // REPLAY_ENABLED
 
 //----------------------------------------------------------------------------------------

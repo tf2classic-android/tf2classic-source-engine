@@ -954,10 +954,12 @@ void SV_ShutdownGameDLL( void )
 		return;
 	}
 
+#if defined( REPLAY_ENABLED )
 	if ( g_pReplay )
 	{
 		g_pReplay->SV_Shutdown();
 	}
+#endif
 
 	// Delete any extra SendTable copies we've attached to the game DLL's classes, if any.
 	SV_TermSendTables( serverGameDLL->GetAllServerClasses() );
