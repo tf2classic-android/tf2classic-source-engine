@@ -190,7 +190,6 @@ set(
 	"${SRCDIR}/public/builddisp.cpp"
 	"${ENGINE_DIR}/changeframelist.cpp"
 	"${ENGINE_DIR}/checksum_engine.cpp"
-	"${ENGINE_DIR}/ccs.cpp"
 	"${ENGINE_DIR}/clockdriftmgr.cpp"
 	"$<$<NOT:${IS_DEDICATED}>:${ENGINE_DIR}/cl_bounded_cvars.cpp>"
 	"${ENGINE_DIR}/cl_check_process.cpp"

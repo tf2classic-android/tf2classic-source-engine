@@ -41,8 +41,6 @@
 #include "GameEventManager.h"
 #include "tier0/etwprof.h"
 
-#include "ccs.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -290,8 +288,6 @@ void CHostState::Init()
 	m_angLocation.Init();
 	m_bWaitingForConnection = false;
 	m_flShortFrameTime = 1.0;
-
-	CCS_Init();
 
 	Plat_SetWatchdogHandlerFunction( WatchDogHandler );
 }
@@ -577,8 +573,6 @@ void CHostState::State_GameShutdown()
 // Tell the launcher we're done.
 void CHostState::State_Shutdown()
 {
-	CCS_Shutdown();
-
 #if !defined(SWDS)
 	CL_EndMovie();
 #endif
@@ -605,8 +599,6 @@ void CHostState::State_Restart( void )
 //-----------------------------------------------------------------------------
 void CHostState::FrameUpdate( float time )
 {
-	CCS_Tick( time );
-
 #if _DEBUG
 	int loopCount = 0;
 #endif
