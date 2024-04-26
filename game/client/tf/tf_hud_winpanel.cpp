@@ -6,16 +6,13 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "strtools.h"
 #include "tf_hud_winpanel.h"
 #include "tf_hud_statpanel.h"
-#include "tf_shareddefs.h"
-#include "tf_spectatorgui.h"
 #include "vgui_controls/AnimationController.h"
 #include "iclientmode.h"
 #include "engine/IEngineSound.h"
 #include "c_tf_playerresource.h"
-#include "c_team.h"
+#include "c_tf_team.h"
 #include "tf_clientscoreboard.h"
 #include <vgui_controls/Label.h>
 #include <vgui_controls/ImagePanel.h>
@@ -23,15 +20,15 @@
 #include <vgui/ISurface.h>
 #include "vgui_avatarimage.h"
 #include "fmtstr.h"
-#include "teamplayroundbased_gamerules.h"
 #include "tf_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 extern ConVar tf2c_domination_points_per_round;
+extern ConVar mp_bonusroundtime;
 
-vgui::IImage* GetDefaultAvatarImage( C_BasePlayer *pPlayer );
+vgui::IImage* GetDefaultAvatarImage( int iPlayerIndex );
 
 DECLARE_HUDELEMENT_DEPTH( CTFWinPanel, 1 );
 
@@ -44,14 +41,30 @@ CTFWinPanel::CTFWinPanel( const char *pElementName ) : EditablePanel( NULL, "Win
 	SetParent( pParent );
 	m_bShouldBeVisible = false;
 	SetAlpha( 0 );
-	SetScheme( "ClientScheme" );
 
+	// This is needed for custom colors.
+	SetScheme( scheme()->LoadSchemeFromFile( "Resource/ClientScheme_tf2c.res", "ClientScheme_tf2c" ) );
+
+	m_pBGPanel = new EditablePanel( this, "WinPanelBGBorder" );
 	m_pTeamScorePanel = new EditablePanel( this, "TeamScoresPanel" );
-	m_flTimeUpdateTeamScore = 0;
+	m_pBlueBG = new EditablePanel( m_pTeamScorePanel, "BlueScoreBG" );
+	m_pRedBG = new EditablePanel( m_pTeamScorePanel, "RedScoreBG" );
+
+	m_pBlackBorder = NULL;
+	m_pBlueBorder = NULL;
+	m_pRedBorder = NULL;
+	m_pGreenBorder = NULL;
+	m_pYellowBorder = NULL;
+
+	m_flTimeUpdateTeamScore = 0.f;
 	m_iBlueTeamScore = 0;
 	m_iRedTeamScore = 0;
 	m_iGreenTeamScore = 0;
 	m_iYellowTeamScore = 0;
+	m_iScoringTeam = 0;
+	
+	m_flTimeSwitchTeams = 0.f;
+	m_bShowingGreenYellow = false;
 
 	RegisterForRenderGroup( "mid" );
 }
@@ -70,6 +83,9 @@ void CTFWinPanel::ApplySettings( KeyValues *inResourceData )
 void CTFWinPanel::Reset()
 {
 	m_bShouldBeVisible = false;
+	m_flTimeUpdateTeamScore = 0.0f;
+	m_iScoringTeam = 0;
+	m_flTimeSwitchTeams = 0.f;
 }
 
 //-----------------------------------------------------------------------------
@@ -149,11 +165,6 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 		SetDialogVariable( "WinReasonLabel", "" );
 		SetDialogVariable( "DetailsLabel", "" );
 
-		vgui::ImagePanel *pImagePanelBG = dynamic_cast<vgui::ImagePanel *>( FindChildByName("WinPanelBG") );
-		Assert( pImagePanelBG );
-		if ( !pImagePanelBG )
-			return;
-
 		// set the appropriate background image and label text
 		const char *pTeamLabel = NULL;
 		const char *pTopPlayersLabel = NULL;
@@ -163,31 +174,31 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 		switch ( iWinningTeam )
 		{
 		case TF_TEAM_BLUE:
-			pImagePanelBG->SetImage( "../hud/winpanel_blue_bg_main.vmt" );
+			m_pBGPanel->SetBorder( m_pBlueBorder );
 			pTeamLabel = ( bRoundComplete ? "#Winpanel_BlueWins" : ( bIsAreaDefense ? "#Winpanel_BlueDefends" : "#Winpanel_BlueAdvances" ) );
 			pTopPlayersLabel = "#Winpanel_BlueMVPs";
 			pLocalizedTeamName =  g_pVGuiLocalize->Find( "TF_BlueTeam_Name" );
 			break;
 		case TF_TEAM_RED:
-			pImagePanelBG->SetImage( "../hud/winpanel_red_bg_main.vmt" );
+			m_pBGPanel->SetBorder( m_pRedBorder );
 			pTeamLabel = ( bRoundComplete ? "#Winpanel_RedWins" : ( bIsAreaDefense ? "#Winpanel_RedDefends" : "#Winpanel_RedAdvances" ) );
 			pTopPlayersLabel = "#Winpanel_RedMVPs";
 			pLocalizedTeamName =  g_pVGuiLocalize->Find( "TF_RedTeam_Name" );
 			break;
 		case TF_TEAM_GREEN:
-			pImagePanelBG->SetImage("../hud/winpanel_green_bg_main.vmt");
+			m_pBGPanel->SetBorder( m_pGreenBorder );
 			pTeamLabel = (bRoundComplete ? "#Winpanel_GreenWins" : (bIsAreaDefense ? "#Winpanel_GreenDefends" : "#Winpanel_GreenAdvances"));
 			pTopPlayersLabel = "#Winpanel_GreenMVPs";
 			pLocalizedTeamName = g_pVGuiLocalize->Find("TF_GreenTeam_Name");
 			break;
 		case TF_TEAM_YELLOW:
-			pImagePanelBG->SetImage("../hud/winpanel_yellow_bg_main.vmt");
+			m_pBGPanel->SetBorder( m_pYellowBorder );
 			pTeamLabel = (bRoundComplete ? "#Winpanel_YellowWins" : (bIsAreaDefense ? "#Winpanel_YellowDefends" : "#Winpanel_YellowAdvances"));
 			pTopPlayersLabel = "#Winpanel_YellowMVPs";
 			pLocalizedTeamName = g_pVGuiLocalize->Find("TF_YellowTeam_Name");
 			break;
 		case TEAM_UNASSIGNED:	// stalemate
-			pImagePanelBG->SetImage( "../hud/winpanel_black_bg_main.vmt" );
+			m_pBGPanel->SetBorder( m_pBlackBorder );
 			pTeamLabel = "#Winpanel_Stalemate";
 			pTopPlayersLabel = "#Winpanel_TopPlayers";
 			break;
@@ -274,62 +285,16 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 		}
 
 		// get the current & previous team scores
-		int iBlueTeamPrevScore = event->GetInt( "blue_score_prev", 0 );
-		int iRedTeamPrevScore = event->GetInt( "red_score_prev", 0 );
 		m_iBlueTeamScore = event->GetInt( "blue_score", 0 );
 		m_iRedTeamScore = event->GetInt( "red_score", 0 );
+		m_iGreenTeamScore = event->GetInt("green_score", 0);
+		m_iYellowTeamScore = event->GetInt("yellow_score", 0);
+		m_iScoringTeam = event->GetInt( "scoring_team", 0 );
 		
-		if ( m_pTeamScorePanel )
-		{			
-			if ( bRoundComplete )
-			{
-				// set the previous team scores in scoreboard
-				m_pTeamScorePanel->SetDialogVariable( "blueteamscore", iBlueTeamPrevScore );
-				m_pTeamScorePanel->SetDialogVariable( "redteamscore", iRedTeamPrevScore );
-
-				m_pTeamScorePanel->SetDialogVariable( "blueteamname", GetGlobalTeam(TF_TEAM_BLUE)->Get_Name() );
-				m_pTeamScorePanel->SetDialogVariable( "redteamname", GetGlobalTeam(TF_TEAM_RED)->Get_Name() );
-
-				if (TFGameRules()->IsFourTeamGame())
-				{
-					vgui::ImagePanel *pGreenBG = dynamic_cast<vgui::ImagePanel *>(m_pTeamScorePanel->FindChildByName("GreenScoreBG"));
-					vgui::ImagePanel *pYellowBG = dynamic_cast<vgui::ImagePanel *>(m_pTeamScorePanel->FindChildByName("YellowScoreBG"));
-
-					if (pGreenBG && pYellowBG)
-					{
-						pGreenBG->SetEnabled(true);
-						pGreenBG->SetVisible(true);
-						pYellowBG->SetEnabled(true);
-						pYellowBG->SetVisible(true);
-					}
-
-					int iGreenTeamPrevScore = event->GetInt("green_score_prev", 0);
-					int iYellowTeamPrevScore = event->GetInt("yellow_score_prev", 0);
-					m_iGreenTeamScore = event->GetInt("green_score", 0);
-					m_iYellowTeamScore = event->GetInt("yellow_score", 0);
-
-					m_pTeamScorePanel->SetDialogVariable("greenteamscore", iGreenTeamPrevScore);
-					m_pTeamScorePanel->SetDialogVariable("yellowteamscore", iYellowTeamPrevScore);
-
-					m_pTeamScorePanel->SetDialogVariable("greenteamname", GetGlobalTeam(TF_TEAM_GREEN)->Get_Name());
-					m_pTeamScorePanel->SetDialogVariable("yellowteamname", GetGlobalTeam(TF_TEAM_YELLOW)->Get_Name());
-
-					if ((m_iBlueTeamScore != iBlueTeamPrevScore) || (m_iRedTeamScore != iRedTeamPrevScore) || (m_iGreenTeamScore != iGreenTeamPrevScore) || (m_iYellowTeamScore != iYellowTeamPrevScore))
-					{
-						// if the new scores are different, set ourselves to update the scoreboard to the new values after a short delay, so players
-						// see the scores tick up
-						m_flTimeUpdateTeamScore = gpGlobals->curtime + 2.0f;
-					}
-				}
-				else if ( ( m_iBlueTeamScore != iBlueTeamPrevScore ) || ( m_iRedTeamScore != iRedTeamPrevScore ) )
-				{
-					// if the new scores are different, set ourselves to update the scoreboard to the new values after a short delay, so players
-					// see the scores tick up
-					m_flTimeUpdateTeamScore = gpGlobals->curtime + 2.0f;
-				}
-			}
-			// only show team scores if round is complete
-			m_pTeamScorePanel->SetVisible( bRoundComplete );
+		if( bRoundComplete )
+		{
+			SwitchScorePanels( m_iScoringTeam > 3, true );
+			m_flTimeSwitchTeams = (float)(mp_bonusroundtime.GetFloat() * 0.5) + gpGlobals->curtime;
 		}
 
 		// look for the top 3 players sent in the event
@@ -348,16 +313,16 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 
 #if !defined( _X360 )
 			CAvatarImagePanel *pPlayerAvatar = dynamic_cast<CAvatarImagePanel *>( FindChildByName( CFmtStr( "Player%dAvatar", i ) ) );
-
+			
 			if ( pPlayerAvatar )
 			{
 				pPlayerAvatar->ClearAvatar();
 				pPlayerAvatar->SetShouldScaleImage( true );
 				pPlayerAvatar->SetShouldDrawFriendIcon( false );
-
+				
 				if ( bShow )
 				{
-					pPlayerAvatar->SetDefaultAvatar( GetDefaultAvatarImage( UTIL_PlayerByIndex( iPlayerIndex ) ) );
+					pPlayerAvatar->SetDefaultAvatar( GetDefaultAvatarImage( iPlayerIndex ) );
 					pPlayerAvatar->SetPlayer( iPlayerIndex );
 				}
 				pPlayerAvatar->SetVisible( bShow );
@@ -402,6 +367,14 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 void CTFWinPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
+
+	LoadControlSettings( "resource/UI/WinPanel.res" );
+
+	m_pBlackBorder = pScheme->GetBorder( "TFFatLineBorder" );
+	m_pBlueBorder = pScheme->GetBorder( "TFFatLineBorderBlueBG" );
+	m_pRedBorder = pScheme->GetBorder( "TFFatLineBorderRedBG" );
+	m_pGreenBorder = pScheme->GetBorder( "TFFatLineBorderGreenBG" );
+	m_pYellowBorder = pScheme->GetBorder( "TFFatLineBorderYellowBG" );
 }
 
 //-----------------------------------------------------------------------------
@@ -421,20 +394,111 @@ bool CTFWinPanel::ShouldDraw()
 void CTFWinPanel::OnThink()
 {
 	// if we've scheduled ourselves to update the team scores, handle it now
-	if ( m_flTimeUpdateTeamScore > 0 && ( gpGlobals->curtime > 	m_flTimeUpdateTeamScore ) && m_pTeamScorePanel )
+	if ( m_flTimeUpdateTeamScore > 0 && gpGlobals->curtime >= m_flTimeUpdateTeamScore )
 	{
 		// play a sound
 		CLocalPlayerFilter filter;
 		C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Hud.EndRoundScored" );
 
 		// update the team scores
-		m_pTeamScorePanel->SetDialogVariable( "blueteamscore", m_iBlueTeamScore );
-		m_pTeamScorePanel->SetDialogVariable( "redteamscore", m_iRedTeamScore );
-
-		// update the team names
-		m_pTeamScorePanel->SetDialogVariable( "blueteamname", GetGlobalTeam(TF_TEAM_BLUE)->Get_Name() );
-		m_pTeamScorePanel->SetDialogVariable( "redteamname", GetGlobalTeam(TF_TEAM_RED)->Get_Name() );
+		m_pTeamScorePanel->SetDialogVariable( "blueteamscore", GetTeamScore( GetLeftTeam(), false ) );
+		m_pTeamScorePanel->SetDialogVariable( "redteamscore", GetTeamScore( GetRightTeam(), false ) );
 
 		m_flTimeUpdateTeamScore = 0;
+	}
+	
+	if( m_flTimeSwitchTeams > 0 && gpGlobals->curtime >= m_flTimeSwitchTeams )
+	{
+		SwitchScorePanels( !m_bShowingGreenYellow, true );
+		m_flTimeSwitchTeams = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+int CTFWinPanel::GetLeftTeam( void )
+{
+	return m_bShowingGreenYellow ? TF_TEAM_GREEN : TF_TEAM_BLUE;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+int CTFWinPanel::GetRightTeam( void )
+{
+	return m_bShowingGreenYellow ? TF_TEAM_YELLOW : TF_TEAM_RED;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+int CTFWinPanel::GetTeamScore( int iTeam, bool bPrevious )
+{
+	int iScore = 0;
+
+	switch ( iTeam )
+	{
+	case TF_TEAM_RED:
+		iScore = m_iRedTeamScore;
+		break;
+	case TF_TEAM_BLUE:
+		iScore = m_iBlueTeamScore;
+		break;
+	case TF_TEAM_GREEN:
+		iScore = m_iGreenTeamScore;
+		break;
+	case TF_TEAM_YELLOW:
+		iScore = m_iYellowTeamScore;
+		break;
+	}
+
+	// If this is the winning team then their previous score is 1 point lower.
+	if ( bPrevious && iTeam == m_iScoringTeam )
+		iScore--;
+
+	return iScore;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFWinPanel::SwitchScorePanels( bool bShow, bool bSetScores )
+{
+	m_bShowingGreenYellow = bShow;
+
+	if( bShow )
+	{
+		m_pBlueBG->SetBorder( m_pGreenBorder );
+		m_pRedBG->SetBorder( m_pYellowBorder );
+	}
+	else
+	{
+		m_pBlueBG->SetBorder( m_pBlueBorder );
+		m_pRedBG->SetBorder( m_pRedBorder );
+	}
+	
+	if( bSetScores )
+	{
+		m_pTeamScorePanel->SetDialogVariable( "blueteamscore", GetTeamScore( GetLeftTeam(), false ) );
+		m_pTeamScorePanel->SetDialogVariable( "redteamscore", GetTeamScore( GetRightTeam(), false ) );
+		
+		const wchar_t *wszLeftTeam = GetLocalizedTeamName( TF_TEAM_BLUE );
+		const wchar_t *wszRightTeam = GetLocalizedTeamName( TF_TEAM_RED );
+		
+		if( m_bShowingGreenYellow )
+		{
+			wszLeftTeam = GetLocalizedTeamName( TF_TEAM_GREEN );
+			wszRightTeam = GetLocalizedTeamName( TF_TEAM_YELLOW );
+		}
+		
+		m_pTeamScorePanel->SetDialogVariable( "blueteamname", wszLeftTeam );
+		m_pTeamScorePanel->SetDialogVariable( "redteamname", wszRightTeam );
+		
+		// TODO(SanyaSho): some code checks should be here..
+		
+		int iScoringTeam = m_bShowingGreenYellow ? TF_TEAM_YELLOW : TF_TEAM_RED;
+		if( m_iScoringTeam == iScoringTeam )
+			m_flTimeUpdateTeamScore = gpGlobals->curtime + 2.0;
 	}
 }

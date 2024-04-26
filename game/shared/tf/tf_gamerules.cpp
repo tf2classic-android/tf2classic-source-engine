@@ -9,6 +9,7 @@
 #include "tf_gamerules.h"
 #include "ammodef.h"
 #include "KeyValues.h"
+#include "tf_shareddefs.h"
 #include "tf_weaponbase.h"
 #include "time.h"
 #include "viewport_panel_names.h"
@@ -4811,58 +4812,32 @@ void CTFGameRules::SendWinPanelInfo( void )
 
 	if ( winEvent )
 	{
-		// TODO(SanyaSho): implement Deathmatch winpanel
 		int iBlueScore = GetGlobalTeam( TF_TEAM_BLUE ) ? GetGlobalTeam( TF_TEAM_BLUE )->GetScore() : 0;
 		int iRedScore = GetGlobalTeam( TF_TEAM_RED ) ? GetGlobalTeam( TF_TEAM_RED )->GetScore() : 0;
-		int iBlueScorePrev = iBlueScore;
-		int iRedScorePrev = iRedScore;
 		int iGreenScore = GetGlobalTeam( TF_TEAM_GREEN ) ? GetGlobalTeam( TF_TEAM_GREEN )->GetScore() : 0;
 		int iYellowScore = GetGlobalTeam( TF_TEAM_YELLOW ) ? GetGlobalTeam( TF_TEAM_YELLOW )->GetScore() : 0;
-		int iGreenScorePrev = iGreenScore;
-		int iYellowScorePrev = iYellowScore;
 
 		bool bRoundComplete = m_bForceMapReset || ( IsGameUnderTimeLimit() && ( GetTimeLeft() <= 0 ) );
-
-		CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
-		bool bScoringPerCapture = ( pMaster ) ? ( pMaster->ShouldScorePerCapture() ) : false;
-
-		if ( bRoundComplete && !bScoringPerCapture )
-		{
-			// if this is a complete round, calc team scores prior to this win
-			switch ( m_iWinningTeam )
-			{
-			case TF_TEAM_BLUE:
-				iBlueScorePrev = ( iBlueScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? ( iBlueScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
-				break;
-			case TF_TEAM_RED:
-				iRedScorePrev = ( iRedScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? ( iRedScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
-				break;
-			case TF_TEAM_GREEN:
-				if ( !IsFourTeamGame() )
-					break;
-				iGreenScorePrev = ( iGreenScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? (iGreenScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
-				break;
-			case TF_TEAM_YELLOW:
-				if ( !IsFourTeamGame() )
-					break;
-				iYellowScorePrev = ( iYellowScore - TEAMPLAY_ROUND_WIN_SCORE >= 0 ) ? (iYellowScore - TEAMPLAY_ROUND_WIN_SCORE ) : 0;
-				break;
-
-			case TEAM_UNASSIGNED:
-				break;	// stalemate; nothing to do
-			}
-		}
 			
 		winEvent->SetInt( "panel_style", WINPANEL_BASIC );
 		winEvent->SetInt( "winning_team", m_iWinningTeam );
 		winEvent->SetInt( "winreason", m_iWinReason );
-		winEvent->SetString( "cappers",  ( m_iWinReason == WINREASON_ALL_POINTS_CAPTURED || m_iWinReason == WINREASON_FLAG_CAPTURE_LIMIT ) ?
-			m_szMostRecentCappers : "" );
+		winEvent->SetString( "cappers",  ( m_iWinReason == WINREASON_ALL_POINTS_CAPTURED || m_iWinReason == WINREASON_FLAG_CAPTURE_LIMIT ) ? m_szMostRecentCappers : "" );
 		winEvent->SetInt( "flagcaplimit", tf_flag_caps_per_round.GetInt() );
-		winEvent->SetInt( "blue_score", iBlueScore );
-		winEvent->SetInt( "red_score", iRedScore );
-		winEvent->SetInt( "blue_score_prev", iBlueScorePrev );
-		winEvent->SetInt( "red_score_prev", iRedScorePrev );
+		for( int i = 0; i < GetNumberOfTeams(); i++ )
+		{
+			CTeam *pTeam = GetGlobalTeam( i );
+			if( pTeam )
+			{
+				winEvent->SetInt( UTIL_VarArgs( "%s_score", g_aTeamParticleNames[i] ), pTeam->GetScore() ); // should be g_aTeamLowerNames
+			}
+		}
+		
+		CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+		bool bScoringPerCapture = ( pMaster ) ? ( pMaster->ShouldScorePerCapture() ) : false;
+                
+		winEvent->SetInt( "scoring_team", ( !bRoundComplete || bScoringPerCapture ) ? 0 : m_iWinningTeam );
+
 		winEvent->SetInt( "round_complete", bRoundComplete );
 
 		// determine the 3 players on winning team who scored the most points this round
@@ -4881,21 +4856,16 @@ void CTFGameRules::SendWinPanelInfo( void )
 				continue;
 
 			int iRoundScore = 0, iTotalScore = 0;
-			int iKills = 0, iDeaths = 0;
 			PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( pTFPlayer );
 			if ( pStats )
 			{
 				iRoundScore = CalcPlayerScore( &pStats->statsCurrentRound );
 				iTotalScore = CalcPlayerScore( &pStats->statsAccumulated );
-				iKills = pStats->statsCurrentRound.m_iStat[TFSTAT_KILLS];
-				iDeaths = pStats->statsCurrentRound.m_iStat[TFSTAT_DEATHS];
 			}
 			PlayerRoundScore_t &playerRoundScore = vecPlayerScore[vecPlayerScore.AddToTail()];
 			playerRoundScore.iPlayerIndex = iPlayerIndex;
 			playerRoundScore.iRoundScore = iRoundScore;
 			playerRoundScore.iTotalScore = iTotalScore;
-			playerRoundScore.iKills = iKills;
-			playerRoundScore.iDeaths = iDeaths;
 		}
 		// sort the players by round score
 		vecPlayerScore.Sort( PlayerRoundScoreSortFunc );
@@ -4910,15 +4880,10 @@ void CTFGameRules::SendWinPanelInfo( void )
 
 			// set the player index and their round score in the event
 			char szPlayerIndexVal[64] = "", szPlayerScoreVal[64] = "";
-			char szPlayerKillsVal[64] = "", szPlayerDeathsVal[64] = "";
 			Q_snprintf( szPlayerIndexVal, ARRAYSIZE( szPlayerIndexVal ), "player_%d", i + 1 );
 			Q_snprintf( szPlayerScoreVal, ARRAYSIZE( szPlayerScoreVal ), "player_%d_points", i + 1 );
-			Q_snprintf(szPlayerKillsVal, ARRAYSIZE(szPlayerKillsVal), "player_%d_kills", i + 1);
-			Q_snprintf(szPlayerDeathsVal, ARRAYSIZE(szPlayerDeathsVal), "player_%d_deaths", i + 1);
 			winEvent->SetInt( szPlayerIndexVal, vecPlayerScore[i].iPlayerIndex );
-			winEvent->SetInt( szPlayerScoreVal, vecPlayerScore[i].iRoundScore );				
-			winEvent->SetInt(szPlayerKillsVal, vecPlayerScore[i].iKills);
-			winEvent->SetInt(szPlayerDeathsVal, vecPlayerScore[i].iDeaths);
+			winEvent->SetInt( szPlayerScoreVal, vecPlayerScore[i].iRoundScore );
 		}
 
 		if ( !bRoundComplete && ( TEAM_UNASSIGNED != m_iWinningTeam ) )
