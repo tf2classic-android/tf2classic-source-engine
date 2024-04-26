@@ -711,7 +711,6 @@ bool SVC_ServerInfo::WriteToBuffer( bf_write &buffer )
 	buffer.WriteLong  ( m_nServerCount );
 	buffer.WriteOneBit( m_bIsHLTV?1:0);
 	buffer.WriteOneBit( m_bIsDedicated?1:0);
-	buffer.WriteLong  ( 0xffffffff );  // Used to be client.dll CRC.  This was far before signed binaries, VAC, and cross-platform play
 	buffer.WriteWord  ( m_nMaxClasses );
 	buffer.WriteBytes( m_nMapMD5.bits, MD5_DIGEST_LENGTH );		// To prevent cheating with hacked maps
 	buffer.WriteByte  ( m_nPlayerSlot );
@@ -743,7 +742,6 @@ bool SVC_ServerInfo::ReadFromBuffer( bf_read &buffer )
 	m_nServerCount	= buffer.ReadLong();
 	m_bIsHLTV		= buffer.ReadOneBit()!=0;
 	m_bIsDedicated	= buffer.ReadOneBit()!=0;
-	buffer.ReadLong();  // Legacy client CRC.
 	m_nMaxClasses	= buffer.ReadWord();
 
 	buffer.ReadBytes( m_nMapMD5.bits, MD5_DIGEST_LENGTH );
