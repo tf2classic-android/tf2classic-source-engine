@@ -67,7 +67,7 @@ void CTFRGBPanel::ApplySchemeSettings( IScheme *pScheme )
 		int itemID = m_pAnimCombo->AddItem( pWinAnim->szName, pKV );
 		pKV->deleteThis();
 		
-		if( pWinAnim->id == tf2c_merc_particle.GetInt() )
+		if( pWinAnim->id == tf2c_merc_winanim.GetInt() )
 		{
 			m_pAnimCombo->SilentActivateItem( itemID );
 		}

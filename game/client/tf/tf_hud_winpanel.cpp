@@ -294,7 +294,8 @@ void CTFWinPanel::FireGameEvent( IGameEvent * event )
 		if( bRoundComplete )
 		{
 			SwitchScorePanels( m_iScoringTeam > 3, true );
-			m_flTimeSwitchTeams = (float)(mp_bonusroundtime.GetFloat() * 0.5) + gpGlobals->curtime;
+			if( TFGameRules() && TFGameRules()->IsFourTeamGame() )
+				m_flTimeSwitchTeams = (float)(mp_bonusroundtime.GetFloat() * 0.5) + gpGlobals->curtime;
 		}
 
 		// look for the top 3 players sent in the event

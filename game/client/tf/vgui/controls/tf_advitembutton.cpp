@@ -48,9 +48,9 @@ void CTFItemButton::ApplySchemeSettings( IScheme *pScheme )
 
 	SetContentAlignment( Label::a_south );
 	SetTextInset( 0, -10 );
-	
+
 	m_pItemPanel->SetMouseInputEnabled( false );
-	m_pItemPanel->SetShowQuality( false );
+	m_pItemPanel->SetShowQuality( true );
 }
 
 void CTFItemButton::PerformLayout()
