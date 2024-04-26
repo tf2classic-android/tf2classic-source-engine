@@ -63,10 +63,14 @@ void GetVGUICursorPos( int& x, int& y )
 
 void SetVGUICursorPos( int x, int y )
 {
+#if !defined( PUBLIC_BUILD )
 	if ( !g_bTextMode )
 	{
 		vgui::input()->SetCursorPos(x, y);
 	}
+#else
+	vgui::input()->SetCursorPos( x, y );
+#endif
 }
 
 class CHudTextureHandleProperty : public vgui::IPanelAnimationPropertyConverter

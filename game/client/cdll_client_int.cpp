@@ -984,8 +984,10 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 		return false;
 	}
 
+#if !defined( PUBLIC_BUILD )
 	if ( CommandLine()->FindParm( "-textmode" ) )
 		g_bTextMode = true;
+#endif
 
 	if ( CommandLine()->FindParm( "-makedevshots" ) )
 		g_MakingDevShots = true;
