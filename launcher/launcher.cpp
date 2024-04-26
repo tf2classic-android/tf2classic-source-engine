@@ -312,7 +312,7 @@ void UTIL_ComputeBaseDir()
 	Q_FixSlashes( g_szBasedir );
 }
 
-#ifdef WIN32
+#if defined( WIN32 ) && !defined( PUBLIC_BUILD )
 BOOL WINAPI MyHandlerRoutine( DWORD dwCtrlType )
 {
 #if !defined( _X360 )
@@ -324,8 +324,7 @@ BOOL WINAPI MyHandlerRoutine( DWORD dwCtrlType )
 
 void InitTextMode()
 {
-#ifdef WIN32
-#if !defined( _X360 )
+#if defined( WIN32 ) && !defined( PUBLIC_BUILD )
 	AllocConsole();
 
 	SetConsoleCtrlHandler( MyHandlerRoutine, TRUE );
@@ -333,9 +332,6 @@ void InitTextMode()
 	freopen( "CONIN$", "rb", stdin );		// reopen stdin handle as console window input
 	freopen( "CONOUT$", "wb", stdout );		// reopen stout handle as console window output
 	freopen( "CONOUT$", "wb", stderr );		// reopen stderr handle as console window output
-#else
-	XBX_Error( "%s %s: Not Supported", __FILE__, __LINE__ );
-#endif
 #endif
 }
 
@@ -1383,8 +1379,12 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 	// Run in text mode? (No graphics or sound).
 	if ( CommandLine()->CheckParm( "-textmode" ) )
 	{
+#if !defined( PUBLIC_BUILD )
 		g_bTextMode = true;
 		InitTextMode();
+#else
+		Error( "Textmode is disabled in the public build.\n" );
+#endif
 	}
 #ifdef WIN32
 	else
