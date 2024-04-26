@@ -343,18 +343,9 @@ bool CL_CheckCRCs( const char *pszMap )
 		return true;
 	}
 
-	bool couldHash = false;
-	if ( g_ClientGlobalVariables.network_protocol > PROTOCOL_VERSION_17 )
-	{
-		couldHash = MD5_MapFile( &mapMD5, pszMap );
-	}
-	else
-	{
-		CRC32_Init(&mapCRC);
-		couldHash = CRC_MapFile( &mapCRC, pszMap );
-	}
+	bool couldHash = MD5_MapFile( &mapMD5, pszMap );
 
-	if (!couldHash )
+	if ( !couldHash )
 	{
 		// Does the file exist?
 		FileHandle_t fp = 0;
@@ -378,19 +369,11 @@ bool CL_CheckCRCs( const char *pszMap )
 		return false;
 	}
 
-	bool hashValid = false;
-	if ( g_ClientGlobalVariables.network_protocol > PROTOCOL_VERSION_17 )
-	{
-		hashValid = MD5_Compare( cl.serverMD5, mapMD5 );
-	}
+	bool hashValid = MD5_Compare( cl.serverMD5, mapMD5 );
 
 	// Hacked map
 	if ( !hashValid && !demoplayer->IsPlayingBack())
 	{
-		if ( IsX360() )
-		{
-			Warning( "Disconnect: BSP CRC failed!\n" );
-		}
 		COM_ExplainDisconnection( true, "Your map [%s] differs from the server's.\n", pszMap );
 		Host_Error( "Client's map differs from the server's" );
 		return false;

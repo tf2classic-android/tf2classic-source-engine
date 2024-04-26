@@ -613,34 +613,8 @@ bool CClientState::ProcessSounds( SVC_Sounds *msg )
 
 	if ( msg->m_nLength != nRelativeBitsRead || msg->m_DataIn.IsOverflowed() )
 	{
-		// The number of bits read is not what we expect!
-		sounds.RemoveAll();
-		
-		int nFallbackProtocol = 0;
-
-		// If the demo file thinks it's version 18 or 19, it might actually be the other.
-		// This is a work around for when we broke compatibility Halloween 2011.
-		// -Jeep
-		if ( g_ClientGlobalVariables.network_protocol == PROTOCOL_VERSION_18 )
-		{
-			nFallbackProtocol = PROTOCOL_VERSION_19;
-		}
-		else if ( g_ClientGlobalVariables.network_protocol == PROTOCOL_VERSION_19 )
-		{
-			nFallbackProtocol = PROTOCOL_VERSION_18;
-		}
-
-		if ( nFallbackProtocol != 0 )
-		{
-			// Roll back our buffer to before we read those bits and wipe the overflow flag
-			msg->m_DataIn.Reset();
-			msg->m_DataIn.Seek( startbit );
-
-			// Try again with the fallback version
-			ProcessSoundsWithProtoVersion( msg, sounds, nFallbackProtocol );
-
-			nRelativeBitsRead = msg->m_DataIn.GetNumBitsRead() - startbit;
-		}
+		// Legacy demo
+		return false;
 	}
 
 	if ( msg->m_nLength == nRelativeBitsRead )

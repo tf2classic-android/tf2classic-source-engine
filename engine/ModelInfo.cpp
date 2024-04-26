@@ -240,19 +240,6 @@ int CModelInfo::GetModelIndex( const char *name ) const
 			Assert( !m_NetworkedDynamicModels.IsValidIndex( netdyn ) || V_strcmp( m_NetworkedDynamicModels[netdyn]->strName, name ) == 0 );
 			return NETDYNAMIC_TO_MODEL( netdyn );
 		}
-
-#if defined( DEMO_BACKWARDCOMPATABILITY ) && !defined( SWDS )
-		// dynamic model tables in old system did not have a full path with "models/" prefix
-		if ( V_strnicmp( name, "models/", 7 ) == 0 && demoplayer && demoplayer->IsPlayingBack() && demoplayer->GetProtocolVersion() < PROTOCOL_VERSION_20 )
-		{
-			netdyn = pTable->FindStringIndex( name + 7 );
-			if ( netdyn != INVALID_STRING_INDEX )
-			{
-				Assert( !m_NetworkedDynamicModels.IsValidIndex( netdyn ) || V_strcmp( m_NetworkedDynamicModels[netdyn]->strName, name ) == 0 );
-				return NETDYNAMIC_TO_MODEL( netdyn );
-			}
-		}
-#endif
 	}
 
 	return GetModelClientSideIndex( name );
@@ -296,17 +283,6 @@ model_t *CModelInfo::LookupDynamicModel( int i )
 		{
 			GrowNetworkedDynamicModels( netidx );
 			const char *name = pTable->GetString( netidx );
-
-#if defined( DEMO_BACKWARDCOMPATABILITY ) && !defined( SWDS )
-			// dynamic model tables in old system did not have a full path with "models/" prefix
-			char fixupBuf[MAX_PATH];
-			if ( V_strnicmp( name, "models/", 7 ) != 0 && demoplayer && demoplayer->IsPlayingBack() && demoplayer->GetProtocolVersion() < PROTOCOL_VERSION_20 )
-			{
-				V_snprintf( fixupBuf, MAX_PATH, "models/%s", name );
-				name = fixupBuf;
-			}
-#endif
-
 			model_t *pModel = modelloader->GetDynamicModel( name, false );
 			m_NetworkedDynamicModels[ netidx ] = pModel;
 			return pModel;
@@ -489,15 +465,6 @@ int CModelInfo::GetModelType( const model_t *model ) const
 		INetworkStringTable* pTable = GetDynamicModelStringTable();
 		if ( pTable && pTable->FindStringIndex( model->strName ) != INVALID_STRING_INDEX )
 			return mod_studio;
-
-#if defined( DEMO_BACKWARDCOMPATABILITY ) && !defined( SWDS )
-		// dynamic model tables in old system did not have a full path with "models/" prefix
-		if ( pTable && demoplayer && demoplayer->IsPlayingBack() && demoplayer->GetProtocolVersion() < PROTOCOL_VERSION_20 &&
-			 V_strnicmp( model->strName, "models/", 7 ) == 0 && pTable->FindStringIndex( model->strName + 7 ) != INVALID_STRING_INDEX )
-		{
-			return mod_studio;
-		}
-#endif
 	}
 	
 	return model->type;
@@ -1091,7 +1058,7 @@ void CModelInfoClient::OnDynamicModelsStringTableChange( int nStringIndex, const
 	model_t* pModel = LookupDynamicModel( NETDYNAMIC_TO_MODEL( nStringIndex ) );
 
 	// Notify model loader that the server-side state may have changed
-	bool bServerLoaded = pData ? ( *(char*)pData != 0 ) : ( g_ClientGlobalVariables.network_protocol <= PROTOCOL_VERSION_20 );
+	bool bServerLoaded = (*(char*)pData != 0);
 	modelloader->Client_OnServerModelStateChanged( pModel, bServerLoaded );
 }
 

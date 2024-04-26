@@ -42,28 +42,6 @@ RecvProp RecvPropIntWithMinusOneFlag( const char *pVarName, int offset, int size
 	return RecvPropInt( pVarName, offset, sizeofVar, 0, proxyFn );
 }
 
-void RecvProxy_IntToModelIndex16_BackCompatible( const CRecvProxyData *pData, void *pStruct, void *pOut )
-{
-	int modelIndex = pData->m_Value.m_Int;
-	if ( modelIndex < -1 && engine->GetProtocolVersion() <= PROTOCOL_VERSION_20 )
-	{
-		Assert( modelIndex > -20000 );
-		modelIndex = -2 - ( ( -2 - modelIndex ) << 1 );
-	}
-	*(int16*)pOut = modelIndex;
-}
-
-void RecvProxy_IntToModelIndex32_BackCompatible( const CRecvProxyData *pData, void *pStruct, void *pOut )
-{
-	int modelIndex = pData->m_Value.m_Int;
-	if ( modelIndex < -1 && engine->GetProtocolVersion() <= PROTOCOL_VERSION_20 )
-	{
-		Assert( modelIndex > -20000 );
-		modelIndex = -2 - ( ( -2 - modelIndex ) << 1 );
-	}
-	*(int32*)pOut = modelIndex;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Okay, so we have to queue up the actual ehandle to entity lookup for the following reason:
 //  If a player has an EHandle/CHandle to an object such as a weapon, since the player is in slot 1-31, then

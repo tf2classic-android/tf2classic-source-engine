@@ -2718,8 +2718,7 @@ bool CNetChan::ProcessStream( void )
 		m_StreamLength = header.ReadWord();
 		m_StreamSeqNr = header.ReadLong();
 
-		const int cMaxPayload = GetProtocolVersion() > PROTOCOL_VERSION_23 ? NET_MAX_PAYLOAD : NET_MAX_PAYLOAD_V23;
-		if ( m_StreamLength	> cMaxPayload )
+		if ( m_StreamLength	> NET_MAX_PAYLOAD )
 		{
 			ConMsg( "ERROR! Stream indata too big (%i)", m_StreamLength );
 			return false;

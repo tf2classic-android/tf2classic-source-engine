@@ -746,15 +746,7 @@ bool SVC_ServerInfo::ReadFromBuffer( bf_read &buffer )
 	buffer.ReadLong();  // Legacy client CRC.
 	m_nMaxClasses	= buffer.ReadWord();
 
-	// Prevent cheating with hacked maps
-	if ( m_nProtocol > PROTOCOL_VERSION_17 )
-	{
-		buffer.ReadBytes( m_nMapMD5.bits, MD5_DIGEST_LENGTH );
-	}
-	else
-	{
-		m_nMapCRC	= buffer.ReadLong();
-	}
+	buffer.ReadBytes( m_nMapMD5.bits, MD5_DIGEST_LENGTH );
 
 	m_nPlayerSlot	= buffer.ReadByte();
 	m_nMaxClients	= buffer.ReadByte();
@@ -1285,10 +1277,7 @@ bool SVC_CreateStringTable::ReadFromBuffer( bf_read &buffer )
 	m_nMaxEntries = buffer.ReadWord();
 	int encodeBits = Q_log2( m_nMaxEntries );
 	m_nNumEntries = buffer.ReadUBitLong( encodeBits+1 );
-	if ( m_NetChannel->GetProtocolVersion() > PROTOCOL_VERSION_23 )
-		m_nLength = buffer.ReadVarInt32();
-	else
-		m_nLength = buffer.ReadUBitLong( NET_MAX_PAYLOAD_BITS_V23 + 3 );
+	m_nLength = buffer.ReadVarInt32();
 
 	m_bUserDataFixedSize = buffer.ReadOneBit() ? true : false;
 	if ( m_bUserDataFixedSize )
@@ -1302,14 +1291,7 @@ bool SVC_CreateStringTable::ReadFromBuffer( bf_read &buffer )
 		m_nUserDataSizeBits = 0;
 	}
 
-	if ( m_pMessageHandler->GetDemoProtocolVersion() > PROTOCOL_VERSION_14 )
-	{
-		m_bDataCompressed = buffer.ReadOneBit() != 0;
-	}
-	else
-	{
-		m_bDataCompressed = false;
-	}
+	m_bDataCompressed = buffer.ReadOneBit() != 0;
 
 	m_DataIn = buffer;
 	return buffer.SeekRelative( m_nLength );
@@ -1429,10 +1411,7 @@ bool SVC_TempEntities::ReadFromBuffer( bf_read &buffer )
 	VPROF( "SVC_TempEntities::ReadFromBuffer" );
 
 	m_nNumEntries = buffer.ReadUBitLong( CEventInfo::EVENT_INDEX_BITS );
-	if ( m_pMessageHandler->GetDemoProtocolVersion() > PROTOCOL_VERSION_23 )
-		m_nLength = buffer.ReadVarInt32();
-	else
-		m_nLength = buffer.ReadUBitLong( NET_MAX_PAYLOAD_BITS_V23 );
+	m_nLength = buffer.ReadVarInt32();
 
 	m_DataIn = buffer;
 	return buffer.SeekRelative( m_nLength );

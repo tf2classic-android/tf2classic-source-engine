@@ -1132,11 +1132,7 @@ bool CBaseClientState::ProcessServerInfo( SVC_ServerInfo *msg )
 
 	COM_TimestampedLog( " CBaseClient::ProcessServerInfo" );
 	
-	if (  msg->m_nProtocol != PROTOCOL_VERSION 
-#if  defined( DEMO_BACKWARDCOMPATABILITY ) && (! defined( SWDS ) )
-		&& !( demoplayer->IsPlayingBack() && msg->m_nProtocol >= PROTOCOL_VERSION_12 )
-#endif
-		)
+	if (  msg->m_nProtocol != PROTOCOL_VERSION )
 	{
 		ConMsg ( "Server returned version %i, expected %i.\n", msg->m_nProtocol, PROTOCOL_VERSION );
 		return false; 

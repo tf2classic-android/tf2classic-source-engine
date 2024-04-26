@@ -442,11 +442,7 @@ demoheader_t *CDemoFile::ReadDemoHeader()
 		return NULL;
 	}
 
-	if ( m_DemoHeader.networkprotocol != PROTOCOL_VERSION 
-#if defined( DEMO_BACKWARDCOMPATABILITY )
-		&&  m_DemoHeader.networkprotocol < PROTOCOL_VERSION_12 
-#endif
-		)
+	if ( m_DemoHeader.networkprotocol != PROTOCOL_VERSION )
 	{
 		ConMsg ("ERROR: demo network protocol %i outdated, engine version is %i \n", 
 			m_DemoHeader.networkprotocol, PROTOCOL_VERSION );
