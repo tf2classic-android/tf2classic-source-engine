@@ -46,9 +46,13 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFOptionsAdvancedPanel::CTFOptionsAdvancedPanel(vgui::Panel *parent, const char *panelName) : CTFDialogPanelBase(parent, panelName)
+CTFOptionsAdvancedPanel::CTFOptionsAdvancedPanel( vgui::Panel *parent, const char *panelName ) : CTFDialogPanelBase( parent, panelName )
 {
-	Init();
+	m_pListPanel = new CPanelListPanel( this, "PanelListPanel" );
+	m_pList = NULL;
+
+	m_pDescription = new CInfoDescription( m_pListPanel );
+	m_pDescription->InitFromFile( DEFAULT_OPTIONS_FILE );
 }
 
 //-----------------------------------------------------------------------------
@@ -59,43 +63,28 @@ CTFOptionsAdvancedPanel::~CTFOptionsAdvancedPanel()
 	delete m_pDescription;
 }
 
-
-bool CTFOptionsAdvancedPanel::Init()
+void CTFOptionsAdvancedPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
-	BaseClass::Init();
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	m_pListPanel = new CPanelListPanel(this, "PanelListPanel");
-	m_pList = NULL;
-
-	m_pDescription = new CInfoDescription(m_pListPanel);
-	m_pDescription->InitFromFile(DEFAULT_OPTIONS_FILE);
-	m_pDescription->TransferCurrentValues(NULL);
-
-	return true;
+	LoadControlSettings( "resource/UI/main_menu/OptionsAdvPanel.res" );
 }
 
-void CTFOptionsAdvancedPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
+void CTFOptionsAdvancedPanel::OnCommand( const char* command )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	LoadControlSettings("resource/UI/main_menu/OptionsAdvPanel.res");
+	BaseClass::OnCommand( command );
 }
 
-void CTFOptionsAdvancedPanel::OnCommand(const char* command)
-{
-	BaseClass::OnCommand(command);
-}
-
-void CTFOptionsAdvancedPanel::OnKeyCodeTyped(KeyCode code)
+void CTFOptionsAdvancedPanel::OnKeyCodeTyped( KeyCode code )
 {
 	// force ourselves to be closed if the escape key it pressed
-	if (code == KEY_ESCAPE)
+	if ( code == KEY_ESCAPE )
 	{
 		Hide();
 	}
 	else
 	{
-		BaseClass::OnKeyCodeTyped(code);
+		BaseClass::OnKeyCodeTyped( code );
 	}
 }
 
@@ -104,7 +93,7 @@ void CTFOptionsAdvancedPanel::OnKeyCodeTyped(KeyCode code)
 //-----------------------------------------------------------------------------
 void CTFOptionsAdvancedPanel::GatherCurrentValues()
 {
-	if (!m_pDescription)
+	if ( !m_pDescription )
 		return;
 
 	// OK
@@ -121,22 +110,22 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 	char szValue[256];
 
 	pList = m_pList;
-	while (pList)
+	while ( pList )
 	{
 		pObj = pList->pScrObj;
 
-		if (!pList->pControl)
+		if ( !pList->pControl )
 		{
-			pObj->SetCurValue(pObj->curValue);
+			pObj->SetCurValue( pObj->curValue );
 			pList = pList->next;
 			continue;
 		}
 
-		switch (pObj->type)
+		switch ( pObj->type )
 		{
 		case O_BOOL:
 			pBox = (CTFCheckButton *)pList->pControl;
-			sprintf(szValue, "%d", pBox->IsChecked() ? 1 : 0);
+			V_sprintf_safe( szValue, "%d", pBox->IsChecked() ? 1 : 0 );
 			break;
 		case O_NUMBER:
 			pEdit = (TextEntry *)pList->pControl;
@@ -144,11 +133,11 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 			break;
 		case O_SLIDER:
 			pScroll = (CTFSlider *)pList->pControl;
-			V_strncpy( szValue, pScroll->GetFinalValue(), sizeof( szValue ) );
+			V_strcpy_safe( szValue, pScroll->GetFinalValue() );
 			break;
 		case O_STRING:
 			pEdit = (TextEntry *)pList->pControl;
-			pEdit->GetText(szValue, sizeof(szValue));
+			pEdit->GetText( szValue, sizeof( szValue ) );
 			break;
 		case O_CATEGORY:
 			break;
@@ -160,28 +149,28 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 			pItem = pObj->pListItems;
 			//			int n = (int)pObj->fcurValue;
 
-			while (pItem)
+			while ( pItem )
 			{
-				if (!activeItem--)
+				if ( !activeItem-- )
 					break;
 
 				pItem = pItem->pNext;
 			}
 
-			if (pItem)
+			if ( pItem )
 			{
-				sprintf(szValue, "%s", pItem->szValue);
+				V_sprintf_safe( szValue, "%s", pItem->szValue );
 			}
 			else  // Couln't find index
 			{
 				//assert(!("Couldn't find string in list, using default value"));
-				sprintf(szValue, "%s", pObj->curValue);
+				V_sprintf_safe( szValue, "%s", pObj->curValue );
 			}
 			break;
 		}
 
 		// Remove double quotes and % characters
-		UTIL_StripInvalidCharacters(szValue, sizeof(szValue));
+		UTIL_StripInvalidCharacters( szValue, sizeof( szValue ) );
 
 		pObj->SetCurValue( szValue );
 
@@ -194,12 +183,14 @@ void CTFOptionsAdvancedPanel::GatherCurrentValues()
 //-----------------------------------------------------------------------------
 void CTFOptionsAdvancedPanel::CreateControls()
 {
+	m_pDescription->TransferCurrentValues( NULL );
+
 	BaseClass::CreateControls();
 
 	// Go through desciption creating controls
 	CScriptObject *pObj;
 	pObj = m_pDescription->pObjList;
-	
+
 	mpcontrol_t	*pCtrl;
 	CTFCvarToggleCheckButton *pBox;
 	TextEntry *pEdit;
@@ -207,24 +198,24 @@ void CTFOptionsAdvancedPanel::CreateControls()
 	CTFCvarSlider *pScroll;
 	Label *pTitle;
 	CScriptListItem *pListItem;
-	
+
 	HFont hFont = GETSCHEME()->GetFont( m_pListPanel->GetFontString(), true );
 
 	Panel *objParent = m_pListPanel;
-	while (pObj)
+	while ( pObj )
 	{
 		//Msg("\nAdded: %s %s %f %f %i\n", pObj->prompt, pObj->cvarname, pObj->fcurValue, pObj->fcurValue, pObj->type);
-		
-		if (pObj->type == O_OBSOLETE)
+
+		if ( pObj->type == O_OBSOLETE )
 		{
 			pObj = pObj->pNext;
 			continue;
 		}
 
-		pCtrl = new mpcontrol_t(objParent, "mpcontrol_t");
+		pCtrl = new mpcontrol_t( objParent, "mpcontrol_t" );
 		pCtrl->type = pObj->type;
-	
-		switch (pCtrl->type)
+
+		switch ( pCtrl->type )
 		{
 		case O_BOOL:
 			pBox = new CTFCvarToggleCheckButton( pCtrl, "DescCheckButton", pObj->prompt, pObj->cvarname );
@@ -237,15 +228,16 @@ void CTFOptionsAdvancedPanel::CreateControls()
 			break;
 		case O_STRING:
 		case O_NUMBER:
-			pEdit = new TextEntry(pCtrl, "DescTextEntry");
+			pEdit = new TextEntry( pCtrl, "DescTextEntry" );
 			pEdit->MakeReadyForUse();
 
-			pEdit->InsertString(pObj->curValue);
+			pEdit->SetFont( hFont );
+			pEdit->SetText( pObj->curValue );
 
 			pCtrl->pControl = pEdit;
 			break;
 		case O_SLIDER:
-			pScroll = new CTFCvarSlider( pCtrl, "DescScrollEntry", pObj->prompt, pObj->fMin, pObj->fMax, pObj->cvarname );
+			pScroll = new CTFCvarSlider( pCtrl, "DescScrollEntry", pObj->fMin, pObj->fMax, pObj->cvarname );
 			pScroll->MakeReadyForUse();
 
 			pScroll->SetFont( hFont );
@@ -254,18 +246,23 @@ void CTFOptionsAdvancedPanel::CreateControls()
 			pCtrl->pControl = pScroll;
 			break;
 		case O_LIST:
-			pCombo = new ComboBox(pCtrl, "DescComboBox", 5, false);
+			pCombo = new ComboBox( pCtrl, "DescComboBox", 5, false );
 			pCombo->MakeReadyForUse();
+
 			pCombo->SetFont( hFont );
 
 			pListItem = pObj->pListItems;
-			while (pListItem)
+			while ( pListItem )
 			{
-				pCombo->AddItem(pListItem->szItemText, NULL);
+				int iItemID = pCombo->AddItem( pListItem->szItemText, NULL );
+
+				if ( V_strcmp( pObj->curValue, pListItem->szValue ) == 0 )
+				{
+					pCombo->SilentActivateItem( iItemID );
+				}
+
 				pListItem = pListItem->pNext;
 			}
-
-			pCombo->ActivateItemByRow((int)pObj->fcurValue);
 
 			pCtrl->pControl = pCombo;
 			break;
@@ -275,7 +272,7 @@ void CTFOptionsAdvancedPanel::CreateControls()
 
 			pTitle->SetBorder( GETSCHEME()->GetBorder( "AdvSettingsTitleBorder" ) );
 			pTitle->SetFont( GETSCHEME()->GetFont( "MenuSmallFont", true ) );
-			pTitle->SetFgColor( GETSCHEME()->GetColor( ADVBUTTON_DEFAULT_COLOR, COLOR_WHITE ) );
+			pTitle->SetFgColor( GETSCHEME()->GetColor( "TanLight", COLOR_WHITE ) );
 
 			pCtrl->pControl = pTitle;
 			break;
@@ -283,25 +280,25 @@ void CTFOptionsAdvancedPanel::CreateControls()
 			break;
 		}
 
-		if (pCtrl->type != O_BOOL && pCtrl->type != O_SLIDER && pCtrl->type != O_CATEGORY)
+		if ( pCtrl->type != O_BOOL && pCtrl->type != O_CATEGORY )
 		{
-			pCtrl->pPrompt = new Label(pCtrl, "DescLabel", "");
+			pCtrl->pPrompt = new Label( pCtrl, "DescLabel", "" );
 			pCtrl->pPrompt->MakeReadyForUse();
 
 			pCtrl->pPrompt->SetFont( hFont );
-			pCtrl->pPrompt->SetContentAlignment(vgui::Label::a_west);
-			pCtrl->pPrompt->SetTextInset(5, 0);
-			pCtrl->pPrompt->SetText(pObj->prompt);
+			pCtrl->pPrompt->SetContentAlignment( vgui::Label::a_west );
+			pCtrl->pPrompt->SetTextInset( 5, 0 );
+			pCtrl->pPrompt->SetText( pObj->prompt );
 		}
 
 		pCtrl->pScrObj = pObj;
 		int h = m_pListPanel->GetTall() / 13.0; //(float)GetParent()->GetTall() / 15.0;
-		pCtrl->SetSize(800, h);
+		pCtrl->SetSize( 800, h );
 		//pCtrl->SetBorder( scheme()->GetBorder(1, "DepressedButtonBorder") );
-		m_pListPanel->AddItem(pCtrl);
+		m_pListPanel->AddItem( pCtrl );
 
 		// Link it in
-		if (!m_pList)
+		if ( !m_pList )
 		{
 			m_pList = pCtrl;
 			pCtrl->next = NULL;
@@ -310,9 +307,9 @@ void CTFOptionsAdvancedPanel::CreateControls()
 		{
 			mpcontrol_t *p;
 			p = m_pList;
-			while (p)
+			while ( p )
 			{
-				if (!p->next)
+				if ( !p->next )
 				{
 					p->next = pCtrl;
 					pCtrl->next = NULL;
@@ -321,7 +318,7 @@ void CTFOptionsAdvancedPanel::CreateControls()
 				p = p->next;
 			}
 		}
-		
+
 		pObj = pObj->pNext;
 	}
 }
@@ -344,20 +341,20 @@ void CTFOptionsAdvancedPanel::SaveValues()
 	GatherCurrentValues();
 
 	// Create the game.cfg file
-	if (m_pDescription)
+	if ( m_pDescription )
 	{
-		FileHandle_t fp;
-
 		// Add settings to config.cfg
 		m_pDescription->WriteToConfig();
 
-		g_pFullFileSystem->CreateDirHierarchy(OPTIONS_DIR);
-		fp = g_pFullFileSystem->Open(OPTIONS_FILE, "wb");
-		if (fp)
+#if 0
+		g_pFullFileSystem->CreateDirHierarchy( OPTIONS_DIR );
+		FileHandle_t fp = g_pFullFileSystem->Open( OPTIONS_FILE, "wb" );
+		if ( fp )
 		{
-			m_pDescription->WriteToScriptFile(fp);
-			g_pFullFileSystem->Close(fp);
+			m_pDescription->WriteToScriptFile( fp );
+			g_pFullFileSystem->Close( fp );
 		}
+#endif
 	}
 }
 
@@ -376,12 +373,20 @@ void CTFOptionsAdvancedPanel::OnControlModified( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFOptionsAdvancedPanel::OnTextChanged( void )
+{
+	PostActionSignal( new KeyValues( "ApplyButtonEnable" ) );
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Constructor, load/save client settings object
 //-----------------------------------------------------------------------------
-CInfoDescription::CInfoDescription(CPanelListPanel *panel)
-	: CDescription(panel)
+CInfoDescription::CInfoDescription( CPanelListPanel *panel )
+	: CDescription( panel )
 {
-	setHint("// NOTE:  THIS FILE IS AUTOMATICALLY REGENERATED, \r\n\
+	setHint( "// NOTE:  THIS FILE IS AUTOMATICALLY REGENERATED, \r\n\
 			//DO NOT EDIT THIS HEADER, YOUR COMMENTS WILL BE LOST IF YOU DO\r\n\
 			// User options script\r\n\
 			//\r\n\
@@ -411,41 +416,41 @@ CInfoDescription::CInfoDescription(CPanelListPanel *panel)
 			// BOOL is \"0\" or \"1\"\r\n\
 			// NUMBER is \"value\"\r\n\
 			// STRING is \"value\"\r\n\
-			// LIST is \"index\", where index \"0\" is the first element of the list\r\n\r\n\r\n");
+			// LIST is \"index\", where index \"0\" is the first element of the list\r\n\r\n\r\n" );
 
-	setDescription("INFO_OPTIONS");
+	setDescription( "INFO_OPTIONS" );
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CInfoDescription::WriteScriptHeader(FileHandle_t fp)
+void CInfoDescription::WriteScriptHeader( FileHandle_t fp )
 {
 	char am_pm[] = "AM";
 	tm newtime;
-	VCRHook_LocalTime(&newtime);
+	VCRHook_LocalTime( &newtime );
 
-	g_pFullFileSystem->FPrintf(fp, (char *)getHint());
+	g_pFullFileSystem->FPrintf( fp, (char *)getHint() );
 
 	// Write out the comment and Cvar Info:
-	g_pFullFileSystem->FPrintf(fp, "// Half-Life User Info Configuration Layout Script (stores last settings chosen, too)\r\n");
-	g_pFullFileSystem->FPrintf(fp, "// File generated:  %.19s %s\r\n", asctime(&newtime), am_pm);
-	g_pFullFileSystem->FPrintf(fp, "//\r\n//\r\n// Cvar\t-\tSetting\r\n\r\n");
-	g_pFullFileSystem->FPrintf(fp, "VERSION %.1f\r\n\r\n", SCRIPT_VERSION);
-	g_pFullFileSystem->FPrintf(fp, "DESCRIPTION INFO_OPTIONS\r\n{\r\n");
+	g_pFullFileSystem->FPrintf( fp, "// Half-Life User Info Configuration Layout Script (stores last settings chosen, too)\r\n" );
+	g_pFullFileSystem->FPrintf( fp, "// File generated:  %.19s %s\r\n", asctime( &newtime ), am_pm );
+	g_pFullFileSystem->FPrintf( fp, "//\r\n//\r\n// Cvar\t-\tSetting\r\n\r\n" );
+	g_pFullFileSystem->FPrintf( fp, "VERSION %.1f\r\n\r\n", SCRIPT_VERSION );
+	g_pFullFileSystem->FPrintf( fp, "DESCRIPTION INFO_OPTIONS\r\n{\r\n" );
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CInfoDescription::WriteFileHeader(FileHandle_t fp)
+void CInfoDescription::WriteFileHeader( FileHandle_t fp )
 {
 	char am_pm[] = "AM";
 	tm newtime;
-	VCRHook_LocalTime(&newtime);
+	VCRHook_LocalTime( &newtime );
 
-	g_pFullFileSystem->FPrintf(fp, "// Half-Life User Info Configuration Settings\r\n");
-	g_pFullFileSystem->FPrintf(fp, "// DO NOT EDIT, GENERATED BY HALF-LIFE\r\n");
-	g_pFullFileSystem->FPrintf(fp, "// File generated:  %.19s %s\r\n", asctime(&newtime), am_pm);
-	g_pFullFileSystem->FPrintf(fp, "//\r\n//\r\n// Cvar\t-\tSetting\r\n\r\n");
+	g_pFullFileSystem->FPrintf( fp, "// Half-Life User Info Configuration Settings\r\n" );
+	g_pFullFileSystem->FPrintf( fp, "// DO NOT EDIT, GENERATED BY HALF-LIFE\r\n" );
+	g_pFullFileSystem->FPrintf( fp, "// File generated:  %.19s %s\r\n", asctime( &newtime ), am_pm );
+	g_pFullFileSystem->FPrintf( fp, "//\r\n//\r\n// Cvar\t-\tSetting\r\n\r\n" );
 }

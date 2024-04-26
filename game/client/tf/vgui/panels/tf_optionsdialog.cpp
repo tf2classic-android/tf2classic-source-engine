@@ -21,6 +21,7 @@
 #include "vgui/IVGui.h"
 
 #include "KeyValues.h"
+#include "tf_mainmenupanel.h"
 #include "tf_optionsmousepanel.h"
 #include "tf_optionstouchpanel.h"
 #include "tf_optionskeyboardpanel.h"
@@ -36,77 +37,67 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Basic help dialog
 //-----------------------------------------------------------------------------
-CTFOptionsDialog::CTFOptionsDialog(vgui::Panel *parent, const char *panelName) : CTFDialogPanelBase(parent, panelName)
+CTFOptionsDialog::CTFOptionsDialog( vgui::Panel *parent, const char *panelName ) : CTFDialogPanelBase( parent, panelName )
 {
-	Init();
+	m_pPanels.SetSize( PANEL_COUNT );
+
+	AddPanel( new CTFOptionsAdvancedPanel( this, "MultiplayerOptions" ), PANEL_ADV );
+	AddPanel( new CTFOptionsMousePanel( this, "MouseOptions" ), PANEL_MOUSE );
+	AddPanel( new CTFOptionsTouchPanel( this, "TouchOptions" ), PANEL_TOUCH );
+	AddPanel( new CTFOptionsKeyboardPanel( this, "KeyboardOptions" ), PANEL_KEYBOARD );
+	AddPanel( new CTFOptionsAudioPanel( this, "AudioOptions" ), PANEL_AUDIO );
+	AddPanel( new CTFOptionsVideoPanel( this, "VideoOptions" ), PANEL_VIDEO );
+
+	m_pApplyButton = new CTFButton( this, "Apply", "" );
+	m_pDefaultsButton = new CTFButton( this, "Defaults", "" );
+
+	m_pOptionsCurrent = PANEL_ADV;
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
 //-----------------------------------------------------------------------------
 CTFOptionsDialog::~CTFOptionsDialog()
-{}
-
-
-bool CTFOptionsDialog::Init()
 {
-	BaseClass::Init();
-
-	m_pPanels.SetSize(PANEL_COUNT);
-
-	AddPanel(new CTFOptionsAdvancedPanel(this, "MultiplayerOptions"), PANEL_ADV);
-	AddPanel(new CTFOptionsMousePanel(this, "MouseOptions"), PANEL_MOUSE);
-	AddPanel(new CTFOptionsTouchPanel(this, "TouchOptions"), PANEL_TOUCH);
-	AddPanel(new CTFOptionsKeyboardPanel(this, "KeyboardOptions"), PANEL_KEYBOARD);
-	AddPanel(new CTFOptionsAudioPanel(this, "AudioOptions"), PANEL_AUDIO);
-	AddPanel(new CTFOptionsVideoPanel(this, "VideoOptions"), PANEL_VIDEO);
-
-	m_pApplyButton = new CTFButton( this, "Apply", "" );
-	m_pDefaultsButton = new CTFButton( this, "Defaults", "" );
-
-	m_pOptionsCurrent = PANEL_ADV;
-
-	return true;
 }
 
-
-void CTFOptionsDialog::AddPanel(CTFDialogPanelBase *m_pPanel, int iPanel)
+void CTFOptionsDialog::AddPanel( CTFDialogPanelBase *m_pPanel, int iPanel )
 {
 	m_pPanels[iPanel] = m_pPanel;
-	m_pPanel->SetEmbedded(true);
-	m_pPanel->Hide();
+	m_pPanel->SetEmbedded( true );
+	m_pPanel->SetVisible( false );
 }
 
-void CTFOptionsDialog::SetCurrentPanel(OptionPanel pCurrentPanel)
+void CTFOptionsDialog::SetCurrentPanel( OptionPanel pCurrentPanel )
 {
-	if (m_pOptionsCurrent == pCurrentPanel)
+	if ( m_pOptionsCurrent == pCurrentPanel )
 		return;
-	GetPanel(m_pOptionsCurrent)->Hide();
-	GetPanel(pCurrentPanel)->Show();
+	GetPanel( m_pOptionsCurrent )->Hide();
+	GetPanel( pCurrentPanel )->Show();
 	m_pOptionsCurrent = pCurrentPanel;
 
 	m_pDefaultsButton->SetVisible( ( pCurrentPanel == PANEL_KEYBOARD ) );
 }
 
-CTFDialogPanelBase*	CTFOptionsDialog::GetPanel(int iPanel)
+CTFDialogPanelBase*	CTFOptionsDialog::GetPanel( int iPanel )
 {
 	return m_pPanels[iPanel];
 }
 
-void CTFOptionsDialog::ApplySchemeSettings(vgui::IScheme *pScheme)
+void CTFOptionsDialog::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	LoadControlSettings("resource/UI/main_menu/OptionsDialog.res");
+	LoadControlSettings( "resource/UI/main_menu/OptionsDialog.res" );
 }
 
 void CTFOptionsDialog::Show()
 {
 	BaseClass::Show();
-	GetPanel(m_pOptionsCurrent)->Show();
+	GetPanel( m_pOptionsCurrent )->Show();
 
-	for (int i = 0; i < PANEL_COUNT; i++)
-		GetPanel(i)->OnCreateControls();
+	for ( int i = 0; i < PANEL_COUNT; i++ )
+		GetPanel( i )->OnCreateControls();
 
 	// Disable apply button, it'll get enabled once any controls change.
 	m_pApplyButton->SetEnabled( false );
@@ -115,57 +106,57 @@ void CTFOptionsDialog::Show()
 void CTFOptionsDialog::Hide()
 {
 	BaseClass::Hide();
-	GetPanel(m_pOptionsCurrent)->Hide();
+	GetPanel( m_pOptionsCurrent )->Hide();
 
-	for (int i = 0; i < PANEL_COUNT; i++)
-		GetPanel(i)->OnDestroyControls();
+	for ( int i = 0; i < PANEL_COUNT; i++ )
+		GetPanel( i )->OnDestroyControls();
 };
 
-void CTFOptionsDialog::OnCommand(const char* command)
+void CTFOptionsDialog::OnCommand( const char* command )
 {
-	if (!Q_strcmp(command, "vguicancel"))
+	if ( !V_stricmp( command, "vguicancel" ) )
 	{
 		OnCancelPressed();
 	}
-	else if (!stricmp(command, "Ok"))
+	else if ( !V_stricmp( command, "Ok" ) )
 	{
 		OnOkPressed();
 	}
-	else if (!stricmp(command, "Apply"))
+	else if ( !V_stricmp( command, "Apply" ) )
 	{
 		OnApplyPressed();
 	}
-	else if (!stricmp(command, "DefaultsOK"))
+	else if ( !V_stricmp( command, "DefaultsOK" ) )
 	{
 		OnDefaultPressed();
 	}
-	else if (!Q_strcmp(command, "newoptionsadv"))
+	else if ( !V_stricmp( command, "newoptionsadv" ) )
 	{
-		SetCurrentPanel(PANEL_ADV);
+		SetCurrentPanel( PANEL_ADV );
 	}
-	else if (!Q_strcmp(command, "newoptionsmouse"))
+	else if ( !V_stricmp( command, "newoptionsmouse" ) )
 	{
-		SetCurrentPanel(PANEL_MOUSE);
+		SetCurrentPanel( PANEL_MOUSE );
 	}
-	else if (!Q_strcmp(command, "newoptionstouch"))
+	else if ( !V_stricmp( command, "newoptionstouch" ) )
 	{
-		SetCurrentPanel(PANEL_TOUCH);
+		SetCurrentPanel( PANEL_TOUCH );
 	}
-	else if (!Q_strcmp(command, "newoptionskeyboard"))
+	else if ( !V_stricmp( command, "newoptionskeyboard" ) )
 	{
-		SetCurrentPanel(PANEL_KEYBOARD);
+		SetCurrentPanel( PANEL_KEYBOARD );
 	}
-	else if (!Q_strcmp(command, "newoptionsaudio"))
+	else if ( !V_stricmp( command, "newoptionsaudio" ) )
 	{
-		SetCurrentPanel(PANEL_AUDIO);
+		SetCurrentPanel( PANEL_AUDIO );
 	}
-	else if (!Q_strcmp(command, "newoptionsvideo"))
+	else if ( !V_stricmp( command, "newoptionsvideo" ) )
 	{
-		SetCurrentPanel(PANEL_VIDEO);
+		SetCurrentPanel( PANEL_VIDEO );
 	}
 	else
 	{
-		BaseClass::OnCommand(command);
+		BaseClass::OnCommand( command );
 	}
 }
 
@@ -185,8 +176,8 @@ void CTFOptionsDialog::OnApplyPressed()
 {
 	m_pApplyButton->SetEnabled( false );
 
-	for (int i = 0; i < PANEL_COUNT; i++)
-		GetPanel(i)->OnApplyChanges();
+	for ( int i = 0; i < PANEL_COUNT; i++ )
+		GetPanel( i )->OnApplyChanges();
 }
 
 //-----------------------------------------------------------------------------
@@ -194,8 +185,8 @@ void CTFOptionsDialog::OnApplyPressed()
 //-----------------------------------------------------------------------------
 void CTFOptionsDialog::OnCancelPressed()
 {
-	for (int i = 0; i < PANEL_COUNT; i++)
-		GetPanel(i)->OnResetData();
+	for ( int i = 0; i < PANEL_COUNT; i++ )
+		GetPanel( i )->OnResetData();
 
 	Hide();
 }
@@ -206,26 +197,8 @@ void CTFOptionsDialog::OnCancelPressed()
 //-----------------------------------------------------------------------------
 void CTFOptionsDialog::OnDefaultPressed()
 {
-	for (int i = 0; i < PANEL_COUNT; i++)
-		GetPanel(i)->OnSetDefaults();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Brings the dialog to the fore
-//-----------------------------------------------------------------------------
-void CTFOptionsDialog::Activate()
-{
-	//BaseClass::Activate();
-	//EnableApplyButton(false);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Opens the dialog
-//-----------------------------------------------------------------------------
-void CTFOptionsDialog::Run()
-{
-	//SetTitle("#GameUI_Options", true);
-	//Activate();
+	for ( int i = 0; i < PANEL_COUNT; i++ )
+		GetPanel( i )->OnSetDefaults();
 }
 
 //-----------------------------------------------------------------------------
@@ -234,12 +207,12 @@ void CTFOptionsDialog::Run()
 void CTFOptionsDialog::OnGameUIHidden()
 {
 	// tell our children about it
-	for (int i = 0; i < GetChildCount(); i++)
+	for ( int i = 0; i < GetChildCount(); i++ )
 	{
-		Panel *pChild = GetChild(i);
-		if (pChild)
+		Panel *pChild = GetChild( i );
+		if ( pChild )
 		{
-			PostMessage(pChild, new KeyValues("GameUIHidden"));
+			PostMessage( pChild, new KeyValues( "GameUIHidden" ) );
 		}
 	}
 }

@@ -1,71 +1,75 @@
+#include "KeyValues.h"
 #include "cbase.h"
 #include "tf_rgbpanel.h"
-#include "controls/tf_cvarcombobox.h"
+#include <vgui_controls/ComboBox.h>
 #include "controls/tf_cvarslider.h"
 #include <vgui/ILocalize.h>
-#include "controls/tf_advmodelpanel.h"
 #include "c_tf_player.h"
 #include "tf_merc_customizations.h"
 
-using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
+
+extern ConVar tf2c_merc_particle;
+extern ConVar tf2c_merc_winanim;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFRGBPanel::CTFRGBPanel(vgui::Panel* parent, const char *panelName) : CTFMenuPanelBase(parent, panelName)
+CTFRGBPanel::CTFRGBPanel( Panel *parent, const char *panelName ) : BaseClass( parent, panelName )
 {
-	Init();
+	m_pRedScrollBar = new CTFCvarSlider( this, "RedScrollBar" );
+	m_pGrnScrollBar = new CTFCvarSlider( this, "GrnScrollBar" );
+	m_pBluScrollBar = new CTFCvarSlider( this, "BluScrollBar" );
+	m_pColorBG = new ImagePanel( this, "ColorBG" );
+	m_pCombo = new ComboBox( this, "ParticleComboBox", 5, false );
+	m_pAnimCombo = new ComboBox( this, "WinAnimComboBox", 5, false );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-CTFRGBPanel::~CTFRGBPanel()
+void CTFRGBPanel::ApplySchemeSettings( IScheme *pScheme )
 {
+	BaseClass::ApplySchemeSettings( pScheme );
 
-}
+	LoadControlSettings( "resource/UI/main_menu/RGBPanel.res" );
 
-bool CTFRGBPanel::Init()
-{
-	BaseClass::Init();
+	m_pCombo->RemoveAll();
+	m_pAnimCombo->RemoveAll();
 
-	m_pRedScrollBar = NULL;
-	m_pGrnScrollBar = NULL;
-	m_pBluScrollBar = NULL;
-	m_pColorBG = NULL;
-	m_pCombo = NULL;
-	m_pParticlesPanel = new CTFAdvModelPanel(this, "particlesmodelpanel");
-
-	return true;
-}
-
-void CTFRGBPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	LoadControlSettings("resource/UI/main_menu/RGBPanel.res");
-
-	m_pRedScrollBar = dynamic_cast<CTFCvarSlider *>(FindChildByName("RedScrollBar"));
-	m_pGrnScrollBar = dynamic_cast<CTFCvarSlider *>(FindChildByName("GrnScrollBar"));
-	m_pBluScrollBar = dynamic_cast<CTFCvarSlider *>(FindChildByName("BluScrollBar"));
-	m_pColorBG = dynamic_cast<ImagePanel *>(FindChildByName("ColorBG"));
-	m_pCombo = dynamic_cast<CCvarComboBox*>(FindChildByName("ParticleComboBox"));
-
-	for (int i = 0; i < 100; i++)
+	for( int i = 0; i < g_TFMercCustomizations.GetParticlesCount(); i++ )
 	{
-		char pszParticleName[64];
-		if (i < 9)
-			Q_snprintf(pszParticleName, sizeof(pszParticleName), "#TF_DM_PARTICLE0%d", i + 1);
-		else
-			Q_snprintf(pszParticleName, sizeof(pszParticleName), "#TF_DM_PARTICLE%d", i + 1);
-		wchar_t *pText = g_pVGuiLocalize->Find(pszParticleName);
-		if (pText != NULL)
+		respawn_particle_t *pRespawnParticle = g_TFMercCustomizations.GetParticle( i );
+		if( !pRespawnParticle )
+			continue;
+		
+		KeyValues *pKV = new KeyValues( "particle" );
+		pKV->SetInt( "id", pRespawnParticle->id );
+		pKV->SetString( "effect", pRespawnParticle->szEffect );
+		int itemID = m_pCombo->AddItem( pRespawnParticle->szName, pKV );
+		pKV->deleteThis();
+		
+		if( pRespawnParticle->id == tf2c_merc_particle.GetInt() )
 		{
-			char pszParticleNameLocal[64];
-			wcstombs(pszParticleNameLocal, pText, sizeof(pszParticleNameLocal));
-			m_pCombo->AddItem(pszParticleNameLocal, NULL);
+			m_pCombo->SilentActivateItem( itemID );
+		}
+	}
+	
+	for( int i = 0; i < g_TFMercCustomizations.GetWinAnimCount(); i++ )
+	{
+		win_anim_t *pWinAnim = g_TFMercCustomizations.GetAnimation( i );
+		if( !pWinAnim )
+			continue;
+		
+		KeyValues *pKV = new KeyValues( "animation" );
+		pKV->SetInt( "id", pWinAnim->id );
+		pKV->SetString( "sequence", pWinAnim->szSequence );
+		int itemID = m_pAnimCombo->AddItem( pWinAnim->szName, pKV );
+		pKV->deleteThis();
+		
+		if( pWinAnim->id == tf2c_merc_particle.GetInt() )
+		{
+			m_pAnimCombo->SilentActivateItem( itemID );
 		}
 	}
 
@@ -76,43 +80,61 @@ void CTFRGBPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
 		tf2c_setmerccolor_r.SetValue( RandomInt( 0, 255 ) );
 		tf2c_setmerccolor_g.SetValue( RandomInt( 0, 255 ) );
 		tf2c_setmerccolor_b.SetValue( RandomInt( 0, 255 ) );
-		InvalidateLayout( true, true );
+		m_pRedScrollBar->Reset();
+		m_pGrnScrollBar->Reset();
+		m_pBluScrollBar->Reset();
+		
+		OnControlModified( this );
 	}
 }
 
 void CTFRGBPanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
-	OnDataChanged();
-};
 
-void CTFRGBPanel::OnDataChanged()
-{
-	Color clr(m_pRedScrollBar->GetValue(), m_pGrnScrollBar->GetValue(), m_pBluScrollBar->GetValue(), 255);
-	m_pColorBG->SetFillColor(clr);
-	PostActionSignal(new KeyValues("ControlModified"));
-
-	m_pParticlesPanel->Update();
-	char chParticleName[64];
-	ConVar *tf2c_setmercparticle = cvar->FindVar("tf2c_merc_particle");
-	if (!tf2c_setmercparticle)
-		return;
-	int iParticleID = tf2c_setmercparticle->GetInt();
-	if ( !iParticleID )
-		return;
-	Q_snprintf(chParticleName, sizeof(chParticleName), "dm_respawn_%02d", iParticleID);
-	m_pParticlesPanel->SetParticleName(chParticleName);
-};
-
-void CTFRGBPanel::OnCommand(const char* command)
-{
-	if (!Q_strcmp(command, "vguicancel"))
-	{
-		SetVisible(false);
-	}
-	else
-	{
-		BaseClass::OnCommand(command);
-	}
+	OnControlModified( this );
 }
 
+const char *CTFRGBPanel::GetSpawnEffect()
+{
+	KeyValues *pKeys = m_pCombo->GetActiveItemUserData();
+	if ( pKeys )
+	{
+		return pKeys->GetString( "effect" );
+	}
+		
+	return NULL;
+}
+
+void CTFRGBPanel::OnControlModified( Panel *panel )
+{
+	PostActionSignal( new KeyValues( "ControlModified" ) );
+
+	// Set the color on the panel.
+	Color clr( m_pRedScrollBar->GetValue(), m_pGrnScrollBar->GetValue(), m_pBluScrollBar->GetValue(), 255 );
+	m_pColorBG->SetFillColor( clr );
+}
+
+void CTFRGBPanel::OnTextChanged( Panel *panel )
+{
+	if( panel == m_pCombo )
+	{
+		KeyValues *pKeys = m_pCombo->GetActiveItemUserData();
+
+		if ( pKeys )
+		{
+			tf2c_merc_particle.SetValue( pKeys->GetInt( "id" ) );
+		}
+		
+		OnControlModified( this );
+	}
+	else if ( panel == m_pAnimCombo )
+	{
+		KeyValues *pKeys = m_pAnimCombo->GetActiveItemUserData();
+
+		if ( pKeys )
+		{
+			tf2c_merc_winanim.SetValue( pKeys->GetInt( "id" ) );
+		}
+	}
+}

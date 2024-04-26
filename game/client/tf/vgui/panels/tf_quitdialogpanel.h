@@ -8,16 +8,14 @@
 //-----------------------------------------------------------------------------
 class CTFQuitDialogPanel : public CTFDialogPanelBase
 {
-	DECLARE_CLASS_SIMPLE(CTFQuitDialogPanel, CTFDialogPanelBase);
+	DECLARE_CLASS_SIMPLE( CTFQuitDialogPanel, CTFDialogPanelBase );
 
 public:
-	CTFQuitDialogPanel(vgui::Panel* parent, const char *panelName);
+	CTFQuitDialogPanel( vgui::Panel* parent, const char *panelName );
 	virtual ~CTFQuitDialogPanel();
 
-	void Show();
-	void Hide();
-	void OnCommand(const char* command);
-	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+	void OnCommand( const char* command );
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 };
 
 #endif // TFTESTMENU_H

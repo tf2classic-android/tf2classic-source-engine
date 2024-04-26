@@ -33,12 +33,6 @@
 #include "tf_gamerules.h"
 #endif
 
-#if defined( TF_CLASSIC_CLIENT )
-#include "tf_mainmenu.h"
-#include "tf_mainmenu_interface.h"
-#include "tier0/icommandline.h"
-#endif
-
 using namespace vgui;
 
 void MP3Player_Create( vgui::VPANEL parent );
@@ -222,17 +216,6 @@ void VGui_CreateGlobalPanels( void )
 	internalCenterPrint->Create( gameToolParent );
 	loadingdisc->Create( gameToolParent );
 	messagechars->Create( gameToolParent );
-
-#ifdef TF_CLASSIC_CLIENT
-	if ( CommandLine()->CheckParm( "-nonewmenu" ) == NULL )
-	{
-		// Disable BG music played in the original GameUI
-		CommandLine()->AppendParm( "-nostartupsound", NULL );
-
-		MainMenu->Create( NULL );
-		OverrideMainMenu();
-	}
-#endif
 
 	// Debugging or related tool
 	fps->Create( toolParent );

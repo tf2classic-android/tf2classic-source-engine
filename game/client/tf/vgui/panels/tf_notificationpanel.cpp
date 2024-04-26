@@ -14,14 +14,14 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CTFNotificationPanel::CTFNotificationPanel( vgui::Panel* parent, const char *panelName ) : CTFMenuPanelBase( parent, panelName )
 {
-	Init();
-
 	m_pPrevButton = NULL;
 	m_pNextButton = NULL;
 	m_pMessageLabel = NULL;
 
 	m_iOrgPrevPos = 0;
 	m_iOrgNextPos = 0;
+	m_iCurrent = 0;
+	m_iCount = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -30,16 +30,6 @@ CTFNotificationPanel::CTFNotificationPanel( vgui::Panel* parent, const char *pan
 CTFNotificationPanel::~CTFNotificationPanel()
 {
 
-}
-
-bool CTFNotificationPanel::Init( void )
-{
-	BaseClass::Init();
-
-	m_iCurrent = 0;
-	m_iCount = 0;
-
-	return true;
 }
 
 void CTFNotificationPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
@@ -194,19 +184,9 @@ void CTFNotificationPanel::OnCommand( const char* command )
 void CTFNotificationPanel::OnTick()
 {
 	BaseClass::OnTick();
-};
+}
 
 void CTFNotificationPanel::OnThink()
 {
 	BaseClass::OnThink();
-};
-
-void CTFNotificationPanel::DefaultLayout()
-{
-	BaseClass::DefaultLayout();
-};
-
-void CTFNotificationPanel::GameLayout()
-{
-	BaseClass::GameLayout();
-};
+}

@@ -1,4 +1,4 @@
-#ifndef tf_advcheckbutton_H
+﻿#ifndef tf_advcheckbutton_H
 #define tf_advcheckbutton_H
 #ifdef _WIN32
 #pragma once
@@ -15,6 +15,7 @@ public:
 	DECLARE_CLASS_SIMPLE( CTFCheckButton, CTFButtonBase );
 
 	CTFCheckButton( vgui::Panel *parent, const char *panelName, const char *text );
+	virtual ~CTFCheckButton();
 
 	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
@@ -28,7 +29,7 @@ private:
 	MESSAGE_FUNC_PTR( OnCheckButtonChecked, "CheckButtonChecked", panel );
 
 	vgui::ImagePanel		*m_pCheckImage;
-	vgui::Panel				*m_pBGBorder;
+	vgui::EditablePanel		*m_pBGBorder;
 
 	bool					m_bChecked;
 	bool					m_bInverted;

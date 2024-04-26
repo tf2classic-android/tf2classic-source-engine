@@ -3,16 +3,19 @@
 #include "controls/tf_advbutton.h"
 #include "tf_notificationmanager.h"
 
-using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFPauseMenuPanel::CTFPauseMenuPanel(vgui::Panel* parent, const char *panelName) : CTFMenuPanelBase(parent, panelName)
+CTFPauseMenuPanel::CTFPauseMenuPanel( vgui::Panel* parent, const char *panelName ) : CTFMenuPanelBase( parent, panelName )
 {
-	Init();
+	m_pNotificationButton = NULL;
+	SetKeyBoardInputEnabled( true );
+	SetMouseInputEnabled( true );
 }
 
 //-----------------------------------------------------------------------------
@@ -23,53 +26,40 @@ CTFPauseMenuPanel::~CTFPauseMenuPanel()
 
 }
 
-bool CTFPauseMenuPanel::Init()
+void CTFPauseMenuPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
-	BaseClass::Init();
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	m_pNotificationButton = NULL;
-	bInMenu = false;
-	bInGame = true;
-	return true;
-};
-
-
-void CTFPauseMenuPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	LoadControlSettings("resource/UI/main_menu/PauseMenuPanel.res");
+	LoadControlSettings( "resource/UI/main_menu/PauseMenuPanel.res" );
 	m_pNotificationButton = dynamic_cast<CTFButton*>(FindChildByName("NotificationButton"));
 }
 
 void CTFPauseMenuPanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
-	OnNotificationUpdate();
-};
+}
 
-
-void CTFPauseMenuPanel::OnCommand(const char* command)
+void CTFPauseMenuPanel::OnCommand( const char* command )
 {
-	if (!Q_strcmp(command, "newquit"))
+	if ( !V_stricmp( command, "newquit" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(QUIT_MENU);
+		guiroot->ShowPanel( QUIT_MENU );
 	}
-	else if (!Q_strcmp(command, "newoptionsdialog"))
+	else if ( !V_stricmp( command, "newoptionsdialog" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(OPTIONSDIALOG_MENU);
+		guiroot->ShowPanel( OPTIONSDIALOG_MENU );
 	}
-	else if (!Q_strcmp(command, "newloadout"))
+	else if ( !V_stricmp( command, "newloadout" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(LOADOUT_MENU);
+		guiroot->ShowPanel( LOADOUT_MENU );
 	}
-	else if (!Q_strcmp(command, "newcreateserver"))
+	else if ( !V_stricmp( command, "newcreateserver" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(CREATESERVER_MENU);
+		guiroot->ShowPanel( CREATESERVER_MENU );
 	}
-	else if (!Q_strcmp(command, "newstats"))
+	else if ( !V_stricmp( command, "newstats" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(STATSUMMARY_MENU);
+		guiroot->ShowPanel( STATSUMMARY_MENU );
 	}
 	else if (!Q_strcmp(command, "checkversion"))
 	{
@@ -81,7 +71,7 @@ void CTFPauseMenuPanel::OnCommand(const char* command)
 		{
 			m_pNotificationButton->SetGlowing(false);
 		}
-		MAINMENU_ROOT->ShowPanel(NOTIFICATION_MENU);
+		guiroot->ShowPanel( NOTIFICATION_MENU );
 	}
 	else if (!Q_strcmp(command, "testnotification"))
 	{
@@ -90,13 +80,18 @@ void CTFPauseMenuPanel::OnCommand(const char* command)
 		MessageNotification Notification(L"Yoyo", resultString, time( NULL ) );
 		GetNotificationManager()->SendNotification(Notification);
 	}
-	else if (Q_strcmp(command, "gamemenucommand "))
+	else if ( !V_stricmp( command, "callvote" ) )
 	{
-		engine->ClientCmd(command);
+		engine->ClientCmd( "gameui_hide" );
+		engine->ClientCmd( command );
+	}
+	else if ( V_stristr( command, "gamemenucommand " ) )
+	{
+		engine->ClientCmd( command );
 	}
 	else
 	{
-		BaseClass::OnCommand(command);
+		BaseClass::OnCommand( command );
 	}
 }
 
@@ -122,38 +117,16 @@ void CTFPauseMenuPanel::OnNotificationUpdate()
 			m_pNotificationButton->SetGlowing(false);
 		}
 	}
-};
-
-
-void CTFPauseMenuPanel::OnTick()
-{
-	BaseClass::OnTick();
-};
-
-void CTFPauseMenuPanel::OnThink()
-{
-	BaseClass::OnThink();
-};
+}
 
 void CTFPauseMenuPanel::Show()
 {
 	BaseClass::Show();
-	vgui::GetAnimationController()->RunAnimationCommand(this, "Alpha", 255, 0.0f, 0.5f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE);
-};
+
+	RequestFocus();
+}
 
 void CTFPauseMenuPanel::Hide()
 {
 	BaseClass::Hide();
-	vgui::GetAnimationController()->RunAnimationCommand(this, "Alpha", 0, 0.0f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR);
-};
-
-
-void CTFPauseMenuPanel::DefaultLayout()
-{
-	BaseClass::DefaultLayout();
-};
-
-void CTFPauseMenuPanel::GameLayout()
-{
-	BaseClass::GameLayout();
-};
+}

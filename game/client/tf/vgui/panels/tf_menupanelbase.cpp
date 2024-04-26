@@ -1,23 +1,24 @@
 #include "cbase.h"
 #include "tf_menupanelbase.h"
-#include "tf_mainmenu.h"
 
-using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFMenuPanelBase::CTFMenuPanelBase(vgui::Panel* parent, const char *panelName) : EditablePanel(NULL, panelName)
+CTFMenuPanelBase::CTFMenuPanelBase( vgui::Panel *parent, const char *panelName ) : EditablePanel( parent, panelName, scheme()->GetScheme( "ClientScheme_tf2c" ) )
 {
-	SetParent(parent);
-	SetScheme("ClientScheme");
-	SetProportional(true);
-	SetVisible(true);
-	Init();
-	
-	vgui::ivgui()->AddTickSignal(GetVPanel(), 100);
+	SetProportional( true );
+	SetVisible( true );
+
+	int x, y, width, height;
+	//surface()->GetScreenSize(width, height);
+	GetParent()->GetBounds( x, y, width, height );
+	SetBounds( 0, 0, width, height );
+	m_bShowSingle = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -25,94 +26,19 @@ CTFMenuPanelBase::CTFMenuPanelBase(vgui::Panel* parent, const char *panelName) :
 //-----------------------------------------------------------------------------
 CTFMenuPanelBase::~CTFMenuPanelBase()
 {
-
 }
 
-bool CTFMenuPanelBase::Init()
+void CTFMenuPanelBase::SetShowSingle( bool ShowSingle )
 {
-	int x, y;
-	int width, height;
-	//surface()->GetScreenSize(width, height);
-	GetParent()->GetBounds(x, y, width, height);
-	SetSize(width, height);
-	SetPos(0, 0);
-	bInGame = false;
-	bInMenu = false;
-	bInGameLayout = false;
-	bShowSingle = false;
-	return true;
-}
-
-void CTFMenuPanelBase::ApplySchemeSettings(vgui::IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-}
-
-void CTFMenuPanelBase::PerformLayout()
-{
-	BaseClass::PerformLayout();
-};
-
-void CTFMenuPanelBase::OnCommand(const char* command)
-{
-	engine->ExecuteClientCmd(command);
-}
-
-void CTFMenuPanelBase::OnTick()
-{
-	BaseClass::OnTick();
-};
-
-void CTFMenuPanelBase::OnThink()
-{
-	BaseClass::OnThink();
-};
-
-void CTFMenuPanelBase::SetShowSingle(bool ShowSingle)
-{
-	bShowSingle = ShowSingle;
+	m_bShowSingle = ShowSingle;
 }
 
 void CTFMenuPanelBase::Show()
 {
-	SetVisible(true);
-};
+	SetVisible( true );
+}
 
 void CTFMenuPanelBase::Hide()
 {
-	SetVisible(false);
-};
-
-void CTFMenuPanelBase::DefaultLayout()
-{
-	bInGameLayout = false;
-	if (bInMenu || bInGame)
-		(bInMenu ? Show() : Hide());
-	//SetVisible(bInMenu);
-};
-
-
-void CTFMenuPanelBase::GameLayout()
-{
-	bInGameLayout = true;
-	if (bInMenu || bInGame)
-		(bInGame ? Show() : Hide());
-	//SetVisible(bInGame);
-};
-
-void CTFMenuPanelBase::PaintBackground()
-{
-	SetPaintBackgroundType(0);
-	BaseClass::PaintBackground();
-}
-
-bool CTFMenuPanelBase::InGame()
-{
-	return MAINMENU_ROOT->InGame();
-}
-
-
-CTFMenuPanelBase* CTFMenuPanelBase::GetMenuPanel(int iPanel)
-{
-	return MAINMENU_ROOT->GetMenuPanel(iPanel);
+	SetVisible( false );
 }

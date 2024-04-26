@@ -26,8 +26,7 @@ class CTFOptionsAdvancedPanel : public CTFDialogPanelBase
 
 public:
 	CTFOptionsAdvancedPanel(vgui::Panel *parent, const char *panelName);
-	virtual ~CTFOptionsAdvancedPanel();
-	bool Init();
+	~CTFOptionsAdvancedPanel();
 	void OnCommand(const char *command);
 	void OnKeyCodeTyped(vgui::KeyCode code);
 	void OnApplyChanges();
@@ -40,6 +39,7 @@ protected:
 	void SaveValues();
 
 	MESSAGE_FUNC( OnControlModified, "ControlModified" );
+	MESSAGE_FUNC( OnTextChanged, "TextChanged" );
 
 	CInfoDescription *m_pDescription;
 

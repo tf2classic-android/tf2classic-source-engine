@@ -32,7 +32,6 @@ class CTFOptionsAudioPanel : public CTFDialogPanelBase
 public:
 	CTFOptionsAudioPanel(vgui::Panel* parent, const char *panelName);
 	~CTFOptionsAudioPanel();
-	virtual bool Init();
 	virtual void OnResetData();
 	virtual void OnApplyChanges();
 	virtual void OnCommand(const char *command);

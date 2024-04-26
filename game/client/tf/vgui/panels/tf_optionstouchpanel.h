@@ -34,12 +34,11 @@ class CTFOptionsTouchPanel : public CTFDialogPanelBase
 public:
 	CTFOptionsTouchPanel(vgui::Panel* parent, const char *panelName);
 	~CTFOptionsTouchPanel();
-	virtual bool Init();
-	virtual void OnResetData();
-	virtual void OnApplyChanges();
-	virtual void OnCommand(const char *command);
+	void OnResetData();
+	void OnApplyChanges();
+	void OnCommand(const char *command);
 protected:
-    void ApplySchemeSettings(vgui::IScheme *pScheme);
+	void ApplySchemeSettings(vgui::IScheme *pScheme);
 	void CreateControls();
 	void DestroyControls();
 	void UpdateSensitivityLabel();

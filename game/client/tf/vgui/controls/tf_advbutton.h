@@ -30,8 +30,8 @@ public:
 private:
 	int				m_iOrigX;
 	int				m_iOrigY;
-	float			m_flXShift;
-	float			m_flYShift;
+	CPanelAnimationVarAliasType( int, m_iXShift, "xshift", "0", "proportional_int" );
+	CPanelAnimationVarAliasType( int, m_iYShift, "yshift", "0", "proportional_int" );
 
 	bool			m_bGlowing;
 	bool			m_bAnimationIn;

@@ -1,4 +1,4 @@
-//==========CREATESERVER_MENU===================================================================//
+//=============================================================================//
 //
 // Purpose: 
 //
@@ -9,8 +9,6 @@
 #ifdef _WIN32
 #pragma once
 #endif
-
-#include "controls/tf_scriptobject.h"
 
 class CDescription;
 class CTFCreateServerMapPanel;

@@ -1,17 +1,15 @@
-#include "cbase.h"
+﻿#include "cbase.h"
 #include "tf_advslider.h"
-#include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
 #include <vgui/IInput.h>
-#include <filesystem.h>
 #include <vgui_controls/AnimationController.h>
-
-using namespace vgui;
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CTFSlider, CTFSlider );
+using namespace vgui;
+
+
+DECLARE_BUILD_FACTORY( CTFSlider );
 
 #define ADVSLIDER_BG		"AdvSlider"
 
@@ -25,9 +23,8 @@ DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CTFSlider, CTFSlider );
 //=============================================================================//
 // CTFSlider
 //=============================================================================//
-CTFSlider::CTFSlider( vgui::Panel *parent, const char *panelName, const char *text ) : EditablePanel( parent, panelName )
+CTFSlider::CTFSlider( vgui::Panel *parent, const char *panelName ) : EditablePanel( parent, panelName )
 {
-	m_pTitleLabel = new Label( this, "TitleLabel", text );
 	m_pValueLabel = new Label( this, "ValueLabel", "0" );
 	m_pBGBorder = new EditablePanel( this, "BackgroundPanel" );
 	m_pBGBorder->SetSize( 100, 50 );
@@ -50,11 +47,12 @@ CTFSlider::~CTFSlider()
 //-----------------------------------------------------------------------------
 void CTFSlider::Init()
 {
+	m_szFont[0] = '\0';
+
 	m_flMinValue = 0.0f;
 	m_flMaxValue = 100.0f;
 	m_flValue = 0.0f;
 
-	m_iLabelWidth = 0;
 	m_bVertical = false;
 	m_bValueVisible = true;
 	m_bShowFrac = false;
@@ -69,16 +67,21 @@ void CTFSlider::ApplySettings( KeyValues *inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
 
+	V_strcpy_safe( m_szFont, inResourceData->GetString( "font" ) );
+
 	m_bVertical = inResourceData->GetBool( "vertical", false );
 	m_bValueVisible = inResourceData->GetBool( "value_visible", true );
 
 	float flMin = inResourceData->GetFloat( "rangeMin", 0.0f );
 	float flMax = inResourceData->GetFloat( "rangeMax", 100.0f );
 
-	m_iLabelWidth = inResourceData->GetInt( "labelWidth", 0.0f );
 	m_bShowFrac = inResourceData->GetBool( "showfraction", false );
 
 	SetRange( flMin, flMax );
+
+	SetValue( m_flMinValue );
+
+	InvalidateLayout( false, true );
 }
 
 //-----------------------------------------------------------------------------
@@ -88,10 +91,17 @@ void CTFSlider::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	m_pTitleLabel->SetFgColor( pScheme->GetColor( ADVBUTTON_DEFAULT_COLOR, Color( 255, 255, 255, 255 ) ) );
-	m_pTitleLabel->SetFont( m_pButton->GetFont() );
-	m_pValueLabel->SetFgColor( pScheme->GetColor( ADVBUTTON_DEFAULT_COLOR, Color( 255, 255, 255, 255 ) ) );
+	m_pValueLabel->SetFgColor( pScheme->GetColor( "TanLight", Color( 255, 255, 255, 255 ) ) );
 	m_pValueLabel->SetFont( m_pButton->GetFont() );
+
+	if ( m_szFont[0] != '\0' )
+	{
+		SetFont( pScheme->GetFont( m_szFont, IsProportional() ) );
+	}
+	else
+	{
+		SetFont( pScheme->GetFont( "Default", IsProportional() ) );
+	}
 
 	// Show the button above everything.
 	m_pButton->SetZPos( 3 );
@@ -99,12 +109,6 @@ void CTFSlider::ApplySchemeSettings( IScheme *pScheme )
 	m_pBGBorder->SetBorder( pScheme->GetBorder( ADVSLIDER_BG ) );
 	m_pBGBorder->SetVisible( true );
 	m_pBGBorder->SetZPos( 1 );
-
-	m_pTitleLabel->SetVisible( true );
-	m_pTitleLabel->SetPos( 0, 0 );
-	m_pTitleLabel->SetTextInset( 5, 0 );
-	m_pTitleLabel->SetZPos( 2 );
-	m_pTitleLabel->SetContentAlignment( Label::a_west );
 
 	m_pValueLabel->SetVisible( m_bValueVisible );
 	m_pValueLabel->SetZPos( 2 );
@@ -118,24 +122,18 @@ void CTFSlider::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	int iBorderPos = ( m_iLabelWidth > 0.0 ? m_iLabelWidth : GetWide() / 2 + YRES( 8 ) );
-	float iShift = YRES( 20 );
+	int wide, tall;
+	GetSize( wide, tall );
+
+	int iShift = YRES( 20 );
 
 	if ( !m_bVertical )
-		m_pButton->SetSize( YRES( 10 ), GetTall() );  //scroll wide
+		m_pButton->SetSize( YRES( 10 ), tall );  //scroll wide
 	else
 		m_pButton->SetSize( m_pBGBorder->GetWide(), YRES( 10 ) );  //scroll wide	
 
-	m_pBGBorder->SetPos( iBorderPos, 0 );
-	m_pBGBorder->SetWide( GetWide() - iBorderPos - iShift );
-	m_pBGBorder->SetTall( GetTall() );
-
-	m_pTitleLabel->SetWide( iBorderPos );
-	m_pTitleLabel->SetTall( GetTall() );
-
-	m_pValueLabel->SetPos( GetWide() - iShift, 0 );
-	m_pValueLabel->SetWide( iShift );
-	m_pValueLabel->SetTall( GetTall() );
+	m_pBGBorder->SetBounds( 0, 0, wide - iShift, tall );
+	m_pValueLabel->SetBounds( wide - iShift, 0, iShift, tall );
 
 	// Recalculate nob position.
 	SetValue( m_flValue );
@@ -148,8 +146,16 @@ void CTFSlider::SetFont( HFont font )
 {
 	// Set the font on all elements.
 	m_pButton->SetFont( font );
-	m_pTitleLabel->SetFont( font );
 	m_pValueLabel->SetFont( font );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFSlider::SetFont( const char *pszFont )
+{
+	V_strcpy_safe( m_szFont, pszFont );
+	InvalidateLayout( false, true );
 }
 
 //-----------------------------------------------------------------------------
@@ -178,6 +184,8 @@ void CTFSlider::OnThink( void )
 		m_flValue = RemapValClamped( flPerc, 0.0f, 1.0f, m_flMinValue, m_flMaxValue );
 
 		SetPercentage( flPerc );
+
+		SendSliderMovedMessage();
 	}
 }
 
@@ -199,11 +207,11 @@ const char *CTFSlider::GetFinalValue()
 	if ( m_bShowFrac || m_flMaxValue <= 1.0f )
 	{
 		// Only show fractional part if it's 0 to 1 slider.
-		V_snprintf( szValue, sizeof( szValue ), "%.02f", m_flValue );
+		V_sprintf_safe( szValue, "%.02f", m_flValue );
 	}
 	else
 	{
-		V_snprintf( szValue, sizeof( szValue ), "%.f", m_flValue );
+		V_sprintf_safe( szValue, "%.f", m_flValue );
 	}
 
 	return szValue;
@@ -230,8 +238,8 @@ void CTFSlider::SetRange( float flMin, float flMax )
 	m_flMinValue = flMin;
 	m_flMaxValue = flMax;
 
-	// Clamp value now that the range got updated.
-	SetValue( clamp( m_flValue, m_flMinValue, m_flMaxValue ) );
+	// Update nob position.
+	SetValue( m_flValue );
 }
 
 //-----------------------------------------------------------------------------
@@ -270,17 +278,13 @@ void CTFSlider::SetPercentage( float flPerc, bool bInstant /*= false*/ )
 	{
 		if ( !m_bVertical )
 		{
-			AnimationController::PublicValue_t p_AnimHover( flPos, scrollY );
-			GetAnimationController()->RunAnimationCommand( m_pButton, "Position", p_AnimHover, 0.0f, 0.05f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL );
+			GetAnimationController()->RunAnimationCommand( m_pButton, "xpos", flPos, 0.0f, 0.05f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL );
 		}
 		else
 		{
-			AnimationController::PublicValue_t p_AnimHover( scrollX, flPos );
-			GetAnimationController()->RunAnimationCommand( m_pButton, "Position", p_AnimHover, 0.0f, 0.05f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL );
+			GetAnimationController()->RunAnimationCommand( m_pButton, "ypos", flPos, 0.0f, 0.05f, vgui::AnimationController::INTERPOLATOR_LINEAR, NULL );
 		}
 	}
-
-	SendSliderMovedMessage();
 }
 
 //-----------------------------------------------------------------------------
@@ -316,23 +320,57 @@ void CTFSlider::SendSliderDragEndMessage()
 	PostActionSignal( pParams );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFSlider::SetToolTip( const char *pszText )
+{
+	if ( m_pButton )
+	{
+		m_pButton->SetToolTip( pszText );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFSlider::ClampValue()
+{
+	float flValue = m_flValue; 
+	if (m_flMinValue < m_flMaxValue)
+	{
+		flValue = clamp( flValue, m_flMinValue, m_flMaxValue );
+	}
+	else
+	{
+		flValue = clamp( flValue, m_flMinValue, m_flMaxValue );
+	}
+	SetValue(flValue);
+}
+
 
 //=============================================================================//
 // CTFScrollButton
 //=============================================================================//
 CTFScrollButton::CTFScrollButton( vgui::Panel *parent, const char *panelName, const char *text ) : CTFButtonBase( parent, panelName, text )
 {
+	m_pSliderPanel = NULL;
+
 	// Set default border.
-	V_strncpy( m_szDefaultBG, ADVSLIDER_DEFAULT_BORDER, sizeof( m_szDefaultBG ) );
-	V_strncpy( m_szArmedBG, ADVSLIDER_ARMED_BORDER, sizeof( m_szArmedBG ) );
-	V_strncpy( m_szDepressedBG, ADVSLIDER_DEPRESSED_BORDER, sizeof( m_szDepressedBG ) );
+	V_strcpy_safe( m_szDefaultBG, ADVSLIDER_DEFAULT_BORDER );
+	V_strcpy_safe( m_szArmedBG, ADVSLIDER_ARMED_BORDER );
+	V_strcpy_safe( m_szDepressedBG, ADVSLIDER_DEPRESSED_BORDER );
 }
 
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFScrollButton::ApplySettings( KeyValues *inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
 }
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -340,16 +378,14 @@ void CTFScrollButton::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	SetDefaultColor( pScheme->GetColor( ADVBUTTON_DEFAULT_COLOR, COLOR_WHITE ), Color( 0, 0, 0, 0 ) );
-	SetArmedColor( pScheme->GetColor( ADVBUTTON_ARMED_COLOR, COLOR_WHITE ), Color( 0, 0, 0, 0 ) );
-	SetDepressedColor( pScheme->GetColor( ADVBUTTON_DEPRESSED_COLOR, COLOR_WHITE ), Color( 0, 0, 0, 0 ) );
-	SetSelectedColor( pScheme->GetColor( ADVBUTTON_DEPRESSED_COLOR, COLOR_WHITE ), Color( 0, 0, 0, 0 ) );
-
-	SetArmedSound( "ui/buttonrollover.wav" );
-	SetDepressedSound( "ui/buttonclick.wav" );
-	SetReleasedSound( "ui/buttonclickrelease.wav" );
+	SetArmedSound( "#ui/buttonrollover.wav" );
+	SetDepressedSound( "#ui/buttonclick.wav" );
+	SetReleasedSound( "#ui/buttonclickrelease.wav" );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFScrollButton::PerformLayout()
 {
 	BaseClass::PerformLayout();

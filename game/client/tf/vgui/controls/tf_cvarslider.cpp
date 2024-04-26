@@ -20,13 +20,13 @@
 using namespace vgui;
 
 
-DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CTFCvarSlider, CTFCvarSlider );
+DECLARE_BUILD_FACTORY( CTFCvarSlider );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CTFCvarSlider::CTFCvarSlider( Panel *parent, const char *panelName, const char *caption )
-	: CTFSlider( parent, panelName, caption ),
+CTFCvarSlider::CTFCvarSlider( Panel *parent, const char *panelName )
+	: CTFSlider( parent, panelName ),
 	m_cvar( "", true )
 {
 	SetupSlider( 0, 1, false, false );
@@ -35,9 +35,9 @@ CTFCvarSlider::CTFCvarSlider( Panel *parent, const char *panelName, const char *
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CTFCvarSlider::CTFCvarSlider( Panel *parent, const char *panelName, char const *caption,
+CTFCvarSlider::CTFCvarSlider( Panel *parent, const char *panelName,
 	float minValue, float maxValue, char const *cvarname, bool bShowFrac, bool bAutoChange )
-	: CTFSlider( parent, panelName, caption ),
+	: CTFSlider( parent, panelName ),
 	m_cvar( cvarname, false )
 {
 	SetupSlider( minValue, maxValue, bShowFrac, bAutoChange );

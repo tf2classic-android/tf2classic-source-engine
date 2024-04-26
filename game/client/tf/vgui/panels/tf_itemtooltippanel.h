@@ -29,7 +29,6 @@ private:
 	CExLabel	*m_pTitle;
 	CExLabel	*m_pClassName;
 	CExLabel	*m_pAttributeText;
-	CTFAdvModelPanel *m_pClassModelPanel;
 	CUtlVector<CExLabel*> m_pAttributes;
 	Color	m_colorTitle;
 };

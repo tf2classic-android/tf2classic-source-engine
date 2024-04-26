@@ -8,7 +8,6 @@
 #include "cbase.h"
 #include "tf_optionsmousepanel.h"
 #include "tf_mainmenu.h"
-#include "controls/tf_scriptobject.h"
 #include "controls/tf_cvartogglecheckbutton.h"
 #include "controls/tf_cvarslider.h"
 #include "controls/tf_advpanellistpanel.h"
@@ -24,9 +23,9 @@
 
 using namespace vgui;
 
-CTFOptionsMousePanel::CTFOptionsMousePanel(vgui::Panel *parent, const char *panelName) : CTFDialogPanelBase(parent, panelName)
+CTFOptionsMousePanel::CTFOptionsMousePanel( vgui::Panel *parent, const char *panelName ) : CTFDialogPanelBase( parent, panelName )
 {
-	Init();
+	m_pListPanel = new CPanelListPanel( this, "PanelListPanel" );
 }
 
 //-----------------------------------------------------------------------------
@@ -36,27 +35,19 @@ CTFOptionsMousePanel::~CTFOptionsMousePanel()
 {
 }
 
-bool CTFOptionsMousePanel::Init()
-{
-	BaseClass::Init();
-
-	m_pListPanel = new CPanelListPanel(this, "PanelListPanel");
-	return true;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: sets background color & border
 //-----------------------------------------------------------------------------
-void CTFOptionsMousePanel::ApplySchemeSettings(IScheme *pScheme)
+void CTFOptionsMousePanel::ApplySchemeSettings( IScheme *pScheme )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	LoadControlSettings("resource/UI/main_menu/OptionsMouse.res");
+	LoadControlSettings( "resource/UI/main_menu/OptionsMouse.res" );
 }
 
-void CTFOptionsMousePanel::OnCommand(const char* command)
+void CTFOptionsMousePanel::OnCommand( const char* command )
 {
-	BaseClass::OnCommand(command);
+	BaseClass::OnCommand( command );
 }
 
 void CTFOptionsMousePanel::CreateControls()
@@ -65,38 +56,40 @@ void CTFOptionsMousePanel::CreateControls()
 
 	pTitleMouse = new Label( this, "DescTextTitle", "Mouse options" );
 
-	m_pReverseMouseCheckBox = new CTFCvarToggleCheckButton(this, "ReverseMouse", "#GameUI_ReverseMouse", "m_pitch");
-	m_pRawInputCheckBox = new CTFCvarToggleCheckButton(this, "RawInput", "#GameUI_MouseRaw", "m_rawinput");
-	m_pMouseFilterCheckBox = new CTFCvarToggleCheckButton(this, "MouseFilter", "#GameUI_MouseFilter", "m_filter");
-	m_pMouseSensitivitySlider = new CTFCvarSlider(this, "MouseSensitivity", "#GameUI_MouseSensitivity", 1.0f, 20.0f, "sensitivity", true);
+	m_pReverseMouseCheckBox = new CTFCvarToggleCheckButton( this, "ReverseMouse", "#GameUI_ReverseMouse", "m_pitch" );
 
-	m_pMouseAccelCheckBox = new CTFCvarToggleCheckButton(this, "MouseAccel", "#GameUI_MouseAcceleration_Hint", "m_customaccel");
-	m_pMouseAccelSlider = new CTFCvarSlider(this, "MouseAccelSlider", "#GameUI_MouseAcceleration", 1.0f, 2.0f, "m_customaccel_exponent", true);
+	m_pRawInputCheckBox = new CTFCvarToggleCheckButton( this, "RawInput", "#GameUI_MouseRaw", "m_rawinput" );
+	m_pMouseFilterCheckBox = new CTFCvarToggleCheckButton( this, "MouseFilter", "#GameUI_MouseFilter", "m_filter" );
+	m_pMouseSensitivitySlider = new CTFCvarSlider( this, "MouseSensitivity", 1.0f, 20.0f, "sensitivity", true );
+
+	m_pMouseAccelCheckBox = new CTFCvarToggleCheckButton( this, "MouseAccel", "#GameUI_MouseAcceleration", "m_customaccel" );
+	m_pMouseAccelSlider = new CTFCvarSlider( this, "MouseAccelSlider", 1.0f, 2.0f, "m_customaccel_exponent", true );
 
 	///
 	pTitleJoystick = new Label( this, "DescTextTitle", "Joystick options" );
 
-	m_pJoystickCheckBox = new CTFCvarToggleCheckButton(this, "Joystick", "#GameUI_Joystick", "joystick");
-	m_pJoystickSouthpawCheckBox = new CTFCvarToggleCheckButton(this, "JoystickSouthpaw", "#GameUI_JoystickSouthpaw", "joy_movement_stick");
-	m_pReverseJoystickCheckBox = new CTFCvarToggleCheckButton(this, "ReverseJoystick", "#GameUI_ReverseJoystick", "joy_inverty");
+	m_pJoystickCheckBox = new CTFCvarToggleCheckButton( this, "Joystick", "#GameUI_Joystick", "joystick" );
+	m_pJoystickCheckBox->SetToolTip( "#GameUI_JoystickLabel" );
+	m_pJoystickSouthpawCheckBox = new CTFCvarToggleCheckButton( this, "JoystickSouthpaw", "#GameUI_JoystickSouthpaw", "joy_movement_stick" );
+	m_pReverseJoystickCheckBox = new CTFCvarToggleCheckButton( this, "ReverseJoystick", "#GameUI_ReverseJoystick", "joy_inverty" );
 
-	m_pJoyYawSensitivitySlider = new CTFCvarSlider(this, "JoystickYawSlider", "#GameUI_JoystickLookSpeedYaw", -0.5f, -7.0f, "joy_yawsensitivity", true);
-	m_pJoyPitchSensitivitySlider = new CTFCvarSlider(this, "JoystickPitchSlider", "#GameUI_JoystickLookSpeedPitch", 0.5f, 7.0f, "joy_pitchsensitivity", true);
+	m_pJoyYawSensitivitySlider = new CTFCvarSlider( this, "JoystickYawSlider", -0.5f, -7.0f, "joy_yawsensitivity", true );
+	m_pJoyPitchSensitivitySlider = new CTFCvarSlider( this, "JoystickPitchSlider", 0.5f, 7.0f, "joy_pitchsensitivity", true );
 
-	AddControl(pTitleMouse, O_CATEGORY);
-	AddControl(m_pReverseMouseCheckBox, O_BOOL);
-	AddControl(m_pRawInputCheckBox, O_BOOL);
-	AddControl(m_pMouseFilterCheckBox, O_BOOL);
-	AddControl(m_pMouseSensitivitySlider, O_SLIDER);
-	AddControl(m_pMouseAccelCheckBox, O_BOOL);
-	AddControl(m_pMouseAccelSlider, O_SLIDER);
+	AddControl( pTitleMouse, O_CATEGORY );
+	AddControl( m_pReverseMouseCheckBox, O_BOOL, "", "#GameUI_ReverseMouseLabel" );
+	AddControl( m_pRawInputCheckBox, O_BOOL, "", "#GameUI_MouseRaw_Hint" );
+	AddControl( m_pMouseFilterCheckBox, O_BOOL, "", "#GameUI_MouseFilterLabel" );
+	AddControl( m_pMouseSensitivitySlider, O_SLIDER, "#GameUI_MouseSensitivity" );
+	AddControl( m_pMouseAccelCheckBox, O_BOOL, "", "#GameUI_MouseAcceleration_Hint" );
+	AddControl( m_pMouseAccelSlider, O_SLIDER, "", "#GameUI_MouseAccelerationAmount_Hint" );
 
-	AddControl(pTitleJoystick, O_CATEGORY);
-	AddControl(m_pJoystickCheckBox, O_BOOL);
-	AddControl(m_pJoystickSouthpawCheckBox, O_BOOL);
-	AddControl(m_pReverseJoystickCheckBox, O_BOOL);
-	AddControl(m_pJoyYawSensitivitySlider, O_SLIDER);
-	AddControl(m_pJoyPitchSensitivitySlider, O_SLIDER);
+	AddControl( pTitleJoystick, O_CATEGORY );
+	AddControl( m_pJoystickCheckBox, O_BOOL, "", "#GameUI_JoystickLabel" );
+	AddControl( m_pJoystickSouthpawCheckBox, O_BOOL );
+	AddControl( m_pReverseJoystickCheckBox, O_BOOL );
+	AddControl( m_pJoyYawSensitivitySlider, O_SLIDER, "#GameUI_JoystickLookSpeedYaw", "", &m_pJoyYawSensitivityPreLabel );
+	AddControl( m_pJoyPitchSensitivitySlider, O_SLIDER, "#GameUI_JoystickLookSpeedPitch", "", &m_pJoyPitchSensitivityPreLabel );
 
 	UpdatePanels();
 }
@@ -147,7 +140,7 @@ void CTFOptionsMousePanel::OnApplyChanges()
 	m_pJoyYawSensitivitySlider->ApplyChanges();
 	m_pJoyPitchSensitivitySlider->ApplyChanges();
 
-	engine->ClientCmd_Unrestricted("joyadvancedupdate");
+	engine->ClientCmd_Unrestricted( "joyadvancedupdate" );
 }
 
 //-----------------------------------------------------------------------------
@@ -176,13 +169,15 @@ void CTFOptionsMousePanel::OnCheckButtonChecked( Panel *panel )
 void CTFOptionsMousePanel::UpdatePanels()
 {
 	bool bEnabled = m_pMouseAccelCheckBox->IsChecked();
-	m_pMouseAccelSlider->SetVisible(bEnabled);
+	m_pMouseAccelSlider->SetVisible( bEnabled );
 
 	bEnabled = m_pJoystickCheckBox->IsChecked();
 	m_pReverseJoystickCheckBox->SetVisible( bEnabled );
 	m_pJoystickSouthpawCheckBox->SetVisible( bEnabled );
 	m_pJoyYawSensitivitySlider->SetVisible( bEnabled );
+	m_pJoyYawSensitivityPreLabel->SetVisible( bEnabled );
 	m_pJoyPitchSensitivitySlider->SetVisible( bEnabled );
+	m_pJoyPitchSensitivityPreLabel->SetVisible( bEnabled );
 }
 
 //-----------------------------------------------------------------------------

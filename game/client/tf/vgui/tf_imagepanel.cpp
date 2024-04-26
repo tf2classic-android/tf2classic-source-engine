@@ -57,7 +57,7 @@ void CTFImagePanel::ApplySettings(KeyValues *inResourceData)
 		Q_strncpy( m_szTeamBG[i], inResourceData->GetString( VarArgs("teambg_%d", i), "" ), sizeof( m_szTeamBG[i] ) );
 	}
 	
-	m_bAlwaysColored = inResourceData->GetBool( "alwaysColored", false );
+	m_bAlwaysColored = inResourceData->GetBool( "alwaysColored" );
 	
 	BaseClass::ApplySettings( inResourceData );
 
@@ -92,7 +92,7 @@ void CTFImagePanel::SetBGImage( int iTeamNum )
 void CTFImagePanel::UpdateBGTeam( void )
 {
 	if( TFGameRules() && TFGameRules()->IsDeathmatch() )
-		m_iBGTeam = m_iBGTeam = tf2c_coloredhud.GetBool() || m_bAlwaysColored ? TEAM_UNASSIGNED : TEAM_SPECTATOR;
+		m_iBGTeam = tf2c_coloredhud.GetBool() || m_bAlwaysColored ? TEAM_UNASSIGNED : TEAM_SPECTATOR;
 	else
 		m_iBGTeam = GetLocalPlayerTeam();
 }

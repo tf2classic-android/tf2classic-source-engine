@@ -37,6 +37,7 @@ public:
 	respawn_particle_t *GetParticle( int index );
 	win_anim_t *GetAnimationById( int id );
 	win_anim_t *GetAnimation( int index );
+	int GetWinAnimCount() { return m_WinAnimations.Size(); }
 #else
 	respawn_particle_t *GetParticleById( int id );
 	respawn_particle_t *GetRandomParticle();

@@ -1,36 +1,32 @@
-#ifndef TF_MAINMENU_TABS_H
+﻿#ifndef TF_MAINMENU_TABS_H
 #define TF_MAINMENU_TABS_H
+
 #ifdef _WIN32
 #pragma once
 #endif
-
-using namespace vgui;
 
 class CTFButton;
 
 class CAdvTabs : public vgui::EditablePanel
 {
 public:
-	DECLARE_CLASS_SIMPLE(CAdvTabs, vgui::EditablePanel);
+	DECLARE_CLASS_SIMPLE( CAdvTabs, vgui::EditablePanel );
 
-	CAdvTabs(vgui::Panel *parent, char const *panelName);
+	CAdvTabs( vgui::Panel *parent, char const *panelName );
 	~CAdvTabs();
 
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void PerformLayout();
-	virtual void PaintBackground();
+	virtual void OnCommand( const char *command );
 
-	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-	virtual void ApplySettings(KeyValues *inResourceData);
-
-	void OnCommand(const char* command);
-
-	virtual void DeleteAllItems(); // clears and deletes all the memory used by the data items
+	void SetSelectedButton( const char *pszName );
 
 protected:
-	int	iOffset;
-	CUtlVector<CTFButton*>	m_pButtons;
-	CTFButton*	m_pCurrentButton;
-	MESSAGE_FUNC_PTR(OnButtonPressed, "ButtonPressed", panel);
+	MESSAGE_FUNC_PTR( OnButtonPressed, "ButtonPressed", panel );
+
+	CUtlVector<CTFButton *> m_pButtons;
+	CTFButton *m_pCurrentButton;
 };
 
 #endif // TF_MAINMENU_TABS_H

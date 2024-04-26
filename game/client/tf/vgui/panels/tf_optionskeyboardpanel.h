@@ -28,7 +28,6 @@ class CTFOptionsKeyboardPanel : public CTFDialogPanelBase
 public:
 	CTFOptionsKeyboardPanel(vgui::Panel* parent, const char *panelName);
 	~CTFOptionsKeyboardPanel();
-	virtual bool Init();
 	virtual void OnResetData();
 	virtual void OnApplyChanges();
 	virtual void OnSetDefaults();

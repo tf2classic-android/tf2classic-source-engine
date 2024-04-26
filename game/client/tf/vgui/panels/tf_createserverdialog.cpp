@@ -380,7 +380,7 @@ void CTFCreateServerDialog::LoadGameOptionsList( void )
 	ComboBox *pCombo;
 	CScriptListItem *pListItem;
 
-	HFont hFont = GETSCHEME()->GetFont( "TF2CMenuNormal", true );
+	HFont hFont = GETSCHEME()->GetFont( m_pListPanel->GetFontString(), true );
 
 	Panel *objParent = m_pListPanel;
 	while ( pObj )

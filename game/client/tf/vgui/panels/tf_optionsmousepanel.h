@@ -34,7 +34,6 @@ class CTFOptionsMousePanel : public CTFDialogPanelBase
 public:
 	CTFOptionsMousePanel(vgui::Panel* parent, const char *panelName);
 	~CTFOptionsMousePanel();
-	virtual bool Init();
 	virtual void OnResetData();
 	virtual void OnApplyChanges();
 	virtual void OnCommand(const char *command);

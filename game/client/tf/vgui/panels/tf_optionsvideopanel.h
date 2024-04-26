@@ -32,7 +32,6 @@ class CTFOptionsVideoPanel : public CTFDialogPanelBase
 public:
 	CTFOptionsVideoPanel(vgui::Panel* parent, const char *panelName);
 	~CTFOptionsVideoPanel();
-	virtual bool Init();
 	virtual void OnResetData();
 	virtual void OnApplyChanges();
 	virtual void OnCommand(const char *command);
@@ -54,7 +53,8 @@ private:
 	vgui::ComboBox		*m_pMode;
 	vgui::ComboBox		*m_pWindowed;
 	vgui::ComboBox		*m_pAspectRatio;
-	CTFCvarSlider			*m_pGammaSlider;
+	CTFCvarSlider		*m_pGammaSlider;
+	vgui::Label			*m_pGammaLabel;
 
 	bool m_bRequireRestart;
 
@@ -65,7 +65,7 @@ private:
    vgui::ComboBox *m_pColorCorrection;
    vgui::ComboBox *m_pMotionBlur;
    vgui::ComboBox *m_pDXLevel;
-   CTFCvarSlider	  *m_pFOVSlider;
+   CTFCvarSlider	*m_pFOVSlider;
    vgui::ComboBox *m_pQueuedMode;
 
    void MarkDefaultSettingsAsRecommended();

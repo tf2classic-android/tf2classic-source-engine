@@ -8,19 +8,17 @@
 //-----------------------------------------------------------------------------
 class CTFShadeBackgroundPanel : public CTFMenuPanelBase
 {
-	DECLARE_CLASS_SIMPLE(CTFShadeBackgroundPanel, CTFMenuPanelBase);
+	DECLARE_CLASS_SIMPLE( CTFShadeBackgroundPanel, CTFMenuPanelBase );
 
 public:
-	CTFShadeBackgroundPanel(vgui::Panel* parent, const char *panelName);
+	CTFShadeBackgroundPanel( vgui::Panel *parent, const char *panelName );
 	virtual ~CTFShadeBackgroundPanel();
-	void Show();
-	void Hide();
-	void PerformLayout();
-	void OnCommand(const char* command);
-	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+	virtual void Show();
+	virtual void Hide();
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 
 private:
-
+	vgui::ImagePanel *m_pShadedBG;
 };
 
 #endif // TFMAINMENUSHADEBACKGROUNDPANEL_H

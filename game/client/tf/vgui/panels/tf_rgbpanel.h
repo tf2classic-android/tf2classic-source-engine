@@ -1,37 +1,36 @@
 #ifndef TFMAINMENURGBPANEL_H
 #define TFMAINMENURGBPANEL_H
 
-#include "tf_menupanelbase.h"
+#include <vgui_controls/EditablePanel.h>
+#include "tf_shareddefs.h"
 
 class CTFCvarSlider;
 class CCvarComboBox;
-class CTFAdvModelPanel;
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CTFRGBPanel : public CTFMenuPanelBase
+class CTFRGBPanel : public vgui::EditablePanel
 {
-	DECLARE_CLASS_SIMPLE(CTFRGBPanel, CTFMenuPanelBase);
+	DECLARE_CLASS_SIMPLE( CTFRGBPanel, vgui::EditablePanel );
 
 public:
-	CTFRGBPanel(vgui::Panel* parent, const char *panelName);
-	bool Init();
-	virtual ~CTFRGBPanel();
+	CTFRGBPanel( vgui::Panel *parent, const char *panelName );
 
-	void PerformLayout();
-	void OnCommand(const char* command);
-	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+	virtual void PerformLayout();
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	const char *GetSpawnEffect();
 
 private:
+	MESSAGE_FUNC_PTR( OnControlModified, "ControlModified", panel );
+	MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel );
 
-	CTFCvarSlider	*m_pRedScrollBar;
-	CTFCvarSlider	*m_pGrnScrollBar;
-	CTFCvarSlider	*m_pBluScrollBar;
+	CTFCvarSlider *m_pRedScrollBar;
+	CTFCvarSlider *m_pGrnScrollBar;
+	CTFCvarSlider *m_pBluScrollBar;
 	vgui::ImagePanel *m_pColorBG;
-	CCvarComboBox *m_pCombo;
-	CTFAdvModelPanel *m_pParticlesPanel;
-	MESSAGE_FUNC(OnDataChanged, "ControlModified");
+	vgui::ComboBox *m_pCombo;
+	vgui::ComboBox *m_pAnimCombo;
 };
 
 #endif // TFMAINMENURGBPANEL_H

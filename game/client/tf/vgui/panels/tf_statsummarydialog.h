@@ -15,7 +15,6 @@ private:
 
 public:
 	CTFStatsSummaryDialog(vgui::Panel* parent, const char *panelName);
-	bool Init();
 	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 	virtual void OnCommand(const char *command);
 	virtual void OnKeyCodePressed(KeyCode code);

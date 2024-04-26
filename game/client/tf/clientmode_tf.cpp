@@ -50,6 +50,8 @@
 #include "c_tf_team.h"
 #include "c_tf_playerresource.h"
 #include "tf_clientscoreboard.h"
+#include "tf_mainmenu.h"
+#include "tier0/icommandline.h"
 
 #if defined( _X360 )
 #include "tf_clientscoreboard.h"
@@ -224,7 +226,7 @@ void ClientModeTFNormal::Init()
 	if ( gameUIFactory )
 	{
 		m_pGameUI = (IGameUI *) gameUIFactory(GAMEUI_INTERFACE_VERSION, NULL );
-		if ( NULL != m_pGameUI )
+		if ( m_pGameUI )
 		{
 			// insert stats summary panel as the loading background dialog
 			CTFStatsSummaryPanel *pPanel = GStatsSummaryPanel();
@@ -232,7 +234,16 @@ void ClientModeTFNormal::Init()
 			pPanel->SetVisible( false );
 			pPanel->MakePopup( false );
 			m_pGameUI->SetLoadingBackgroundDialog( pPanel->GetVPanel() );
-		}		
+
+			// Create the new main menu.
+			if ( CommandLine()->CheckParm( "-nonewmenu" ) == NULL )
+			{
+				// Disable normal BG music played in GameUI.
+				CommandLine()->AppendParm( "-nostartupsound", NULL );
+				CTFMainMenu *pMenu = new CTFMainMenu();
+				m_pGameUI->SetMainMenuOverride( pMenu->GetVPanel() );
+			}
+		}
 	}
 
 #if defined( _X360 )

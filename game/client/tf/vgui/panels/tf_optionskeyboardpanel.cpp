@@ -43,7 +43,16 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CTFOptionsKeyboardPanel::CTFOptionsKeyboardPanel(vgui::Panel *parent, const char *panelName) : CTFDialogPanelBase(parent, panelName)
 {
-	Init();
+	bParsed = false;
+	memset( m_Bindings, 0, sizeof( m_Bindings ) );
+
+	// create the key bindings list
+	CreateKeyBindingList();
+	// Store all current key bindings
+	SaveCurrentBindings();
+
+	m_pSetBindingButton = new CTFButton( this, "ChangeKeyButton", "" );
+	m_pClearBindingButton = new CTFButton( this, "ClearKeyButton", "" );
 }
 
 //-----------------------------------------------------------------------------
@@ -52,23 +61,6 @@ CTFOptionsKeyboardPanel::CTFOptionsKeyboardPanel(vgui::Panel *parent, const char
 CTFOptionsKeyboardPanel::~CTFOptionsKeyboardPanel()
 {
 	DeleteSavedBindings();
-}
-
-bool CTFOptionsKeyboardPanel::Init()
-{
-	BaseClass::Init();
-
-	bParsed = false;
-	memset(m_Bindings, 0, sizeof(m_Bindings));
-
-	// create the key bindings list
-	CreateKeyBindingList();
-	// Store all current key bindings
-	SaveCurrentBindings();
-
-	m_pSetBindingButton = new CTFButton(this, "ChangeKeyButton", "");
-	m_pClearBindingButton = new CTFButton(this, "ClearKeyButton", "");
-	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -211,7 +203,7 @@ char *UTIL_va(char *format, ...)
 	curstring = ( curstring + 1 ) % 4;
 
 	va_start (argptr, format);
-	Q_vsnprintf( string[curstring], 1024, format, argptr );
+	V_vsprintf_safe( string[curstring], format, argptr );
 	va_end (argptr);
 
 	return string[curstring];  
@@ -244,7 +236,7 @@ void CTFOptionsKeyboardPanel::ParseActionDescriptions( void )
 		if ( strlen( token ) <= 0 )  
 			break;
 
-		Q_strncpy( szBinding, token, sizeof( szBinding ) );
+		V_strcpy_safe( szBinding, token );
 
 		data = UTIL_Parse( data, token, sizeof(token) );
 		if ( strlen(token) <= 0 )
@@ -252,7 +244,7 @@ void CTFOptionsKeyboardPanel::ParseActionDescriptions( void )
 			break;
 		}
 
-		Q_strncpy(szDescription, token, sizeof( szDescription ) );
+		V_strcpy_safe(szDescription, token );
 
 		// Skip '======' rows
 		if ( szDescription[ 0 ] != '=' )
@@ -524,7 +516,7 @@ void CTFOptionsKeyboardPanel::BindKey( const char *key, const char *binding )
 	engine->ClientCmd_Unrestricted( UTIL_va( "bind \"%s\" \"%s\"\n", key, binding ) );
 #else
 	char buff[256];
-	Q_snprintf(buff, sizeof(buff), "bind \"%s\" \"%s\"\n", key, binding);
+	V_sprintf_safe(buff, "bind \"%s\" \"%s\"\n", key, binding);
 	engine->ClientCmd_Unrestricted(buff);
 #endif
 }
@@ -538,7 +530,7 @@ void CTFOptionsKeyboardPanel::UnbindKey( const char *key )
 	engine->ClientCmd_Unrestricted( UTIL_va( "unbind \"%s\"\n", key ) );
 #else
 	char buff[256];
-	Q_snprintf(buff, sizeof(buff), "unbind \"%s\"\n", key);
+	V_sprintf_safe(buff, "unbind \"%s\"\n", key);
 	engine->ClientCmd_Unrestricted(buff);
 #endif
 }

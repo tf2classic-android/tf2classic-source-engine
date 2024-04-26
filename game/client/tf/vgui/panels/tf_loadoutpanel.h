@@ -3,8 +3,9 @@
 
 #include "tf_dialogpanelbase.h"
 #include "tf_inventory.h"
+#include "tf_playermodelpanel.h"
+#include "controls/tf_advtabs.h"
 
-class CTFAdvModelPanel;
 class CTFWeaponSetPanel;
 class CModelPanel;
 class CTFButton;
@@ -21,38 +22,32 @@ class CTFLoadoutPanel : public CTFDialogPanelBase
 public:
 	CTFLoadoutPanel( vgui::Panel *parent, const char *panelName );
 	virtual ~CTFLoadoutPanel();
-	bool Init();
 	void ApplySchemeSettings( vgui::IScheme *pScheme );
 	void PerformLayout();
 
-	void SetupWeaponIcon( CTFItemButton *pButton, int iSlot, int iPreset );
+	void SetupWeaponIcon( CTFItemButton *pButton, ETFLoadoutSlot iSlot, int iPreset );
 
 	void OnCommand( const char* command );
 	void Hide();
 	void Show();
-	void DefaultLayout();
-	void GameLayout();
+	void UpdateWeaponButtons();
 	void SetWeaponPreset( int iClass, int iSlot, int iPreset );
 	void SetCurrentClass( int iClass );
-	void SetCurrentSlot( int iSlot ) { m_iCurrentSlot = iSlot; };
-	int  GetAnimSlot( CEconItemDefinition *pItemDef, int iClass );
-	const char *GetWeaponModel( CEconItemDefinition *pItemDef, int iClass );
-	void UpdateModelWeapons( void );
-	void SetModelClass( int iClass );
-	void SetSlotAndPreset( int iSlot, int iPreset );
 	void SideRow( int iRow, int iDir );
 	void ResetRows();
 
 private:
-	CTFAdvModelPanel *m_pClassModelPanel;
+	MESSAGE_FUNC_PTR( OnControlModified, "ControlModified", panel );
+
+	CTFPlayerModelPanel *m_pClassModelPanel;
 	CTFWeaponSetPanel *m_pWeaponSetPanel;
-	CTFRGBPanel		*m_pRGBPanel;
+	CTFRGBPanel *m_pRGBPanel;
 	CUtlVector<CTFItemButton *> m_pWeaponIcons[INVENTORY_ROWNUM];
-	CTFButton *m_pSlideButtons[INVENTORY_ROWNUM * 2];
+	CTFButton *m_pSlideButtons[INVENTORY_ROWNUM*2];
+	CAdvTabs *m_pClassButtons;
 	int m_RawIDPos[INVENTORY_ROWNUM];
-	MESSAGE_FUNC( UpdateModelPanels, "ControlModified" );
-	int	m_iCurrentClass;
-	int	m_iCurrentSlot;
+	int m_iCurrentClass;
+	bool m_bLoadoutChanged;
 };
 
 //-----------------------------------------------------------------------------

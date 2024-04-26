@@ -16,12 +16,12 @@
 
 class CTFCvarSlider : public CTFSlider
 {
-	DECLARE_CLASS_SIMPLE(CTFCvarSlider, CTFSlider);
+	DECLARE_CLASS_SIMPLE( CTFCvarSlider, CTFSlider );
 
 public:
 
-	CTFCvarSlider(vgui::Panel *parent, const char *panelName, const char *name);
-	CTFCvarSlider( vgui::Panel *parent, const char *panelName, char const *caption,
+	CTFCvarSlider( vgui::Panel *parent, const char *panelName );
+	CTFCvarSlider( vgui::Panel *parent, const char *panelName,
 		float minValue, float maxValue, char const *cvarname, bool bShowFrac = false, bool bAutoChange = false );
 	~CTFCvarSlider();
 

@@ -58,7 +58,7 @@ void DestroyStatsSummaryPanel()
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
 CTFStatsSummaryPanel::CTFStatsSummaryPanel() : vgui::EditablePanel( NULL, "TFStatsSummary",
-	vgui::scheme()->LoadSchemeFromFile( "Resource/ClientScheme.res", "ClientScheme" ) )
+	vgui::scheme()->LoadSchemeFromFile( "Resource/ClientScheme_tf2c.res", "ClientScheme_tf2c" ) )
 {
 	m_bControlsLoaded = false;
 	m_bInteractive = false;

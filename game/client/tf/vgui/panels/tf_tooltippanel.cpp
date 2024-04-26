@@ -4,6 +4,7 @@
 #include "tf_mainmenu.h"
 #include "controls/tf_advbuttonbase.h"
 #include <vgui_controls/TextImage.h>
+#include <vgui/ISurface.h>
 
 using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
@@ -40,15 +41,12 @@ void CTFToolTipPanel::PerformLayout( void )
 	AdjustToolTipSize();
 }
 
-void CTFToolTipPanel::ShowToolTip( char *sText )
+void CTFToolTipPanel::ShowToolTip( const char *pszText )
 {
 	Show();
 
-	if ( m_pText )
-	{
-		m_pText->SetText( sText );
-		InvalidateLayout( true );
-	}
+	m_pText->SetText( pszText );
+	InvalidateLayout( true );
 }
 
 void CTFToolTipPanel::HideToolTip( void )
@@ -60,6 +58,9 @@ void CTFToolTipPanel::Show( void )
 {
 	BaseClass::Show();
 	MakePopup();
+
+	SetKeyBoardInputEnabled( false );
+	SetMouseInputEnabled( false );
 }
 
 void CTFToolTipPanel::Hide( void )

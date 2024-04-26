@@ -124,15 +124,15 @@ CScriptListItem::CScriptListItem()
 CScriptListItem::CScriptListItem(char const *strItem, char const *strValue)
 {
 	pNext = NULL;
-	Q_strncpy(szItemText, strItem, sizeof(szItemText));
-	Q_strncpy(szValue, strValue, sizeof(szValue));
+	V_strcpy_safe(szItemText, strItem);
+	V_strcpy_safe(szValue, strValue);
 }
 
 CScriptObject::CScriptObject(void)
 {
 	type = O_BOOL;
 	bSetInfo = false;  // Prepend "Setinfo" to keyvalue pair in config?	
-	Q_strncpy(tooltip, "", sizeof(tooltip));
+	V_strcpy_safe(tooltip, "");
 	pNext = NULL;
 	pListItems = NULL;
 }
@@ -153,7 +153,7 @@ CScriptObject::~CScriptObject()
 
 void CScriptObject::SetCurValue(char const *strValue)
 {
-	Q_strncpy(curValue, strValue, sizeof(curValue));
+	V_strcpy_safe(curValue, strValue);
 
 	fcurValue = (float)atof(curValue);
 
@@ -223,7 +223,7 @@ void UTIL_StripInvalidCharacters(char *pszInput, int maxlen)
 void FixupString(char *inString, int maxlen)
 {
 	char szBuffer[4096];
-	Q_strncpy(szBuffer, inString, sizeof(szBuffer));
+	V_strcpy_safe(szBuffer, inString);
 	UTIL_StripInvalidCharacters(szBuffer, sizeof(szBuffer));
 	Q_strncpy(inString, szBuffer, maxlen);
 }
@@ -241,7 +241,7 @@ char * CleanFloat(float val)
 	static char string[2][32];
 	curstring = (curstring + 1) % 2;
 
-	Q_snprintf(string[curstring], sizeof(string[curstring]), "%f", val);
+	V_sprintf_safe(string[curstring], "%f", val);
 
 	char * str = string[curstring];
 
@@ -348,7 +348,7 @@ void CScriptObject::WriteToScriptFile(FileHandle_t fp)
 		}
 
 		g_pFullFileSystem->FPrintf(fp, "\t\t}\r\n");
-		g_pFullFileSystem->FPrintf(fp, "\t\t{ \"%s\" }\r\n", CleanFloat(fcurValue));
+		g_pFullFileSystem->FPrintf(fp, "\t\t{ \"%s\" }\r\n", curValue);
 		break;
 	}
 	if (bSetInfo)
@@ -377,17 +377,13 @@ void CScriptObject::WriteToFile(FileHandle_t fp)
 	case O_NUMBER:
 		fVal = fcurValue;
 		if (fMin != -1.0)
-			fVal = MAX(fVal, fMin);
+			fVal = Max(fVal, fMin);
 		if (fMax != -1.0)
-			fVal = MIN(fVal, fMax);
+			fVal = Min(fVal, fMax);
 		g_pFullFileSystem->FPrintf(fp, "\"%f\"\r\n", fVal);
 		break;
 	case O_SLIDER:
 		fVal = fcurValue;
-		if (fMin != -1.0)
-			fVal = MAX(fVal, fMin);
-		if (fMax != -1.0)
-			fVal = MIN(fVal, fMax);
 		g_pFullFileSystem->FPrintf(fp, "\"%f\"\r\n", fVal);
 		break;
 	case O_STRING:
@@ -430,52 +426,47 @@ void CScriptObject::WriteToConfig(void)
 	pszKey = (char *)cvarname;
 
 	CScriptListItem *pItem;
-	int n, i;
 	float fVal;
 
 	switch (type)
 	{
 	case O_BOOL:
-		Q_snprintf(szValue, sizeof(szValue), "%s", fcurValue != 0.0 ? "1" : "0");
+		V_sprintf_safe(szValue, "%s", fcurValue != 0.0 ? "1" : "0");
 		break;
 	case O_NUMBER:
 		fVal = fcurValue;
 		if (fMin != -1.0)
-			fVal = MAX(fVal, fMin);
+			fVal = Max(fVal, fMin);
 		if (fMax != -1.0)
-			fVal = MIN(fVal, fMax);
-		Q_snprintf(szValue, sizeof(szValue), "%f", fVal);
+			fVal = Min(fVal, fMax);
+		V_sprintf_safe(szValue, "%f", fVal);
 		break;
 	case O_SLIDER:
 		fVal = fcurValue;
-		if (fMin != -1.0)
-			fVal = MAX(fVal, fMin);
-		if (fMax != -1.0)
-			fVal = MIN(fVal, fMax);
-		Q_snprintf(szValue, sizeof(szValue), "%f", fVal);
+		V_sprintf_safe(szValue, "%f", fVal);
 		break;
 	case O_STRING:
-		Q_snprintf(szValue, sizeof(szValue), "\"%s\"", (char *)curValue);
+		V_sprintf_safe(szValue, "\"%s\"", curValue);
 		UTIL_StripInvalidCharacters(szValue, sizeof(szValue));
 		break;
 	case O_LIST:
 		pItem = pListItems;
-		n = (int)fcurValue;
-		i = 0;
-		while ((i < n) && pItem)
+		while (pItem)
 		{
-			i++;
+			if (V_strcmp(pItem->szValue, curValue) == 0)
+				break;
+
 			pItem = pItem->pNext;
 		}
 
 		if (pItem)
 		{
-			Q_snprintf(szValue, sizeof(szValue), "%s", pItem->szValue);
+			V_sprintf_safe(szValue, "%s", pItem->szValue);
 			UTIL_StripInvalidCharacters(szValue, sizeof(szValue));
 		}
 		else  //Couln't find index
 		{
-			Q_strncpy(szValue, "0.0", sizeof(szValue));
+			V_strcpy_safe(szValue, "0.0");
 		}
 		break;
 	}
@@ -483,11 +474,11 @@ void CScriptObject::WriteToConfig(void)
 	char command[256];
 	if (bSetInfo)
 	{
-		Q_snprintf(command, sizeof(command), "setinfo %s \"%s\"\n", pszKey, szValue);
+		V_sprintf_safe(command, "setinfo %s \"%s\"\n", pszKey, szValue);
 	}
 	else
 	{
-		Q_snprintf(command, sizeof(command), "%s \"%s\"\n", pszKey, szValue);
+		V_sprintf_safe(command, "%s \"%s\"\n", pszKey, szValue);
 	}
 
 	engine->ClientCmd_Unrestricted(command);
@@ -522,7 +513,7 @@ bool CScriptObject::ReadFromBuffer(const char **pBuffer, bool isNewObject)
 
 	if (isNewObject)
 	{
-		Q_strncpy(cvarname, token, sizeof(cvarname));
+		V_strcpy_safe(cvarname, token);
 	}
 
 	// Parse the {
@@ -543,7 +534,7 @@ bool CScriptObject::ReadFromBuffer(const char **pBuffer, bool isNewObject)
 
 	if (isNewObject)
 	{
-		Q_strncpy(prompt, token, sizeof(prompt));
+		V_strcpy_safe(prompt, token);
 	}
 
 	// Determine whether we have a tooltip 
@@ -555,7 +546,7 @@ bool CScriptObject::ReadFromBuffer(const char **pBuffer, bool isNewObject)
 	{
 		if (isNewObject)
 		{
-			Q_strncpy(tooltip, token, sizeof(tooltip));
+			V_strcpy_safe(tooltip, token);
 		}
 
 		// Parse the next {
@@ -708,14 +699,14 @@ break;
 			char strItem[128];
 			char strValue[128];
 
-			Q_strncpy(strItem, token, sizeof(strItem));
+			V_strcpy_safe(strItem, token);
 
 			// Parse the value
 			*pBuffer = engine->ParseFile(*pBuffer, token, sizeof(token));
 			if (strlen(token) <= 0)
 				return false;
 
-			Q_strncpy(strValue, token, sizeof(strValue));
+			V_strcpy_safe(strValue, token);
 
 			if (isNewObject)
 			{
@@ -750,7 +741,7 @@ break;
 		//	return false;
 
 		// Set the values
-		Q_strncpy(defValue, token, sizeof(defValue));
+		V_strcpy_safe(defValue, token);
 		fdefValue = (float)atof(token);
 
 		if (type == O_NUMBER || type == O_SLIDER)
@@ -1057,8 +1048,6 @@ void CDescription::WriteToScriptFile(FileHandle_t fp)
 
 void CDescription::TransferCurrentValues(const char *pszConfigFile)
 {
-	char szValue[1024];
-
 	CScriptObject *pObj;
 
 	pObj = pObjList;
@@ -1096,15 +1085,13 @@ void CDescription::TransferCurrentValues(const char *pszConfigFile)
 		if (value && value[0])
 			//if ( CFG_GetValue( pszConfigFile, pObj->cvarname, szValue ) )
 		{
-			Q_strncpy(szValue, value, sizeof(szValue));
-
 			// Fill in better default value
 			// 
-			Q_strncpy(pObj->curValue, szValue, sizeof(pObj->curValue));
-			pObj->fcurValue = (float)atof(szValue);
+			V_strcpy_safe( pObj->curValue, value );
+			pObj->fcurValue = (float)atof( value );
 
-			Q_strncpy(pObj->defValue, szValue, sizeof(pObj->defValue));
-			pObj->fdefValue = (float)atof(szValue);
+			V_strcpy_safe( pObj->defValue, value );
+			pObj->fdefValue = (float)atof( value );
 		}
 
 		pObj = pObj->pNext;

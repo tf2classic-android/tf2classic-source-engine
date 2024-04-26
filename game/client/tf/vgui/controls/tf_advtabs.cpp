@@ -27,17 +27,11 @@
 using namespace vgui;
 
 
-//DECLARE_BUILD_FACTORY( CCvarSlider );
-vgui::Panel *CAdvTabs_Factory()
-{
-	return new CAdvTabs(NULL, "CAdvTabs");
-}
-DECLARE_BUILD_FACTORY_CUSTOM(CAdvTabs, CAdvTabs_Factory);
+DECLARE_BUILD_FACTORY( CAdvTabs );
 
-CAdvTabs::CAdvTabs(vgui::Panel *parent, char const *panelName) : vgui::EditablePanel(parent, panelName)
+CAdvTabs::CAdvTabs( vgui::Panel *parent, char const *panelName ) : EditablePanel( parent, panelName )
 {
-	m_pButtons.RemoveAll();
-	m_pCurrentButton = nullptr;
+	m_pCurrentButton = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -45,28 +39,46 @@ CAdvTabs::CAdvTabs(vgui::Panel *parent, char const *panelName) : vgui::EditableP
 //-----------------------------------------------------------------------------
 CAdvTabs::~CAdvTabs()
 {
-	DeleteAllItems();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CAdvTabs::ApplySchemeSettings( IScheme *pScheme )
+{
+	BaseClass::ApplySchemeSettings( pScheme );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: relayouts out the panel after any internal changes
+//-----------------------------------------------------------------------------
+void CAdvTabs::PerformLayout()
+{
+	BaseClass::PerformLayout();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : *inResourceData - 
 //-----------------------------------------------------------------------------
-void CAdvTabs::ApplySettings(KeyValues *inResourceData)
+void CAdvTabs::ApplySettings( KeyValues *inResourceData )
 {
-	BaseClass::ApplySettings(inResourceData);
-	iOffset = inResourceData->GetInt("offset", 0);
+	BaseClass::ApplySettings( inResourceData );
 
 	m_pButtons.RemoveAll();
 	int iCount = GetChildCount();
-	for (int i = 0; i < iCount; i++)
+	for ( int i = 0; i < iCount; i++ )
 	{
-		CTFButton *pButton = dynamic_cast<CTFButton*>(GetChild(i));
-		if (pButton)
+		CTFButton *pButton = dynamic_cast<CTFButton *>( GetChild( i ) );
+		if ( pButton )
 		{
-			m_pButtons.AddToTail(pButton);
+			m_pButtons.AddToTail( pButton );
 		}
 	}
+
+	/// OLD CODE
+	// SanyaSho: we need this code to have button scaling on panel
+	int iOffset = inResourceData->GetInt( "offset", 0 );
 
 	int iWide = GetWide() / iCount - iOffset;
 	int iTall = GetTall();
@@ -82,62 +94,54 @@ void CAdvTabs::ApplySettings(KeyValues *inResourceData)
 			pButton->SetSize(iWide, iTall);
 		}
 	}
+	/// OLD CODE
 
-	if (!m_pCurrentButton)
+	if ( !m_pCurrentButton && !m_pButtons.IsEmpty() )
 	{
 		m_pCurrentButton = m_pButtons[0];
-		m_pCurrentButton->SetSelected(true);
+		m_pCurrentButton->SetSelected( true );
 	}
-
-	InvalidateLayout(false, true); // force ApplySchemeSettings to run
-}
-
-void CAdvTabs::OnButtonPressed(Panel *pPanel)
-{
-	if (m_pCurrentButton)
-		m_pCurrentButton->SetSelected(false);
-	m_pCurrentButton = dynamic_cast<CTFButton*>(pPanel);
-	m_pCurrentButton->SetSelected(true);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CAdvTabs::ApplySchemeSettings(IScheme *pScheme)
+void CAdvTabs::OnCommand( const char* command )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: relayouts out the panel after any internal changes
-//-----------------------------------------------------------------------------
-void CAdvTabs::PerformLayout()
-{
-	BaseClass::PerformLayout();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: clears and deletes all the memory used by the data items
-//-----------------------------------------------------------------------------
-void CAdvTabs::DeleteAllItems()
-{
-	m_pButtons.RemoveAll();
-	InvalidateLayout();
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CAdvTabs::OnCommand(const char* command)
-{
-	GetParent()->OnCommand(command);
+	if ( GetParent() )
+	{
+		GetParent()->OnCommand( command );
+	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CAdvTabs::PaintBackground()
+void CAdvTabs::OnButtonPressed( Panel *pPanel )
 {
-	Panel::PaintBackground();
+	if ( pPanel == m_pCurrentButton )
+		return;
+
+	if ( m_pCurrentButton )
+		m_pCurrentButton->SetSelected( false );
+
+	m_pCurrentButton = assert_cast<CTFButton *>( pPanel );
+	m_pCurrentButton->SetSelected( true );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CAdvTabs::SetSelectedButton( const char *pszName )
+{
+	FOR_EACH_VEC( m_pButtons, i )
+	{
+		CTFButton *pButton = m_pButtons[i];
+
+		if ( pButton && V_stricmp( pButton->GetName(), pszName ) == 0 )
+		{
+			OnButtonPressed( pButton );
+			break;
+		}
+	}
 }

@@ -18,7 +18,7 @@ public:
 	virtual void OnThink( void );
 	virtual void Show( void );
 	virtual void Hide( void );
-	virtual void ShowToolTip( char *sText );
+	virtual void ShowToolTip( const char *pszText );
 	virtual void HideToolTip( void );
 	virtual void AdjustToolTipSize( void );
 

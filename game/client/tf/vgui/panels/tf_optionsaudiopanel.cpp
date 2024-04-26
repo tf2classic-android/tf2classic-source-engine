@@ -8,7 +8,6 @@
 
 #include "controls/tf_cvarslider.h"
 #include "tf_mainmenu.h"
-#include "controls/tf_scriptobject.h"
 #include "controls/tf_cvartogglecheckbutton.h"
 #include "controls/tf_cvarslider.h"
 #include "controls/tf_advpanellistpanel.h"
@@ -39,9 +38,9 @@ enum SoundQuality_e
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFOptionsAudioPanel::CTFOptionsAudioPanel(vgui::Panel *parent, const char *panelName) : CTFDialogPanelBase(parent, panelName)
+CTFOptionsAudioPanel::CTFOptionsAudioPanel( vgui::Panel *parent, const char *panelName ) : CTFDialogPanelBase( parent, panelName )
 {
-	Init();
+	m_pListPanel = new CPanelListPanel( this, "PanelListPanel" );
 }
 
 //-----------------------------------------------------------------------------
@@ -51,23 +50,14 @@ CTFOptionsAudioPanel::~CTFOptionsAudioPanel()
 {
 }
 
-
-bool CTFOptionsAudioPanel::Init()
-{
-	BaseClass::Init();
-
-	m_pListPanel = new CPanelListPanel(this, "PanelListPanel");
-	return true;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: sets background color & border
 //-----------------------------------------------------------------------------
-void CTFOptionsAudioPanel::ApplySchemeSettings(IScheme *pScheme)
+void CTFOptionsAudioPanel::ApplySchemeSettings( IScheme *pScheme )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	LoadControlSettings("resource/UI/main_menu/OptionsAudio.res");
+	LoadControlSettings( "resource/UI/main_menu/OptionsAudio.res" );
 }
 
 void CTFOptionsAudioPanel::CreateControls()
@@ -75,48 +65,48 @@ void CTFOptionsAudioPanel::CreateControls()
 	BaseClass::CreateControls();
 
 	Label *pTitleVolume = new Label( this, "DescTextTitle", "Volume" );
-	m_pSFXSlider = new CTFCvarSlider(this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume", true);
-	m_pMusicSlider = new CTFCvarSlider(this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "Snd_MusicVolume", true);
+	m_pSFXSlider = new CTFCvarSlider( this, "SFXSlider", 0.0f, 1.0f, "volume", true );
+	m_pMusicSlider = new CTFCvarSlider( this, "MusicSlider", 0.0f, 1.0f, "Snd_MusicVolume", true );
 
 	Label *pTitleSettings = new Label( this, "DescTextTitle", "Settings" );
-	m_pCloseCaptionCombo = new ComboBox(this, "CloseCaptionCheck", 6, false);
-	m_pCloseCaptionCombo->AddItem("#GameUI_NoClosedCaptions", NULL);
-	m_pCloseCaptionCombo->AddItem("#GameUI_SubtitlesAndSoundEffects", NULL);
-	m_pCloseCaptionCombo->AddItem("#GameUI_Subtitles", NULL);
+	m_pCloseCaptionCombo = new ComboBox( this, "CloseCaptionCheck", 6, false );
+	m_pCloseCaptionCombo->AddItem( "#GameUI_NoClosedCaptions", NULL );
+	m_pCloseCaptionCombo->AddItem( "#GameUI_SubtitlesAndSoundEffects", NULL );
+	m_pCloseCaptionCombo->AddItem( "#GameUI_Subtitles", NULL );
 
-	m_pSoundQualityCombo = new ComboBox(this, "SoundQuality", 6, false);
-	m_pSoundQualityCombo->AddItem("#GameUI_High", new KeyValues("SoundQuality", "quality", SOUNDQUALITY_HIGH));
-	m_pSoundQualityCombo->AddItem("#GameUI_Medium", new KeyValues("SoundQuality", "quality", SOUNDQUALITY_MEDIUM));
-	m_pSoundQualityCombo->AddItem("#GameUI_Low", new KeyValues("SoundQuality", "quality", SOUNDQUALITY_LOW));
+	m_pSoundQualityCombo = new ComboBox( this, "SoundQuality", 6, false );
+	m_pSoundQualityCombo->AddItem( "#GameUI_High", new KeyValues( "SoundQuality", "quality", SOUNDQUALITY_HIGH ) );
+	m_pSoundQualityCombo->AddItem( "#GameUI_Medium", new KeyValues( "SoundQuality", "quality", SOUNDQUALITY_MEDIUM ) );
+	m_pSoundQualityCombo->AddItem( "#GameUI_Low", new KeyValues( "SoundQuality", "quality", SOUNDQUALITY_LOW ) );
 
-	m_pSpeakerSetupCombo = new ComboBox(this, "SpeakerSetup", 6, false);
-	m_pSpeakerSetupCombo->AddItem("#GameUI_Headphones", new KeyValues("SpeakerSetup", "speakers", 0));
-	m_pSpeakerSetupCombo->AddItem("#GameUI_2Speakers", new KeyValues("SpeakerSetup", "speakers", 2));
-	m_pSpeakerSetupCombo->AddItem("#GameUI_4Speakers", new KeyValues("SpeakerSetup", "speakers", 4));
-	m_pSpeakerSetupCombo->AddItem("#GameUI_5Speakers", new KeyValues("SpeakerSetup", "speakers", 5));
-	m_pSpeakerSetupCombo->AddItem("#GameUI_7Speakers", new KeyValues("SpeakerSetup", "speakers", 7));
+	m_pSpeakerSetupCombo = new ComboBox( this, "SpeakerSetup", 6, false );
+	m_pSpeakerSetupCombo->AddItem( "#GameUI_Headphones", new KeyValues( "SpeakerSetup", "speakers", 0 ) );
+	m_pSpeakerSetupCombo->AddItem( "#GameUI_2Speakers", new KeyValues( "SpeakerSetup", "speakers", 2 ) );
+	m_pSpeakerSetupCombo->AddItem( "#GameUI_4Speakers", new KeyValues( "SpeakerSetup", "speakers", 4 ) );
+	m_pSpeakerSetupCombo->AddItem( "#GameUI_5Speakers", new KeyValues( "SpeakerSetup", "speakers", 5 ) );
+	m_pSpeakerSetupCombo->AddItem( "#GameUI_7Speakers", new KeyValues( "SpeakerSetup", "speakers", 7 ) );
 
-	m_pSpokenLanguageCombo = new ComboBox(this, "AudioSpokenLanguage", 6, false);
+	m_pSpokenLanguageCombo = new ComboBox( this, "AudioSpokenLanguage", 6, false );
 
-	AddControl(pTitleVolume, O_CATEGORY);
-	AddControl(m_pSFXSlider, O_SLIDER);
-	AddControl(m_pMusicSlider, O_SLIDER);
-	AddControl(pTitleSettings, O_CATEGORY);
-	AddControl(m_pSpeakerSetupCombo, O_LIST, "#GameUI_SpeakerConfiguration");
-	AddControl(m_pSoundQualityCombo, O_LIST, "#GameUI_SoundQuality");
-	AddControl(m_pSpokenLanguageCombo, O_LIST, "#GAMEUI_AudioSpokenLanguage");
-	AddControl(m_pCloseCaptionCombo, O_LIST, "#GameUI_Captioning");
+	AddControl( pTitleVolume, O_CATEGORY );
+	AddControl( m_pSFXSlider, O_SLIDER, "#GameUI_SoundEffectVolume" );
+	AddControl( m_pMusicSlider, O_SLIDER, "#GameUI_MusicVolume" );
+	AddControl( pTitleSettings, O_CATEGORY );
+	AddControl( m_pSpeakerSetupCombo, O_LIST, "#GameUI_SpeakerConfiguration" );
+	AddControl( m_pSoundQualityCombo, O_LIST, "#GameUI_SoundQuality" );
+	AddControl( m_pSpokenLanguageCombo, O_LIST, "#GAMEUI_AudioSpokenLanguage" );
+	AddControl( m_pCloseCaptionCombo, O_LIST, "#GameUI_Captioning" );
 
 
 	//Voice settings:
 	Label *pTitleVoice = new Label( this, "DescTextTitle", "Voice" );
 
-	m_pReceiveVolume = new CTFCvarSlider(this, "VoiceReceive", "#GameUI_ReceiveVolume", 0.0f, 1.0f, "voice_scale");
-	m_pVoiceEnableCheckButton = new CTFCvarToggleCheckButton(this, "voice_modenable", "#GameUI_EnableVoice", "voice_modenable");
+	m_pReceiveVolume = new CTFCvarSlider( this, "VoiceReceive", 0.0f, 1.0f, "voice_scale" );
+	m_pVoiceEnableCheckButton = new CTFCvarToggleCheckButton( this, "voice_modenable", "#GameUI_EnableVoice", "voice_modenable" );
 
-	AddControl(pTitleVoice, O_CATEGORY);
-	AddControl(m_pVoiceEnableCheckButton, O_BOOL);
-	AddControl(m_pReceiveVolume, O_SLIDER);
+	AddControl( pTitleVoice, O_CATEGORY );
+	AddControl( m_pVoiceEnableCheckButton, O_BOOL );
+	AddControl( m_pReceiveVolume, O_SLIDER, "#GameUI_ReceiveVolume" );
 }
 
 void CTFOptionsAudioPanel::DestroyControls()
@@ -135,111 +125,111 @@ void CTFOptionsAudioPanel::OnResetData()
 	m_pSFXSlider->Reset();
 	m_pMusicSlider->Reset();
 
-
 	// reset the combo boxes
 
 	// close captions
-	ConVarRef closecaption("closecaption");
-	ConVarRef cc_subtitles("cc_subtitles");
-	if (closecaption.GetBool())
+	ConVarRef closecaption( "closecaption" );
+	ConVarRef cc_subtitles( "cc_subtitles" );
+	if ( closecaption.GetBool() )
 	{
-		if (cc_subtitles.GetBool())
+		if ( cc_subtitles.GetBool() )
 		{
-			m_pCloseCaptionCombo->ActivateItem(2);
+			m_pCloseCaptionCombo->SilentActivateItem( 2 );
 		}
 		else
 		{
-			m_pCloseCaptionCombo->ActivateItem(1);
+			m_pCloseCaptionCombo->SilentActivateItem( 1 );
 		}
 	}
 	else
 	{
-		m_pCloseCaptionCombo->ActivateItem(0);
+		m_pCloseCaptionCombo->SilentActivateItem( 0 );
 	}
 
 	// speakers
-	ConVarRef snd_surround_speakers("Snd_Surround_Speakers");
+	ConVarRef snd_surround_speakers( "Snd_Surround_Speakers" );
 	int speakers = snd_surround_speakers.GetInt();
-	{for (int itemID = 0; itemID < m_pSpeakerSetupCombo->GetItemCount(); itemID++)
+	for ( int itemID = 0; itemID < m_pSpeakerSetupCombo->GetItemCount(); itemID++ )
 	{
-		KeyValues *kv = m_pSpeakerSetupCombo->GetItemUserData(itemID);
-		if (kv && kv->GetInt("speakers") == speakers)
+		KeyValues *kv = m_pSpeakerSetupCombo->GetItemUserData( itemID );
+		if ( kv && kv->GetInt( "speakers" ) == speakers )
 		{
-			m_pSpeakerSetupCombo->ActivateItem(itemID);
+			m_pSpeakerSetupCombo->SilentActivateItem( itemID );
 		}
-	}}
-	
+	}
+
 	// sound quality is made up from several cvars
-	ConVarRef Snd_PitchQuality("Snd_PitchQuality");
-	ConVarRef dsp_slow_cpu("dsp_slow_cpu");
+	ConVarRef Snd_PitchQuality( "Snd_PitchQuality" );
+	ConVarRef dsp_slow_cpu( "dsp_slow_cpu" );
 	int quality = SOUNDQUALITY_LOW;
-	if (dsp_slow_cpu.GetBool() == false)
+	if ( dsp_slow_cpu.GetBool() == false )
 	{
 		quality = SOUNDQUALITY_MEDIUM;
 	}
-	if (Snd_PitchQuality.GetBool())
+	if ( Snd_PitchQuality.GetBool() )
 	{
 		quality = SOUNDQUALITY_HIGH;
 	}
-	// find the item in the list and activate it
-	{for (int itemID = 0; itemID < m_pSoundQualityCombo->GetItemCount(); itemID++)
-	{
-		KeyValues *kv = m_pSoundQualityCombo->GetItemUserData(itemID);
-		if (kv && kv->GetInt("quality") == quality)
-		{
-			m_pSoundQualityCombo->ActivateItem(itemID);
-		}
-	}}
 
-   //
-   // Audio Languages
-   //
+	// find the item in the list and activate it
+	for ( int itemID = 0; itemID < m_pSoundQualityCombo->GetItemCount(); itemID++ )
+	{
+		KeyValues *kv = m_pSoundQualityCombo->GetItemUserData( itemID );
+		if ( kv && kv->GetInt( "quality" ) == quality )
+		{
+			m_pSoundQualityCombo->SilentActivateItem( itemID );
+		}
+	}
+
+	//
+	// Audio Languages
+	//
 	const char *szCurrentLanguage = NULL;
 	const char *szAvailableLanguages = NULL;
 
 	// When Steam isn't running we can't get the language info... 
-	if (steamapicontext->SteamApps())
+	if ( steamapicontext->SteamApps() )
 	{
 		szCurrentLanguage = steamapicontext->SteamApps()->GetCurrentGameLanguage();
 		szAvailableLanguages = szCurrentLanguage; /*steamapicontext->SteamApps()->GetAvailableGameLanguages()*/
 	}
-   
-   // Get the spoken language and store it for comparison purposes
-   m_nCurrentAudioLanguage = PchLanguageToELanguage( szCurrentLanguage );
 
-   // Check to see if we have a list of languages from Steam
-   if (szAvailableLanguages)
-   {
-      // Populate the combo box with each available language
-      CUtlVector<char*> languagesList;
-      V_SplitString( szAvailableLanguages, ",", languagesList );
+	// Get the spoken language and store it for comparison purposes
+	m_nCurrentAudioLanguage = PchLanguageToELanguage( szCurrentLanguage );
 
-      for ( int i=0; i < languagesList.Count(); i++ )
-      {
-         const ELanguage languageCode = PchLanguageToELanguage( languagesList[i] );
-         m_pSpokenLanguageCombo->AddItem( GetLanguageVGUILocalization( languageCode ), new KeyValues ("Audio Languages", "language", languageCode) );
-      }
-   }
-   else
-   {
-      // Add the current language to the combo
-      m_pSpokenLanguageCombo->AddItem( GetLanguageVGUILocalization( m_nCurrentAudioLanguage ), new KeyValues ("Audio Languages", "language", m_nCurrentAudioLanguage) );
-   }
+	// Check to see if we have a list of languages from Steam
+	if ( szAvailableLanguages )
+	{
+		// Populate the combo box with each available language
+		CUtlVector<char*> languagesList;
+		V_SplitString( szAvailableLanguages, ",", languagesList );
 
-   // Activate the current language in the combo
-   {for (int itemID = 0; itemID < m_pSpokenLanguageCombo->GetItemCount(); itemID++)
-   {
-      KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData( itemID );
-      if ( kv && kv->GetInt( "language" ) == m_nCurrentAudioLanguage )
-      {
-         m_pSpokenLanguageCombo->ActivateItem( itemID );
-         break;
-      }
-   }}
+		for ( int i = 0; i < languagesList.Count(); i++ )
+		{
+			const ELanguage languageCode = PchLanguageToELanguage( languagesList[i] );
+			m_pSpokenLanguageCombo->AddItem( GetLanguageVGUILocalization( languageCode ), new KeyValues( "Audio Languages", "language", languageCode ) );
+		}
+	}
+	else
+	{
+		// Add the current language to the combo
+		m_pSpokenLanguageCombo->AddItem( GetLanguageVGUILocalization( m_nCurrentAudioLanguage ), new KeyValues( "Audio Languages", "language", m_nCurrentAudioLanguage ) );
+	}
 
-   //Voice settings:
-   m_pReceiveVolume->Reset();
-   m_pVoiceEnableCheckButton->Reset();
+	// Activate the current language in the combo
+	for ( int itemID = 0; itemID < m_pSpokenLanguageCombo->GetItemCount(); itemID++ )
+	{
+		KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData( itemID );
+		if ( kv && kv->GetInt( "language" ) == m_nCurrentAudioLanguage )
+		{
+			m_pSpokenLanguageCombo->SilentActivateItem( itemID );
+			break;
+		}
+	}
+
+	//Voice settings:
+	m_pReceiveVolume->Reset();
+	m_pVoiceEnableCheckButton->Reset();
 }
 
 //-----------------------------------------------------------------------------
@@ -260,7 +250,7 @@ void CTFOptionsAudioPanel::OnApplyChanges()
 	int closecaption_value = 0;
 
 	ConVarRef cc_subtitles( "cc_subtitles" );
-	switch (m_pCloseCaptionCombo->GetActiveItem())
+	switch ( m_pCloseCaptionCombo->GetActiveItem() )
 	{
 	default:
 	case 0:
@@ -280,8 +270,8 @@ void CTFOptionsAudioPanel::OnApplyChanges()
 	// Stuff the close caption change to the console so that it can be
 	//  sent to the server (FCVAR_USERINFO) so that you don't have to restart
 	//  the level for the change to take effect.
-	char cmd[ 64 ];
-	Q_snprintf( cmd, sizeof( cmd ), "closecaption %i\n", closecaption_value );
+	char cmd[64];
+	V_sprintf_safe( cmd, "closecaption %i\n", closecaption_value );
 	engine->ClientCmd_Unrestricted( cmd );
 
 	ConVarRef snd_surround_speakers( "Snd_Surround_Speakers" );
@@ -295,24 +285,24 @@ void CTFOptionsAudioPanel::OnApplyChanges()
 	switch ( quality )
 	{
 	case SOUNDQUALITY_LOW:
-		dsp_slow_cpu.SetValue(true);
-		Snd_PitchQuality.SetValue(false);
+		dsp_slow_cpu.SetValue( true );
+		Snd_PitchQuality.SetValue( false );
 		break;
 	case SOUNDQUALITY_MEDIUM:
-		dsp_slow_cpu.SetValue(false);
-		Snd_PitchQuality.SetValue(false);
+		dsp_slow_cpu.SetValue( false );
+		Snd_PitchQuality.SetValue( false );
 		break;
 	default:
-		Assert("Undefined sound quality setting.");
+		Assert( "Undefined sound quality setting." );
 	case SOUNDQUALITY_HIGH:
-		dsp_slow_cpu.SetValue(false);
-		Snd_PitchQuality.SetValue(true);
+		dsp_slow_cpu.SetValue( false );
+		Snd_PitchQuality.SetValue( true );
 		break;
 	};
 
 	// headphones at high quality get enhanced stereo turned on
 	ConVarRef dsp_enhance_stereo( "dsp_enhance_stereo" );
-	if (speakers == 0 && quality == SOUNDQUALITY_HIGH)
+	if ( speakers == 0 && quality == SOUNDQUALITY_HIGH )
 	{
 		dsp_enhance_stereo.SetValue( 1 );
 	}
@@ -321,30 +311,30 @@ void CTFOptionsAudioPanel::OnApplyChanges()
 		dsp_enhance_stereo.SetValue( 0 );
 	}
 
-   // Audio spoken language
-   KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData( m_pSpokenLanguageCombo->GetActiveItem() );
-   const ELanguage nUpdatedAudioLanguage = (ELanguage)( kv ? kv->GetInt( "language" ) : k_Lang_English );
+	// Audio spoken language
+	KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData( m_pSpokenLanguageCombo->GetActiveItem() );
+	const ELanguage nUpdatedAudioLanguage = (ELanguage)( kv ? kv->GetInt( "language" ) : k_Lang_English );
 
-   if ( nUpdatedAudioLanguage != m_nCurrentAudioLanguage )
-   {
-      // Store new language in static member so that it can be accessed during shutdown when this instance is gone
-      m_pchUpdatedAudioLanguage = (char *) GetLanguageShortName( nUpdatedAudioLanguage );
-      
-      // Inform user that they need to restart in order change language at this time
-      QueryBox *qb = new QueryBox( "#GameUI_ChangeLanguageRestart_Title", "#GameUI_ChangeLanguageRestart_Info", GetParent()->GetParent()->GetParent() );
-      if (qb != NULL)
-      {
-         qb->SetOKCommand( new KeyValues( "Command", "command", "RestartWithNewLanguage" ) );
-         qb->SetOKButtonText( "#GameUI_ChangeLanguageRestart_OkButton" );
-         qb->SetCancelButtonText( "#GameUI_ChangeLanguageRestart_CancelButton" );
-         qb->AddActionSignalTarget( GetParent()->GetParent()->GetParent() );
-         qb->DoModal();
-      }
-   }
+	if ( nUpdatedAudioLanguage != m_nCurrentAudioLanguage )
+	{
+		// Store new language in static member so that it can be accessed during shutdown when this instance is gone
+		m_pchUpdatedAudioLanguage = (char *)GetLanguageShortName( nUpdatedAudioLanguage );
 
-   // Voice settings
-   m_pReceiveVolume->ApplyChanges();
-   m_pVoiceEnableCheckButton->ApplyChanges();
+		// Inform user that they need to restart in order change language at this time
+		QueryBox *qb = new QueryBox( "#GameUI_ChangeLanguageRestart_Title", "#GameUI_ChangeLanguageRestart_Info", GetParent()->GetParent()->GetParent() );
+		if ( qb != NULL )
+		{
+			qb->SetOKCommand( new KeyValues( "Command", "command", "RestartWithNewLanguage" ) );
+			qb->SetOKButtonText( "#GameUI_ChangeLanguageRestart_OkButton" );
+			qb->SetCancelButtonText( "#GameUI_ChangeLanguageRestart_CancelButton" );
+			qb->AddActionSignalTarget( GetParent()->GetParent()->GetParent() );
+			qb->DoModal();
+		}
+	}
+
+	// Voice settings
+	m_pReceiveVolume->ApplyChanges();
+	m_pVoiceEnableCheckButton->ApplyChanges();
 }
 
 //-----------------------------------------------------------------------------
@@ -352,7 +342,7 @@ void CTFOptionsAudioPanel::OnApplyChanges()
 //-----------------------------------------------------------------------------
 void CTFOptionsAudioPanel::OnControlModified()
 {
-	PostActionSignal(new KeyValues("ApplyButtonEnable"));
+	PostActionSignal( new KeyValues( "ApplyButtonEnable" ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -360,7 +350,7 @@ void CTFOptionsAudioPanel::OnControlModified()
 //-----------------------------------------------------------------------------
 void CTFOptionsAudioPanel::OnTextChanged()
 {
-
+	OnControlModified();
 }
 
 //-----------------------------------------------------------------------------
@@ -380,14 +370,14 @@ void CTFOptionsAudioPanel::OnCommand( const char *command )
 	if ( !stricmp( command, "TestSpeakers" ) )
 	{
 		// ask them if they REALLY want to test the speakers if they're in a game already.
-		if (engine->IsConnected())
+		if ( engine->IsConnected() )
 		{
-			QueryBox *qb = new QueryBox("#GameUI_TestSpeakersWarning_Title", "#GameUI_TestSpeakersWarning_Info" );
-			if (qb != NULL)
+			QueryBox *qb = new QueryBox( "#GameUI_TestSpeakersWarning_Title", "#GameUI_TestSpeakersWarning_Info" );
+			if ( qb != NULL )
 			{
-				qb->SetOKCommand(new KeyValues("RunTestSpeakers"));
-				qb->SetOKButtonText("#GameUI_TestSpeakersWarning_OkButton");
-				qb->SetCancelButtonText("#GameUI_TestSpeakersWarning_CancelButton");
+				qb->SetOKCommand( new KeyValues( "RunTestSpeakers" ) );
+				qb->SetOKButtonText( "#GameUI_TestSpeakersWarning_OkButton" );
+				qb->SetCancelButtonText( "#GameUI_TestSpeakersWarning_CancelButton" );
 				qb->AddActionSignalTarget( this );
 				qb->DoModal();
 			}
@@ -410,7 +400,7 @@ void CTFOptionsAudioPanel::OnCommand( const char *command )
 	}
 	else
 	{
-		BaseClass::OnCommand(command);
+		BaseClass::OnCommand( command );
 	}
 }
 
@@ -427,39 +417,39 @@ void CTFOptionsAudioPanel::RunTestSpeakers()
 //-----------------------------------------------------------------------------
 class CTFOptionsAudioPanelThirdPartyCreditsDlg : public vgui::Frame
 {
-   DECLARE_CLASS_SIMPLE( CTFOptionsAudioPanelThirdPartyCreditsDlg, vgui::Frame );
+	DECLARE_CLASS_SIMPLE( CTFOptionsAudioPanelThirdPartyCreditsDlg, vgui::Frame );
 public:
-   CTFOptionsAudioPanelThirdPartyCreditsDlg( vgui::VPANEL hParent ) : BaseClass( NULL, NULL )
-   {
-      // parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
+	CTFOptionsAudioPanelThirdPartyCreditsDlg( vgui::VPANEL hParent ) : BaseClass( NULL, NULL )
+	{
+		// parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
 
-      SetTitle("#GameUI_ThirdPartyAudio_Title", true);
-      SetSize( 500, 200 );
-      LoadControlSettings( "resource/OptionsSubAudioThirdPartyDlg.res" );
-      MoveToCenterOfScreen();
-      SetSizeable( false );
-      SetDeleteSelfOnClose( true );
-   }
+		SetTitle( "#GameUI_ThirdPartyAudio_Title", true );
+		SetSize( 500, 200 );
+		LoadControlSettings( "resource/OptionsSubAudioThirdPartyDlg.res" );
+		MoveToCenterOfScreen();
+		SetSizeable( false );
+		SetDeleteSelfOnClose( true );
+	}
 
-   virtual void Activate()
-   {
-      BaseClass::Activate();
+	virtual void Activate()
+	{
+		BaseClass::Activate();
 
-      input()->SetAppModalSurface(GetVPanel());
-   }
+		input()->SetAppModalSurface( GetVPanel() );
+	}
 
-   void OnKeyCodeTyped(KeyCode code)
-   {
-      // force ourselves to be closed if the escape key it pressed
-      if (code == KEY_ESCAPE)
-      {
-         Close();
-      }
-      else
-      {
-         BaseClass::OnKeyCodeTyped(code);
-      }
-   }
+	void OnKeyCodeTyped( KeyCode code )
+	{
+		// force ourselves to be closed if the escape key it pressed
+		if ( code == KEY_ESCAPE )
+		{
+			Close();
+		}
+		else
+		{
+			BaseClass::OnKeyCodeTyped( code );
+		}
+	}
 };
 
 
@@ -468,9 +458,9 @@ public:
 //-----------------------------------------------------------------------------
 void CTFOptionsAudioPanel::OpenThirdPartySoundCreditsDialog()
 {
-   if (!m_OptionsSubAudioThirdPartyCreditsDlg.Get())
-   {
-      m_OptionsSubAudioThirdPartyCreditsDlg = new CTFOptionsAudioPanelThirdPartyCreditsDlg(GetVParent());
-   }
-   m_OptionsSubAudioThirdPartyCreditsDlg->Activate();
+	if ( !m_OptionsSubAudioThirdPartyCreditsDlg.Get() )
+	{
+		m_OptionsSubAudioThirdPartyCreditsDlg = new CTFOptionsAudioPanelThirdPartyCreditsDlg( GetVParent() );
+	}
+	m_OptionsSubAudioThirdPartyCreditsDlg->Activate();
 }

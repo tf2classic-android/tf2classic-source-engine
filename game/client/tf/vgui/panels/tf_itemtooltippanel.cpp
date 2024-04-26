@@ -3,7 +3,6 @@
 #include "tf_mainmenupanel.h"
 #include "tf_mainmenu.h"
 #include "controls/tf_advbuttonbase.h"
-#include "controls/tf_advmodelpanel.h"
 #include <vgui/ILocalize.h>
 #include <vgui_controls/TextImage.h>
 
@@ -17,7 +16,6 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CTFItemToolTipPanel::CTFItemToolTipPanel( Panel *parent, const char *panelName ) : CTFToolTipPanel( parent, panelName )
 {
-	m_pClassModelPanel = new CTFAdvModelPanel( this, "classmodelpanel" );
 	m_pTitle = new CExLabel( this, "TitleLabel", "Title" );
 	m_pClassName = new CExLabel( this, "ClassNameLabel", "ClassName" );
 	m_pAttributeText = new CExLabel( this, "AttributeLabel", "Attribute" );

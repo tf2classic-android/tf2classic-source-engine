@@ -8,19 +8,42 @@
 #include "engine/IEngineSound.h"
 #include "vgui_avatarimage.h"
 #include "git_info.h"
+#include <vgui/ISurface.h>
+#include <vgui_controls/AnimationController.h>
+#include "filesystem.h"
 
-using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar tf2c_mainmenu_music("tf2c_mainmenu_music", "1", FCVAR_ARCHIVE, "Toggle music in the main menu");
+using namespace vgui;
+
+ConVar tf2c_mainmenu_music( "tf2c_mainmenu_music", "1", FCVAR_ARCHIVE, "Toggle music in the main menu" );
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFMainMenuPanel::CTFMainMenuPanel(vgui::Panel* parent, const char *panelName) : CTFMenuPanelBase(parent, panelName)
+CTFMainMenuPanel::CTFMainMenuPanel( Panel* parent, const char *panelName ) : CTFMenuPanelBase( parent, panelName )
 {
-	Init();
+	SetKeyBoardInputEnabled( true );
+	SetMouseInputEnabled( true );
+
+	m_pVersionLabel = new CExLabel( this, "VersionLabel", "" );
+	m_pNotificationButton = new CTFButton( this, "NotificationButton", "" );
+	m_pProfileAvatar = new CAvatarImagePanel( this, "AvatarImage" );
+	m_pFakeBGImage = new ImagePanel( this, "FakeBGImage" );
+
+	m_psMusicStatus = MUSIC_FIND;
+	m_pzMusicLink[0] = '\0';
+	m_nSongGuid = 0;
+
+	if ( steamapicontext->SteamUser() )
+	{
+		m_SteamID = steamapicontext->SteamUser()->GetSteamID();
+	}
+
+	m_iShowFakeIntro = 4;
+
+	ivgui()->AddTickSignal( GetVPanel() );
 }
 
 //-----------------------------------------------------------------------------
@@ -31,53 +54,19 @@ CTFMainMenuPanel::~CTFMainMenuPanel()
 
 }
 
-bool CTFMainMenuPanel::Init()
+void CTFMainMenuPanel::ApplySchemeSettings( IScheme *pScheme )
 {
-	BaseClass::Init();
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	m_psMusicStatus = MUSIC_FIND;
-	m_pzMusicLink[0] = '\0';
-	m_nSongGuid = 0;
-
-	if (steamapicontext->SteamUser())
-	{
-		m_SteamID = steamapicontext->SteamUser()->GetSteamID();
-	}
-
-	m_iShowFakeIntro = 4;
-	m_pVersionLabel = NULL;
-	m_pNotificationButton = NULL;
-	m_pProfileAvatar = NULL;
-	m_pFakeBGImage = NULL;
-
-	bInMenu = true;
-	bInGame = false;
-	return true;
-}
-
-
-void CTFMainMenuPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	LoadControlSettings("resource/UI/main_menu/MainMenuPanel.res");
-	m_pVersionLabel = dynamic_cast<CExLabel *>(FindChildByName("VersionLabel"));
-	m_pNotificationButton = dynamic_cast<CTFButton *>(FindChildByName("NotificationButton"));
-	m_pProfileAvatar = dynamic_cast<CAvatarImagePanel *>(FindChildByName("AvatarImage"));
-	m_pFakeBGImage = dynamic_cast<vgui::ImagePanel *>(FindChildByName("FakeBGImage"));
+	LoadControlSettings( "resource/UI/main_menu/MainMenuPanel.res" );
 
 	SetVersionLabel();
-}	
+}
 
 void CTFMainMenuPanel::PerformLayout()
 {
-	BaseClass::PerformLayout();
-
-	if( m_pProfileAvatar )
-	{
-		m_pProfileAvatar->SetPlayer(m_SteamID, k_EAvatarSize64x64);
-		m_pProfileAvatar->SetShouldDrawFriendIcon(false);
-	}
+	m_pProfileAvatar->SetPlayer( m_SteamID, k_EAvatarSize64x64 );
+	m_pProfileAvatar->SetShouldDrawFriendIcon( false );
 
 	char szNickName[64];
 #if 0
@@ -85,99 +74,95 @@ void CTFMainMenuPanel::PerformLayout()
 		(steamapicontext->SteamFriends() ? steamapicontext->SteamFriends()->GetPersonaName() : "Unknown"));
 #else
 	ConVarRef playername( "name" );
-	Q_snprintf(szNickName, sizeof(szNickName),
-		"%s", playername.GetString() ); // smells like semen in the air
+	Q_snprintf(szNickName, sizeof(szNickName), "%s", playername.GetString() );
 #endif
 	SetDialogVariable("nickname", szNickName);
 
 	OnNotificationUpdate();
-	AutoLayout();
 
-	if (m_iShowFakeIntro > 0)
+	if ( m_iShowFakeIntro > 0 )
 	{
 		char szBGName[128];
-		engine->GetMainMenuBackgroundName(szBGName, sizeof(szBGName));
+		engine->GetMainMenuBackgroundName( szBGName, sizeof( szBGName ) );
 		char szImage[128];
-		Q_snprintf(szImage, sizeof(szImage), "../console/%s", szBGName);
+		V_sprintf_safe( szImage, "../console/%s", szBGName );
 		int width, height;
-		surface()->GetScreenSize(width, height);
+		surface()->GetScreenSize( width, height );
 		float fRatio = (float)width / (float)height;
-		bool bWidescreen = (fRatio < 1.5 ? false : true);
-		if (bWidescreen)
-			Q_strcat(szImage, "_widescreen", sizeof(szImage));
-		m_pFakeBGImage->SetImage(szImage);
-		m_pFakeBGImage->SetVisible(true);
-		m_pFakeBGImage->SetAlpha(255);
+		bool bWidescreen = ( fRatio < 1.5 ? false : true );
+		if ( bWidescreen )
+			V_strcat_safe( szImage, "_widescreen" );
+		m_pFakeBGImage->SetImage( szImage );
+		m_pFakeBGImage->SetVisible( true );
+		m_pFakeBGImage->SetAlpha( 255 );
 	}
-};
+}
 
-void CTFMainMenuPanel::OnCommand(const char* command)
+void CTFMainMenuPanel::OnCommand( const char* command )
 {
-	if (!Q_strcmp(command, "newquit"))
+	if ( !V_stricmp( command, "newquit" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(QUIT_MENU);
+		guiroot->ShowPanel( QUIT_MENU );
 	}
-	else if (!Q_strcmp(command, "newoptionsdialog"))
+	else if ( !V_stricmp( command, "newoptionsdialog" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(OPTIONSDIALOG_MENU);
+		guiroot->ShowPanel( OPTIONSDIALOG_MENU );
 	}
-	else if (!Q_strcmp(command, "newloadout"))
+	else if ( !V_stricmp( command, "newloadout" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(LOADOUT_MENU);
+		guiroot->ShowPanel( LOADOUT_MENU );
 	}
-	else if (!Q_strcmp(command, "newcreateserver"))
+	else if ( !V_stricmp( command, "newcreateserver" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(CREATESERVER_MENU);
+		guiroot->ShowPanel( CREATESERVER_MENU );
 	}
-	else if (!Q_strcmp(command, "newstats"))
+	else if ( !V_stricmp( command, "newstats" ) )
 	{
-		MAINMENU_ROOT->ShowPanel(STATSUMMARY_MENU);
+		guiroot->ShowPanel( STATSUMMARY_MENU );
 	}
-	else if (!Q_strcmp(command, "checkversion"))
+	else if ( !V_stricmp( command, "checkversion" ) )
 	{
 		//MAINMENU_ROOT->CheckVersion();
 	}
-	else if (!Q_strcmp(command, "shownotification"))
+	else if (!V_stricmp( command, "shownotification" ) )
 	{
-		if (m_pNotificationButton)
+		if ( m_pNotificationButton )
 		{
-			m_pNotificationButton->SetGlowing(false);
+			m_pNotificationButton->SetGlowing( false );
 		}
-		MAINMENU_ROOT->ShowPanel(NOTIFICATION_MENU);
+		guiroot->ShowPanel( NOTIFICATION_MENU );
 	}
-	else if (!Q_strcmp(command, "testnotification"))
+	else if ( !V_stricmp( command, "testnotification" ) )
 	{
 		wchar_t resultString[128];
-		V_snwprintf(resultString, sizeof(resultString), L"test %d", GetNotificationManager()->GetNotificationsCount());
+		V_swprintf_safe( resultString, L"test %d", GetNotificationManager()->GetNotificationsCount() );
 		MessageNotification Notification(L"Yoyo", resultString, time( NULL ) );
-		GetNotificationManager()->SendNotification(Notification);
+		GetNotificationManager()->SendNotification( Notification );
 	}
-	else if (!Q_strcmp(command, "randommusic"))
+	else if ( !V_stricmp( command, "randommusic" ) )
 	{
-		enginesound->StopSoundByGuid(m_nSongGuid);
+		enginesound->StopSoundByGuid( m_nSongGuid );
 	}
-	else if (Q_strcmp(command, "gamemenucommand "))
+	else if ( V_stristr( command, "gamemenucommand " ) )
 	{
-		engine->ClientCmd(command);
+		engine->ClientCmd( command );
 	}
 	else
 	{
-		BaseClass::OnCommand(command);
+		BaseClass::OnCommand( command );
 	}
 }
 
 void CTFMainMenuPanel::OnTick()
 {
-	BaseClass::OnTick();
-
-	if( tf2c_mainmenu_music.GetBool() && !bInGameLayout )
+	if ( tf2c_mainmenu_music.GetBool() && !guiroot->IsInLevel() )
 	{
-		if ((m_psMusicStatus == MUSIC_FIND || m_psMusicStatus == MUSIC_STOP_FIND) && !enginesound->IsSoundStillPlaying(m_nSongGuid))
+		if ( ( m_psMusicStatus == MUSIC_FIND || m_psMusicStatus == MUSIC_STOP_FIND ) && !enginesound->IsSoundStillPlaying( m_nSongGuid ) )
 		{
 			GetRandomMusic(m_pzMusicLink, sizeof(m_pzMusicLink));
 			m_psMusicStatus = MUSIC_PLAY;
 		}
-		else if( ( m_psMusicStatus == MUSIC_PLAY || m_psMusicStatus == MUSIC_STOP_PLAY ) && m_pzMusicLink[0] != '\0' )
+		else if ( ( m_psMusicStatus == MUSIC_PLAY || m_psMusicStatus == MUSIC_STOP_PLAY ) && m_pzMusicLink[0] != '\0' )
 		{
 			enginesound->StopSoundByGuid(m_nSongGuid);
 			ConVar *snd_musicvolume = cvar->FindVar("snd_musicvolume");
@@ -187,88 +172,76 @@ void CTFMainMenuPanel::OnTick()
 			m_psMusicStatus = MUSIC_FIND;
 		}
 	}
-	else if( m_psMusicStatus == MUSIC_FIND )
+	else if ( m_psMusicStatus == MUSIC_FIND )
 	{
-		enginesound->StopSoundByGuid(m_nSongGuid);
-		m_psMusicStatus = (m_nSongGuid == 0 ? MUSIC_STOP_FIND : MUSIC_STOP_PLAY);
+		enginesound->StopSoundByGuid( m_nSongGuid );
+		m_psMusicStatus = ( m_nSongGuid == 0 ? MUSIC_STOP_FIND : MUSIC_STOP_PLAY );
 	}
-};
+}
 
 void CTFMainMenuPanel::OnThink()
 {
-	BaseClass::OnThink();
-
-	if (m_iShowFakeIntro > 0)
+	if ( m_iShowFakeIntro > 0 )
 	{
 		m_iShowFakeIntro--;
-		if (m_iShowFakeIntro == 0)
+		if ( m_iShowFakeIntro == 0 )
 		{
-			vgui::GetAnimationController()->RunAnimationCommand(m_pFakeBGImage, "Alpha", 0, 1.0f, 0.5f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE);
+			GetAnimationController()->RunAnimationCommand( m_pFakeBGImage, "Alpha", 0, 1.0f, 0.5f, AnimationController::INTERPOLATOR_SIMPLESPLINE );
 		}
 	}
 
-	if (m_pFakeBGImage->IsVisible() && m_pFakeBGImage->GetAlpha() == 0)
+	if ( m_pFakeBGImage->IsVisible() && m_pFakeBGImage->GetAlpha() == 0 )
 	{
-		m_pFakeBGImage->SetVisible(false);
+		m_pFakeBGImage->SetVisible( false );
 	}
-};
+}
 
 void CTFMainMenuPanel::Show()
 {
 	BaseClass::Show();
-	vgui::GetAnimationController()->RunAnimationCommand(this, "Alpha", 255, 0.0f, 0.5f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE);
-};
+
+	RequestFocus();
+}
 
 void CTFMainMenuPanel::Hide()
 {
 	BaseClass::Hide();
-	vgui::GetAnimationController()->RunAnimationCommand(this, "Alpha", 0, 0.0f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR);
-};
+}
 
-
-void CTFMainMenuPanel::DefaultLayout()
+void CTFMainMenuPanel::HideFakeIntro( void )
 {
-	BaseClass::DefaultLayout();
-};
-
-void CTFMainMenuPanel::GameLayout()
-{
-	BaseClass::GameLayout();
-};
-
-void CTFMainMenuPanel::PlayMusic()
-{
-
+	m_iShowFakeIntro = 0;
+	m_pFakeBGImage->SetVisible( false );
 }
 
 void CTFMainMenuPanel::OnNotificationUpdate()
 {
-	if (m_pNotificationButton)
+	if ( m_pNotificationButton )
 	{
-		if (GetNotificationManager()->GetNotificationsCount() > 0)
+		if ( GetNotificationManager()->GetNotificationsCount() > 0 )
 		{
-			m_pNotificationButton->SetVisible(true);
+			m_pNotificationButton->SetVisible( true );
 		}
 		else
 		{
-			m_pNotificationButton->SetVisible(false);
+			m_pNotificationButton->SetVisible( false );
 		}
 
-		if (GetNotificationManager()->GetUnreadNotificationsCount() > 0)
+		if ( GetNotificationManager()->GetUnreadNotificationsCount() > 0 )
 		{
-			m_pNotificationButton->SetGlowing(true);
+			m_pNotificationButton->SetGlowing( true );
 		}
 		else
 		{
-			m_pNotificationButton->SetGlowing(false);
+			m_pNotificationButton->SetGlowing( false );
 		}
 	}
 
-	if (GetNotificationManager()->IsOutdated())
+	if ( GetNotificationManager()->IsOutdated() )
 	{
-		if (m_pVersionLabel)
+		if ( m_pVersionLabel )
 		{
-			m_pVersionLabel->SetFgColor(Color(255, 20, 50, 200));
+			m_pVersionLabel->SetFgColor( Color( 255, 20, 50, 200 ) );
 		}
 	}
 };
@@ -276,15 +249,15 @@ void CTFMainMenuPanel::OnNotificationUpdate()
 extern ConVar tf2c_buildnum;
 void CTFMainMenuPanel::SetVersionLabel()  //GetVersionString
 {
-	if (m_pVersionLabel)
+	if ( m_pVersionLabel )
 	{
 		char verString[128];
-		Q_snprintf(verString, sizeof(verString), "Version: %s\nBuild: %d\nCommit: %s", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt(), GetNotificationManager()->GetVersionCommit());
-		m_pVersionLabel->SetText(verString);
+		Q_snprintf( verString, sizeof( verString ), "Version: %s\nBuild: %d\nCommit: %s", GetNotificationManager()->GetVersionName(), tf2c_buildnum.GetInt(), GetNotificationManager()->GetVersionCommit() );
+		m_pVersionLabel->SetText( verString );
 	}
 };
 
-void CTFMainMenuPanel::GetRandomMusic(char *pszBuf, int iBufLength)
+void CTFMainMenuPanel::GetRandomMusic( char *pszBuf, int iBufLength )
 {
 	Assert(iBufLength);
 

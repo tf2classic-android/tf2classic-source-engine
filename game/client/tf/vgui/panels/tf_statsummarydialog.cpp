@@ -25,13 +25,6 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CTFStatsSummaryDialog::CTFStatsSummaryDialog(vgui::Panel* parent, const char *panelName) : CTFDialogPanelBase(parent, panelName)
 {
-	Init();
-}
-
-bool CTFStatsSummaryDialog::Init()
-{
-	BaseClass::Init();
-
 	m_bControlsLoaded = false;
 	m_xStartLHBar = 0;
 	m_xStartRHBar = 0;
@@ -48,7 +41,6 @@ bool CTFStatsSummaryDialog::Init()
 	m_pClassComboBox->AddActionSignalTarget(this);
 
 	Reset();
-	return true;
 }
 
 //-----------------------------------------------------------------------------

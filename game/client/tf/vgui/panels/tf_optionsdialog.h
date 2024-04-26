@@ -15,18 +15,6 @@
 
 class CTFButton;
 
-enum OptionPanel
-{
-	PANEL_ADV,
-	PANEL_MOUSE,
-	PANEL_TOUCH,
-	PANEL_KEYBOARD,
-	PANEL_AUDIO,
-	PANEL_VIDEO,
-
-	PANEL_COUNT
-};
-
 //-----------------------------------------------------------------------------
 // Purpose: Holds all the game option pages
 //-----------------------------------------------------------------------------
@@ -37,10 +25,7 @@ class CTFOptionsDialog : public CTFDialogPanelBase
 public:
 	CTFOptionsDialog(vgui::Panel *parent, const char *panelName);
 	~CTFOptionsDialog();
-	bool Init();
-	void ApplySchemeSettings(vgui::IScheme *pScheme);
-	void Run();
-	virtual void Activate();
+	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 	virtual void OnCommand(const char *command);
 	virtual void Show();
 	virtual void Hide();
@@ -53,6 +38,18 @@ public:
 	MESSAGE_FUNC(OnApplyButtonEnabled, "ApplyButtonEnable" );
 
 private:
+	enum OptionPanel
+	{
+		PANEL_ADV,
+		PANEL_MOUSE,
+		PANEL_TOUCH,
+		PANEL_KEYBOARD,
+		PANEL_AUDIO,
+		PANEL_VIDEO,
+
+		PANEL_COUNT
+	};
+
 	void SetCurrentPanel(OptionPanel pCurrentPanel);
 	void AddPanel(CTFDialogPanelBase *m_pPanel, int iPanel);
 	CTFDialogPanelBase* GetPanel(int iPanel);

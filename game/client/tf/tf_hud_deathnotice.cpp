@@ -157,7 +157,7 @@ CHudElement( pElementName ), BaseClass( NULL, "HudDeathNotice" )
 	SetParent( pParent );
 
 	// This is needed for custom colors.
-	SetScheme( scheme()->LoadSchemeFromFile( "Resource/ClientScheme.res", "ClientScheme" ) );
+	SetScheme( scheme()->LoadSchemeFromFile( "Resource/ClientScheme_tf2c.res", "ClientScheme_tf2c" ) );
 }
 
 //-----------------------------------------------------------------------------

@@ -14,6 +14,7 @@
 #include "tf_imagepanel.h"
 #include "econ_item_schema.h"
 #include "vgui_controls/EditablePanel.h"
+#include "hudelement.h"
 
 class CTFWeaponInfo;
 

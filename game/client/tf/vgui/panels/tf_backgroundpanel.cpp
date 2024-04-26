@@ -2,6 +2,8 @@
 #include "tf_backgroundpanel.h"
 #include "tf_mainmenupanel.h"
 #include "tf_mainmenu.h"
+#include <vgui/ISurface.h>
+#include <filesystem.h>
 
 using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
@@ -13,9 +15,9 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CTFBackgroundPanel::CTFBackgroundPanel(vgui::Panel* parent, const char *panelName) : CTFMenuPanelBase(parent, panelName)
+CTFBackgroundPanel::CTFBackgroundPanel( vgui::Panel* parent, const char *panelName ) : CTFMenuPanelBase( parent, panelName )
 {
-	Init();
+	m_pVideo = new CTFVideoPanel( this, "BackgroundVideo" );
 }
 
 //-----------------------------------------------------------------------------
@@ -26,59 +28,40 @@ CTFBackgroundPanel::~CTFBackgroundPanel()
 
 }
 
-bool CTFBackgroundPanel::Init()
+void CTFBackgroundPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
-	BaseClass::Init();
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	m_pVideo = NULL;
-	bInMenu = true;
-	bInGame = false;
-	return true;
+	LoadControlSettings( "resource/UI/main_menu/BackgroundPanel.res" );
+
+	int width, height;
+	surface()->GetScreenSize( width, height );
+
+	float fRatio = (float)width / (float)height;
+	bool bWidescreen = ( fRatio < 1.5 ? false : true );
+
+	GetRandomVideo( m_szVideoFile, sizeof( m_szVideoFile ), bWidescreen );
+
+	float flRatio = ( bWidescreen ? DEFAULT_RATIO_WIDE : DEFAULT_RATIO );
+	int iWide = (float)height * flRatio + 4;
+	m_pVideo->SetBounds( -1, -1, iWide, iWide );
 }
 
-void CTFBackgroundPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
+void CTFBackgroundPanel::SetVisible( bool bVisible )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
+	BaseClass::SetVisible( bVisible );
 
-	LoadControlSettings("resource/UI/main_menu/BackgroundPanel.res");
-	m_pVideo = dynamic_cast<CTFVideoPanel *>(FindChildByName("BackgroundVideo"));
-
-	if (m_pVideo)
-	{
-		int width, height;
-		surface()->GetScreenSize(width, height);
-
-		float fRatio = (float)width / (float)height;
-		bool bWidescreen = (fRatio < 1.5 ? false : true);
-
-		Q_strncpy(m_pzVideoLink, GetRandomVideo(bWidescreen), sizeof(m_pzVideoLink));
-		float iRatio = (bWidescreen ? DEFAULT_RATIO_WIDE : DEFAULT_RATIO);
-		int iWide = (float)height * iRatio + 4;
-		m_pVideo->SetBounds(-1, -1, iWide, iWide);
-	}
-}
-
-void CTFBackgroundPanel::PerformLayout()
-{
-	BaseClass::PerformLayout();
-	AutoLayout();
-};
-
-
-void CTFBackgroundPanel::OnCommand(const char* command)
-{
-	BaseClass::OnCommand(command);
+	SetKeyBoardInputEnabled( false );
+	SetMouseInputEnabled( false );
+	VideoReplay();
 }
 
 void CTFBackgroundPanel::VideoReplay()
 {
-	if (!m_pVideo)
-		return;
-	
-	if (IsVisible() && m_pzVideoLink[0] != '\0' && !bInGameLayout)
+	if ( IsVisible() && m_szVideoFile[0] != '\0' )
 	{
 		m_pVideo->Activate();
-		m_pVideo->BeginPlaybackNoAudio(m_pzVideoLink);
+		m_pVideo->BeginPlaybackNoAudio( m_szVideoFile );
 	}
 	else
 	{
@@ -86,63 +69,26 @@ void CTFBackgroundPanel::VideoReplay()
 	}
 }
 
-void CTFBackgroundPanel::OnTick()
+void CTFBackgroundPanel::GetRandomVideo( char *pszBuf, int iBufLength, bool bWidescreen )
 {
-	BaseClass::OnTick();
-};
+	pszBuf[0] = '\0';
 
-void CTFBackgroundPanel::OnThink()
-{
-	BaseClass::OnThink();
-};
+	KeyValues *pVideoKeys = new KeyValues( "Videos" );
+	if ( pVideoKeys->LoadFromFile( filesystem, "media/menubackgrounds.txt", "MOD" ) == false )
+		return;
 
-void CTFBackgroundPanel::DefaultLayout()
-{
-	BaseClass::DefaultLayout();
-	VideoReplay();
-};
+	KeyValues *pGroupKey = pVideoKeys->FindKey( bWidescreen ? "widescreen" : "normal" );
+	if ( !pGroupKey )
+		return;
 
-void CTFBackgroundPanel::GameLayout()
-{
-	BaseClass::GameLayout();
-	VideoReplay();
-};
-
-char* CTFBackgroundPanel::GetRandomVideo(bool bWidescreen)
-{
-	char* pszBasePath = "media/bg_0";
-	int iCount = 0;
-
-	for (int i = 0; i < 9; i++)
+	CUtlVector<const char *> fileList;
+	for ( KeyValues *pSubData = pGroupKey->GetFirstSubKey(); pSubData; pSubData = pSubData->GetNextKey() )
 	{
-		char szPath[MAX_PATH];
-		char szNumber[5];
-		Q_snprintf(szNumber, sizeof(szNumber), "%d", iCount + 1);
-		Q_strncpy(szPath, pszBasePath, sizeof(szPath));
-		Q_strncat(szPath, szNumber, sizeof(szPath));
-		if (bWidescreen)
-			Q_strncat(szPath, "_widescreen", sizeof(szPath));
-		Q_strncat(szPath, ".bik", sizeof(szPath));
-		if (!g_pFullFileSystem->FileExists(szPath))
-		{
-			if (iCount)
-				break;
-			else
-				return "";
-		}
-		iCount++;
+		fileList.AddToTail( pSubData->GetString() );
 	}
 
-	int iRand = rand() % iCount;
-	char szPath[MAX_PATH];
-	char szNumber[5];
-	Q_snprintf(szNumber, sizeof(szNumber), "%d", iRand + 1);
-	Q_strncpy(szPath, pszBasePath, sizeof(szPath));
-	Q_strncat(szPath, szNumber, sizeof(szPath));
-	if (bWidescreen)
-		Q_strncat(szPath, "_widescreen", sizeof(szPath));
-	Q_strncat(szPath, ".bik", sizeof(szPath));
-	char *szResult = (char*)malloc(sizeof(szPath));
-	Q_strncpy(szResult, szPath, sizeof(szPath));
-	return szResult;
+	if ( fileList.Count() == 0 )
+		return;
+
+	V_strncpy( pszBuf, fileList.Random(), iBufLength );
 }

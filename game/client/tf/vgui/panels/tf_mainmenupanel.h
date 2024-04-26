@@ -3,7 +3,6 @@
 
 #include "tf_menupanelbase.h"
 #include "steam/steam_api.h"
-#include <vgui_controls/HTML.h>
 
 class CAvatarImagePanel;
 class CTFButton;
@@ -23,21 +22,22 @@ enum MusicStatus
 //-----------------------------------------------------------------------------
 class CTFMainMenuPanel : public CTFMenuPanelBase
 {
-	DECLARE_CLASS_SIMPLE(CTFMainMenuPanel, CTFMenuPanelBase);
+	DECLARE_CLASS_SIMPLE( CTFMainMenuPanel, CTFMenuPanelBase );
 
 public:
-	CTFMainMenuPanel(vgui::Panel* parent, const char *panelName);
+	CTFMainMenuPanel( vgui::Panel* parent, const char *panelName );
 	virtual ~CTFMainMenuPanel();
-	bool Init();
-	void PerformLayout();
-	void ApplySchemeSettings(vgui::IScheme *pScheme);
-	void OnThink();
-	void OnTick();
-	void Show();
-	void Hide();
-	void OnCommand(const char* command);
-	void DefaultLayout();
-	void GameLayout();
+
+	virtual void PerformLayout();
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void OnTick();
+	virtual void OnThink();
+	virtual void Show();
+	virtual void Hide();
+	virtual void OnCommand( const char* command );
+
+	void HideFakeIntro( void );
+
 	void SetVersionLabel();
 	void PlayMusic();
 	void OnNotificationUpdate();
@@ -47,7 +47,7 @@ private:
 
 	CExLabel			*m_pVersionLabel;
 	CTFButton		*m_pNotificationButton;
-	CAvatarImagePanel	*m_pProfileAvatar; 
+	CAvatarImagePanel	*m_pProfileAvatar;
 	vgui::ImagePanel	*m_pFakeBGImage;
 
 	int					m_iShowFakeIntro;

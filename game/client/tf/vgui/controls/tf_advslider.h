@@ -1,4 +1,4 @@
-#ifndef TF_MAINMENU_SCROLLBAR_H
+﻿#ifndef TF_MAINMENU_SCROLLBAR_H
 #define TF_MAINMENU_SCROLLBAR_H
 #ifdef _WIN32
 #pragma once
@@ -17,7 +17,7 @@ class CTFSlider : public vgui::EditablePanel
 public:
 	DECLARE_CLASS_SIMPLE( CTFSlider, vgui::EditablePanel );
 
-	CTFSlider( vgui::Panel *parent, const char *panelName, const char *text );
+	CTFSlider( vgui::Panel *parent, const char *panelName );
 	~CTFSlider();
 
 	virtual void Init();
@@ -27,6 +27,7 @@ public:
 	virtual void OnThink( void );
 
 	void SetFont( vgui::HFont font );
+	void SetFont( const char *pszFont );
 	float GetValue();
 	const char *GetFinalValue();
 	void SetPercentage( float fPerc, bool bInstant = false );
@@ -34,21 +35,25 @@ public:
 	void SetRange( float flMin, float flMax );
 	bool IsVertical() { return m_bVertical; }
 
-	virtual void SendSliderMovedMessage();
-	virtual void SendSliderDragStartMessage();
-	virtual void SendSliderDragEndMessage();
+	void SendSliderMovedMessage();
+	void SendSliderDragStartMessage();
+	void SendSliderDragEndMessage();
+
+	void SetToolTip( const char *pszText );
 
 	CTFScrollButton *GetButton() { return m_pButton; };
 
+	void ClampValue();
+
 protected:
 	CTFScrollButton	*m_pButton;
-	vgui::Label			*m_pTitleLabel;
 	vgui::Label			*m_pValueLabel;
 	vgui::EditablePanel *m_pBGBorder;
 
+	char			m_szFont[64];
+
 	float			m_flMinValue;
 	float			m_flMaxValue;
-	int			m_iLabelWidth;
 	float			m_flValue;
 	bool			m_bValueVisible;
 	bool			m_bVertical;

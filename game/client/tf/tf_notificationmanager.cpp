@@ -135,7 +135,7 @@ bool CTFNotificationManager::Init()
 
 void CTFNotificationManager::Update( float frametime )
 {
-	if ( !MAINMENU_ROOT )
+	if ( !guiroot )
 		return;
 
 	float flCurTime = engine->Time(); // more accurate than gpGlobals->curtime
@@ -362,7 +362,7 @@ void CTFNotificationManager::SendNotification( MessageNotification &pMessage )
 	m_Notifications.AddToTail( pMessage );
 	m_Notifications.Sort( NotificationsSort );
 
-	MAINMENU_ROOT->OnNotificationUpdate();
+	guiroot->OnNotificationUpdate();
 
 	// Only play sound once per notification.
 	if ( !m_bPlayedSound )
@@ -377,7 +377,7 @@ void CTFNotificationManager::RemoveNotification( int iIndex )
 	m_Notifications.Remove( iIndex );
 	m_Notifications.Sort( NotificationsSort );
 
-	MAINMENU_ROOT->OnNotificationUpdate();
+	guiroot->OnNotificationUpdate();
 };
 
 int CTFNotificationManager::GetUnreadNotificationsCount()

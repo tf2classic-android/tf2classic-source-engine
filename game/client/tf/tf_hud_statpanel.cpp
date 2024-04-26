@@ -765,7 +765,7 @@ void CTFStatPanel::UpdateStatSummaryPanel()
 
 void CTFStatPanel::UpdateMainMenuDialog()
 {
-	MAINMENU_ROOT->SetStats(m_aClassStats);
+	guiroot->SetStats(m_aClassStats);
 }
 
 //-----------------------------------------------------------------------------

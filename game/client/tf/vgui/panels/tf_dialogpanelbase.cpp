@@ -3,7 +3,6 @@
 #include "tf_mainmenu.h"
 #include "controls/tf_advbutton.h"
 #include "controls/tf_advpanellistpanel.h"
-#include "controls/tf_scriptobject.h"
 #include "controls/tf_cvartogglecheckbutton.h"
 #include "controls/tf_cvarslider.h"
 #include "vgui_controls/ComboBox.h"
@@ -15,14 +14,21 @@
 #include "tier1/convar.h"
 #include <stdio.h>
 #include <vgui_controls/TextEntry.h>
+#include <vgui_controls/AnimationController.h>
+
 // memdbgon must be the last include file in a .cpp file!!!
-#include <tier0/memdbgon.h>
+#include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-CTFDialogPanelBase::CTFDialogPanelBase(vgui::Panel *parent, const char *panelName) : CTFMenuPanelBase(parent, panelName)
+CTFDialogPanelBase::CTFDialogPanelBase( vgui::Panel *parent, const char *panelName ) : CTFMenuPanelBase( parent, panelName )
 {
-	Init();
+	m_pListPanel = NULL;
+	m_bEmbedded = false;
+	m_bHideMainMenu = false;
+	m_PassUnhandledInput = false;
+	SetKeyBoardInputEnabled( true );
+	SetMouseInputEnabled( true );
 }
 
 //-----------------------------------------------------------------------------
@@ -33,22 +39,13 @@ CTFDialogPanelBase::~CTFDialogPanelBase()
 	DestroyControls();
 }
 
-bool CTFDialogPanelBase::Init()
-{
-	BaseClass::Init();
-	SetKeyBoardInputEnabled(true);
-	m_pListPanel = NULL;
-	bEmbedded = false;
-	return true;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: sets background color & border
 //-----------------------------------------------------------------------------
-void CTFDialogPanelBase::ApplySchemeSettings(IScheme *pScheme)
+void CTFDialogPanelBase::ApplySchemeSettings( IScheme *pScheme )
 {
-	BaseClass::ApplySchemeSettings(pScheme);
-	if (bEmbedded)
+	BaseClass::ApplySchemeSettings( pScheme );
+	if ( m_bEmbedded )
 	{
 		OnCreateControls();
 	}
@@ -56,107 +53,136 @@ void CTFDialogPanelBase::ApplySchemeSettings(IScheme *pScheme)
 	{
 		//Show();
 	}
-
 }
 
-void CTFDialogPanelBase::PerformLayout()
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFDialogPanelBase::ApplySettings( KeyValues *inResourceData )
 {
-	BaseClass::PerformLayout();
-	m_cShotcutKeys.RemoveAll();
-};
+	BaseClass::ApplySettings( inResourceData );
 
-void CTFDialogPanelBase::OnCommand(const char* command)
+	m_bHideMainMenu = inResourceData->GetBool( "hide_mainmenu", false );
+}
+
+void CTFDialogPanelBase::OnCommand( const char* command )
 {
-	if (!Q_strcmp(command, "vguicancel"))
+	if ( !V_stricmp( command, "vguicancel" ) )
 	{
-		PostActionSignal(new KeyValues("CancelPressed"));
+		PostActionSignal( new KeyValues( "CancelPressed" ) );
 		OnResetData();
 		Hide();
 	}
-	else if (!stricmp(command, "Ok"))
+	else if ( !V_stricmp( command, "Ok" ) )
 	{
-		PostActionSignal(new KeyValues("OkPressed"));
+		PostActionSignal( new KeyValues( "OkPressed" ) );
 		OnApplyChanges();
 		Hide();
 	}
 	else
 	{
-		BaseClass::OnCommand(command);
+		BaseClass::OnCommand( command );
 	}
 }
 
 void CTFDialogPanelBase::Show()
 {
 	BaseClass::Show();
-	if (!bEmbedded)
+
+	if ( !m_bEmbedded )
 	{
 		RequestFocus();
 		MakePopup();
+
+		// Fade in.
+		SetAlpha( 0 );
+		GetAnimationController()->RunAnimationCommand( this, "Alpha", 255, 0.05f, 0.3f, AnimationController::INTERPOLATOR_SIMPLESPLINE );
+
+		// Offset the dialog and make it slide back into normal position.
+		int x, y;
+		GetPos( x, y );
+		SetPos( x - YRES( 20 ), y );
+
+		GetAnimationController()->RunAnimationCommand( this, "xpos", x, 0.0f, 0.3f, AnimationController::INTERPOLATOR_SIMPLESPLINE, NULL );
+
+		guiroot->ShowPanel( SHADEBACKGROUND_MENU );
+
+		if ( m_bHideMainMenu )
+		{
+			guiroot->HidePanel( guiroot->GetCurrentMainMenu() );
+		}
 	}
-	vgui::GetAnimationController()->RunAnimationCommand(this, "Alpha", 255, 0.05f, 0.3f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE);
-	int _x, _y;
-	GetPos(_x, _y);
-	SetPos(_x - YRES(20), _y);
-	AnimationController::PublicValue_t p_AnimHover(_x, _y);
-	vgui::GetAnimationController()->RunAnimationCommand(this, "Position", p_AnimHover, 0.0f, 0.3f, vgui::AnimationController::INTERPOLATOR_SIMPLESPLINE, NULL);
-	MAINMENU_ROOT->ShowPanel(SHADEBACKGROUND_MENU);
-};
+}
 
 void CTFDialogPanelBase::Hide()
 {
 	BaseClass::Hide();
-	vgui::GetAnimationController()->RunAnimationCommand(this, "Alpha", 0, 0.0f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR);
-	MAINMENU_ROOT->HidePanel(SHADEBACKGROUND_MENU);
-	MAINMENU_ROOT->ShowPanel(CURRENT_MENU);
-	if (bShowSingle)
-	{
-		engine->ClientCmd("gameui_hide");
-	}
-};
 
-void CTFDialogPanelBase::OnKeyCodePressed(vgui::KeyCode code)
-{
-	BaseClass::OnKeyCodePressed(code);
+	if ( !m_bEmbedded )
+	{
+		guiroot->HidePanel( SHADEBACKGROUND_MENU );
+		guiroot->HideToolTip();
+		guiroot->ShowPanel( guiroot->GetCurrentMainMenu() );
 
-	if (code == KEY_ESCAPE)
-	{
-		Hide();
-	}
-	else if (!bEmbedded)
-	{
-		const char *keyName = g_pInputSystem->ButtonCodeToString(code);
-		if (Q_strlen(keyName) == 1)
+		if ( m_bShowSingle )
 		{
-			unsigned int id = m_cShotcutKeys.Find(g_pInputSystem->ButtonCodeToString(code));
-			if (id < m_cShotcutKeys.Count())
-			{
-				const char* cCommand = m_cShotcutKeys[id];
-				if (Q_strcmp(cCommand, ""))
-					OnCommand(cCommand);
-			}
+			engine->ClientCmd( "gameui_hide" );
+		}
+
+		if ( m_bHideMainMenu )
+		{
+			guiroot->FadeMainMenuIn();
 		}
 	}
-	
 }
 
-void CTFDialogPanelBase::AddControl( vgui::Panel* panel, int iType, const char* text )
+void CTFDialogPanelBase::OnKeyCodeTyped( KeyCode code )
+{
+	if ( m_bEmbedded )
+	{
+		if ( code == KEY_ESCAPE )
+		{
+			Hide();
+			return;
+		}
+	}
+
+	BaseClass::OnKeyCodePressed( code );
+}
+
+void CTFDialogPanelBase::OnKeyTyped( wchar_t key )
+{
+	if ( !m_bEmbedded )
+	{
+		Panel *pPanel = HasHotkey( key );
+		if ( pPanel )
+		{
+			PostMessage( pPanel, new KeyValues( "Hotkey" ) );
+		}
+	}
+
+	BaseClass::OnKeyTyped( key );
+}
+
+void CTFDialogPanelBase::AddControl( Panel* panel, objtype_t iType, const char* text /*= ""*/, const char *pszToolTip /*= ""*/, Label **pLabel /*= NULL*/ )
 {
 	if ( !m_pListPanel )
 		return;
 
 	mpcontrol_t	*pCtrl = new mpcontrol_t( m_pListPanel, "mpcontrol_t" );
+	pCtrl->type = iType;
 	HFont hFont = GETSCHEME()->GetFont( m_pListPanel->GetFontString(), true );
 
-	switch ( iType )
+	switch ( pCtrl->type )
 	{
 	case O_CATEGORY:
 	{
 		Label *pTitle = assert_cast<Label*>( panel );
 		pTitle->MakeReadyForUse();
 
-		pTitle->SetFont( GETSCHEME()->GetFont( ADVBUTTON_DEFAULT_FONT, true ) );
+		pTitle->SetFont( GETSCHEME()->GetFont( "MenuSmallFont", true ) );
 		pTitle->SetBorder( GETSCHEME()->GetBorder( "AdvSettingsTitleBorder" ) );
-		pTitle->SetFgColor( GETSCHEME()->GetColor( ADVBUTTON_DEFAULT_COLOR, COLOR_WHITE ) );
+		pTitle->SetFgColor( GETSCHEME()->GetColor( "TanLight", COLOR_WHITE ) );
 		break;
 	}
 	case O_BOOL:
@@ -165,7 +191,7 @@ void CTFDialogPanelBase::AddControl( vgui::Panel* panel, int iType, const char* 
 		pBox->MakeReadyForUse();
 
 		pBox->SetFont( hFont );
-		//pBox->SetToolTip(dynamic_cast<CTFAdvCheckButton*>(panel)->GetName());
+		pBox->SetToolTip( pszToolTip );
 		break;
 	}
 	case O_SLIDER:
@@ -174,26 +200,33 @@ void CTFDialogPanelBase::AddControl( vgui::Panel* panel, int iType, const char* 
 		pScroll->MakeReadyForUse();
 
 		pScroll->SetFont( hFont );
-		//pScroll->SetToolTip(dynamic_cast<CTFAdvSlider*>(panel)->GetName());
+		pScroll->SetToolTip( pszToolTip );
 		break;
 	}
 	case O_LIST:
 	{
 		ComboBox *pCombo = assert_cast<ComboBox*>( panel );
 		pCombo->MakeReadyForUse();
-		pCombo->SetFont( hFont );
 
-		pCtrl->pPrompt = new vgui::Label( pCtrl, "DescLabel", "" );
+		pCombo->SetFont( hFont );
+		break;
+	}
+	default:
+		break;
+	}
+
+	if ( pCtrl->type != O_BOOL && pCtrl->type != O_CATEGORY )
+	{
+		pCtrl->pPrompt = new Label( pCtrl, "DescLabel", "" );
 		pCtrl->pPrompt->MakeReadyForUse();
 
 		pCtrl->pPrompt->SetFont( hFont );
 		pCtrl->pPrompt->SetContentAlignment( vgui::Label::a_west );
 		pCtrl->pPrompt->SetTextInset( 5, 0 );
 		pCtrl->pPrompt->SetText( text );
-		break;
-	}
-	default:
-		break;
+
+		if ( pLabel )
+			*pLabel = pCtrl->pPrompt;
 	}
 
 	panel->SetParent( pCtrl );
@@ -210,7 +243,7 @@ void CTFDialogPanelBase::CreateControls()
 
 void CTFDialogPanelBase::DestroyControls()
 {
-	if (!m_pListPanel)
+	if ( !m_pListPanel )
 		return;
 
 	m_pListPanel->DeleteAllItems();
@@ -236,11 +269,6 @@ void CTFDialogPanelBase::OnApplyChanges()
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFDialogPanelBase::OnSetDefaults()
-{
-
-}
-
-void CTFDialogPanelBase::OnThink()
 {
 
 }

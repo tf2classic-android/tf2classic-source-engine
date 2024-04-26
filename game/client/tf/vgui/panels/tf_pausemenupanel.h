@@ -10,23 +10,18 @@ class CTFButton;
 //-----------------------------------------------------------------------------
 class CTFPauseMenuPanel : public CTFMenuPanelBase
 {
-	DECLARE_CLASS_SIMPLE(CTFPauseMenuPanel, CTFMenuPanelBase);
+	DECLARE_CLASS_SIMPLE( CTFPauseMenuPanel, CTFMenuPanelBase );
 
 public:
-	CTFPauseMenuPanel(vgui::Panel* parent, const char *panelName);
+	CTFPauseMenuPanel( vgui::Panel* parent, const char *panelName );
 	virtual ~CTFPauseMenuPanel();
-	bool Init();
 
-	void PerformLayout();
-	void ApplySchemeSettings(vgui::IScheme *pScheme);
-	void OnThink();
-	void OnTick();
-	void Show();
-	void Hide();
-	void OnCommand(const char* command);
-	void DefaultLayout();
-	void GameLayout();
-	void OnNotificationUpdate();
+	virtual void PerformLayout();
+	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void Show();
+	virtual void Hide();
+	virtual void OnCommand( const char* command );
+	virtual void OnNotificationUpdate();
 
 private:
 	CTFButton	*m_pNotificationButton;

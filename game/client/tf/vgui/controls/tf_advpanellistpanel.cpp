@@ -312,7 +312,7 @@ void CPanelListPanel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 
-	Q_strncpy(m_szFont, inResourceData->GetString("font", ADVBUTTON_DEFAULT_FONT), sizeof(m_szFont));
+	Q_strncpy(m_szFont, inResourceData->GetString("font", "MenuSmallFont"), sizeof(m_szFont));
 	//Q_strncpy(m_szBorder, inResourceData->GetString("border", "TFFatLineBorder"), sizeof(m_szBorder));
 	//InvalidateLayout(false); // force ApplySchemeSettings to run
 }
@@ -323,7 +323,7 @@ void CPanelListPanel::ApplySettings(KeyValues *inResourceData)
 //-----------------------------------------------------------------------------
 void CPanelListPanel::ApplySchemeSettings(IScheme *pScheme)
 {
-	Panel::ApplySchemeSettings(pScheme);
+	BaseClass::ApplySchemeSettings(pScheme);
 
 	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
 	SetBgColor(GetSchemeColor("Label.BgColor", GetBgColor(), pScheme));
