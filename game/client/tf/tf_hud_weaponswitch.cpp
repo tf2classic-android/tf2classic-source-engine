@@ -122,8 +122,10 @@ void CItemModelPanel::PerformLayout( void )
 	m_pWeaponIcon->SetBounds( ((GetWide() / 2) - (GetTall() / 2)), 0, GetTall(), GetTall() );
 
 	// Position weapon name.
-	m_pWeaponName->SetBounds( YRES( 5 ), GetTall() - YRES( 25 ), GetWide() - YRES( 5 ), YRES( 20 ) );
+	m_pWeaponName->SetBounds( YRES( 5 ), YRES( 5 ), GetWide() - YRES( 10 ), GetTall() - YRES( 10 ) );
 	m_pWeaponName->SetFont( m_iBorderStyle ? m_pSelectedFont : m_pDefaultFont );
+	m_pWeaponName->InvalidateLayout( true, false );
+	m_pWeaponName->InvalidateLayout( true, false ); // HACKHACKHACK for broken text inset on loadout weapons
 
 	if ( m_hWeapon.Get() && !m_hWeapon.Get()->HasAnyAmmo() )
 	{
