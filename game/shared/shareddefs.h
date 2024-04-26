@@ -226,10 +226,8 @@ enum CastVote
 //You might be wondering why these aren't multiple of 2. Well the reason is that if servers decide to have HLTV or Replay enabled we need the extra slot.
 //This is ok since MAX_PLAYERS is used for code specific things like arrays and loops, but it doesn't really means that this is the max number of players allowed
 //Since this is decided by the gamerules (and it can be whatever number as long as its less than MAX_PLAYERS).
-#if defined( CSTRIKE_DLL )
+#if defined( CSTRIKE_DLL ) || defined ( TF_CLASSIC ) || defined ( TF_CLASSIC_CLIENT )
 	#define MAX_PLAYERS				65  // Absolute max players supported
-#elif defined ( TF_CLASSIC ) || defined ( TF_CLASSIC_CLIENT )
-	#define MAX_PLAYERS				128 
 #else
 	#define MAX_PLAYERS				33  // Absolute max players supported
 #endif
