@@ -565,6 +565,11 @@ protected:
 		}
 		else if ( FStrEq( eventName, "teamplay_round_win" ) )
 		{
+			if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+			{
+				return true;
+			}
+
 			bool bShowScores = true;
 			int iTeam = event->GetInt( "team" );
 			bool bFullRound = event->GetBool( "full_round" );
