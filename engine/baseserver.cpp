@@ -707,10 +707,18 @@ bool CBaseServer::ProcessConnectionlessPacket(netpacket_t * packet)
 			break;
 
 		case A2S_PLAYER:
-			if( sv.IsActive() )
 			{
-				ReplyPlayers( packet->from );
-				return true;
+				int clChallengeNr = -1;
+				if( msg.GetNumBytesLeft() >= 4 )
+				{
+					clChallengeNr = msg.ReadLong();
+				}
+
+				if( ValidChallenge( packet->from, clChallengeNr ) )
+				{
+					ReplyPlayers( packet->from );
+					return true;
+				}
 			}
 
 			break;
@@ -2704,6 +2712,9 @@ void CBaseServer::ReplyInfo( const netadr_t &adr )
 //-----------------------------------------------------------------------------
 void CBaseServer::ReplyPlayers( const netadr_t & adr )
 {
+	if( !sv.IsActive() )
+		return;
+
 	if( serverGameDLL && serverGameDLL->ShouldHideServer() )
 		return;
 
