@@ -67,10 +67,10 @@ void CTFOptionsTouchPanel::CreateControls()
 	AddControl( m_pTouchFilter, O_BOOL );
 	AddControl( m_pTouchAcceleration, O_BOOL );
 
-	AddControl( m_pTouchSensitivitySlider, O_SLIDER, "Touch sensitivity" );
-	AddControl( m_pTouchAccelerationSlider, O_SLIDER, "Touch acceleration" );
-	AddControl( m_pTouchHorizSensitSlider, O_SLIDER, "Horizontal sensitivity" );
-	AddControl( m_pTouchVertSensitSlider, O_SLIDER, "Vertical Sensitivity" );
+	AddControl( m_pTouchSensitivitySlider, O_SLIDER, "Touch sensitivity", "", &m_pTouchSensitivityPreLabel );
+	AddControl( m_pTouchAccelerationSlider, O_SLIDER, "Touch acceleration", "", &m_pTouchAccelerationPreLabel );
+	AddControl( m_pTouchHorizSensitSlider, O_SLIDER, "Horizontal sensitivity", "", &m_pTouchHorizSensitPreLabel );
+	AddControl( m_pTouchVertSensitSlider, O_SLIDER, "Vertical Sensitivity", "", &m_pTouchVertSensitPreLabel );
 
 	UpdatePanels();
 }
@@ -150,12 +150,17 @@ void CTFOptionsTouchPanel::UpdatePanels()
 	m_pTouchAcceleration->SetVisible( bEnabled );
 
 	m_pTouchSensitivitySlider->SetVisible( bEnabled );
+	m_pTouchSensitivityPreLabel->SetVisible( bEnabled );
 	m_pTouchAccelerationSlider->SetVisible( bEnabled );
+	m_pTouchAccelerationPreLabel->SetVisible( bEnabled );
 	m_pTouchHorizSensitSlider->SetVisible( bEnabled );
+	m_pTouchHorizSensitPreLabel->SetVisible( bEnabled );
 	m_pTouchVertSensitSlider->SetVisible( bEnabled );
+	m_pTouchVertSensitPreLabel->SetVisible( bEnabled );
 
 	bEnabled = m_pTouchAcceleration->IsChecked();
 	m_pTouchAccelerationSlider->SetVisible( bEnabled );
+	m_pTouchAccelerationPreLabel->SetVisible( bEnabled );
 }
 
 //-----------------------------------------------------------------------------

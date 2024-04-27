@@ -56,33 +56,13 @@ private:
 	CTFCvarToggleCheckButton *m_pTouchAcceleration;
 
 	CTFCvarSlider *m_pTouchSensitivitySlider;
+	vgui::Label *m_pTouchSensitivityPreLabel;
 	CTFCvarSlider *m_pTouchAccelerationSlider;
+	vgui::Label *m_pTouchAccelerationPreLabel;
 	CTFCvarSlider *m_pTouchHorizSensitSlider;
+	vgui::Label *m_pTouchHorizSensitPreLabel;
 	CTFCvarSlider *m_pTouchVertSensitSlider;
-
-	/*
-	vgui::Label					*pTitleMouse;
-	vgui::Label					*pTitleJoystick;
-	CTFCvarToggleCheckButton		*m_pReverseMouseCheckBox;
-	CTFCvarToggleCheckButton		*m_pRawInputCheckBox;
-	CTFCvarToggleCheckButton		*m_pMouseFilterCheckBox;
-
-	CTFCvarSlider					*m_pMouseSensitivitySlider;
-    vgui::TextEntry             *m_pMouseSensitivityLabel;
-
-	CTFCvarToggleCheckButton		*m_pMouseAccelCheckBox;
-	CTFCvarSlider					*m_pMouseAccelSlider;
-
-	CTFCvarToggleCheckButton		*m_pJoystickCheckBox;
-	CTFCvarToggleCheckButton		*m_pJoystickSouthpawCheckBox;
-	CTFCvarToggleCheckButton		*m_pQuickInfoCheckBox;
-	CTFCvarToggleCheckButton		*m_pReverseJoystickCheckBox;
-
-	CTFCvarSlider					*m_pJoyYawSensitivitySlider;
-	vgui::Label					*m_pJoyYawSensitivityPreLabel;
-	CTFCvarSlider					*m_pJoyPitchSensitivitySlider;
-	vgui::Label					*m_pJoyPitchSensitivityPreLabel;
-	*/
+	vgui::Label *m_pTouchVertSensitPreLabel;
 };
 
 
