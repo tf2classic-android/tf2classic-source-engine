@@ -13,6 +13,11 @@
 #include "globalstate.h"
 #include "igamesystem.h"
 
+#if defined (TF_CLASSIC)
+#include "fmtstr.h"
+#include "tf_player.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -312,15 +317,25 @@ void ResetGlobalState( void )
 }
 
 
-void ShowServerGameTime()
+#if !defined ( TF_CLASSIC )
+CON_COMMAND_F( server_game_time, "Gives the game time in seconds (server's curtime)", FCVAR_NONE )
+#else
+CON_COMMAND_F( server_game_time, "Gives the game time in seconds (server's curtime)", FCVAR_HIDDEN )
+#endif
 {
-	Msg( "Server game time: %f\n", gpGlobals->curtime );
-}
-
-CON_COMMAND(server_game_time, "Gives the game time in seconds (server's curtime)")
-{
-	if ( !UTIL_IsCommandIssuedByServerAdmin() )
+#if !defined ( TF_CLASSIC )
+	if( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
 
-	ShowServerGameTime();
+	Msg( "Server game time: %.3f\n", gpGlobals->curtime );
+#else
+	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() );
+	if( !pPlayer )
+	{
+		Msg( "Server game time: %.3f\n", gpGlobals->curtime );
+		return;
+	}
+#endif
+
+	ClientPrint( pPlayer, HUD_PRINTCONSOLE, CFmtStr( "Server game time: %.3f\n", gpGlobals->curtime ) );
 }
