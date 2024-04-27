@@ -1252,6 +1252,7 @@ void CTFPlayer::Spawn()
 	m_flAccumulatedHealthRegen = 0;
 
 	m_flNextVoiceCommandTime = gpGlobals->curtime;
+	m_iVoiceSpamCounter = 0;
 
 	ClearZoomOwner();
 	SetFOV( this , 0 );
@@ -9191,7 +9192,26 @@ bool CTFPlayer::CanSpeakVoiceCommand( void )
 void CTFPlayer::NoteSpokeVoiceCommand( const char *pszScenePlayed )
 {
 	Assert( pszScenePlayed );
+
+	float flTimeSinceAllowedVoice = gpGlobals->curtime - m_flNextVoiceCommandTime;
+
+	// if more than 5 seconds has passed, reset the counter
+	if( flTimeSinceAllowedVoice > 5.0f )
+	{
+		m_iVoiceSpamCounter = 0;
+	}
+	// if its less than a second past the allowed time, the player is spamming
+	else if( flTimeSinceAllowedVoice < 1.0f )
+	{
+		m_iVoiceSpamCounter++;
+	}
+
 	m_flNextVoiceCommandTime = gpGlobals->curtime + MIN( GetSceneDuration( pszScenePlayed ), tf_max_voice_speak_delay.GetFloat() );
+
+	if( m_iVoiceSpamCounter > 0 )
+	{
+		m_flNextVoiceCommandTime += m_iVoiceSpamCounter * 0.5f;
+	}
 }
 
 //-----------------------------------------------------------------------------

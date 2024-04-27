@@ -391,6 +391,8 @@ public:
 	float GetTeamScrambleScore( void ) { return m_flTeamScrambleScore; }
 
 	float m_flNextVoiceCommandTime;
+	int m_iVoiceSpamCounter;
+
 	float m_flNextSpeakWeaponFire;
 
 	bool ShouldAnnouceAchievement( void );
