@@ -67,10 +67,10 @@ void CTFOptionsTouchPanel::CreateControls()
 	AddControl( m_pTouchFilter, O_BOOL );
 	AddControl( m_pTouchAcceleration, O_BOOL );
 
-	AddControl( m_pTouchSensitivitySlider, O_SLIDER, "", "Touch sensitivity" );
-	AddControl( m_pTouchAccelerationSlider, O_SLIDER, "", "Touch acceleration" );
-	AddControl( m_pTouchHorizSensitSlider, O_SLIDER, "", "Horizontal sensitivity" );
-	AddControl( m_pTouchVertSensitSlider, O_SLIDER, "", "Vertical Sensitivity" );
+	AddControl( m_pTouchSensitivitySlider, O_SLIDER, "Touch sensitivity" );
+	AddControl( m_pTouchAccelerationSlider, O_SLIDER, "Touch acceleration" );
+	AddControl( m_pTouchHorizSensitSlider, O_SLIDER, "Horizontal sensitivity" );
+	AddControl( m_pTouchVertSensitSlider, O_SLIDER, "Vertical Sensitivity" );
 
 	UpdatePanels();
 }
