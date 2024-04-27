@@ -9059,7 +9059,7 @@ bool CTFPlayer::SpeakConceptIfAllowed( int iConcept, const char *modifiers, char
 	// Save the current concept.
 	m_iCurrentConcept = iConcept;
 
-	if( IsPlayerClass( TF_CLASS_MERCENARY ) )
+	if( IsPlayerClass( TF_CLASS_MERCENARY ) && ( TFGameRules() && !TFGameRules()->IsDeathmatch() ) )
 	{
 		if( iConcept == MP_CONCEPT_PLAYER_MEDIC )
 		{
