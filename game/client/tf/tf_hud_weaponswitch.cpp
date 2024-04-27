@@ -51,6 +51,7 @@ DECLARE_HUDELEMENT( CTFHudWeaponSwitch );
 //-----------------------------------------------------------------------------
 CItemModelPanel::CItemModelPanel( Panel *parent, const char* name ) : EditablePanel( parent, name )
 {
+	m_hWeapon.Set( NULL );
 	m_pWeaponIcon = new CTFWeaponIcon( this, "WeaponIcon" );
 	m_pWeaponName = new vgui::Label( this, "WeaponName", "text" );
 	m_pSlotID = new vgui::Label( this, "SlotID", "0" );
@@ -75,8 +76,8 @@ void CItemModelPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 	SetPaintBorderEnabled( false );
 
 	m_pWeaponName->SetFont( m_pDefaultFont );
-	m_pWeaponName->SetContentAlignment( Label::a_south );
 	m_pWeaponName->SetCenterWrap( true );
+	m_pWeaponName->SetContentAlignment( Label::a_south );
 
 	m_pSlotID->SetFont( m_pNumberDefaultFont );
 	m_pSlotID->SetContentAlignment( Label::a_northeast );
@@ -106,9 +107,7 @@ void CItemModelPanel::PerformLayout( void )
 	}
 	else if ( m_iBorderStyle == 1 )
 	{
-		int iTeam = GetLocalPlayerTeam();
-
-		if ( iTeam == TF_TEAM_RED )
+		if ( GetLocalPlayerTeam() == TF_TEAM_RED )
 		{
 			SetBorder( m_pSelectedRedBorder );
 		}
@@ -122,8 +121,8 @@ void CItemModelPanel::PerformLayout( void )
 	m_pWeaponIcon->SetBounds( ((GetWide() / 2) - (GetTall() / 2)), 0, GetTall(), GetTall() );
 
 	// Position weapon name.
-	m_pWeaponName->SetBounds( YRES( 5 ), YRES( 5 ), GetWide() - YRES( 10 ), GetTall() - YRES( 10 ) );
 	m_pWeaponName->SetFont( m_iBorderStyle ? m_pSelectedFont : m_pDefaultFont );
+	m_pWeaponName->SetBounds( YRES( 5 ), YRES( 5 ), GetWide() - YRES( 10 ), GetTall() - YRES( 10 ) );
 	m_pWeaponName->InvalidateLayout( true, false );
 	m_pWeaponName->InvalidateLayout( true, false ); // HACKHACKHACK for broken text inset on loadout weapons
 
@@ -145,7 +144,7 @@ void CItemModelPanel::PerformLayout( void )
 	}
 
 	// Position slot number.
-	m_pSlotID->SetBounds( 0, YRES( 5 ), GetWide() - YRES( 5 ), YRES( 10 ) );
+	m_pSlotID->SetBounds( 0, YRES( 5 ), GetWide() - YRES( 10 ), YRES( 10 ) );
 	m_pSlotID->SetFont( m_iBorderStyle ? m_pNumberSelectedFont : m_pNumberDefaultFont );
 }
 
@@ -180,7 +179,7 @@ void CItemModelPanel::SetWeapon( C_BaseCombatWeapon *pWeapon, int iBorderStyle, 
 		m_pSlotID->SetText( "" );
 	}
 
-	InvalidateLayout( true );
+	InvalidateLayout( false, false );
 }
 
 void CItemModelPanel::SetWeapon( CEconItemDefinition *pItemDefinition, int iBorderStyle, int ID )
@@ -212,7 +211,7 @@ void CItemModelPanel::SetWeapon( CEconItemDefinition *pItemDefinition, int iBord
 		m_pSlotID->SetText( "" );
 	}
 
-	InvalidateLayout( true );
+	InvalidateLayout( false, false );
 }
 
 
