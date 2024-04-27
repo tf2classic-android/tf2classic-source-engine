@@ -64,8 +64,13 @@ public:
 	// new version to scale the texture over a finalWidth and finalHeight passed in
 	void DrawSelfCropped( int x, int y, int cropx, int cropy, int cropw, int croph, int finalWidth, int finalHeight, Color clr ) const;
 
+#if defined( TF_CLASSIC_CLIENT ) // SanyaSho: this is a bad hack, but we need to have more than 64 bytes for some weapons (backpack/workshop/weapons/c_models/c_ttg_max_gun/c_ttg_max_gun_ is 63 bytes, but it should be _large)
+	char		szShortName[ MAX_PATH ];
+	char		szTextureFile[ MAX_PATH ];
+#else
 	char		szShortName[ 64 ];
 	char		szTextureFile[ 64 ];
+#endif
 
 	bool		bRenderUsingFont;
 	bool		bPrecached;
