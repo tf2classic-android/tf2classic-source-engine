@@ -57,7 +57,7 @@ void CTFHudDomination::OnTick()
 		if( pGlobalTFTeam )
 		{
 			char szVar[16] = { NULL };
-			Q_snprintf( szVar, sizeof( szVar ), "%sscore", g_aTeamParticleNames[i] );
+			Q_snprintf( szVar, sizeof( szVar ), "%sscore", g_aTeamLowerNames[i] );
 			SetDialogVariable( szVar, pGlobalTFTeam->GetRoundScore() );
 
 			int nMult = 0;
@@ -75,7 +75,7 @@ void CTFHudDomination::OnTick()
 					}
 				}
 			}
-			Q_snprintf( szVar, sizeof( szVar ), "%smult", g_aTeamParticleNames[i] );
+			Q_snprintf( szVar, sizeof( szVar ), "%smult", g_aTeamLowerNames[i] );
 			char szMult[8] = { NULL };
 			if( nMult != 0 )
 			{

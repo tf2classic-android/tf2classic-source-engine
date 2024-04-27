@@ -245,7 +245,7 @@ void CTFProjectile_Arrow::Precache( void )
 	{
 		PrecacheModel( ConstructTeamParticle( "effects/arrowtrail_%s.vmt", i, false, g_aTeamNamesShort ) );
 		PrecacheModel( ConstructTeamParticle( "effects/healingtrail_%s.vmt", i, false, g_aTeamNamesShort ) );
-		PrecacheModel( ConstructTeamParticle( "effects/repair_claw_trail_%s.vmt", i, false, g_aTeamParticleNames ) );
+		PrecacheModel( ConstructTeamParticle( "effects/repair_claw_trail_%s.vmt", i, false, g_aTeamLowerNames ) );
 	}
 
 	// Precache flame effects
@@ -902,7 +902,7 @@ const char *CTFProjectile_Arrow::GetTrailParticleName( void )
 		break;
 	}
 
-	return ConstructTeamParticle( pszFormat, GetTeamNumber(), false, bLongTeamName ? g_aTeamParticleNames : g_aTeamNamesShort );
+	return ConstructTeamParticle( pszFormat, GetTeamNumber(), false, bLongTeamName ? g_aTeamLowerNames : g_aTeamNamesShort );
 
 }
 

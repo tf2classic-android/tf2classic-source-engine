@@ -40,17 +40,6 @@ ConVar tf_scoreboard_mouse_mode( "tf_scoreboard_mouse_mode", "0", FCVAR_ARCHIVE,
 bool IsInCommentaryMode( void );
 const char *GetMapDisplayName( const char *mapName );
 
-// FIXME
-const char *g_aTeamLowerNames[TF_TEAM_COUNT] =
-{
-	"unassigned",
-	"spectator",
-	"red",
-	"blue",
-	"green",
-	"yellow"
-};
-
 //-----------------------------------------------------------------------------
 // Purpose: Returns a localized string of form "1 point", "2 points", etc for specified # of points
 //-----------------------------------------------------------------------------

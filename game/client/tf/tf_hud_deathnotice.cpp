@@ -733,7 +733,7 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 		Assert( iTeam >= FIRST_GAME_TEAM && iTeam < TF_TEAM_COUNT );
 		if ( iTeam >= FIRST_GAME_TEAM && iTeam < TF_TEAM_COUNT )
 		{
-			V_sprintf_safe( m_DeathNotices[iMsg].szIcon, "d_%scapture", g_aTeamParticleNames[iTeam] );
+			V_sprintf_safe( m_DeathNotices[iMsg].szIcon, "d_%scapture", g_aTeamLowerNames[iTeam] );
 		}
 	}
 

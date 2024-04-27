@@ -118,7 +118,7 @@ void CTFClassImage::SetClass( int iTeam, int iClass, int iCloakstate )
 		}
 		else // if not deathmatch - add player team color
 		{
-			V_strncat( szImage, g_aTeamParticleNames[iTeam], sizeof( szImage ), COPY_ALL_CHARACTERS );
+			V_strncat( szImage, g_aTeamLowerNames[iTeam], sizeof( szImage ), COPY_ALL_CHARACTERS );
 		}
 
 		switch( iCloakstate )

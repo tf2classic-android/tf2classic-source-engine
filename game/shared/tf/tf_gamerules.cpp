@@ -4829,7 +4829,7 @@ void CTFGameRules::SendWinPanelInfo( void )
 			CTeam *pTeam = GetGlobalTeam( i );
 			if( pTeam )
 			{
-				winEvent->SetInt( UTIL_VarArgs( "%s_score", g_aTeamParticleNames[i] ), pTeam->GetScore() ); // should be g_aTeamLowerNames
+				winEvent->SetInt( UTIL_VarArgs( "%s_score", g_aTeamLowerNames[i] ), pTeam->GetScore() );
 			}
 		}
 		

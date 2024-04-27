@@ -50,7 +50,7 @@ void CHudScreenOverlays::LevelInitPreEntity( void )
 			// Precache all team colored versions including FFA.
 			for ( int j = FIRST_GAME_TEAM; j < TF_TEAM_COUNT; j++ )
 			{
-				m_ScreenOverlays[i][j].Init( VarArgs( g_aScreenOverlays[i].pszName, g_aTeamParticleNames[j] ), TEXTURE_GROUP_CLIENT_EFFECTS );
+				m_ScreenOverlays[i][j].Init( VarArgs( g_aScreenOverlays[i].pszName, g_aTeamLowerNames[j] ), TEXTURE_GROUP_CLIENT_EFFECTS );
 			}
 
 			m_ScreenOverlays[i][TEAM_SPECTATOR].Init( VarArgs( g_aScreenOverlays[i].pszName, "dm" ), TEXTURE_GROUP_CLIENT_EFFECTS );

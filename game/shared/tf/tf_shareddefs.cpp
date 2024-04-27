@@ -33,17 +33,17 @@ const char *g_aTeamNamesShort[TF_TEAM_COUNT] =
 	"ylw"
 };
 
-const char *g_aTeamParticleNames[TF_TEAM_COUNT] =
+const char *g_aTeamLowerNames[TF_TEAM_COUNT] =
 {
-	"red",
-	"red",
+	"unassigned",
+	"spectator",
 	"red",
 	"blue",
 	"green",
 	"yellow"
 };
 
-const char *GetTeamParticleName( int iTeam, bool bDeathmatchOverride /*= false*/, const char **pNames/* = g_aTeamParticleNames*/ )
+const char *GetTeamParticleName( int iTeam, bool bDeathmatchOverride /*= false*/, const char **pNames/* = g_aTeamLowerNames*/ )
 {
 	if ( bDeathmatchOverride && TFGameRules() && TFGameRules()->IsDeathmatch() )
 	{
@@ -53,7 +53,7 @@ const char *GetTeamParticleName( int iTeam, bool bDeathmatchOverride /*= false*/
 	return pNames[iTeam];
 }
 
-const char *ConstructTeamParticle( const char *pszFormat, int iTeam, bool bDeathmatchOverride /*= false*/, const char **pNames/* = g_aTeamParticleNames*/ )
+const char *ConstructTeamParticle( const char *pszFormat, int iTeam, bool bDeathmatchOverride /*= false*/, const char **pNames/* = g_aTeamLowerNames*/ )
 {
 	static char szParticleName[128];
 
@@ -61,7 +61,7 @@ const char *ConstructTeamParticle( const char *pszFormat, int iTeam, bool bDeath
 	return szParticleName;
 }
 
-void PrecacheTeamParticles( const char *pszFormat, bool bDeathmatchOverride /*= false*/, const char **pNames/* = g_aTeamParticleNames*/ )
+void PrecacheTeamParticles( const char *pszFormat, bool bDeathmatchOverride /*= false*/, const char **pNames/* = g_aTeamLowerNames*/ )
 {
 	for ( int i = FIRST_GAME_TEAM; i < TF_TEAM_COUNT; i++ )
 	{

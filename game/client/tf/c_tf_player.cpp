@@ -4906,21 +4906,21 @@ vgui::IImage* GetDefaultAvatarImage( int iPlayerIndex )
 	if ( g_PR && g_PR->IsConnected( iPlayerIndex ) && g_PR->GetTeam( iPlayerIndex ) >= FIRST_GAME_TEAM )
 	{
 		const char *pszImage = NULL;
-		
+
 		if ( TFGameRules() && !TFGameRules()->IsDeathmatch() )
 		{
-			pszImage = VarArgs( "../vgui/avatar_default_%s", g_aTeamParticleNames[g_PR->GetTeam( iPlayerIndex )] ); // g_aTeamLowerNames
+			pszImage = VarArgs( "../vgui/avatar_default_%s", g_aTeamLowerNames[g_PR->GetTeam( iPlayerIndex )] );
 		}
 		else
 		{
 			pszImage = "../vgui/avatar_default";
 		}
-		
+
 		if ( pszImage )
 		{
 			return vgui::scheme()->GetImage( pszImage, true );
 		}
 	}
-	
+
 	return NULL;
 }
