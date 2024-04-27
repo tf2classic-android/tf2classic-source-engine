@@ -9532,7 +9532,7 @@ void TestRR( const CCommand &args )
 }
 static ConCommand tf_testrr( "tf_testrr", TestRR, "Force the player under your crosshair to speak a response rule concept. Format is tf_testrr <concept>, or tf_testrr <player name> <concept>", FCVAR_CHEAT );
 
-
+#if !defined( PUBLIC_BUILD )
 CON_COMMAND_F( tf_crashclients, "testing only, crashes about 50 percent of the connected clients.", FCVAR_DEVELOPMENTONLY )
 {
 	for ( int i = 1; i < gpGlobals->maxClients; ++i )
@@ -9547,6 +9547,7 @@ CON_COMMAND_F( tf_crashclients, "testing only, crashes about 50 percent of the c
 		}
 	}
 }
+#endif
 
 CON_COMMAND_F( give_weapon, "Give specified weapon.", FCVAR_CHEAT )
 {
