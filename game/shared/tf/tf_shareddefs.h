@@ -501,6 +501,7 @@ extern const char *g_szProjectileNames[];
 // Burning
 #define TF_BURNING_FREQUENCY		0.5f
 #define TF_BURNING_FLAME_LIFE		10.0
+#define TF_BURNING_FLAME_LIFE_FLARE	9.0
 #define TF_BURNING_FLAME_LIFE_PYRO	0.25		// pyro only displays burning effect momentarily
 #define TF_BURNING_DMG				3
 

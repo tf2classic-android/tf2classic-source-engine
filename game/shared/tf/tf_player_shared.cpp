@@ -1842,6 +1842,8 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon /*= NUL
 	// pyros don't burn persistently or take persistent burning damage, but we show brief burn effect so attacker can tell they hit
 	bool bVictimIsPyro = ( TF_CLASS_PYRO == m_pOuter->GetPlayerClass()->GetClassIndex() );
 
+	bool bIsFlareGun = ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FLAREGUN );
+
 	if ( !InCond( TF_COND_BURNING ) )
 	{
 		// Start burning
@@ -1854,7 +1856,20 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon /*= NUL
 		}
 	}
 
-	float flFlameLife = bVictimIsPyro ? TF_BURNING_FLAME_LIFE_PYRO : TF_BURNING_FLAME_LIFE;
+	float flFlameLife;
+
+	if( bVictimIsPyro )
+	{
+		flFlameLife = TF_BURNING_FLAME_LIFE_PYRO;
+	}
+	else if( bIsFlareGun )
+	{
+		flFlameLife = TF_BURNING_FLAME_LIFE_FLARE;
+	}
+	else
+	{
+		flFlameLife = TF_BURNING_FLAME_LIFE;
+	}
 
 	if ( flFlameDuration != -1.0f )
 		flFlameLife = flFlameDuration;
