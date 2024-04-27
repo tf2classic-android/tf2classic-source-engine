@@ -38,7 +38,7 @@ ActionResult< CTFBot > CTFBotDeathmatch::Update( CTFBot *me, float interval )
 	if( threat )
 	{
 		CBaseEntity *pEntity = threat->GetEntity();
-		if( pEntity )
+		if( pEntity && tf_bot_debug_deathmatch.GetBool() )
 		{
 			float flRangeTo = me->GetRangeTo( pEntity );
 
