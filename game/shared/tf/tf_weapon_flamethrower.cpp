@@ -1302,8 +1302,8 @@ void CTFFlameEntity::OnCollide( CBaseEntity *pOther )
 	m_hEntitiesBurnt.AddToTail( pOther );
 
 	float flDistance = GetAbsOrigin().DistTo( m_vecInitialPos );
-	// make damage ramp down from 100% to 60% from half the max dist to the max dist
-	float flMultiplier = RemapValClamped( flDistance, tf_flamethrower_maxdamagedist.GetFloat()/2, tf_flamethrower_maxdamagedist.GetFloat(), 1.0f, 0.6f );
+	// make damage ramp down from 98% to 60% from half the max dist to the max dist
+	float flMultiplier = RemapValClamped( flDistance, tf_flamethrower_maxdamagedist.GetFloat()/2, tf_flamethrower_maxdamagedist.GetFloat(), 0.98f, 0.6f );
 	float flDamage = m_flDmgAmount * flMultiplier;
 
 	flDamage = MAX( flDamage, 1.0 );
