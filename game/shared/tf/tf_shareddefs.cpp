@@ -103,23 +103,24 @@ int GetTeamSkin( int iTeam, bool bFFAEnabled )
 		return 4;
 	}
 
+	int iTeamSkin = -1;
 	switch( iTeam )
 	{
 	case TF_TEAM_RED:
-		return 0;
+		iTeamSkin = 0;
 		break;
 	case TF_TEAM_BLUE:
-		return 1;
+		iTeamSkin = 1;
 		break;
 	case TF_TEAM_GREEN:
-		return 2;
+		iTeamSkin = 2;
 		break;
 	case TF_TEAM_YELLOW:
-		return 3;
+		iTeamSkin = 3;
 		break;
 	};
 
-	return 0;
+	return iTeamSkin;
 }
 
 //-----------------------------------------------------------------------------

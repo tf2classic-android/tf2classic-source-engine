@@ -20,6 +20,8 @@ using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+ConVar tf_respawn_on_loadoutchanges( "tf_respawn_on_loadoutchanges", "1", FCVAR_ARCHIVE, "When set to 1, you will automatically respawn whenever you change loadouts inside a respawn zone." );
+
 #define PANEL_WIDE YRES(140)
 #define PANEL_TALL YRES(70)
 #define PANEL_X_OFFSET YRES(10)
@@ -188,7 +190,7 @@ void CTFLoadoutPanel::PerformLayout()
 	m_pRGBPanel->SetVisible( iClassIndex == TF_CLASS_MERCENARY );
 	
 	m_pClassModelPanel->SetToPlayerClass( iClassIndex );
-	m_pClassModelPanel->SetTeam( GetLocalPlayerIndex(), false, iClassIndex == TF_CLASS_MERCENARY );
+	m_pClassModelPanel->SetTeam( GetLocalPlayerTeam(), false, iClassIndex == TF_CLASS_MERCENARY );
 	m_pClassModelPanel->LoadItems();
 	m_pClassModelPanel->UseCvarsForTintColor( true );
 	if( iClassIndex == TF_CLASS_MERCENARY )
@@ -312,7 +314,6 @@ void CTFLoadoutPanel::Show()
 	InvalidateLayout( false, false );
 }
 
-ConVar tf_respawn_on_loadoutchanges( "tf_respawn_on_loadoutchanges", "0" ); // FIXME
 void CTFLoadoutPanel::Hide()
 {
 	if( m_bLoadoutChanged )
