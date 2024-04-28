@@ -17,6 +17,8 @@
 #include <vgui_controls/Image.h>
 #include <vgui_controls/Controls.h>
 
+#include "tier0/icommandline.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
@@ -89,22 +91,7 @@ void ImagePanel::SetImage(const char *imageName)
 	delete [] m_pszImageName;
 	m_pszImageName = new char[ len ];
 	Q_strncpy(m_pszImageName, imageName, len );
-	InvalidateLayout(false, true); // force applyschemesettings to run
-
-	if (IsProportional() && m_pImage && !m_bScaleImage)
-	{
-		float scale = 1;
-		int screenW, screenH;
-		surface()->GetScreenSize(screenW, screenH);
-
-		int proW, proH;
-		surface()->GetProportionalBase(proW, proH);
-
-		scale = ((float)(screenH) / (float)(proH));
-
-		m_fScaleAmount = scale;
-		m_bScaleImage = true;
-	}
+	InvalidateLayout(false, true ); // force applyschemesettings to run
 }
 
 //-----------------------------------------------------------------------------
@@ -487,4 +474,24 @@ void ImagePanel::SetFrame( int nFrame )
 	}
 
 	return m_pImage->SetFrame( nFrame );
+}
+
+void ImagePanel::ScaleForScreenSize()
+{
+	if( NeedProportional() && IsProportional() )
+	{
+		float scale = 1;
+		int screenW, screenH;
+		surface()->GetScreenSize( screenW, screenH );
+		
+		int proW, proH;
+		surface()->GetProportionalBase( proW, proH );
+		
+		scale = ((float)(screenH) / (float)(proH));
+		
+		SetShouldScaleImage( true );
+		SetScaleAmount( scale );
+		
+		InvalidateLayout( false, true );
+	}
 }

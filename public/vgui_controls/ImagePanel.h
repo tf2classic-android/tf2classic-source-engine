@@ -62,6 +62,8 @@ public:
 	void SetFrame( int nFrame );
 
 	void SetRotation( int iRotation ) { m_iRotation = iRotation; }
+	
+	void ScaleForScreenSize();
 
 protected:
 	virtual void PaintBackground();

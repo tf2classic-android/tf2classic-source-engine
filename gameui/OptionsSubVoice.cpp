@@ -33,7 +33,11 @@ COptionsSubVoice::COptionsSubVoice(vgui::Panel *parent) : PropertyPage(parent, N
 	m_pVoiceTweak = engine->GetVoiceTweakAPI();
 #endif
     m_pMicMeter = new ImagePanel(this, "MicMeter");
+    m_pMicMeter->SetProportional( true );
+    m_pMicMeter->ScaleForScreenSize();
     m_pMicMeter2 = new ImagePanel(this, "MicMeter2");
+    m_pMicMeter2->SetProportional( true );
+    m_pMicMeter2->ScaleForScreenSize();
 
     m_pReceiveSliderLabel = new Label(this, "ReceiveLabel", "#GameUI_VoiceReceiveVolume");
 	m_pReceiveVolume = new CCvarSlider( this, "VoiceReceive", "#GameUI_ReceiveVolume",

@@ -281,6 +281,7 @@ void CQuickListPanel::SetImage( const char *pMapName )
 		Q_snprintf( imagename, sizeof( imagename ), "..\\vgui\\maps\\menu_thumb_%s", pMapName );
 
 		m_pMapImage->SetImage ( imagename );
+		m_pMapImage->ScaleForScreenSize();
 		m_pMapImage->SetMouseInputEnabled( false );
 	}							
 }
