@@ -46,6 +46,7 @@ public:
 	virtual bool	ClientCommand( CTFPlayer *pPlayer, const CCommand &args );
 
 	virtual void	DetonateObject( void );
+	virtual void	DestroyObject( void );
 	virtual void	OnGoActive( void );	
 	virtual bool	StartBuilding( CBaseEntity *pBuilder );
 	virtual void	InitializeMapPlacedObject( void );

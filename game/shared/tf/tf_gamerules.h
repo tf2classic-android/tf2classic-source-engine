@@ -438,9 +438,9 @@ public:
 	bool CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex );
 
 	virtual const char *GetGameDescription( void );
-
-	const CUtlVector< CHandle< CBaseEntity > > &GetHealthEntityVector( void ) { Assert(m_hAmmoEntities.Count()); return m_hAmmoEntities; }		// return vector of health entities
-	const CUtlVector< CHandle< CBaseEntity > > &GetAmmoEntityVector( void ) { Assert(m_hHealthEntities.Count()); return m_hHealthEntities; }		// return vector of ammo entities
+	
+	const CUtlVector< CHandle< CBaseEntity > > &GetHealthEntityVector( void ); // return vector of health entities
+	const CUtlVector< CHandle< CBaseEntity > > &GetAmmoEntityVector( void ); // return vector of ammo entities
 
 	CHandle< CTeamTrainWatcher > GetPayloadToPush( int pushingTeam ) const;			// return the train watcher for the Payload cart the given team needs to push to win, or NULL if none currently exists
 	CHandle< CTeamTrainWatcher > GetPayloadToBlock( int blockingTeam ) const;		// return the train watcher for the Payload cart the given team needs to block from advancing, or NULL if none currently exists
@@ -478,6 +478,9 @@ public:
 	void	SendHudNotification( IRecipientFilter &filter, const char *pszText, const char *pszIcon, int iTeam = TEAM_UNASSIGNED );
 
 	void	OnNavMeshLoad( void );
+	
+	void OnDispenserBuilt( CBaseEntity *dispenser );
+	void OnDispenserDestroyed( CBaseEntity *dispenser );
 
 	bool	Domination_RunLogic();
 
@@ -520,6 +523,9 @@ private:
 
 private:
 
+	void ComputeHealthAndAmmoVectors( void ); // compute internal vectors of health and ammo locations
+	bool m_areHealthAndAmmoVectorsReady;
+	
 #ifdef GAME_DLL
 	mutable CHandle< CTeamTrainWatcher > m_redPayloadToPush;
 	mutable CHandle< CTeamTrainWatcher > m_bluePayloadToPush;
@@ -541,9 +547,12 @@ private:
 	float m_flTimerMayExpireAt;
 
 	CountdownTimer m_botCountTimer;
-
-	CUtlVector< CHandle< CBaseEntity > > m_hAmmoEntities;		// vector of active ammo entities
-	CUtlVector< CHandle< CBaseEntity > > m_hHealthEntities;	// vector of active health entities
+	
+	CUtlVector< CHandle< CBaseEntity > > m_ammoVector; // vector of active ammo entities
+	bool m_isAmmoVectorReady; // for lazy evaluation
+	
+	CUtlVector< CHandle< CBaseEntity > > m_healthVector; // vector of active health entities
+	bool m_isHealthVectorReady; // for lazy evaluation
 
 	bool m_bFirstBlood;
 	int	m_iArenaTeamCount;
