@@ -2062,12 +2062,19 @@ int CTFGameRules::GetClassLimit( int iDesiredClassIndex, int iTeam )
 	return result;
 }
 
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iDesiredClassIndex )
 {
+	// Allow players to join the VIP class if the CVar is enabled.
+	if ( iDesiredClassIndex > TF_LAST_NORMAL_CLASS && !tf2c_allow_special_classes.GetBool() )
+		return false;
+	
+	// Don't allow manually becoming VIP in VIP Escort mode.
+	if ( iDesiredClassIndex == TF_CLASS_CIVILIAN && GetGameType() == TF_GAMETYPE_VIP )
+		return false;
+	
 	CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
 	CTFTeam *pTFTeam = pTFPlayer->GetTFTeam();
 	int iClassLimit = 0;
@@ -2089,7 +2096,7 @@ bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iDesiredClass
 	{
 		return true;
 	}
-
+	
 	return true;
 }
 
