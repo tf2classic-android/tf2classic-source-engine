@@ -186,7 +186,7 @@ void CTFStatsSummaryPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 	BaseClass::ApplySchemeSettings( pScheme );
 
 	SetProportional( true );
-	LoadControlSettings( "Resource/UI/StatSummary.res" );
+	LoadControlSettings( "Resource/UI/main_menu/LoadingScreen.res" );
 	m_bControlsLoaded = true;
 
 	UpdateDialog();
