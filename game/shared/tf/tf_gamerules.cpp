@@ -1815,6 +1815,8 @@ void CTFGameRules::Activate()
 	// bot roster
 	m_hBlueBotRoster = NULL;
 	m_hRedBotRoster = NULL;
+	m_hGreenBotRoster = NULL;
+	m_hYellowBotRoster = NULL;
 
 	CHandle<CTFBotRoster> hBotRoster = dynamic_cast<CTFBotRoster *>( gEntList.FindEntityByClassname( NULL, "bot_roster" ) );
 	while( hBotRoster != NULL )
@@ -1827,6 +1829,14 @@ void CTFGameRules::Activate()
 		{
 			m_hRedBotRoster = hBotRoster;
 		}
+		else if( FStrEq( hBotRoster->m_teamName.ToCStr(), "green" ) )
+		{
+			m_hGreenBotRoster = hBotRoster;
+		}
+		else if( FStrEq( hBotRoster->m_teamName.ToCStr(), "yellow" ) )
+		{
+			m_hYellowBotRoster = hBotRoster;
+		}
 		else
 		{
 			if( m_hBlueBotRoster == NULL )
@@ -1836,6 +1846,14 @@ void CTFGameRules::Activate()
 			if( m_hRedBotRoster == NULL )
 			{
 				m_hRedBotRoster = hBotRoster;
+			}
+			if( m_hGreenBotRoster == NULL )
+			{
+				m_hGreenBotRoster = hBotRoster;
+			}
+			if( m_hYellowBotRoster == NULL )
+			{
+				m_hYellowBotRoster = hBotRoster;
 			}
 		}
 		hBotRoster = dynamic_cast<CTFBotRoster *>( gEntList.FindEntityByClassname( hBotRoster, "bot_roster" ) );
@@ -2086,6 +2104,8 @@ bool CTFGameRules::CanBotChangeClass( CBasePlayer *pPlayer )
 		{
 			case TF_TEAM_RED:  return m_hRedBotRoster ? m_hRedBotRoster->IsClassChangeAllowed() : true; break;
 			case TF_TEAM_BLUE: return m_hBlueBotRoster ? m_hBlueBotRoster->IsClassChangeAllowed() : true; break;
+			case TF_TEAM_GREEN: return m_hGreenBotRoster ? m_hGreenBotRoster->IsClassChangeAllowed() : true; break;
+			case TF_TEAM_YELLOW: return m_hYellowBotRoster ? m_hYellowBotRoster->IsClassChangeAllowed() : true; break;
 		}
 	}
 	return true;
@@ -2105,6 +2125,12 @@ bool CTFGameRules::CanBotChooseClass( CBasePlayer *pPlayer, int iDesiredClassInd
 				break;
 			case TF_TEAM_BLUE:
 				bCanChooseClass = m_hBlueBotRoster ? m_hBlueBotRoster->IsClassAllowed( iDesiredClassIndex ) : true;
+				break;
+			case TF_TEAM_GREEN:
+				bCanChooseClass = m_hGreenBotRoster ? m_hGreenBotRoster->IsClassAllowed( iDesiredClassIndex ) : true;
+				break;
+			case TF_TEAM_YELLOW:
+				bCanChooseClass = m_hYellowBotRoster ? m_hYellowBotRoster->IsClassAllowed( iDesiredClassIndex ) : true;
 				break;
 			default:
 				// no roster - spectator team

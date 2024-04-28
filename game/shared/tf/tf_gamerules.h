@@ -588,6 +588,8 @@ public:
 	// for bot rosters
 	CHandle<CTFBotRoster> m_hBlueBotRoster;
 	CHandle<CTFBotRoster> m_hRedBotRoster;
+	CHandle<CTFBotRoster> m_hGreenBotRoster;
+	CHandle<CTFBotRoster> m_hYellowBotRoster;
 
 	// Automatic vote called near the end of a map
 	bool    m_bVoteCalled;
