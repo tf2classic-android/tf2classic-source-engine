@@ -118,7 +118,6 @@ public:
 
 			// good cover, are we also right next to enemy incursion areas?
 			CUtlVector< CTFNavArea * > invasion_vector;
-			memset( &invasion_vector, 0, sizeof( invasion_vector ) );
 			
 			ForEachEnemyTFTeam( m_teamToAmbush, [&area,&invasion_vector](int enemyTeam)
 			{
@@ -2155,7 +2154,7 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 				describe = "Blocked for Blue";
 			}
 
-			if ( describe && TheNavMesh->GetSelectedArea() == area )
+			if ( describe[0] && TheNavMesh->GetSelectedArea() == area )
 			{
 				NDebugOverlay::Text( area->GetCenter(), describe, false, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 			}
@@ -2560,7 +2559,7 @@ void CTFNavMesh::UpdateDebugDisplay( void ) const
 				describe = "Unblockable";
 			}
 
-			if ( describe && TheNavMesh->GetSelectedArea() == area )
+			if ( describe[0] && TheNavMesh->GetSelectedArea() == area )
 			{
 				NDebugOverlay::Text( area->GetCenter(), describe, false, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 			}

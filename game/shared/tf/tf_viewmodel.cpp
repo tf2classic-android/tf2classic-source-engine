@@ -42,6 +42,7 @@ CTFViewModel::CTFViewModel() : m_LagAnglesHistory("CPredictedViewModel::m_LagAng
 	m_vLagAngles.Init();
 	m_LagAnglesHistory.Setup( &m_vLagAngles, 0 );
 	m_vLoweredWeaponOffset.Init();
+	m_iViewModelType = VMTYPE_NONE;
 }
 #else
 CTFViewModel::CTFViewModel()

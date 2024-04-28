@@ -36,7 +36,7 @@ static string_t s_iszSawBlade01;
 static string_t s_iszSawBlade02;
 #endif
 
-CTFGrenadeStickybombProjectile::CTFGrenadeStickybombProjectile()
+CTFGrenadeStickybombProjectile::CTFGrenadeStickybombProjectile() : m_flCreationTime( -1.f )
 {
 #ifdef GAME_DLL
 	s_iszSawBlade01 = AllocPooledString( "sawmovelinear01" );

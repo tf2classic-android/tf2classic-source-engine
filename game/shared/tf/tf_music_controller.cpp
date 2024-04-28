@@ -113,12 +113,7 @@ void CTFMusicController::Precache()
 void CTFMusicController::ParseMusicData( const char *pszFile )
 {
 	KeyValues *pKV = new KeyValues( "Music" );
-	if( !pKV )
-	{
-		// impossible
-		return;
-	}
-	
+
 	if( pKV->LoadFromFile( filesystem, pszFile, "MOD" ) )
 	{
 		for( KeyValues *pData = pKV->GetFirstSubKey(); pData != NULL; pData = pData->GetNextKey() )

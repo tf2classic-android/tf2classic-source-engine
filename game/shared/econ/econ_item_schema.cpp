@@ -240,5 +240,5 @@ CEconItemAttribute *CEconItemDefinition::IterateAttributes( string_t strClass )
 //-----------------------------------------------------------------------------
 bool CEconItemDefinition::IsAWearable()
 {
-	return act_as_wearable || item_slot >= TF_LOADOUT_SLOT_HAT;
+	return act_as_wearable || (item_slot >= TF_LOADOUT_SLOT_HAT);
 }

@@ -30,6 +30,7 @@ CREATE_SIMPLE_WEAPON_TABLE( TFRocketLauncher, tf_weapon_rocketlauncher )
 CTFRocketLauncher::CTFRocketLauncher()
 {
 	m_bReloadsSingly = true;
+	m_flShowReloadHintAt = 0.f;
 }
 
 //-----------------------------------------------------------------------------

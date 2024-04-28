@@ -31,6 +31,7 @@ public:
 	CEconItemView();
 	CEconItemView( int iItemID );
 	CEconItemView( const char *pszName );
+	virtual ~CEconItemView() = default;
 
 	void Init( int iItemID );
 	void Init( const char *pszName );

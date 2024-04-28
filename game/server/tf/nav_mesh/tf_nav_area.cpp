@@ -4,6 +4,7 @@
 // Michael Booth, February 2009
 
 #include "cbase.h"
+#include "team.h"
 #include "tf_nav_mesh.h"
 #include "tf_nav_area.h"
 #include "tf_gamerules.h"
@@ -36,6 +37,9 @@ CTFNavArea::CTFNavArea( void )
 	m_distanceToBombTarget = 0.0f;
 	m_TFMark = 0;
 	m_invasionSearchMarker = (unsigned int)-1;
+	for( int i = 0; i < GetNumberOfTeams(); i++ )
+		m_distanceFromSpawnRoom[i] = -1;
+	m_distanceFromSpawnRoomFFA = -1;
 }
 
 
@@ -271,7 +275,7 @@ public:
 
 	void FilterArea( CTFNavArea *area, CTFNavArea *adjArea )
 	{
-		if ( adjArea->IsInvasionSearchMarked( m_visibleMarker ) )
+		if ( adjArea && adjArea->IsInvasionSearchMarked( m_visibleMarker ) )
 		{
 			// also in PVS - can't be invasion area
 			return;
@@ -410,11 +414,11 @@ bool CTFNavArea::IsBlocked( int teamID, bool ignoreNavBlockers ) const
 	switch( teamID )
 	{
 	case TF_TEAM_RED:
-		if( HasAttributeTF( TF_NAV_BLUE_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR ) )
+		if( HasAttributeTF( TF_NAV_BLUE_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR | TF_NAV_YELLOW_ONE_WAY_DOOR ) )
 			return true;
 		break;
 	case TF_TEAM_BLUE:
-		if( HasAttributeTF( TF_NAV_RED_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR ) )
+		if( HasAttributeTF( TF_NAV_RED_ONE_WAY_DOOR | TF_NAV_GREEN_ONE_WAY_DOOR | TF_NAV_YELLOW_ONE_WAY_DOOR ) )
 			return true;
 		break;
 	case TF_TEAM_GREEN:

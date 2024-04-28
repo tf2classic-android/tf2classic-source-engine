@@ -822,7 +822,7 @@ void CBaseObject::DeterminePlaybackRate( void )
 void CBaseObject::StartUpgrading(void)
 {
 	// Increase level
-	m_iUpgradeLevel++;
+	++m_iUpgradeLevel;
 
 	// more health
 	if ( !IsRedeploying() )
@@ -2898,7 +2898,7 @@ int CBaseObject::DrawDebugTextOverlays(void)
 void CBaseObject::RotateBuildAngles( void )
 {
 	// rotate the build angles by 90 degrees ( final angle calculated after we network this )
-	m_iDesiredBuildRotations++;
+	++m_iDesiredBuildRotations;
 	m_iDesiredBuildRotations = m_iDesiredBuildRotations % 4;
 }
 

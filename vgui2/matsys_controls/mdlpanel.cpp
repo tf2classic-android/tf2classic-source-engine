@@ -81,6 +81,10 @@ CMDLPanel::CMDLPanel( vgui::Panel *pParent, const char *pName ) : BaseClass( pPa
 	m_bThumbnailSafeZone = false;
 	m_nNumSequenceLayers = 0;
 	ResetAnimationEventState( &m_EventState );
+	memset( &m_SequenceLayers, 0, sizeof( MDLSquenceLayer_t ) );
+	memset( &m_SequenceLayerEventState, 0, sizeof( MDLAnimEventState_t ) );
+	m_bIgnoreDoubleClick = false;
+	memset( &m_PoseParameters, 0, sizeof( float ) );
 }
 
 CMDLPanel::~CMDLPanel()

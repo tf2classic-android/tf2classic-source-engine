@@ -40,7 +40,7 @@ static string_t s_iszTrainName;
 // Purpose: 
 // Input  :  - 
 //-----------------------------------------------------------------------------
-CTFGrenadePipebombProjectile::CTFGrenadePipebombProjectile()
+CTFGrenadePipebombProjectile::CTFGrenadePipebombProjectile() : m_flCreationTime( -1.f )
 {
 #ifdef GAME_DLL
 	m_bTouched = false;

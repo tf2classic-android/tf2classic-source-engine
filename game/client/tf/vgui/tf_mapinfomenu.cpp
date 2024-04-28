@@ -438,10 +438,10 @@ static s_MapInfo s_Maps[] = {
     "ctf_well",             "Well",             "#Gametype_CTF",                "Valve",
 //  "ctf_doublecross",      "Double Cross",     "#Gametype_CTF",                "Valve",
     "ctf_turbine",          "Turbine",          "#Gametype_CTF",                "Flobster",
-    "ctf_landfall"          "Landfall",         "#Gametype_CTF",                "Dr. Spud",
+    "ctf_landfall",         "Landfall",         "#Gametype_CTF",                "Dr. Spud",
     //---------------------- CP maps ----------------------
     "cp_dustbowl",          "Dustbowl",         "#Gametype_AttackDefense",      "Valve",
-    "cp_gravelpit",         "Gravel Pit"        "#Gametype_AttackDefense",      "Valve",
+    "cp_gravelpit",         "Gravel Pit",       "#Gametype_AttackDefense",      "Valve",
     "cp_gorge",             "Gorge",            "#Gametype_AttackDefense",      "Valve",
 //  "cp_mountainlab",       "Mountain Lab",     "#Gametype_AttackDefense",      "Valve, 3Dnj",
     "cp_furnace_rc",        "Furnace Creek",    "#Gametype_AttackDefense",      "YM, Nineaxis",

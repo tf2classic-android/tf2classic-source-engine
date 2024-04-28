@@ -555,6 +555,9 @@ CTFFooter::CTFFooter( Panel *parent, const char *panelName ) : BaseClass( parent
 	m_szTextFont[0] = '\0';
 	m_szFGColor[0] = '\0';
 	m_szBGColor[0] = '\0';
+	
+	m_hButtonFont = NULL;
+	m_hTextFont = NULL;
 }
 
 //-----------------------------------------------------------------------------

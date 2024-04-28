@@ -186,6 +186,15 @@ CWeaponMedigun::~CWeaponMedigun()
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::WeaponReset( void )
 {
+#if defined( CLIENT_DLL )
+	memset( &m_hHealingTargetEffect, 0, sizeof( healingtargeteffects_t ) );
+	m_flFlashCharge = -1.f;
+#else
+	m_bHealingSelf = false;
+#endif
+
+	m_flNextTargetCheckTime = -1.f;
+
 	BaseClass::WeaponReset();
 
 	m_flHealEffectLifetime = 0;

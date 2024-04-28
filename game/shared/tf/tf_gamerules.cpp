@@ -859,6 +859,7 @@ public:
 			{
 			default:
 				result = -1;
+				break;
 			case TF_CLASS_ENGINEER:
 				result = m_nEngineerLimit;
 				break;
@@ -1988,6 +1989,7 @@ int CTFGameRules::GetClassLimit( int iDesiredClassIndex, int iTeam )
 			{
 				default:
 					result = -1;
+					break;
 				case TF_CLASS_ENGINEER:
 					result = tf_tournament_classlimit_engineer.GetInt();
 					break;
@@ -3535,25 +3537,9 @@ void cc_ShowRespawnTimes()
 
 		if ( TFGameRules()->IsFourTeamGame() )
 		{
-			float flGreenMin = (pRules->m_TeamRespawnWaveTimes[TF_TEAM_GREEN] >= 0 ? pRules->m_TeamRespawnWaveTimes[TF_TEAM_GREEN] : mp_respawnwavetime.GetFloat());
-			float flGreenScalar = pRules->GetRespawnTimeScalar(TF_TEAM_GREEN);
-			float flNextGreenRespawn = pRules->GetNextRespawnWave(TF_TEAM_GREEN, NULL) - gpGlobals->curtime;
-
-			float flYellowMin = (pRules->m_TeamRespawnWaveTimes[TF_TEAM_YELLOW] >= 0 ? pRules->m_TeamRespawnWaveTimes[TF_TEAM_YELLOW] : mp_respawnwavetime.GetFloat());
-			float flYellowScalar = pRules->GetRespawnTimeScalar(TF_TEAM_YELLOW);
-			float flNextYellowRespawn = pRules->GetNextRespawnWave(TF_TEAM_YELLOW, NULL) - gpGlobals->curtime;
-
-			char tempGreen[128];
-			Q_snprintf(tempBlue, sizeof(tempBlue), "Green: Min Spawn %2.2f, Scalar %2.2f, Next Spawn In: %.2f\n", flGreenMin, flGreenScalar, flNextGreenRespawn);
-
-			char tempYellow[128];
-			Q_snprintf(tempBlue, sizeof(tempBlue), "Yellow: Min Spawn %2.2f, Scalar %2.2f, Next Spawn In: %.2f\n", flYellowMin, flYellowScalar, flNextYellowRespawn);
-
-			ClientPrint(pPlayer, HUD_PRINTTALK, tempGreen);
-			ClientPrint(pPlayer, HUD_PRINTTALK, tempYellow);
+			ClientPrint( pPlayer, HUD_PRINTTALK, tempGreen );
+			ClientPrint( pPlayer, HUD_PRINTTALK, tempYellow );
 		}
-
-
 	}
 }
 
@@ -5133,6 +5119,7 @@ void CTFGameRules::ShowRoundInfoPanel( CTFPlayer *pPlayer /* = NULL */ )
 	if ( m_iCurrentRoundState < 0 )
 	{
 		// Haven't set up the round state yet
+		data->deleteThis();
 		return;
 	}
 

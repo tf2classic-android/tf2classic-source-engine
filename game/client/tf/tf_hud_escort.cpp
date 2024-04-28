@@ -934,6 +934,7 @@ void CEscortHillPanel::FireGameEvent( IGameEvent *event )
 //=============================================================================
 CTFHudEscortProgressBar::CTFHudEscortProgressBar( Panel *pParent, const char *pszName, int iTeam ) : ImagePanel( pParent, pszName )
 {
+	m_flProgress = 0.f;
 	m_iTeamNum = iTeam;
 
 	const char *pszTextureName = m_iTeamNum == TF_TEAM_RED ? "hud/cart_track_red_opaque" : "hud/cart_track_blue_opaque";

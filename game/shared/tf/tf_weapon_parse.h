@@ -68,7 +68,7 @@ public:
 	DECLARE_CLASS_GAMEROOT( CTFWeaponInfo, FileWeaponInfo_t );
 	
 	CTFWeaponInfo();
-	~CTFWeaponInfo();
+	virtual ~CTFWeaponInfo() = default;
 	
 	virtual void Parse( ::KeyValues *pKeyValuesData, const char *szWeaponName );
 

@@ -52,6 +52,7 @@ CModelPanel::CModelPanel( vgui::Panel *pParent, const char *pName ) : vgui::Edit
 	m_bPanelDirty = true;
 	m_bStartFramed = false;
 	m_bAllowOffscreen = false;
+	m_flFrameDistance = 0.f;
 
 	ListenForGameEvent( "game_newmap" );
 }

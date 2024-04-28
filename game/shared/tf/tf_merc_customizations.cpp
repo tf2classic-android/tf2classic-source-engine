@@ -28,11 +28,6 @@ CTFMercCustomizations::CTFMercCustomizations( const char *pszName ) : CAutoGameS
 bool CTFMercCustomizations::Init()
 {
 	KeyValues *pKV = new KeyValues( "respawn_particles" );
-	if( !pKV )
-	{
-		// impossible
-		return false;
-	}
 
 	if( pKV->LoadFromFile( filesystem, MERC_CUSTOM_FILE, "MOD" ) )
 	{

@@ -1297,7 +1297,7 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 
 	if ( me->IsPlayerClass( TF_CLASS_MEDIC ) )
 	{
-		if ( myWeapon && myWeapon->IsWeapon( TF_WEAPON_MEDIGUN ) )
+		if ( myWeapon->IsWeapon( TF_WEAPON_MEDIGUN ) )
 		{
 			// don't interfere with medic healing behaviors
 			return;

@@ -3318,9 +3318,9 @@ void CTFPlayer::FireBullet( const FireBulletsInfo_t &info, bool bDoEffects, int 
 					const char *pszTracerEffect = GetTracerType();
 					if ( pszTracerEffect && pszTracerEffect[0] )
 					{
-						char szTracerEffect[128];
 						if ( nDamageType & DMG_CRITICAL )
 						{
+							char szTracerEffect[128];
 							Q_snprintf( szTracerEffect, sizeof(szTracerEffect), "%s_crit", pszTracerEffect );
 							pszTracerEffect = szTracerEffect;
 						}

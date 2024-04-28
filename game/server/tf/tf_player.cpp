@@ -988,7 +988,7 @@ void CTFPlayer::PrecachePlayerModels( void )
 	for ( i = 0; i < TF_CLASS_COUNT_ALL; i++ )
 	{
 		const char *pszModel = GetPlayerClassData( i )->m_szModelName;
-		if ( pszModel && pszModel[0] )
+		if ( pszModel[0] )
 		{
 			int iModel = PrecacheModel( pszModel );
 			PrecacheGibsForModel( iModel );
@@ -998,14 +998,14 @@ void CTFPlayer::PrecachePlayerModels( void )
 		{
 			// Precache the hardware facial morphed models as well.
 			const char *pszHWMModel = GetPlayerClassData( i )->m_szHWMModelName;
-			if ( pszHWMModel && pszHWMModel[0] )
+			if ( pszHWMModel[0] )
 			{
 				PrecacheModel( pszHWMModel );
 			}
 		}
 
 		const char *pszHandModel = GetPlayerClassData(i)->m_szModelHandsName;
-		if ( pszHandModel && pszHandModel[0] )
+		if ( pszHandModel[0] )
 		{
 			PrecacheModel( pszHandModel );
 		}
@@ -9727,11 +9727,6 @@ bool CTFPlayer::PlayerHasPowerplay( void )
 	}
 
 	KeyValues *kv = new KeyValues( "DEVKEY" );
-	if( !kv )
-	{
-		return false;
-	}
-
 	if( kv->LoadFromFile( g_pFullFileSystem, "cfg/devkey.txt", "MOD" ) )
 	{
 		KeyValues *pDevKey = kv->FindKey( "key" );
@@ -9744,6 +9739,7 @@ bool CTFPlayer::PlayerHasPowerplay( void )
 			{
 				if( !Q_strcmp( pszClientKey, pszKey ) )
 				{
+					kv->deleteThis();
 					return true;
 				}
 			}

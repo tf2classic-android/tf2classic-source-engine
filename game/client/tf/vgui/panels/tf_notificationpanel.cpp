@@ -22,6 +22,7 @@ CTFNotificationPanel::CTFNotificationPanel( vgui::Panel* parent, const char *pan
 	m_iOrgNextPos = 0;
 	m_iCurrent = 0;
 	m_iCount = 0;
+	m_iMinHeight = 0;
 }
 
 //-----------------------------------------------------------------------------
