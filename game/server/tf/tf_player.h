@@ -407,6 +407,8 @@ public:
 	int GetNumberOfDominations( void ) { return m_iDominations; }
 	void UpdateDominationsCount( void );
 	
+	bool CanInstantlyRespawn();
+	
 	void SetRespawnEffect( const char *pszEffect )
 	{
 		V_strncpy( m_szRespawnEffect, pszEffect, sizeof( m_szRespawnEffect ) );

@@ -2945,67 +2945,50 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 	if ( GetNextChangeClassTime() > gpGlobals->curtime )
 		return;
 
-	// Can't change class at all
-	if ( !CanShowClassMenu() )
-		return;
-
 	// In case we don't get the class menu message before the spawn timer
 	// comes up, fake that we've closed the menu.
 	SetClassMenuOpen( false );
 
-	if ( TFGameRules()->InStalemate() )
+	// Can't change class at all
+	if ( !CanShowClassMenu() )
+		return;
+
+	if ( TFGameRules()->InStalemate() && (TFGameRules()->GetGameType() != TF_GAMETYPE_ARENA) )
 	{
 		if ( IsAlive() && !TFGameRules()->CanChangeClassInStalemate() )
 		{
-			ClientPrint(this, HUD_PRINTTALK, "#game_stalemate_cant_change_class" );
+			ClientPrint(this, HUD_PRINTTALK, "#game_stalemate_cant_change_class", UTIL_VarArgs( "%.f", tf_stalematechangeclasstime.GetFloat() ) );
 			return;
 		}
 	}
-
+	
 	int iClass = TF_CLASS_UNDEFINED;
-	bool bShouldNotRespawn = false;
-
-	if ( TFGameRules()->State_Get() == GR_STATE_TEAM_WIN )
+	if ( stricmp( pClassName, "random" ) != 0 && stricmp( pClassName, "auto" ) != 0 )
 	{
-		m_bAllowInstantSpawn = false;
-		bShouldNotRespawn = true;
-	}
-
-	//TF_MOD_BOT changes
-	if ( (stricmp( pClassName, "random" ) != 0) && (stricmp( pClassName, "auto" ) != 0) )
-	{
-		// Allow players to join the mercenary and civilian class if the cvar is enabled
-		int iLastClass = tf2c_allow_special_classes.GetBool() ? TF_CLASS_COUNT : TF_LAST_NORMAL_CLASS;
-
-		int i = 0;
-
-		for ( i = TF_FIRST_NORMAL_CLASS; i < TF_CLASS_COUNT_ALL; i++ )
+		for ( int i = TF_FIRST_NORMAL_CLASS; i < TF_CLASS_COUNT_ALL; i++ )
 		{
-			if ( stricmp( pClassName, GetPlayerClassData( i )->m_szClassName ) == 0 )
+			if ( V_stricmp( pClassName, g_aPlayerClassNames_NonLocalized[i] ) == 0 )
 			{
 				iClass = i;
 				break;
 			}
 		}
 		
-		if ( i > iLastClass )
+		if ( iClass == TF_CLASS_UNDEFINED )
 		{
-			ClientPrint( this, HUD_PRINTCONSOLE, UTIL_VarArgs( "Invalid class name \"%s\".\n", pClassName ) );
+			ClientPrint( this, HUD_PRINTCONSOLE, UTIL_VarArgs( "Invalid class name \"%s\".", pClassName ) );
 			return;
 		}
+		
+		if ( !TFGameRules()->CanPlayerChooseClass( this, iClass ) )
+			return;
 	}
 	else
 	{
-		// The player has selected Random class...so let's pick one for them.
-		do
-		{
-			// Don't let them be the same class twice in a row
-			iClass = random->RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS );
-		} while( iClass == GetPlayerClass()->GetClassIndex() );
+		iClass = TF_CLASS_RANDOM;
 	}
-
-	if ( !TFGameRules()->CanPlayerChooseClass( this, iClass ) )
-		return;
+	
+	bool bCanAutoRespawn = CanInstantlyRespawn();
 
 	// joining the same class?
 	if ( iClass != TF_CLASS_RANDOM && iClass == GetDesiredPlayerClassIndex() )
@@ -3020,8 +3003,15 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 		return;
 	}
 
-	SetNextChangeClassTime(gpGlobals->curtime + 2.0f);
-
+	SetNextChangeClassTime( gpGlobals->curtime + 2.0f );
+	
+#if SOONSOON
+	if ( (TFGameRules()->GetGameType() == TF_GAMETYPE_ARENA) && tf_arena_use_queue.GetBool() && GetTeamNumber() < 2 )
+	{
+		TFGameRules()->AddPlayerToQueue( this );
+	}
+#endif
+    
 	SetDesiredPlayerClassIndex( iClass );
 	IGameEvent * event = gameeventmanager->CreateEvent( "player_changeclass" );
 	if ( event )
@@ -3031,47 +3021,8 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 
 		gameeventmanager->FireEvent( event );
 	}
-
-	// are they TF_CLASS_RANDOM and trying to select the class they're currently playing as (so they can stay this class)?
-	if ( iClass == GetPlayerClass()->GetClassIndex() )
-	{
-		// If we're dead, and we have instant spawn, respawn us immediately. Catches the case
-		// were a player misses respawn wave because they're at the class menu, and then changes
-		// their mind and reselects their current class.
-		if ( m_bAllowInstantSpawn && !IsAlive() )
-		{
-			ForceRespawn();
-		}
-		return;
-	}
-
-	// We can respawn instantly if:
-	//	- We're dead, and we're past the required post-death time
-	//	- We're inside a respawn room
-	//	- We're in the stalemate grace period
-	bool bInRespawnRoom = PointInRespawnRoom( this, WorldSpaceCenter() );
-	if ( bInRespawnRoom && !IsAlive() )
-	{
-		// If we're not spectating ourselves, ignore respawn rooms. Otherwise we'll get instant spawns
-		// by spectating someone inside a respawn room.
-		bInRespawnRoom = (GetObserverTarget() == this);
-	}
-	bool bDeadInstantSpawn = !IsAlive();
-	if ( bDeadInstantSpawn && m_flDeathTime )
-	{
-		// In death mode, don't allow class changes to force respawns ahead of respawn waves
-		float flWaveTime = TFGameRules()->GetNextRespawnWave( GetTeamNumber(), this );
-		bDeadInstantSpawn = (gpGlobals->curtime > flWaveTime);
-	}
-	bool bInStalemateClassChangeTime = false;
-	if ( TFGameRules()->InStalemate() )
-	{
-		// Stalemate overrides respawn rules. Only allow spawning if we're in the class change time.
-		bInStalemateClassChangeTime = TFGameRules()->CanChangeClassInStalemate();
-		bDeadInstantSpawn = false;
-		bInRespawnRoom = false;
-	}
-	if ( bShouldNotRespawn == false && ( m_bAllowInstantSpawn || bDeadInstantSpawn || bInRespawnRoom || bInStalemateClassChangeTime ) )
+	
+	if ( bCanAutoRespawn )
 	{
 		ForceRespawn();
 		return;
@@ -3100,7 +3051,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 		}
 	}
 
-	if ( IsAlive() && ( GetHudClassAutoKill() == true ) && bShouldNotRespawn == false )
+	if ( IsAlive() && ( GetHudClassAutoKill() == true ) && TFGameRules()->State_Get() != GR_STATE_TEAM_WIN )
 	{
 		CommitSuicide( false, true );
 		RemoveAllObjects( false );
@@ -3289,6 +3240,13 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 			}
 
 		}
+		return true;
+	}
+	else if( FStrEq( pcmd, "loadoutchanged" ) )
+	{
+		if( ShouldRunRateLimitedCommand( args ) && !tf2c_random_weapons.GetBool() && CanInstantlyRespawn() )
+			ForceRespawn();
+		
 		return true;
 	}
 	else if ( FStrEq( pcmd, "disguise" ) ) 
@@ -9874,6 +9832,40 @@ void CTFPlayer::UpdateDominationsCount( void )
 			m_iDominations++;
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::CanInstantlyRespawn()
+{
+	if( !TFGameRules() )
+		return false;
+	
+	int iGameState = TFGameRules()->State_Get();
+	if ( iGameState == GR_STATE_TEAM_WIN )
+	{
+		m_bAllowInstantSpawn = false;
+		return false;
+	}
+	
+	if ( iGameState == GR_STATE_PREROUND )
+		return true;
+	
+	// We can respawn instantly if:
+	//      - We're dead, and we're past the required post-death time
+	//      - We're inside a respawn room
+	//      - We're in the stalemate grace period
+	
+	if ( (TFGameRules()->State_Get() == GR_STATE_PREGAME) || m_bAllowInstantSpawn )
+		return true;
+	
+	if ( TFGameRules()->InStalemate() || (TFGameRules()->GetGameType() != TF_GAMETYPE_ARENA) )
+		return ( IsAlive() && TFGameRules()->CanChangeClassInStalemate() );
+	
+	// If we're dead, ignore respawn rooms. Otherwise we'll get instant spawns
+	// by spectating someone inside a respawn room.
+	return ( IsAlive() && PointInRespawnRoom( this, WorldSpaceCenter() ) );
 }
 
 //-----------------------------------------------------------------------------
