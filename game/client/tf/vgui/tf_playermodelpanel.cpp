@@ -43,7 +43,6 @@ CTFPlayerModelPanel::CTFPlayerModelPanel( Panel *pParent, const char *pName ) : 
 	m_pSpawnEffectData = NULL;
 	m_pStudioHdr = NULL;
 	memset( m_bCustomClassData, 0, sizeof( m_bCustomClassData ) );
-	//memset( m_Items, 0, sizeof( m_Items ) );
 
 	m_pScene = NULL;
 	m_flCurrentTime = 0.0f;
@@ -389,12 +388,8 @@ void CTFPlayerModelPanel::SetTeam( int iTeam, bool bInGame, bool bForceFFA )
 {
 	m_iTeamNum = iTeam;
 
-	int iLocalSkin = -1;
-#if SOONSOON
-	if( (bForceFFA || bInGame) && TFGameRules() && TFGameRules()->IsFreeForAll() )
-#else
-	if( (bForceFFA || bInGame) && TFGameRules() && TFGameRules()->IsDeathmatch() )
-#endif
+	int iLocalSkin = 0;
+	if( bForceFFA || (bInGame && TFGameRules() && TFGameRules()->IsDeathmatch()) )
 	{
 		iLocalSkin = 8;
 	}
@@ -458,7 +453,7 @@ CEconItemView *CTFPlayerModelPanel::GetItemInSlot( ETFLoadoutSlot iSlot )
 {
 	FOR_EACH_VEC( m_Items, i )
 	{
-		if( m_Items.Element( i )->GetStaticData()->item_slot == iSlot )
+		if( m_Items.Element( i )->GetStaticData()->GetLoadoutSlot( m_iClass ) == iSlot )
 			return m_Items.Element( i );
 	}
 

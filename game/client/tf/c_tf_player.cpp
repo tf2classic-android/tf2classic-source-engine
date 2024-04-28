@@ -982,24 +982,17 @@ class CPlayerTintColor : public CResultProxy
 			// If not tied to an entity assume we're used on a model panel.
 			if ( !pEntity )
 			{
-				if ( pC_BaseEntity || !engine->IsConnected() )
+				if ( pC_BaseEntity )
 				{
 					CTFPlayerModelPanel *pPanel = dynamic_cast<CTFPlayerModelPanel *>( (IClientRenderable *)pC_BaseEntity );
-					if( pPanel )
+					
+					if ( pPanel )
 					{
 						m_pResult->SetVecValue( pPanel->GetModelTintColor().Base(), 3 );
 						return;
 					}
-
-					// Assuming we're at the menus... Use cvar values.
-					float r = floorf( tf2c_setmerccolor_r.GetFloat() ) / 255.0f;
-					float g = floorf( tf2c_setmerccolor_g.GetFloat() ) / 255.0f;
-					float b = floorf( tf2c_setmerccolor_b.GetFloat() ) / 255.0f;
-
-					m_pResult->SetVecValue( r, g, b );
-					return;
 				}
-
+				
 				m_pResult->SetVecValue( 0, 0, 0 );
 				return;
 			}
@@ -1055,7 +1048,6 @@ public:
 	{
 		Assert( m_pResult );
 
-		C_TFPlayer *pPlayer = NULL;
 		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
 		if ( !pEntity )
 		{
@@ -1063,6 +1055,7 @@ public:
 			return;
 		}
 
+		C_TFPlayer *pPlayer = NULL;
 		if ( pEntity->IsPlayer() )
 		{
 			pPlayer = ToTFPlayer( pEntity );
@@ -1119,15 +1112,12 @@ public:
 	{
 		Assert( m_pResult );
 
-		if ( !pC_BaseEntity )
-		{
-			m_pResult->SetFloatValue(0.0f);
-			return;
-		}
-
 		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
 		if ( !pEntity )
+		{
+			m_pResult->SetFloatValue( 0.0f );
 			return;
+		}
 
 		// default to zero
 		float flBurnStartTime = 0;
@@ -1205,15 +1195,12 @@ public:
 	{
 		Assert( m_pResult );
 
-		if ( !pC_BaseEntity )
+		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
+		if ( !pEntity )
 		{
 			m_pResult->SetVecValue( 1, 1, 1 );
 			return;
 		}
-
-		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
-		if ( !pEntity )
-			return;
 
 		C_TFPlayer *pPlayer = ToTFPlayer( pEntity );
 
@@ -1269,15 +1256,12 @@ public:
 	{
 		Assert( m_pResult );
 
-		if ( !pC_BaseEntity )
+		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
+		if ( !pEntity )
 		{
 			m_pResult->SetVecValue( 1, 1, 1 );
 			return;
 		}
-
-		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
-		if ( !pEntity )
-			return;
 
 		Vector vecColor = Vector( 1, 1, 1 );
 
@@ -1547,13 +1531,19 @@ bool CInvisProxy::Init( IMaterial *pMaterial, KeyValues* pKeyValues )
 // Purpose: 
 // Input  :
 //-----------------------------------------------------------------------------
-void CInvisProxy::OnBind( C_BaseEntity *pEnt )
+void CInvisProxy::OnBind( C_BaseEntity *pC_BaseEntity )
 {
+	IClientRenderable *pRend = (IClientRenderable *)pC_BaseEntity;
+	C_BaseEntity *pEnt = pRend ? pRend->GetIClientUnknown()->GetBaseEntity() : NULL;
 	if ( !pEnt )
+	{
+		if ( m_pPercentInvisible )
+		{
+			m_pPercentInvisible->SetFloatValue( 0.0f );
+		}
 		return;
-
-	m_pPercentInvisible->SetFloatValue( 0.0 );
-
+	}
+	
 	C_TFPlayer *pPlayer = ToTFPlayer( pEnt );
 	if ( pPlayer )
 	{
