@@ -26,9 +26,6 @@ CSteamAPIContext *steamapicontext = &g_SteamAPIContext;
 
 IEngineReplay *g_pEngineReplay = NULL;
 
-ConVar sb_firstopentime( "sb_firstopentime", "0", FCVAR_DEVELOPMENTONLY, "Indicates the time the server browser was first opened." );
-ConVar sb_numtimesopened( "sb_numtimesopened", "0", FCVAR_DEVELOPMENTONLY, "Indicates the number of times the server browser was opened this session." );
-
 // the original author of this code felt strdup was not acceptible.
 inline char *CloneString( const char *str )
 {
@@ -205,15 +202,6 @@ bool CServerBrowser::Activate()
 		m_hInternetDlg->LoadUserData(); // reload the user data the first time the dialog is made visible, helps with the lag between module load and
 										// steamui getting Deactivate() call
 		firstTimeOpening = false;
-	}
-
-	int numTimesOpened = sb_numtimesopened.GetInt() + 1;
-	sb_numtimesopened.SetValue( numTimesOpened );
-	if ( numTimesOpened == 1 )
-	{
-		time_t aclock;
-		time( &aclock );
-		sb_firstopentime.SetValue( (int) aclock );
 	}
 
 	Open();
