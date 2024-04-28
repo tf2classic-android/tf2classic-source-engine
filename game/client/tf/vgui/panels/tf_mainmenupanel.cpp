@@ -100,6 +100,8 @@ void CTFMainMenuPanel::PerformLayout()
 
 void CTFMainMenuPanel::OnCommand( const char* command )
 {
+	Msg( "CTFMainMenuPanel::OnCommand( %s )\n", command );
+
 	if ( !V_stricmp( command, "newquit" ) )
 	{
 		guiroot->ShowPanel( QUIT_MENU );
@@ -146,6 +148,14 @@ void CTFMainMenuPanel::OnCommand( const char* command )
 	else if ( V_stristr( command, "gamemenucommand " ) )
 	{
 		engine->ClientCmd( command );
+	}
+	else if ( V_stristr( command, "engine " ) )
+	{
+		const char *engineCMD = strstr( command, "engine " ) + strlen( "engine " );
+		if ( strlen( engineCMD ) > 0 )
+		{
+			engine->ClientCmd_Unrestricted( const_cast<char *>( engineCMD ) );
+		}
 	}
 	else
 	{

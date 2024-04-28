@@ -61,24 +61,24 @@ void CTFPauseMenuPanel::OnCommand( const char* command )
 	{
 		guiroot->ShowPanel( STATSUMMARY_MENU );
 	}
-	else if (!Q_strcmp(command, "checkversion"))
+	else if ( !V_stricmp( command, "checkversion" ) )
 	{
 		//MAINMENU_ROOT->CheckVersion();
 	}
-	else if (!Q_strcmp(command, "shownotification"))
+	else if ( !V_stricmp( command, "shownotification") )
 	{
-		if (m_pNotificationButton)
+		if( m_pNotificationButton )
 		{
-			m_pNotificationButton->SetGlowing(false);
+			m_pNotificationButton->SetGlowing( false );
 		}
 		guiroot->ShowPanel( NOTIFICATION_MENU );
 	}
-	else if (!Q_strcmp(command, "testnotification"))
+	else if ( !V_stricmp( command, "testnotification" ) )
 	{
 		wchar_t resultString[128];
-		V_snwprintf(resultString, sizeof(resultString), L"test %d", GetNotificationManager()->GetNotificationsCount());
-		MessageNotification Notification(L"Yoyo", resultString, time( NULL ) );
-		GetNotificationManager()->SendNotification(Notification);
+		V_snwprintf( resultString, sizeof( resultString ), L"test %d", GetNotificationManager()->GetNotificationsCount() );
+		MessageNotification Notification( L"Yoyo", resultString, time( NULL ) );
+		GetNotificationManager()->SendNotification( Notification );
 	}
 	else if ( !V_stricmp( command, "callvote" ) )
 	{
@@ -89,6 +89,14 @@ void CTFPauseMenuPanel::OnCommand( const char* command )
 	{
 		engine->ClientCmd( command );
 	}
+	else if ( V_stristr( command, "engine " ) )
+	{
+		const char *engineCMD = strstr( command, "engine " ) + strlen( "engine " );
+		if ( strlen( engineCMD ) > 0 )
+		{
+			engine->ClientCmd_Unrestricted( const_cast<char *>( engineCMD ) );
+		}
+	}
 	else
 	{
 		BaseClass::OnCommand( command );
@@ -97,24 +105,24 @@ void CTFPauseMenuPanel::OnCommand( const char* command )
 
 void CTFPauseMenuPanel::OnNotificationUpdate()
 {
-	if (m_pNotificationButton)
+	if( m_pNotificationButton )
 	{
-		if (GetNotificationManager()->GetNotificationsCount() > 0)
+		if( GetNotificationManager()->GetNotificationsCount() > 0 )
 		{
-			m_pNotificationButton->SetVisible(true);
+			m_pNotificationButton->SetVisible( true );
 		}
 		else
 		{
-			m_pNotificationButton->SetVisible(false);
+			m_pNotificationButton->SetVisible( false );
 		}
 
-		if (GetNotificationManager()->GetUnreadNotificationsCount() > 0)
+		if( GetNotificationManager()->GetUnreadNotificationsCount() > 0 )
 		{
-			m_pNotificationButton->SetGlowing(true);
+			m_pNotificationButton->SetGlowing( true );
 		}
 		else
 		{
-			m_pNotificationButton->SetGlowing(false);
+			m_pNotificationButton->SetGlowing( false );
 		}
 	}
 }
