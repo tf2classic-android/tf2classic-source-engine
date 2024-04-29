@@ -530,8 +530,9 @@ public:
 	CWeaponMedigun		*GetMedigun( void );
 	CTFWeaponBase		*Weapon_OwnsThisID( ETFWeaponID iWeaponID );
 	CTFWeaponBase		*Weapon_GetWeaponByType( int iType );
-	CEconEntity			*GetEntityForLoadoutSlot( int iSlot );
-	CEconWearable		*GetWearableForLoadoutSlot( int iSlot );
+	CEconWearable		*GetEntityForLoadoutSlot( ETFLoadoutSlot iSlot );
+	CTFWeaponBase		*GetWeaponForLoadoutSlot( ETFLoadoutSlot iSlot );
+	CEconWearable		*GetWearableForLoadoutSlot( ETFLoadoutSlot iSlot );
 
 	bool CalculateAmmoPackPositionAndAngles( CTFWeaponBase *pWeapon, Vector &vecOrigin, QAngle &vecAngles );
 

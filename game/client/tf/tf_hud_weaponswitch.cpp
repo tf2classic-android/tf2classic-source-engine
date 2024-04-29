@@ -22,6 +22,8 @@
 #include "tf_weapon_parse.h"
 #include "c_tf_playerresource.h"
 
+#include "econ_wearable.h"
+
 using namespace vgui;
 
 DECLARE_BUILD_FACTORY(CTFWeaponIcon);
@@ -304,8 +306,8 @@ void CTFHudWeaponSwitch::OnTick()
 		m_pWeaponTo->SetWeapon( m_pItemDefTo );
 	}
 
-	int iSlot = pItemTo->GetLoadoutSlot( pPlayer->GetPlayerClass()->GetClassIndex() );
-	C_EconEntity *pWeaponFrom = pPlayer->GetEntityForLoadoutSlot( iSlot );
+	ETFLoadoutSlot iSlot = pItemTo->GetLoadoutSlot( pPlayer->GetPlayerClass()->GetClassIndex() );
+	C_EconWearable *pWeaponFrom = pPlayer->GetEntityForLoadoutSlot( iSlot );
 	if ( !pWeaponFrom )
 		return;
 

@@ -233,8 +233,8 @@ bool CWeaponSpawner::MyTouch( CBasePlayer *pPlayer )
 
 	if ( ValidTouch( pTFPlayer ) && pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
 	{
-		int iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
-		CTFWeaponBase *pWeapon = (CTFWeaponBase *)pTFPlayer->GetEntityForLoadoutSlot( iSlot );
+		ETFLoadoutSlot iSlot = m_Item.GetStaticData()->GetLoadoutSlot( TF_CLASS_MERCENARY );
+		CTFWeaponBase *pWeapon = pTFPlayer->GetWeaponForLoadoutSlot( iSlot );
 
 		if ( pWeapon )
 		{

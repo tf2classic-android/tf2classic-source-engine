@@ -47,7 +47,7 @@ public:
 
 	virtual void	ItemBusyFrame( void );
 
-	virtual bool	HasChargeBar( void ) { return true; }
+	virtual bool	HasEffectMeter( void ) { return true; }
 	virtual const char* GetEffectLabelText( void ) { return "#TF_Cloak"; }
 	virtual float	GetEffectBarProgress( void );
 

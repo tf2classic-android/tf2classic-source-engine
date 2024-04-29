@@ -293,13 +293,14 @@ public:
 
 	float				GetLastFireTime( void ) { return m_flLastFireTime; }
 
-	virtual bool		HasChargeBar( void ) { return false; }
+	virtual bool		HasEffectMeter( void ) { return false; }
 	void				StartEffectBarRegen( void );
 	void				EffectBarRegenFinished( void );
 	void				CheckEffectBarRegen( void );
 	virtual float		GetEffectBarProgress( void );
 	virtual void		SetEffectBarProgress( float flEffectBarRegenTime ) { m_flEffectBarRegenTime = flEffectBarRegenTime; }
 	virtual const char	*GetEffectLabelText( void ) { return ""; }
+	virtual int		GetCount( void ) { return -1; }
 
 	void				OnControlStunned( void );
 

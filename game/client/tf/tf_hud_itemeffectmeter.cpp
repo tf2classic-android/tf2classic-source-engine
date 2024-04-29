@@ -24,8 +24,6 @@
 
 using namespace vgui;
 
-class CHudItemEffects;
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -40,16 +38,12 @@ public:
 	virtual void	PerformLayout( void );
 	virtual void	LevelInit( void );
 
-	void			UpdateStatus( void );
-	int				GetSlot( void ) { return m_iSlot; }
-	void			SetSlot( int iSlot ) { m_iSlot = iSlot; }
-	void			SetWeapon( C_TFWeaponBase *pWeapon );
+	void			UpdateStatus( C_TFWeaponBase *pWeapon );
 
 private:
 	ContinuousProgressBar *m_pEffectMeter;
 	CExLabel *m_pEffectMeterLabel;
 
-	int m_iSlot;
 	CHandle<C_TFWeaponBase> m_hWeapon;
 	float m_flOldCharge;
 };
@@ -61,7 +55,6 @@ CHudItemEffectMeter::CHudItemEffectMeter( Panel *pParent, const char *pElementNa
 {
 	m_pEffectMeter = new ContinuousProgressBar( this, "ItemEffectMeter" );
 	m_pEffectMeterLabel = new CExLabel( this, "ItemEffectMeterLabel", "" );
-	m_iSlot = 0;
 	m_flOldCharge = 1.0f;
 }
 
@@ -71,9 +64,6 @@ CHudItemEffectMeter::CHudItemEffectMeter( Panel *pParent, const char *pElementNa
 void CHudItemEffectMeter::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
-
-	// load control settings...
-	LoadControlSettings( "resource/UI/HudItemEffectMeter.res" );
 }
 
 // ---------------------------------------------------------------------------- -
@@ -91,22 +81,14 @@ void CHudItemEffectMeter::PerformLayout( void )
 {
 	if ( m_pEffectMeterLabel && m_hWeapon.Get() )
 	{
-		wchar_t *pszLocalized = g_pVGuiLocalize->Find( m_hWeapon->GetEffectLabelText() );
-		if ( pszLocalized )
-		{
-			m_pEffectMeterLabel->SetText( pszLocalized );
-		}
-		else
-		{
-			m_pEffectMeterLabel->SetText( m_hWeapon->GetEffectLabelText() );
-		}
+		m_pEffectMeterLabel->SetText( m_hWeapon->GetEffectLabelText() );
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CHudItemEffectMeter::UpdateStatus( void )
+void CHudItemEffectMeter::UpdateStatus( C_TFWeaponBase *pWeapon )
 {
 	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
 
@@ -116,14 +98,13 @@ void CHudItemEffectMeter::UpdateStatus( void )
 		return;
 	}
 
-	// Find a weapon in the loadout slot we're tied to.
-	C_EconEntity *pEntity = pPlayer->GetEntityForLoadoutSlot( m_iSlot );
-	if ( pEntity && pEntity->IsBaseCombatWeapon() )
+	// Update the weapon.
+	if ( pWeapon )
 	{
-		if ( pEntity != m_hWeapon.Get() )
+		if ( pWeapon != m_hWeapon.Get() )
 		{
 			// Weapon changed, reset the label and progress.
-			m_hWeapon = static_cast<C_TFWeaponBase *>( pEntity );
+			m_hWeapon = pWeapon;
 			m_flOldCharge = m_hWeapon->GetEffectBarProgress();
 
 			InvalidateLayout();
@@ -134,35 +115,35 @@ void CHudItemEffectMeter::UpdateStatus( void )
 		m_hWeapon = NULL;
 	}
 
-	if ( !m_hWeapon.Get() || !m_hWeapon->HasChargeBar() )
+	if ( !m_hWeapon.Get() )
 	{
 		m_flOldCharge = 1.0f;
-		if ( IsVisible() )
-			SetVisible( false );
-
+		SetVisible( false );
 		return;
 	}
 
-	if ( !IsVisible() )
-		SetVisible( true );
+	SetVisible( true );
 
-	if ( m_pEffectMeter )
+	float flCharge = m_hWeapon->GetEffectBarProgress();
+	m_pEffectMeter->SetProgress( flCharge );
+
+	// Play a ding when full charged.
+	if ( m_flOldCharge < 1.0f && flCharge == 1.0f && !m_hWeapon->IsWeapon( TF_WEAPON_INVIS ) )
 	{
-		float flCharge = m_hWeapon->GetEffectBarProgress();
-		m_pEffectMeter->SetProgress( flCharge );
-		
-		// Play a ding when full charged.
-		if ( m_flOldCharge < 1.0f && flCharge == 1.0f && !m_hWeapon->IsWeapon( TF_WEAPON_INVIS ) )
-		{
-			CLocalPlayerFilter filter;
-			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "TFPlayer.Recharged" );
-		}
-
-		m_flOldCharge = flCharge;
+		CLocalPlayerFilter filter;
+		C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "TFPlayer.Recharged" );
 	}
+
+	m_flOldCharge = flCharge;
+
+	SetDialogVariable( "progresscount", pWeapon->GetCount() );
 }
 
+#define TF_NUM_EFFECT_METERS 3
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 class CHudItemEffects : public CHudElement, public EditablePanel
 {
 	DECLARE_CLASS_SIMPLE( CHudItemEffects, EditablePanel );
@@ -171,15 +152,15 @@ public:
 	CHudItemEffects( const char *pElementName );
 	~CHudItemEffects();
 
-	virtual void PerformLayout( void );
+	virtual void ApplySchemeSettings( IScheme *pScheme );
 	virtual bool ShouldDraw( void );
 	virtual void OnTick( void );
 
 private:
-	CUtlVector<CHudItemEffectMeter *> m_pEffectBars;
-	
-	CPanelAnimationVarAliasType( int, m_iXOffset, "x_offset", "50", "proportional_int" );
-	CPanelAnimationVarAliasType( int, m_iYOffset, "y_offset", "0", "proportional_int" );
+	CHudItemEffectMeter *m_pItemBars[TF_NUM_EFFECT_METERS];
+	CHudItemEffectMeter *m_pItemCounters[TF_NUM_EFFECT_METERS];
+	CHudItemEffectMeter *m_pLegacyMeter;
+	bool m_bUsingLegacyMeter;
 };
 
 DECLARE_HUDELEMENT( CHudItemEffects );
@@ -189,22 +170,23 @@ CHudItemEffects::CHudItemEffects( const char *pElementName ) : CHudElement( pEle
 	Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
 
-	// Create effect bars for primary, secondary and melee slots.
-	for ( int i = 0; i < TF_PLAYER_WEAPON_COUNT; i++ )
+	// Create effect bars.
+	for ( int i = 0; i < TF_NUM_EFFECT_METERS; i++ )
 	{
-		CHudItemEffectMeter *pMeter = new CHudItemEffectMeter( this, "HudItemEffectMeter" );
-		pMeter->SetSlot( i );
-		m_pEffectBars.AddToTail( pMeter );
+		m_pItemBars[i] = new CHudItemEffectMeter( this, VarArgs( "ItemMeter%d", i + 1 ) );
+		m_pItemCounters[i] = new CHudItemEffectMeter( this, VarArgs( "ItemCounter%d", i + 1 ) );
 	}
+
+	m_pLegacyMeter = new CHudItemEffectMeter( this, "HudItemEffectMeter" );
+	m_bUsingLegacyMeter = false;
 
 	SetHiddenBits( HIDEHUD_MISCSTATUS );
 
-	vgui::ivgui()->AddTickSignal( GetVPanel() );
+	ivgui()->AddTickSignal( GetVPanel() );
 }
 
 CHudItemEffects::~CHudItemEffects()
 {
-	m_pEffectBars.PurgeAndDeleteElements();
 }
 
 //-----------------------------------------------------------------------------
@@ -220,33 +202,17 @@ bool CHudItemEffects::ShouldDraw( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Sort meters by visiblity and loadout slot.
-//-----------------------------------------------------------------------------
-static int EffectBarsSort( CHudItemEffectMeter * const *pMeter1, CHudItemEffectMeter * const *pMeter2 )
-{
-	// Visible to the right.
-	if ( !( *pMeter1 )->IsVisible() && ( *pMeter2 )->IsVisible() )
-		return -1;
-
-	if ( ( *pMeter1 )->IsVisible() && !( *pMeter2 )->IsVisible() )
-		return 1;
-
-	return ( ( *pMeter1 )->GetSlot() - ( *pMeter2 )->GetSlot() );
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CHudItemEffects::PerformLayout( void )
+void CHudItemEffects::ApplySchemeSettings( IScheme *pScheme )
 {
-	m_pEffectBars.Sort( EffectBarsSort );
+	BaseClass::ApplySchemeSettings( pScheme );
 
-	// Set panel offsets based on visibility.
-	int count = m_pEffectBars.Count();
-	for ( int i = 0; i < count; i++ )
-	{
-		m_pEffectBars[i]->SetPos( m_iXOffset * i, m_iYOffset * i );
-	}
+	LoadControlSettings( "resource/UI/HudItemEffects.res" );
+
+	// This is for compatibility with live TF2. Our RES file hides the element so we use the new HUD by default.
+	m_pLegacyMeter->LoadControlSettings( "Resource/UI/HudItemEffectMeter.res" );
+	m_bUsingLegacyMeter = m_pLegacyMeter->IsVisible();
 }
 
 //-----------------------------------------------------------------------------
@@ -258,23 +224,80 @@ void CHudItemEffects::OnTick( void )
 	if ( !pPlayer )
 		return;
 
-	bool bUpdateLayout = false;
-	for ( int i = 0; i < m_pEffectBars.Count(); i++ )
+	// Make the list of weapons.
+	CUtlVector<C_TFWeaponBase *> aBarWeapons;
+	CUtlVector<C_TFWeaponBase *> aCounterWeapons;
+
+	// Traverse backwards since 1 is the rightmost icon and we want to show slots from left to right.
+	for ( int i = TF_LOADOUT_SLOT_PDA2; i >= 0; i-- )
 	{
-		CHudItemEffectMeter *pMeter = m_pEffectBars[i];
+		C_TFWeaponBase *pWeapon = pPlayer->GetWeaponForLoadoutSlot( (ETFLoadoutSlot)i );
 
-		bool bWasVisible = pMeter->IsVisible();
-		pMeter->UpdateStatus();
-		bool bVisible = pMeter->IsVisible();
-
-		if ( bVisible != bWasVisible )
+		if ( pWeapon && pWeapon->HasEffectMeter() )
 		{
-			bUpdateLayout = true;
+			// GetCount() != -1 means we want to show a numeric counter above the normal ones.
+			if ( pWeapon->GetCount() == -1 )
+			{
+				aBarWeapons.AddToTail( pWeapon );
+			}
+			else
+			{
+				aCounterWeapons.AddToTail( pWeapon );
+			}
 		}
 	}
 
-	if ( bUpdateLayout )
+	if ( m_bUsingLegacyMeter )
 	{
-		InvalidateLayout( true );
+		if ( aBarWeapons.Count() != 0 )
+		{
+			m_pLegacyMeter->UpdateStatus( aBarWeapons[0] );
+		}
+		else
+		{
+			m_pLegacyMeter->UpdateStatus( NULL );
+		}
+
+		for ( int i = 0; i < TF_NUM_EFFECT_METERS; i++ )
+		{
+			m_pItemBars[i]->UpdateStatus( NULL );
+		}
+
+		for ( int i = 0; i < TF_NUM_EFFECT_METERS; i++ )
+		{
+			m_pItemCounters[i]->UpdateStatus( NULL );
+		}
+		return;
+	}
+
+	m_pLegacyMeter->UpdateStatus( NULL );
+
+	// Update all meters.
+	for ( int i = 0; i < TF_NUM_EFFECT_METERS; i++ )
+	{
+		CHudItemEffectMeter *pMeter = m_pItemBars[i];
+
+		if ( i < aBarWeapons.Count() )
+		{
+			pMeter->UpdateStatus( aBarWeapons[i] );
+		}
+		else
+		{
+			pMeter->UpdateStatus( NULL );
+		}
+	}
+
+	for ( int i = 0; i < TF_NUM_EFFECT_METERS; i++ )
+	{
+		CHudItemEffectMeter *pMeter = m_pItemCounters[i];
+
+		if ( i < aCounterWeapons.Count() )
+		{
+			pMeter->UpdateStatus( aCounterWeapons[i] );
+		}
+		else
+		{
+			pMeter->UpdateStatus( NULL );
+		}
 	}
 }

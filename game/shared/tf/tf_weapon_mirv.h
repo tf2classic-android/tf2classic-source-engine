@@ -46,7 +46,7 @@ public:
 	virtual float	GetProjectileSpeed( void );
 	virtual void	WeaponReset( void );
 
-	virtual bool	HasChargeBar( void ) { return true; }
+	virtual bool	HasEffectMeter( void ) { return true; }
 	virtual float	InternalGetEffectBarRechargeTime( void ) { return 8.0f; }
 	virtual const char	*GetEffectLabelText( void ) { return "#TF_MIRV"; }
 

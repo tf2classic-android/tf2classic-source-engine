@@ -1805,7 +1805,7 @@ void CTFPlayer::ManageRegularWeapons( TFPlayerClassData_t *pData )
 	
 	for ( int i = TF_LOADOUT_SLOT_PRIMARY; i < TF_LOADOUT_SLOT_COUNT; i++ )
 	{
-		if ( i != TF_LOADOUT_SLOT_BUILDING && !GetEntityForLoadoutSlot( i ) )
+		if ( i != TF_LOADOUT_SLOT_BUILDING && !GetEntityForLoadoutSlot( (ETFLoadoutSlot)i ) )
 		{
 			CEconItemView *pItem = GetLoadoutItem( m_PlayerClass.GetClassIndex(), i );
 			if ( pItem )
@@ -8690,7 +8690,7 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 	// equipped loadout items
 	for( int i =0; i < TF_LOADOUT_SLOT_COUNT; i++ )
 	{
-		CEconEntity *pWearable = GetEntityForLoadoutSlot( i );
+		CEconEntity *pWearable = GetEntityForLoadoutSlot( (ETFLoadoutSlot)i );
 		if( pWearable )
 		{
 			CEconItemDefinition *pItem = pWearable->GetItem()->GetStaticData();
@@ -9583,7 +9583,7 @@ CON_COMMAND_F( give_econ, "Give ECON item with specified ID from item schema.\nF
 
 	// Nuke whatever we have in this slot.
 	int iClass = pPlayer->GetPlayerClass()->GetClassIndex();
-	int iSlot = pItemDef->GetLoadoutSlot( iClass );
+	ETFLoadoutSlot iSlot = pItemDef->GetLoadoutSlot( iClass );
 	CEconEntity *pEntity = pPlayer->GetEntityForLoadoutSlot( iSlot );
 
 	if ( pEntity )

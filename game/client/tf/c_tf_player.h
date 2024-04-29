@@ -239,8 +239,9 @@ public:
 	CTFWeaponBase		*Weapon_GetWeaponByType( int iType );
 	virtual bool		Weapon_SlotOccupied( CBaseCombatWeapon *pWeapon );
 	virtual CBaseCombatWeapon *Weapon_GetSlot( int slot ) const;
-	C_EconEntity		*GetEntityForLoadoutSlot( int iSlot );
-	C_EconWearable		*GetWearableForLoadoutSlot( int iSlot );
+	C_EconWearable		*GetEntityForLoadoutSlot( ETFLoadoutSlot iSlot );
+	C_TFWeaponBase		*GetWeaponForLoadoutSlot( ETFLoadoutSlot iSlot );
+	C_EconWearable		*GetWearableForLoadoutSlot( ETFLoadoutSlot iSlot );
 
 	virtual void		GetStepSoundVelocities( float *velwalk, float *velrun );
 	virtual void		SetStepSoundTime( stepsoundtimes_t iStepSoundTime, bool bWalking );
