@@ -302,7 +302,7 @@ bool CTFInventory::CheckValidSlot( int iClass, ETFLoadoutSlot iSlot )
 	if ( iClass < TF_CLASS_UNDEFINED || iClass > TF_CLASS_COUNT )
 		return false;
 
-	int iCount = ( TF_LOADOUT_SLOT_COUNT ); // probably TF_LOADOUT_SLOT_TAUNT
+	int iCount = ( TF_LOADOUT_SLOT_TAUNT );
 
 	// Array bounds check.
 	if ( iSlot >= iCount || iSlot < 0 )

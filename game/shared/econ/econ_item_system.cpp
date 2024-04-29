@@ -3,6 +3,7 @@
 #include "econ_item_system.h"
 #include "activitylist.h"
 #include "filesystem.h"
+#include "util_shared.h"
 #if defined( CLIENT_DLL )
 #include "hud.h"
 #endif
@@ -10,6 +11,91 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+void InitPerClassStringVectorArray( KeyValues *pKeys, CUtlVector<char const *> *pVector )
+{
+	if( !pKeys )
+		return;
+	
+	for( KeyValues *pData = pKeys->GetFirstSubKey(); pData != NULL; pData = pData->GetNextKey() )
+	{
+		int iClass = UTIL_StringFieldToInt( pData->GetName(), g_aPlayerClassNames_NonLocalized, TF_CLASS_COUNT_ALL );
+		if( iClass != -1 )
+		{
+			const char *pszString = pData->GetString();
+			if( pszString && pszString[0] )
+			{
+				pVector[iClass].AddToTail( pszString );
+			}
+			
+			// check multi line case
+			FOR_EACH_SUBKEY( pData, pValueKey )
+			{
+				const char *pszValue = pValueKey->GetString();
+				if ( pszValue && *pszValue )
+				{
+					pVector[iClass].AddToTail( pszValue );
+				}
+			}
+		}
+	}
+}
+
+void InitPerClassStringArray( KeyValues *pKeys, const char **pArray )
+{
+	if( !pKeys )
+		return;
+		
+	for( KeyValues *pData = pKeys->GetFirstSubKey(); pData != NULL; pData = pData->GetNextKey() )
+	{
+		int iClass = UTIL_StringFieldToInt( pData->GetName(), g_aPlayerClassNames_NonLocalized, TF_CLASS_COUNT_ALL );
+		if( iClass != -1 )
+		{
+			const char *pszString = pData->GetString();
+			if( pszString && pszString[0] )
+			{
+				pArray[iClass] = pszString;
+			}
+		}
+	}
+}
+
+#define TF_TAUNTATK_COUNT 32
+const char *taunt_attack_name[TF_TAUNTATK_COUNT] =
+{
+	"TAUNTATK_NONE",
+	"TAUNTATK_PYRO_HADOUKEN",
+	"TAUNTATK_HEAVY_EAT",
+	"TAUNTATK_HEAVY_RADIAL_BUFF",
+	"TAUNTATK_HEAVY_HIGH_NOON",
+	"TAUNTATK_SCOUT_DRINK",
+	"TAUNTATK_SCOUT_GRAND_SLAM",
+	"TAUNTATK_MEDIC_INHALE",
+	"TAUNTATK_SPY_FENCING_SLASH_A",
+	"TAUNTATK_SPY_FENCING_SLASH_B",
+	"TAUNTATK_SPY_FENCING_STAB",
+	"TAUNTATK_RPS_KILL",
+	"TAUNTATK_SNIPER_ARROW_STAB_IMPALE",
+	"TAUNTATK_SNIPER_ARROW_STAB_KILL",
+	"TAUNTATK_SOLDIER_GRENADE_KILL",
+	"TAUNTATK_DEMOMAN_BARBARIAN_SWING",
+	"TAUNTATK_MEDIC_UBERSLICE_IMPALE",
+	"TAUNTATK_MEDIC_UBERSLICE_KILL",
+	"TAUNTATK_FLIP_LAND_PARTICLE",
+	"TAUNTATK_RPS_PARTICLE",
+	"TAUNTATK_HIGHFIVE_PARTICLE",
+	"TAUNTATK_ENGINEER_GUITAR_SMASH",
+	"TAUNTATK_ENGINEER_ARM_IMPALE",
+	"TAUNTATK_ENGINEER_ARM_KILL",
+	"TAUNTATK_ENGINEER_ARM_BLEND",
+	"TAUNTATK_SOLDIER_GRENADE_KILL_WORMSIGN",
+	"TAUNTATK_SHOW_ITEM",
+	"TAUNTATK_MEDIC_RELEASE_DOVES",
+	"TAUNTATK_PYRO_ARMAGEDDON",
+	"TAUNTATK_PYRO_SCORCHSHOT",
+	"TAUNTATK_ALLCLASS_GUITAR_RIFF",
+	"TAUNTATK_MEDIC_HEROIC_TAUNT"
+}; // idb
 
 const char *g_TeamVisualSections[TF_TEAM_COUNT] =
 {
@@ -746,6 +832,48 @@ bool CEconItemSchema::ParseItemRec( KeyValues *pData, CEconItemDefinition* pItem
 		}
 		else if( !V_strnicmp( pSubData->GetName(), "taunt", 5 ) )
 		{
+			InitPerClassStringVectorArray( pSubData->FindKey( "custom_taunt_scene_per_class" ), pItem->taunt.custom_taunt_scene_per_class );
+			KeyValues *pKV = pSubData->FindKey( "custom_partner_taunt_per_class" );
+			if( pKV )
+			{
+				InitPerClassStringVectorArray( pKV, pItem->taunt.custom_partner_taunt_initiator_per_class );
+				InitPerClassStringVectorArray( pKV, pItem->taunt.custom_partner_taunt_receiver_per_class );
+			}
+			InitPerClassStringVectorArray( pSubData->FindKey( "custom_partner_taunt_initiator_per_class" ), pItem->taunt.custom_partner_taunt_initiator_per_class );
+			InitPerClassStringVectorArray( pSubData->FindKey( "custom_partner_taunt_receiver_per_class" ), pItem->taunt.custom_partner_taunt_receiver_per_class );
+			InitPerClassStringVectorArray( pSubData->FindKey( "custom_taunt_outro_scene_per_class" ), pItem->taunt.custom_taunt_outro_scene_per_class );
+			InitPerClassStringArray( pSubData->FindKey( "custom_taunt_prop_per_class" ), pItem->taunt.custom_taunt_prop_per_class );
+			InitPerClassStringArray( pSubData->FindKey( "custom_taunt_prop_scene_per_class" ), pItem->taunt.custom_taunt_prop_scene_per_class );
+			InitPerClassStringArray( pSubData->FindKey( "custom_taunt_prop_outro_scene_per_class" ), pItem->taunt.custom_taunt_prop_outro_scene_per_class );
+			const char *pszTauntAttack = pSubData->GetString( "taunt_attack_name" );
+			if( pszTauntAttack && pszTauntAttack[0] )
+			{
+				int iData = UTIL_StringFieldToInt( pszTauntAttack, taunt_attack_name, TF_TAUNTATK_COUNT );
+				if( iData != -1 )
+				{
+					pItem->taunt.taunt_attack = iData;
+				}
+			}
+			pItem->taunt.is_hold_taunt = pSubData->GetBool( "is_hold_taunt", pItem->taunt.is_hold_taunt );
+			pItem->taunt.is_partner_taunt = pSubData->GetBool( "is_partner_taunt", pItem->taunt.is_partner_taunt );
+			pItem->taunt.taunt_attack_time = pSubData->GetFloat( "taunt_attack_time", pItem->taunt.taunt_attack_time );
+			pItem->taunt.taunt_separation_forward_distance = pSubData->GetFloat( "taunt_separation_forward_distance", pItem->taunt.taunt_separation_forward_distance );
+			pItem->taunt.stop_taunt_if_moved = pSubData->GetBool( "stop_taunt_if_moved", pItem->taunt.stop_taunt_if_moved );
+			pItem->taunt.taunt_success_sound = pSubData->GetString( "taunt_success_sound", pItem->taunt.taunt_success_sound );
+			pItem->taunt.taunt_success_sound_loop = pSubData->GetString( "taunt_success_sound_loop", pItem->taunt.taunt_success_sound_loop );
+			pItem->taunt.taunt_move_speed = pSubData->GetFloat( "taunt_move_speed", pItem->taunt.taunt_move_speed );
+			pItem->taunt.taunt_turn_speed = pSubData->GetFloat( "taunt_turn_speed", pItem->taunt.taunt_turn_speed );
+			pItem->taunt.taunt_force_move_forward = pSubData->GetBool( "taunt_force_move_forward", pItem->taunt.taunt_force_move_forward );
+			pItem->taunt.taunt_mimic = pSubData->GetBool( "taunt_mimic", pItem->taunt.taunt_mimic );
+			const char *pszWeaponSlot = pSubData->GetString( "taunt_force_weapon_slot" );
+			if( pszWeaponSlot && pszWeaponSlot[0] )
+			{
+				ETFLoadoutSlot iSlot = (ETFLoadoutSlot)UTIL_StringFieldToInt( pszWeaponSlot, g_LoadoutSlots, TF_LOADOUT_SLOT_COUNT );
+				if( iSlot != TF_LOADOUT_SLOT_INVALID )
+				{
+					pItem->taunt.taunt_force_weapon_slot = iSlot;
+				}
+			}
 		}
 	}
 	

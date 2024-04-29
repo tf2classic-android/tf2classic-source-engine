@@ -111,7 +111,7 @@ private:
 	BMPResData_t m_ClassResData[TF_CLASS_COUNT_ALL];
 	CUtlVector<CEconItemView *> m_Items;
 
-	int m_aMergeMDLMap[TF_PLAYER_WEAPON_COUNT];
+	int m_aMergeMDLMap[TF_LOADOUT_SLOT_COUNT];
 	int m_iActiveWpnMDLIndex;
 	int m_iTauntMDLIndex;
 
