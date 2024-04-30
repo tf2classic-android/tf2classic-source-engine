@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //
 //=============================================================================//
- //====== Copyright © 1996-2003, Valve Corporation, All rights reserved. =======
+ //====== Copyright Â© 1996-2003, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //

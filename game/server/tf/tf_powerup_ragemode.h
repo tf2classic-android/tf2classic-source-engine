@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2013, Valve Corporation, All rights reserved. =======//
+//====== Copyright Â© 1996-2013, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: The ragemode powerup (name is a W.I.P). Equips the mercenary with
 //			the Hammerfist weapon for a short period of time.

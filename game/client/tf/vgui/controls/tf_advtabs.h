@@ -1,4 +1,4 @@
-﻿#ifndef TF_MAINMENU_TABS_H
+#ifndef TF_MAINMENU_TABS_H
 #define TF_MAINMENU_TABS_H
 
 #ifdef _WIN32

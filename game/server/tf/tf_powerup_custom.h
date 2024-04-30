@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2013, Valve Corporation, All rights reserved. =======//
+//====== Copyright Â© 1996-2013, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: A powerup entity which lets you select the powerup, duration, model
 //			and pickup sound.

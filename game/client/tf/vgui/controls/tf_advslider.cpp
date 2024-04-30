@@ -1,4 +1,4 @@
-﻿#include "cbase.h"
+#include "cbase.h"
 #include "tf_advslider.h"
 #include <vgui/IInput.h>
 #include <vgui_controls/AnimationController.h>

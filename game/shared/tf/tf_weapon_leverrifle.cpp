@@ -1,4 +1,4 @@
-﻿#include "cbase.h"
+#include "cbase.h"
 #include "tf_weapon_leverrifle.h"
 
 // Client specific.

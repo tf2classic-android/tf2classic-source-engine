@@ -1,4 +1,4 @@
-﻿#include "cbase.h"
+#include "cbase.h"
 #include "tf_advbutton.h"
 #include <vgui_controls/AnimationController.h>
 #include "panels/tf_dialogpanelbase.h"

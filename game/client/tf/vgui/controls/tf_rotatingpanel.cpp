@@ -1,4 +1,4 @@
-﻿#include "cbase.h"
+#include "cbase.h"
 #include "tf_rotatingpanel.h"
 #include <vgui/ISurface.h>
 

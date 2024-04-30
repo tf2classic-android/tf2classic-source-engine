@@ -1,9 +1,9 @@
-//====== Copyright © 1996-2013, Valve Corporation, All rights reserved. =======//
+//====== Copyright Â© 1996-2013, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: Critical Damage: Crits for 30/15 seconds with a crit glow. 
 // Looks like an amplifier device that attaches onto weapons somehow, 
 // looks similar to a car battery. 
-// Crit glow effect would match the player’s merc color or be blue.
+// Crit glow effect would match the playerÂ’s merc color or be blue.
 //
 //=============================================================================//
 

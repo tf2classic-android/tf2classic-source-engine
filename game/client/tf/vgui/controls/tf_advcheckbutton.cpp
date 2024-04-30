@@ -1,4 +1,4 @@
-﻿#include "cbase.h"
+#include "cbase.h"
 #include "tf_advcheckbutton.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

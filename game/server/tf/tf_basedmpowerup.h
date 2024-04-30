@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2013, Valve Corporation, All rights reserved. =======//
+//====== Copyright Â© 1996-2013, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: Base class for Deathmatch powerups 
 //

@@ -1,4 +1,4 @@
-﻿#ifndef TF_ROTATINGPANEL_H
+#ifndef TF_ROTATINGPANEL_H
 #define TF_ROTATINGPANEL_H
 #ifdef _WIN32
 #pragma once

@@ -1,4 +1,4 @@
-﻿#ifndef tf_advcheckbutton_H
+#ifndef tf_advcheckbutton_H
 #define tf_advcheckbutton_H
 #ifdef _WIN32
 #pragma once
