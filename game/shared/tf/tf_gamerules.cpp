@@ -20,6 +20,7 @@
 	#include <game/client/iviewport.h>
 	#include "c_tf_player.h"
 	#include "c_tf_objective_resource.h"
+	#include "tf_autorp.h"
 #else
 	#include "basemultiplayerplayer.h"
 	#include "voice_gamemgr.h"
@@ -61,7 +62,27 @@
 	#include "tf_bot_manager.h"
 #endif
 
+#if defined( GAME_DLL )
 ConVar mp_humans_must_join_team( "mp_humans_must_join_team", "any", FCVAR_REPLICATED, "Restricts human players to a single team {any, blue, red, spectator}" );
+
+void cc_tf_medieval_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
+{
+	ConVarRef var( pConVar );
+	bool bOldValue = flOldValue > 0;
+	if ( var.IsValid() && ( bOldValue != var.GetBool() ) )
+	{
+		Msg( "Medieval mode changes take effect after the next map change.\n" );
+	}
+}
+#endif
+
+ConVar tf_medieval( "tf_medieval", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable Medieval Mode.\n", true, 0, true, 1
+#ifdef GAME_DLL
+, cc_tf_medieval_changed
+#endif 
+);
+
+ConVar tf_medieval_autorp( "tf_medieval_autorp", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable Medieval Mode auto-roleplaying.\n", true, 0, true, 1 );
 
 // BUILDNUM
 #include "buildnum.h"
@@ -1205,6 +1226,13 @@ public:
 
 LINK_ENTITY_TO_CLASS( tf_logic_multiple_escort, CMultipleEscort );
 
+class CMedievalLogic : public CPointEntity
+{
+public:
+	DECLARE_CLASS( CMedievalLogic, CPointEntity );
+};
+
+LINK_ENTITY_TO_CLASS( tf_logic_medieval, CMedievalLogic );
 
 class CHybridMap_CTF_CP : public CPointEntity
 {
@@ -1917,6 +1945,12 @@ void CTFGameRules::Activate()
 		tf_gamemode_cp.SetValue( 1 );
 		m_bPlayingKoth = true;
 		return;
+	}
+	
+	CMedievalLogic *pMedieval = dynamic_cast<CMedievalLogic*> ( gEntList.FindEntityByClassname( NULL, "tf_logic_medieval" ) );
+	if ( pMedieval || tf_medieval.GetBool() )
+	{
+		m_bPlayingMedieval.Set( true );
 	}
 
 	if ( gEntList.FindEntityByClassname( NULL, "tf_logic_vip" ) )
@@ -5852,7 +5886,7 @@ bool CTFGameRules::AllowThirdPersonCamera( void )
 	}
 #endif
 
-	return tf2c_allow_thirdperson.GetBool();
+	return IsInMedievalMode() || tf2c_allow_thirdperson.GetBool();
 }
 
 //-----------------------------------------------------------------------------
@@ -6271,6 +6305,29 @@ bool CTFGameRules::ShouldShowTeamGoal( void )
 		return true;
 
 	return false;
+}
+
+extern ConVar english;
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFGameRules::ModifySentChat( char *pBuf, int iBufSize )
+{
+	if ( IsInMedievalMode() && tf_medieval_autorp.GetBool() && english.GetBool() )
+	{
+		AutoRP()->ApplyRPTo( pBuf, iBufSize );
+	}
+	
+	// replace all " with ' to prevent exploits related to chat text
+	// example:   ";exit
+	for ( char *ch = pBuf; *ch != 0; ch++ )
+	{
+		if ( *ch == '"' )
+		{
+			*ch = '\'';
+		}
+	}
 }
 
 void CTFGameRules::GetTeamGlowColor( int nTeam, float &r, float &g, float &b )

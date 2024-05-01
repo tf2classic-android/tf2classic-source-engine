@@ -2260,7 +2260,7 @@ void CTFPlayerShared::Disguise( int nTeam, int nClass )
 	if ( nTeam == m_nDisguiseTeam && nClass == m_nDisguiseClass )
 	{
 		CTFWeaponBase *pWeapon = m_pOuter->GetActiveTFWeapon();
-		RecalcDisguiseWeapon( pWeapon ? pWeapon->GetSlot() : 0 );
+		RecalcDisguiseWeapon( TFGameRules()->IsInMedievalMode(), pWeapon ? pWeapon->GetSlot() : 0 );
 		return;
 	}
 
@@ -2368,7 +2368,7 @@ void CTFPlayerShared::CompleteDisguise( void )
 
 	m_DisguiseItem.SetItemDefIndex( -1 );
 
-	RecalcDisguiseWeapon();
+	RecalcDisguiseWeapon( TFGameRules()->IsInMedievalMode() );
 #endif
 }
 
@@ -2415,9 +2415,12 @@ void CTFPlayerShared::RemoveDisguise( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPlayerShared::RecalcDisguiseWeapon( int iSlot /*= 0*/ )
+void CTFPlayerShared::RecalcDisguiseWeapon( bool bForcePrimary, int iSlot /*= 0*/ )
 {
 #ifndef CLIENT_DLL
+	if( bForcePrimary )
+		iSlot = TF_LOADOUT_SLOT_MELEE;
+
 	if ( !InCond( TF_COND_DISGUISED ) )
 	{
 		m_DisguiseItem.SetItemDefIndex( -1 );

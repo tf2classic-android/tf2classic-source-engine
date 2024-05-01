@@ -319,9 +319,12 @@ public:
 
 	virtual void OnNavAreaChanged( CNavArea *enteredArea, CNavArea *leftArea );
 
+	bool ShouldDropAmmoPack();
+
 	// Dropping Ammo
 	void DropAmmoPack( void );
 	void DropWeapon( CTFWeaponBase *pWeapon, bool bKilled = false );
+	void DropHealthPack( void );
 	void DropFakeWeapon( CTFWeaponBase *pWeapon );
 	void DropPowerups( ETFPowerupDropStyle dropStyle );
 

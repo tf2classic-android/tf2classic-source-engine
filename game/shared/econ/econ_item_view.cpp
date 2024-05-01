@@ -311,6 +311,29 @@ bool CEconItemView::HasTag( const char* name )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CEconItemView::HasAttribute( const char* name )
+{
+	bool result = false;
+	CEconItemDefinition *pStatic = GetStaticData();
+
+	if ( pStatic )
+	{
+		FOR_EACH_VEC( pStatic->attributes, it )
+		{
+			if ( FStrEq( STRING( pStatic->attributes[it].m_strAttributeClass ), name ) )
+			{
+				result = true;
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool CEconItemView::AddAttribute( CEconItemAttribute *pAttribute )
 {
 	// Make sure this attribute exists.

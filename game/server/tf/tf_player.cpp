@@ -71,6 +71,7 @@
 #include "bot/tf_bot.h"
 #include "tf_fx.h"
 #include "tf_merc_customizations.h"
+#include "entity_healthkit.h"
 
 extern IVoiceGameMgrHelper *g_pVoiceGameMgrHelper;
 
@@ -1561,18 +1562,36 @@ bool CTFPlayer::ItemIsAllowed( CEconItemView *pItem )
 			return false;
 	}
 
-#if 0 // medieval mode check here... we don't have it.
-  if ( BYTE1(v5[158].m_flNextVerboseLogOutput) )
-  {
-    v7 = CEconItemDefinition::GetLoadoutSlot(StaticData, this->m_PlayerClass.m_iClass.m_Value);
-    if ( v7 < 7
-      && v7 != 2
-      && (this->m_PlayerClass.m_iClass.m_Value != 8 || v7 < 5)
-      && !CAttributeManager::AttribHookValue<int>(0, "allowed_in_medieval_mode", pItem) )
-    {
-      return 0;
-    }
-#endif
+	if( TFGameRules() && TFGameRules()->IsInMedievalMode() )
+	{
+		bool bMedievalModeAllowed = false;
+		
+		// Allow all melee-class weapons, non-weapons, and the spy equipment.
+		switch ( iSlot )
+		{
+			case TF_LOADOUT_SLOT_MELEE:
+			case TF_LOADOUT_SLOT_HAT:
+			case TF_LOADOUT_SLOT_MISC:
+			case TF_LOADOUT_SLOT_ACTION:
+			case TF_LOADOUT_SLOT_TAUNT:
+				bMedievalModeAllowed = true;
+				break;
+				
+			case TF_LOADOUT_SLOT_PDA1:
+			case TF_LOADOUT_SLOT_PDA2:
+				if ( iClass == TF_CLASS_SPY )
+					bMedievalModeAllowed = true;
+				break;
+		}
+		
+		if ( !bMedievalModeAllowed )
+		{
+			if( !pItem->HasAttribute( "allowed_in_medieval_mode" ) )
+			{
+				return false;
+			}
+		}
+	}
 
 	return true;
 }
@@ -1630,9 +1649,12 @@ void CTFPlayer::GiveDefaultItems()
 
 	// Give grenades.
 	//ManageGrenades( pData );
-
-	// Give a builder weapon for each object the playerclass is allowed to build
-	ManageBuilderWeapons( pData );
+	
+	if ( !TFGameRules() || !TFGameRules()->IsInMedievalMode() )
+	{
+		// Give a builder weapon for each object the playerclass is allowed to build
+		ManageBuilderWeapons( pData );
+	}
 
 	// Equip weapons set by tf_player_equip
 	CBaseEntity	*pWeaponEntity = NULL;
@@ -5155,11 +5177,16 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	DropWeapon( GetActiveTFWeapon(), true ); // Drop our weapon just like in new TF2
 
-	if ( !TFGameRules()->IsDeathmatch() )
+	if ( ShouldDropAmmoPack() )
 	{
 		DropAmmoPack(); // Drop a pack with their leftover ammo
 	}
-
+	
+	if ( TFGameRules()->IsInMedievalMode() )
+	{
+		DropHealthPack();
+	}
+	
 	m_Shared.SetDesiredWeaponIndex( -1 );
 
 	// If the player has a capture flag and was killed by another player, award that player a defense
@@ -5571,6 +5598,23 @@ void CTFPlayer::DroppedWeaponCleanUp( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFPlayer::ShouldDropAmmoPack()
+{
+	if ( TFGameRules()->IsDeathmatch() )
+		return false;
+
+	if ( TFGameRules()->IsMannVsMachineMode() && IsBot() )
+		return false;
+	
+	if ( TFGameRules()->IsInArenaMode() && TFGameRules()->InStalemate() == false )
+		return false;
+	
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFPlayer::DropAmmoPack( void )
 {
 	// Since weapon is hidden in loser state don't drop ammo pack.
@@ -5679,6 +5723,24 @@ void CTFPlayer::DropAmmoPack( void )
 		AmmoPackCleanUp();	
 	}	
 	pWeapon->SetModel( pWeapon->GetViewModel() );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::DropHealthPack()
+{
+	Vector vecSrc = this->WorldSpaceCenter();
+	CHealthKit *pMedKit = assert_cast<CHealthKit*>( CBaseEntity::Create( "item_healthkit_small", vecSrc, vec3_angle, this ) );
+	if ( pMedKit )
+	{
+		Vector vecImpulse = RandomVector( -1,1 );
+		vecImpulse.z = 1;
+		VectorNormalize( vecImpulse );
+		
+		Vector vecVelocity = vecImpulse * 250.0;
+		pMedKit->DropSingleInstance( vecVelocity, this, 0.f, 0.f );
+	}
 }
 
 //-----------------------------------------------------------------------------

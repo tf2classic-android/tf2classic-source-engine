@@ -169,7 +169,7 @@ public:
 	int		GetDisguiseMaxBuffedHealth( void );
 
 	CEconItemView	*GetDisguiseItem( void )			{ return &m_DisguiseItem; }
-	void		RecalcDisguiseWeapon( int iSlot = 0 );
+	void		RecalcDisguiseWeapon( bool bForcePrimary = false, int iSlot = 0 );
 
 #ifdef CLIENT_DLL
 	void	OnDisguiseChanged( void );

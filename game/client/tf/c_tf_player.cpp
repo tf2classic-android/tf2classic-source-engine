@@ -130,6 +130,39 @@ CLIENTEFFECT_MATERIAL( "models/effects/invulnfx_green.vmt" )
 CLIENTEFFECT_MATERIAL( "models/effects/invulnfx_yellow.vmt" )
 CLIENTEFFECT_REGISTER_END()
 
+// thirdperson medieval
+static ConVar tf_medieval_thirdperson( "tf_medieval_thirdperson", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE , "Turns on third-person camera in medieval mode." );
+static ConVar tf_medieval_cam_idealdist( "tf_medieval_cam_idealdist", "125", FCVAR_CLIENTDLL | FCVAR_CHEAT );    // thirdperson distance
+static ConVar tf_medieval_cam_idealdistright( "tf_medieval_cam_idealdistright", "25", FCVAR_CLIENTDLL | FCVAR_CHEAT );   // thirdperson distance
+static ConVar tf_medieval_cam_idealdistup( "tf_medieval_cam_idealdistup", "-10", FCVAR_CLIENTDLL | FCVAR_CHEAT );        // thirdperson distance
+static ConVar tf_medieval_cam_idealpitch( "tf_medieval_cam_idealpitch", "0", FCVAR_CLIENTDLL | FCVAR_CHEAT );    // thirdperson pitch
+extern ConVar cam_idealpitch;
+extern ConVar tf_allow_taunt_switch;
+
+void SetAppropriateCamera( C_TFPlayer *pPlayer )
+{
+	if ( pPlayer->IsLocalPlayer() == false )
+		return;
+	
+	if ( TFGameRules() &&
+	     ( ( TFGameRules()->IsInMedievalMode() && tf_medieval_thirdperson.GetBool() )
+	       || pPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) ) )
+	{
+		g_ThirdPersonManager.SetForcedThirdPerson( true );
+		Vector offset( tf_medieval_cam_idealdist.GetFloat(), tf_medieval_cam_idealdistright.GetFloat(), tf_medieval_cam_idealdistup.GetFloat() );
+		g_ThirdPersonManager.SetDesiredCameraOffset( offset );
+		cam_idealpitch.SetValue( tf_medieval_cam_idealpitch.GetFloat() );
+		
+		::input->CAM_ToThirdPerson();
+		
+		pPlayer->ThirdPersonSwitch( true );
+	}
+	else
+	{
+		g_ThirdPersonManager.SetForcedThirdPerson( false );
+	}
+}
+
 // -------------------------------------------------------------------------------- //
 // Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
 // -------------------------------------------------------------------------------- //
@@ -2425,6 +2458,8 @@ void C_TFPlayer::OnPlayerClassChange( void )
 		Q_snprintf( szCommand, sizeof( szCommand ), "exec %s.cfg\n", GetPlayerClass()->GetName() );
 		engine->ExecuteClientCmd( szCommand );
 	}
+	
+	SetAppropriateCamera( this );
 }
 
 //-----------------------------------------------------------------------------
@@ -2687,6 +2722,8 @@ void C_TFPlayer::TurnOffTauntCam( void )
 
 	// Force the feet to line up with the view direction post taunt.
 	m_PlayerAnimState->m_bForceAimYaw = true;
+	
+	SetAppropriateCamera( this );
 }
 
 //-----------------------------------------------------------------------------
@@ -4079,6 +4116,8 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 		KeyUp( &in_ducktoggle, NULL ); 
 
 		LoadInventory();
+		
+		SetAppropriateCamera( this );
 	}
 
 	// SanyaSho: was moved to server

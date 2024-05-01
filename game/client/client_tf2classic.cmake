@@ -86,6 +86,8 @@ set(
 
 		#$Folder	"TF"
 		#{
+			"${CLIENT_BASE_DIR}/tf/tf_autorp.cpp"
+			"${CLIENT_BASE_DIR}/tf/tf_autorp.h"
 			"${CLIENT_BASE_DIR}/tf/tf_hud_musicinfo.cpp"
 			"${CLIENT_BASE_DIR}/tf/tf_hud_musicinfo.h"
 			"${SHARED_BASE_DIR}/tf/tf_cues_manager.cpp"

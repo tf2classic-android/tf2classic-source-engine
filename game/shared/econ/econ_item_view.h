@@ -49,6 +49,7 @@ public:
 	const char* GetSoundOverride( int iIndex, int iTeamNum = TEAM_UNASSIGNED ) const;
 	bool HasCapability( const char* name );
 	bool HasTag( const char* name );
+	bool HasAttribute( const char* name );
 
 	bool AddAttribute( CEconItemAttribute *pAttribute );
 	void SkipBaseAttributes( bool bSkip );

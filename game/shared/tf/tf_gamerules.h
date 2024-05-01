@@ -47,6 +47,7 @@
 
 	class CHealthKit;
 	class CTFBotRoster;
+	class CMedievalLogic;
 
 #endif
 
@@ -371,6 +372,7 @@ public:
 	virtual bool    IsMannVsMachineMode( void ) { return false; };
 	virtual bool	IsInArenaMode( void ) const { return m_nGameType == TF_GAMETYPE_ARENA; }
 	virtual bool	IsInKothMode( void ) const { return m_bPlayingKoth; }
+	virtual bool IsInMedievalMode( void ) const { return m_bPlayingMedieval; }
 	virtual bool    IsHalloweenScenario( int iEventType ) { return false; };
 	virtual bool	IsPVEModeActive( void ) { return false; };
 	virtual bool	IsCompetitiveMode( void ){ return m_bCompetitiveMode; };
@@ -388,6 +390,7 @@ public:
 
 	virtual void	OnDataChanged( DataUpdateType_t updateType );
 	virtual void	HandleOvertimeBegin();
+	virtual void	ModifySentChat( char *pBuf, int iBufSize );
 	virtual void	GetTeamGlowColor( int nTeam, float &r, float &g, float &b );
 
 
