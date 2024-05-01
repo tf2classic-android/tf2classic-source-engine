@@ -1412,10 +1412,6 @@ void CTFPlayer::Restock( bool bRestoreHealth, bool bRestoreAmmo )
 //-----------------------------------------------------------------------------
 void CTFPlayer::InitClass( void )
 {
-	// Set initial health and armor based on class.
-	SetMaxHealth( GetPlayerClass()->GetMaxHealth() );
-	SetHealth( GetMaxHealth() );
-
 	SetArmorValue( GetPlayerClass()->GetMaxArmor() );
 
 	// Init the anim movement vars
@@ -1424,6 +1420,10 @@ void CTFPlayer::InitClass( void )
 
 	// Give default items for class.
 	GiveDefaultItems();
+	
+	// Set initial health and armor based on class.
+	SetMaxHealth( GetPlayerClass()->GetMaxHealth() );
+	SetHealth( GetMaxHealth() );
 
 	// Update player's color.
 	if ( TFGameRules()->IsDeathmatch() )

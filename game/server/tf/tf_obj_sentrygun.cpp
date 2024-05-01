@@ -16,6 +16,7 @@
 #include "tf_gamerules.h"
 #include "ammodef.h"
 #include "bot/tf_bot.h"
+#include "bot/map_entities/tf_bot_hint_sentrygun.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -127,6 +128,8 @@ CObjectSentrygun::CObjectSentrygun()
 {
 	SetMaxHealth( SENTRYGUN_MAX_HEALTH );
 	m_iHealth = SENTRYGUN_MAX_HEALTH;
+	m_flFireRate = 1.f;
+	m_flSentryRange = SENTRY_MAX_RANGE;
 	SetType( OBJ_SENTRYGUN );
 }
 
@@ -154,8 +157,15 @@ void CObjectSentrygun::Spawn()
 	// Give the Gun some ammo
 	m_iAmmoShells = 0;
 	m_iAmmoRockets = 0;
-	m_iMaxAmmoShells = SENTRYGUN_MAX_SHELLS_1;
-	m_iMaxAmmoRockets = SENTRYGUN_MAX_ROCKETS;
+	
+	float flMaxAmmoMult = 1.f;
+	if ( GetOwner() )
+	{
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), flMaxAmmoMult, mvm_sentry_ammo );
+	}
+	
+	m_iMaxAmmoShells = SENTRYGUN_MAX_SHELLS_1 * flMaxAmmoMult;
+	m_iMaxAmmoRockets = SENTRYGUN_MAX_ROCKETS * flMaxAmmoMult;
 
 	m_iAmmoType = GetAmmoDef()->Index( "TF_AMMO_PRIMARY" );
 
@@ -168,9 +178,6 @@ void CObjectSentrygun::Spawn()
 	m_flLastAttackedTime = 0;
 
 	m_flHeavyBulletResist = SENTRYGUN_MINIGUN_RESIST_LVL_1;
-
-	//TF_MOD_BOT changes
-	m_fireTimer.Start();
 
 	BaseClass::Spawn();
 
@@ -202,8 +209,47 @@ void CObjectSentrygun::MakeCarriedObject( CTFPlayer *pPlayer )
 	BaseClass::MakeCarriedObject( pPlayer );
 }
 
+Vector CObjectSentrygun::GetEnemyAimPosition( CBaseEntity* pEnemy ) const
+{
+	// Default to pointing to the origin
+	Vector vecPos = pEnemy->WorldSpaceCenter();
+	
+	CTFPlayer* pTFEnemy = ToTFPlayer( pEnemy );
+	
+	// This is expensive, so only do it if our target is in a state that requires it
+	if ( pTFEnemy )
+	{
+		bool bShouldUseAccurateMethod = false; 
+		
+		int playerFlags = pTFEnemy->GetFlags();
+		// Crouch jumping makes your box weird
+		bShouldUseAccurateMethod |= !( playerFlags & FL_ONGROUND ) && ( playerFlags & FL_DUCKING );
+		// Taunting can make your box weird
+		bShouldUseAccurateMethod |= pTFEnemy->m_Shared.InCond( TF_COND_TAUNTING );
+		
+		if ( bShouldUseAccurateMethod )
+		{
+			// Use this bone as the the aim target
+			int iSpineBone = pTFEnemy->LookupBone( "bip_spine_2" );
+			if ( iSpineBone != -1 )
+			{
+				QAngle angles;
+				pTFEnemy->GetBonePosition( iSpineBone, vecPos, angles );
+			}
+		}
+	}
+	
+	return vecPos;
+}
+
 void CObjectSentrygun::SentryThink( void )
 {
+	m_flSentryRange = SENTRY_MAX_RANGE;
+	//if ( !IsDisposableBuilding() )
+	{
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), m_flSentryRange, mult_sentry_range );
+	}
+
 	// Don't think while re-deploying so we don't target anything inbetween upgrades.
 	if ( IsRedeploying() )
 	{
@@ -392,14 +438,20 @@ void CObjectSentrygun::Precache()
 void CObjectSentrygun::StartUpgrading( void )
 {
 	BaseClass::StartUpgrading( );
-
+	
+	float flMaxAmmoMult = 1.f;
+	if ( GetOwner() )
+	{
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), flMaxAmmoMult, mvm_sentry_ammo );
+	}
+	
 	switch( m_iUpgradeLevel )
 	{
 	case 2:
 		SetModel( SENTRY_MODEL_LEVEL_2_UPGRADE );
 		m_flHeavyBulletResist = SENTRYGUN_MINIGUN_RESIST_LVL_2;
 		SetViewOffset( SENTRYGUN_EYE_OFFSET_LEVEL_2 );
-		m_iMaxAmmoShells = SENTRYGUN_MAX_SHELLS_2;
+		m_iMaxAmmoShells = SENTRYGUN_MAX_SHELLS_2 * flMaxAmmoMult;
 		break;
 	case 3:
 		SetModel( SENTRY_MODEL_LEVEL_3_UPGRADE );
@@ -410,7 +462,7 @@ void CObjectSentrygun::StartUpgrading( void )
 		}
 		m_flHeavyBulletResist = SENTRYGUN_MINIGUN_RESIST_LVL_3;
 		SetViewOffset( SENTRYGUN_EYE_OFFSET_LEVEL_3 );
-		m_iMaxAmmoShells = SENTRYGUN_MAX_SHELLS_3;
+		m_iMaxAmmoShells = SENTRYGUN_MAX_SHELLS_3 * flMaxAmmoMult;
 		break;
 	default:
 		Assert(0);
@@ -542,15 +594,6 @@ int CObjectSentrygun::GetBaseHealth( void )
 	return 150;
 }
 
-//TF_MOD_BOT changes
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-float CObjectSentrygun::GetTimeSinceLastFired(void) const
-{
-	return m_fireTimer.GetElapsedTime();
-}
-
 //-----------------------------------------------------------------------------
 // Debug infos
 //-----------------------------------------------------------------------------
@@ -610,7 +653,7 @@ int CObjectSentrygun::Range( CBaseEntity *pTarget )
 		return RANGE_MELEE;
 	if (iDist < 550)
 		return RANGE_NEAR;
-	if (iDist < 1100)
+	if (iDist < m_flSentryRange)
 		return RANGE_MID;
 	return RANGE_FAR;
 }
@@ -662,15 +705,10 @@ bool CObjectSentrygun::FindTarget()
 	// If we have an enemy get his minimum distance to check against.
 	Vector vecSegment;
 	Vector vecTargetCenter;
-	//TF_MOD_BOT changes
-	float flMinDist2 = Square(SENTRYGUN_BASE_RANGE);
-	//float flMinDist2 = 1100.0f * 1100.0f;
+	float flMinDist2 = Square( m_flSentryRange );
 	CBaseEntity *pTargetCurrent = NULL;
 	CBaseEntity *pTargetOld = m_hEnemy.Get();
 	float flOldTargetDist2 = FLT_MAX;
-	//TF_MOD_BOT changes
-	CUtlVector<INextBot*> bots;
-	TheNextBots().CollectAllBots(&bots);
 
 	// Sentries will try to target players first, then objects.  However, if the enemy held was an object it will continue
 	// to try and attack it first.
@@ -714,37 +752,32 @@ bool CObjectSentrygun::FindTarget()
 			}
 		}
 
-		//TF_MOD_BOT changes
-		for (int iBot = 0; iBot < bots.Count(); ++iBot)
-		{
-			CBaseCombatCharacter* pTargetActor = bots[iBot]->GetEntity();
-			if (pTargetActor == NULL)
-				continue;
-
-			VectorSubtract(pTargetActor->WorldSpaceCenter(), vecSentryOrigin, vecSegment);
-			float flDist2 = vecSegment.LengthSqr();
-
-			// Store the current target distance if we come across it
-			if (pTargetActor == pTargetOld)
-			{
-				flOldTargetDist2 = flDist2;
-			}
-
-			// Check to see if the target is closer than the already validated target.
-			if (flDist2 > flMinDist2)
-				continue;
-
-			// It is closer, check to see if the target is valid.
-			if (ValidTargetBot(pTargetActor))
-			{
-				flMinDist2 = flDist2;
-				pTargetCurrent = pTargetActor;
-			}
-		}
-
 		// If we already have a target, don't check objects.
 		if (pTargetCurrent == NULL)
 		{
+			// target non-player bots
+			CUtlVector< INextBot * > botVector;
+			TheNextBots().CollectAllBots( &botVector );
+			
+			float closeBotRangeSq = Square( m_flSentryRange );
+			
+			for( int b=0; b<botVector.Count(); ++b )
+			{
+				CBaseCombatCharacter *bot = botVector[b]->GetEntity();
+				
+				Vector vecBotTarget = GetEnemyAimPosition( bot );
+				float rangeSq = ( vecBotTarget - vecSentryOrigin ).LengthSqr();
+				
+				if ( rangeSq < closeBotRangeSq )
+				{
+					if ( ValidTargetBot( bot, vecSentryOrigin, vecBotTarget ) )
+					{
+						closeBotRangeSq = rangeSq;
+						pTargetCurrent = bot;
+					}
+				}
+			}
+                
 			int nTeamObjectCount = pTeamList[i]->GetNumObjects();
 			for ( int iObject = 0; iObject < nTeamObjectCount; ++iObject )
 			{
@@ -844,39 +877,35 @@ bool CObjectSentrygun::ValidTargetObject( CBaseObject *pObject, const Vector &ve
 	return FVisible( pObject, MASK_SHOT | CONTENTS_GRATE );
 }
 
-//TF_MOD_BOT changes
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CObjectSentrygun::ValidTargetBot(CBaseCombatCharacter* pActor)
+bool CObjectSentrygun::ValidTargetBot( CBaseCombatCharacter *pBot, const Vector &vecStart, const Vector &vecEnd )
 {
-	// Players should already be checked, ignore
-	if (pActor->IsPlayer())
+	// Already collected all of the players in FindTarget()
+	if ( pBot->IsPlayer() )
 		return false;
-
-	// Ignore the dead
-	if (!pActor->IsAlive())
+	
+	// Don't want to shoot bots that are dead, on the same team, or aren't solid (they won't take damage anyway)
+	if  ( !pBot->IsAlive() || pBot->InSameTeam( this ) || pBot->IsSolidFlagSet( FSOLID_NOT_SOLID ) )
 		return false;
-
-	// Make sure it's an enemy
-	if (InSameTeam(pActor))
+	
+	// Not across water boundary.
+	if ( ( GetWaterLevel() == 0 && pBot->GetWaterLevel() >= 3 ) || ( GetWaterLevel() == 3 && pBot->GetWaterLevel() <= 0 ) )
 		return false;
-
-	// Make sure we can even hit it
-	if (!pActor->IsSolid())
-		return false;
-
-	// Ray trace with respect to parents
-	CBaseEntity* pBlocker = nullptr;
-	if (!FVisible(pActor, MASK_SHOT | CONTENTS_GRATE, &pBlocker))
-	{
-		if (pActor->GetMoveParent() == pBlocker)
-			return true;
-
-		return false;
-	}
-
-	return true;
+	
+	// Ray trace.
+	CBaseEntity *pBlocker;
+	bool bVisible = FVisible( pBot, MASK_SHOT | CONTENTS_GRATE, &pBlocker );
+	
+	if ( bVisible )
+		return true;
+	
+	// Also valid if it's parented to the blocker
+	if ( pBlocker == pBot->GetParent() )
+		return true;
+	
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -961,7 +990,7 @@ void CObjectSentrygun::Attack()
 
 	// Track enemy
 	Vector vecMid = EyePosition();
-	Vector vecMidEnemy = m_hEnemy->WorldSpaceCenter();
+	Vector vecMidEnemy = GetEnemyAimPosition( m_hEnemy );
 	Vector vecDirToEnemy = vecMidEnemy - vecMid;
 
 	QAngle angToTarget;
@@ -989,14 +1018,32 @@ void CObjectSentrygun::Attack()
 	{
 		Fire();
 
+		m_flFireRate = 1.f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), m_flFireRate, mult_sentry_firerate );
+		
+		//if ( m_bPlayerControlled )
+		//{
+		//	m_flFireRate *= 0.5f;
+		//}
+		
+		//if ( IsMiniBuilding() && !IsDisposableBuilding() )
+		//{
+		//	m_flFireRate *= 0.75f;
+		//}
+		
+		if ( GetBuilder() && GetBuilder()->m_Shared.InCond( TF_COND_CRITBOOSTED_USER_BUFF ) )
+		{
+			m_flFireRate *= 0.4f;
+		}
+		
 		if ( m_iUpgradeLevel == 1 )
 		{
 			// Level 1 sentries fire slower
-			m_flNextAttack = gpGlobals->curtime + 0.2;
+			m_flNextAttack = gpGlobals->curtime + (0.2*m_flFireRate);
 		}
 		else
 		{
-			m_flNextAttack = gpGlobals->curtime + 0.1;
+			m_flNextAttack = gpGlobals->curtime + (0.1*m_flFireRate);
 		}
 	}
 	else
@@ -1032,7 +1079,8 @@ bool CObjectSentrygun::Fire()
 			GetAttachment( m_iAttachments[SENTRYGUN_ATTACHMENT_ROCKET_R], vecSrc, vecAng );
 		}
 
-		vecAimDir = m_hEnemy->WorldSpaceCenter() - vecSrc;
+		Vector vecEnemyPos = GetEnemyAimPosition( m_hEnemy );
+		vecAimDir = vecEnemyPos - vecSrc;
 		vecAimDir.NormalizeInPlace();
 
 		// NOTE: vecAng is not actually set by GetAttachment!!!
@@ -1080,7 +1128,7 @@ bool CObjectSentrygun::Fire()
 		int iAttachment = GetTracerAttachment();
 		GetAttachment( iAttachment, vecSrc, vecAng );
 
-		Vector vecMidEnemy = m_hEnemy->WorldSpaceCenter();
+		Vector vecMidEnemy = GetEnemyAimPosition( m_hEnemy );
 
 		// If we cannot see their WorldSpaceCenter ( possible, as we do our target finding based
 		// on the eye position of the target ) then fire at the eye position
@@ -1139,9 +1187,6 @@ bool CObjectSentrygun::Fire()
 			break;
 		}
 
-		//TF_MOD_BOT changes
-		m_fireTimer.Reset();
-
 		if ( !tf_sentrygun_ammocheat.GetBool() && !HasSpawnFlags( SF_SENTRY_INFINITE_AMMO ) )
 		{
 			m_iAmmoShells--;
@@ -1162,6 +1207,9 @@ bool CObjectSentrygun::Fire()
 		EmitSound( "Building_Sentrygun.Empty" );
 		m_flNextAttack = gpGlobals->curtime + 0.2;
 	}
+	
+	// note when we last fired at en enemy (or tried to)
+	m_timeSinceLastFired.Start();
 
 	return true;
 }
@@ -1506,6 +1554,28 @@ void CObjectSentrygun::Killed( const CTakeDamageInfo &info )
 {
 	// do normal handling
 	BaseClass::Killed( info );
+	
+	// find nearby sentry hint
+	if ( TFGameRules() && TFGameRules()->IsInTraining() )
+	{
+		CTFBotHintSentrygun *sentryHint;
+		for( sentryHint = static_cast< CTFBotHintSentrygun * >( gEntList.FindEntityByClassname( NULL, "bot_hint_sentrygun" ) );
+		     sentryHint;
+		     sentryHint = static_cast< CTFBotHintSentrygun * >( gEntList.FindEntityByClassname( sentryHint, "bot_hint_sentrygun" ) ) )
+		{
+			if ( sentryHint->IsEnabled() && sentryHint->InSameTeam( this ) )
+			{
+				Vector toMe = GetAbsOrigin() - sentryHint->GetAbsOrigin();
+				float dist2 = toMe.LengthSqr();
+				if ( dist2 < 1.0f )
+				{
+					sentryHint->OnSentryGunDestroyed( this );
+					sentryHint->DecrementUseCount();
+					break;
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

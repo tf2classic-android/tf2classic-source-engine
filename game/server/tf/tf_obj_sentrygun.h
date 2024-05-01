@@ -58,7 +58,6 @@ public:
 
 	//TF_MOD_BOT changes
 	const QAngle& GetTurretAngles(void) const { return m_vecCurAngles; }
-	float GetTimeSinceLastFired(void) const;
 
 	// If the players hit us with a wrench, should we upgrade
 	virtual bool	CanBeUpgraded( CTFPlayer *pPlayer );
@@ -69,9 +68,8 @@ public:
 	virtual int		GetTracerAttachment( void );
 
 	virtual bool	IsUpgrading( void ) const;
-
-	//TF_MOD_BOT changes
-	bool ValidTargetBot(CBaseCombatCharacter* pActor);
+	
+	virtual float   GetTimeSinceLastFired( void ) const             { return m_timeSinceLastFired.GetElapsedTime(); }
 
 	virtual int		GetBaseHealth( void );
 	virtual int		GetMaxUpgradeLevel( void );
@@ -80,6 +78,7 @@ public:
 	virtual void	MakeCarriedObject( CTFPlayer *pPlayer );
 
 private:
+	Vector GetEnemyAimPosition( CBaseEntity* pEnemy ) const;
 
 	// Main think
 	void SentryThink( void );
@@ -91,6 +90,7 @@ private:
 	bool FindTarget( void );
 	bool ValidTargetPlayer( CTFPlayer *pPlayer, const Vector &vecStart, const Vector &vecEnd );
 	bool ValidTargetObject( CBaseObject *pObject, const Vector &vecStart, const Vector &vecEnd );
+	bool ValidTargetBot( CBaseCombatCharacter *pBot, const Vector &vecStart, const Vector &vecEnd );
 	void FoundTarget( CBaseEntity *pTarget, const Vector &vecSoundCenter );
 	bool FInViewCone ( CBaseEntity *pEntity );
 	int Range( CBaseEntity *pTarget );
@@ -108,8 +108,10 @@ private:
 	
 private:
 	CNetworkVar( int, m_iState );
-
+	
 	float m_flNextAttack;
+	float m_flFireRate;
+	IntervalTimer m_timeSinceLastFired;
 
 	// Rotation
 	int m_iRightBound;
@@ -137,6 +139,7 @@ private:
 
 	// Target player / object
 	CHandle<CBaseEntity> m_hEnemy;
+	float m_flSentryRange;
 
 	//cached attachment indeces
 	int m_iAttachments[4];
@@ -149,9 +152,6 @@ private:
 	float m_flHeavyBulletResist;
 
 	int m_iPlacementBodygroup;
-
-	//TF_MOD_BOT changes
-	IntervalTimer m_fireTimer;
 
 	DECLARE_DATADESC();
 };
