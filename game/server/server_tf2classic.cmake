@@ -429,6 +429,8 @@ set(
 			"${SERVER_BASE_DIR}/tf/func_restock_zone.h"
 			"${SERVER_BASE_DIR}/tf/func_respawnroom.cpp"
 			"${SERVER_BASE_DIR}/tf/func_respawnroom.h"
+			"${SERVER_BASE_DIR}/tf/tf_triggers.cpp"
+			"${SERVER_BASE_DIR}/tf/tf_triggers.h"
 			"${SERVER_BASE_DIR}/tf/te_tfblood.cpp"
 			"${SERVER_BASE_DIR}/tf/te_tfblood.h"
 			"${SERVER_BASE_DIR}/tf/tf_ammo_pack.cpp"
