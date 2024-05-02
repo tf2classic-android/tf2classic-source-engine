@@ -747,36 +747,28 @@ bool CTFBot::IsFriend( const CBaseEntity *them ) const
 class CCountClassMembers
 {
 public:
-	CCountClassMembers( const CTFBot *me, int teamID )
+	CCountClassMembers( CTFBot *bot, int teamNum )
+		: m_me( bot ), m_myTeam( teamNum )
 	{
-		m_me = me;
-		m_myTeam = teamID;
-		m_teamSize = 0;
-		
-		for( int i=0; i<TF_LAST_NORMAL_CLASS; ++i )
-			m_count[i] = 0;
+		Q_memset( &m_count, 0, sizeof( m_count ) );
 	}
 
-	bool operator() ( CBasePlayer *basePlayer )
+	bool operator()( CBasePlayer *player )
 	{
-		CTFPlayer *player = (CTFPlayer *)basePlayer;
-
-		if ( player->GetTeamNumber() != m_myTeam )
-			return true;
-
-		++m_teamSize;
-
-		if ( m_me->IsSelf( player ) )
-			return true;
-
-		++m_count[ player->GetDesiredPlayerClassIndex() ];
+		if ( player->GetTeamNumber() == m_myTeam )
+		{
+			++m_teamSize;
+			CTFPlayer *pTFPlayer = static_cast<CTFPlayer *>( player );
+			if ( !m_me->IsSelf( player ) )
+				++m_count[ pTFPlayer->GetPlayerClass()->GetClassIndex() ];
+		}
 
 		return true;
 	}
 
-	const CTFBot *m_me;
+	CTFBot *m_me;
 	int m_myTeam;
-	int m_count[ TF_LAST_NORMAL_CLASS+1 ];
+	int m_count[TF_CLASS_COUNT_ALL];
 	int m_teamSize;
 };
 
@@ -858,7 +850,7 @@ const char *CTFBot::GetNextSpawnClassname( void ) const
 	}
 
 	// count classes in use by my team, not including me
-	CCountClassMembers currentRoster( this, GetTeamNumber() );
+	CCountClassMembers currentRoster( const_cast< CTFBot * >( this ), GetTeamNumber() );
 	ForEachPlayer( currentRoster );
 
 	// assume offense
