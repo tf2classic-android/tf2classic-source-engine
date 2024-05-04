@@ -47,8 +47,6 @@ static ConVar	sv_minrate( "sv_minrate", "3500", FCVAR_REPLICATED, "Min bandwidth
 	   ConVar	sv_stressbots("sv_stressbots", "0", FCVAR_DEVELOPMENTONLY, "If set to 1, the server calculates data and fills packets to bots. Used for perf testing.");
 static ConVar	sv_allowdownload ("sv_allowdownload", "1", 0, "Allow clients to download files");
 static ConVar	sv_allowupload ("sv_allowupload", "1", 0, "Allow clients to upload customizations files");
-	   ConVar	sv_sendtables ( "sv_sendtables", "0", FCVAR_DEVELOPMENTONLY, "Force full sendtable sending path." );
-	   
 
 extern ConVar sv_maxreplay;
 extern ConVar tv_snapshotrate;
@@ -932,39 +930,16 @@ bool CGameClient::SendSignonData( void )
 {
 	bool bClientHasdifferentTables = false;
 
-	if ( sv.m_FullSendTables.IsOverflowed() )
-	{
-		Host_Error( "Send Table signon buffer overflowed %i bytes!!!\n", sv.m_FullSendTables.GetNumBytesWritten() );
-		return false;
-	}
-
 	if ( SendTable_GetCRC() != (CRC32_t)0 )
 	{
 		bClientHasdifferentTables =  m_nSendtableCRC != SendTable_GetCRC();
 	}
 
-#ifdef _DEBUG
-	if ( sv_sendtables.GetInt() == 2 )
-	{
-		// force sending class tables, for debugging
-		bClientHasdifferentTables = true; 
-	}
-#endif
-
 	// Write the send tables & class infos if needed
 	if ( bClientHasdifferentTables )
 	{
-		if ( sv_sendtables.GetBool() )
-		{
-			// send client class table descriptions so it can rebuild tables
-			ConDMsg("Client sent different SendTable CRC, sending full tables.\n" );
-			m_NetChannel->SendData( sv.m_FullSendTables );
-		}
-		else
-		{
-			Disconnect( "Server uses different class tables" );
-			return false;
-		}
+		Disconnect( "Server uses different class tables" );
+		return false;
 	}
 	else
 	{

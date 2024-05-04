@@ -112,9 +112,6 @@ public:
 
 	CUtlVector<CEventInfo*>	m_TempEntities;		// temp entities
 
-	bf_write			m_FullSendTables;
-	CUtlMemory<byte>	m_FullSendTablesBuffer;
-
 	bool		m_bLoadedPlugins;
 
 public:

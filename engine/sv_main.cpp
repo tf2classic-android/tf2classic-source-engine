@@ -90,7 +90,6 @@ ConVar sv_shutdown_timeout_minutes( "sv_shutdown_timeout_minutes", "360", FCVAR_
 static double s_timeForceShutdown = 0.0;
 
 extern ConVar deathmatch;
-extern ConVar sv_sendtables;
 
 // Server default maxplayers value
 #define DEFAULT_SERVER_CLIENTS	6
@@ -1007,8 +1006,6 @@ void CGameServer::Init (bool isDedicated)
 {
 	CBaseServer::Init( isDedicated );
 
-	m_FullSendTables.SetDebugName( "m_FullSendTables" );
-	
 	dll_initialized = false;
 }
 
@@ -2015,33 +2012,6 @@ void SV_CreateBaseline (void)
 	SV_WriteVoiceCodec( sv.m_Signon );
 
 	ServerClass *pClasses = serverGameDLL->GetAllServerClasses();
-
-	// Send SendTable info.
-	if ( sv_sendtables.GetInt() )
-	{
-#ifdef _XBOX
-		Error( "sv_sendtables not allowed on XBOX." );
-#endif
-		sv.m_FullSendTablesBuffer.EnsureCapacity( NET_MAX_PAYLOAD );
-		sv.m_FullSendTables.StartWriting( sv.m_FullSendTablesBuffer.Base(), sv.m_FullSendTablesBuffer.Count() );
-		
-		SV_WriteSendTables( pClasses, sv.m_FullSendTables );
-		
-		if ( sv.m_FullSendTables.IsOverflowed() )
-		{
-			Host_Error("SV_CreateBaseline: WriteSendTables overflow.\n" );
-			return;
-		}
-
-		// Send class descriptions.
-		SV_WriteClassInfos(pClasses, sv.m_FullSendTables);
-
-		if ( sv.m_FullSendTables.IsOverflowed() )
-		{
-			Host_Error("SV_CreateBaseline: WriteClassInfos overflow.\n" );
-			return;
-		}
-	}
 
 	// If we're using the local network backdoor, we'll never use the instance baselines.
 	if ( !g_pLocalNetworkBackdoor )
