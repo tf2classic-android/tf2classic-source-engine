@@ -123,8 +123,10 @@ static void voiceconvar_file_changed_f( IConVar *pConVar, const char *pOldValue,
 #endif
 }
 
+#if !defined( PUBLIC_BUILD )
 ConVar voice_recordtofile("voice_recordtofile", "0", 0, "Record mic data and decompressed voice data into 'voice_micdata.wav' and 'voice_decompressed.wav'");
 ConVar voice_inputfromfile("voice_inputfromfile", "0", 0, "Get voice input from 'voice_input.wav' rather than from the microphone.", &voiceconvar_file_changed_f );
+#endif
 ConVar sv_allow_voice_from_file( "sv_allow_voice_from_file", "1", FCVAR_REPLICATED, "Allow or disallow clients from using voice_inputfromfile on this server.", &voiceconvar_file_changed_f );
 
 class CStatusLineBuilder
@@ -1801,6 +1803,7 @@ void Host_VoiceRecordStart_f(void)
 
 	if ( cl.IsActive() )
 	{
+#if !defined( PUBLIC_BUILD )
 		const char *pUncompressedFile = NULL;
 		const char *pDecompressedFile = NULL;
 		const char *pInputFile = NULL;
@@ -1811,7 +1814,7 @@ void Host_VoiceRecordStart_f(void)
 			pDecompressedFile = "voice_decompressed.wav";
 		}
 
-		if (voice_inputfromfile.GetInt())
+		if( voice_inputfromfile.GetInt() )
 		{
 			pInputFile = "voice_input.wav";
 		}
@@ -1819,8 +1822,14 @@ void Host_VoiceRecordStart_f(void)
 		{
 			pInputFile = NULL;
 		}
+#endif // !PUBLIC_BUILD
+
 #if !defined( NO_VOICE )
-		if (Voice_RecordStart(pUncompressedFile, pDecompressedFile, pInputFile))
+#if !defined( PUBLIC_BUILD )
+		if( Voice_RecordStart( pUncompressedFile, pDecompressedFile, pInputFile ) )
+#else
+		if( Voice_RecordStart( NULL, NULL, NULL ) )
+#endif
 		{
 		}
 #endif

@@ -978,6 +978,7 @@ bool Voice_RecordStart(
 		g_pEncodeCodec->ResetState();
 	}
 	
+#if !defined( PUBLIC_BUILD )
 	if(pMicInputFile)
 	{
 		int a, b, c;
@@ -999,6 +1000,7 @@ bool Voice_RecordStart(
 		g_nDecompressedDataBytes = 0;
 		g_pDecompressedDataFilename = pDecompressedFile;
 	}
+#endif
 
 	g_bVoiceRecording = false;
 	if ( g_pVoiceRecord )
