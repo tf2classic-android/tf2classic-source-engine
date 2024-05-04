@@ -345,9 +345,6 @@ public:
 	// Returns the dx support level
 	virtual int			GetDXSupportLevel() = 0;
 
-	// GR - returns the HDR support status
-	virtual bool        SupportsHDR() = 0;
-
 	// Replace the engine's material system pointer.
 	virtual void		Mat_Stub( IMaterialSystem *pMatSys ) = 0;
 

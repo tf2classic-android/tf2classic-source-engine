@@ -422,7 +422,6 @@ public:
 	// Returns the dx support level
 	virtual int	GetDXSupportLevel();
 	
-	virtual bool SupportsHDR();
 	virtual void Mat_Stub( IMaterialSystem *pMatSys );
 
 	// menu display
@@ -1053,13 +1052,6 @@ void CEngineClient::GetAmbientLightColor( Vector& color )
 int	CEngineClient::GetDXSupportLevel()
 {
 	return g_pMaterialSystemHardwareConfig->GetDXSupportLevel();
-}
-
-bool CEngineClient::SupportsHDR()
-{
-	// deprecated.
-//	Assert( 0 );
-	return false;
 }
 
 void CEngineClient::Mat_Stub( IMaterialSystem *pMatSys )
