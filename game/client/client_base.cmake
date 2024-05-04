@@ -368,7 +368,6 @@ set(
 		"${SRCDIR}/public/vgui_controls/vgui_controls.cpp"	#/
 		"${SRCDIR}/public/jigglebones.cpp"					#/
 		"${CLIENT_BASE_DIR}/in_mouse.cpp"					#/
-		"${CLIENT_BASE_DIR}/mumble.cpp"						#/
 		"${SRCDIR}/public/renamed_recvtable_compat.cpp"		#/
 		"${CLIENT_BASE_DIR}/rendertexture.cpp"
 		#		{
@@ -634,7 +633,6 @@ set(
 		"${CLIENT_BASE_DIR}/lerp_functions.h"
 		"${CLIENT_BASE_DIR}/menu.h"
 		"${CLIENT_BASE_DIR}/movehelper_client.h"
-		"${CLIENT_BASE_DIR}/mumble.h"
 		"${CLIENT_BASE_DIR}/networkstringtable_clientdll.h"
 		"${CLIENT_BASE_DIR}/panelmetaclassmgr.h"
 		"${CLIENT_BASE_DIR}/particle_collision.h"
@@ -1079,7 +1077,6 @@ set_source_files_properties(
 	"${SRCDIR}/public/vgui_controls/vgui_controls.cpp"	#/
 	"${SRCDIR}/public/jigglebones.cpp"					#/
 	"${CLIENT_BASE_DIR}/in_mouse.cpp"					#/
-	"${CLIENT_BASE_DIR}/mumble.cpp"						#/
 	"${SRCDIR}/public/renamed_recvtable_compat.cpp"		#/
 	"${CLIENT_BASE_DIR}/rendertexture.cpp"
 
