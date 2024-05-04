@@ -24,6 +24,8 @@
 #include "econ_item_view.h"
 #endif
 
+#define TALK_INTERVAL 0.70 // min time between say commands from a client
+
 // For queuing and processing usercmds
 class CCommandContext
 {

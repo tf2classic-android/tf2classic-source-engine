@@ -1255,7 +1255,9 @@ void CTFPlayer::Spawn()
 	m_flAccumulatedHealthRegen = 0;
 
 	m_flNextVoiceCommandTime = gpGlobals->curtime;
+	m_flNextChatMessageTime = gpGlobals->curtime;
 	m_iVoiceSpamCounter = 0;
+	m_iTextSpamCounter = 0;
 
 	ClearZoomOwner();
 	SetFOV( this , 0 );
@@ -9198,6 +9200,42 @@ void CTFPlayer::ClearExpression( void )
 bool CTFPlayer::ShouldShowVoiceSubtitleToEnemy( void )
 {
 	return ( m_Shared.InCond( TF_COND_DISGUISED ) && m_Shared.GetDisguiseTeam() != GetTeamNumber() );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFPlayer::CanSpeak( void )
+{
+	return (gpGlobals->curtime > m_flNextChatMessageTime);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPlayer::NotePlayerTalked()
+{
+	float flTimeSinceAllowedText = gpGlobals->curtime - m_flNextChatMessageTime;
+
+	// if more than 5 seconds has passed, reset the counter
+	if( flTimeSinceAllowedText > 5.0f )
+	{
+		m_iTextSpamCounter = 0;
+	}
+	// if its less than a second past the allowed time, the player is spamming
+	else if( flTimeSinceAllowedText < 1.0f )
+	{
+		m_iTextSpamCounter++;
+	}
+
+	m_flNextChatMessageTime = gpGlobals->curtime + (TALK_INTERVAL - 0.01f);
+
+	if( m_iTextSpamCounter > 0 )
+	{
+		m_flNextChatMessageTime += m_iTextSpamCounter * 0.5f;
+	}
+
+	BaseClass::NotePlayerTalked();
 }
 
 //-----------------------------------------------------------------------------

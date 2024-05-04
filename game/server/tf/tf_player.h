@@ -381,6 +381,9 @@ public:
 	virtual IResponseSystem *GetResponseSystem();
 	virtual bool			SpeakConceptIfAllowed( int iConcept, const char *modifiers = NULL, char *pszOutResponseChosen = NULL, size_t bufsize = 0, IRecipientFilter *filter = NULL );
 
+	virtual bool CanSpeak( void );
+	virtual void NotePlayerTalked();
+
 	virtual bool CanSpeakVoiceCommand( void );
 	virtual bool ShouldShowVoiceSubtitleToEnemy( void );
 	virtual void NoteSpokeVoiceCommand( const char *pszScenePlayed );
@@ -394,7 +397,9 @@ public:
 	float GetTeamScrambleScore( void ) { return m_flTeamScrambleScore; }
 
 	float m_flNextVoiceCommandTime;
+	float m_flNextChatMessageTime;
 	int m_iVoiceSpamCounter;
+	int m_iTextSpamCounter;
 
 	float m_flNextSpeakWeaponFire;
 

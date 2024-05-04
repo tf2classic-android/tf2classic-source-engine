@@ -207,8 +207,15 @@ void Host_Say( edict_t *pEdict, const CCommand &args, bool teamonly )
 
 	if ( pEdict )
 	{
+#if defined (TF_CLASSIC)
+		CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
+
+		if( pTFPlayer && !pTFPlayer->CanSpeak() )
+			return;
+#else
 		if ( !pPlayer->CanSpeak() )
 			return;
+#endif
 
 		// See if the player wants to modify of check the text
 		pPlayer->CheckChatText( p, 127 );	// though the buffer szTemp that p points to is 256, 
@@ -812,13 +819,16 @@ CON_COMMAND_F( buddha, "Toggle.  Player takes damage but won't die. (Shows red c
 	}
 }
 
-
-#define TALK_INTERVAL 0.66 // min time between say commands from a client
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 CON_COMMAND( say, "Display player message" )
 {
+#if defined(TF_CLASSIC)
+	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() );
+#else
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
+#endif
+
 	if ( pPlayer )
 	{
 		if (( pPlayer->LastTimePlayerTalked() + TALK_INTERVAL ) < gpGlobals->curtime) 
@@ -847,7 +857,12 @@ CON_COMMAND( say_team, "Display player message to team" )
 		return;
 #endif
 
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
+#if defined(TF_CLASSIC)
+	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() );
+#else
+	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() );
+#endif
+
 	if (pPlayer)
 	{
 		if (( pPlayer->LastTimePlayerTalked() + TALK_INTERVAL ) < gpGlobals->curtime) 
