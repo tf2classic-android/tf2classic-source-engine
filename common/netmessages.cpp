@@ -929,7 +929,7 @@ bool SVC_VoiceInit::WriteToBuffer( bf_write &buffer )
 {
 	buffer.WriteUBitLong( GetType(), NETMSG_TYPE_BITS );
 	buffer.WriteString( m_szVoiceCodec );
-	buffer.WriteByte( /* Legacy Quality Field */ 255 );
+	buffer.WriteByte( /* Legacy Quality Field */ 254 );
 	buffer.WriteShort( m_nSampleRate );
 	return !buffer.IsOverflowed();
 }
@@ -940,35 +940,15 @@ bool SVC_VoiceInit::ReadFromBuffer( bf_read &buffer )
 
 	buffer.ReadString( m_szVoiceCodec, sizeof(m_szVoiceCodec) );
 	unsigned char nLegacyQuality = buffer.ReadByte();
-	if ( nLegacyQuality == 255 )
+	if ( nLegacyQuality == 254 )
 	{
 		// v2 packet
 		m_nSampleRate = buffer.ReadShort();
 	}
 	else
 	{
-		// v1 packet
-		//
-		// Hacky workaround for v1 packets not actually indicating if we were using steam voice -- we've kept the steam
-		// voice separate convar that was in use at the time as replicated&hidden, and if whatever network stream we're
-		// interpreting sets it, lie about the subsequent voice init's codec & sample rate.
-		if ( sv_use_steam_voice.GetBool() )
-		{
-			Msg( "Legacy SVC_VoiceInit - got a set for sv_use_steam_voice convar, assuming Steam voice\n" );
-			V_strncpy( m_szVoiceCodec, "steam", sizeof( m_szVoiceCodec ) );
-			// Legacy steam voice can always be parsed as auto sample rate.
-			m_nSampleRate = 0;
-		}
-		else if ( V_strncasecmp( m_szVoiceCodec, "vaudio_celt", sizeof( m_szVoiceCodec ) ) == 0 )
-		{
-			// Legacy rate vaudio_celt always selected during v1 packet era
-			m_nSampleRate = 22050;
-		}
-		else
-		{
-			// Legacy rate everything but CELT always selected during v1 packet era
-			m_nSampleRate = 11025;
-		}
+		// Old bald engine =)
+		buffer.SetOverflowFlag();
 	}
 
 	return !buffer.IsOverflowed();
