@@ -39,23 +39,6 @@ CreateInterfaceFn s_SoundEmitterFactory;
 
 /*
 ==============
-Load3rdParty
-
-Load support for third party .dlls ( gamehost )
-==============
-*/
-void Load3rdParty( void )
-{
-	// Only do this if the server operator wants the support.
-	// ( In case of malicious code, too )
-	if ( CommandLine()->CheckParm( "-usegh" ) )   
-	{
-		hDLLThirdParty = sys->LoadLibrary( "ghostinj.dll" );
-	}
-}
-
-/*
-==============
 EF_VID_ForceUnlockedAndReturnState
 
 Dummy funcion called by engine
@@ -85,8 +68,6 @@ InitInstance
 */
 bool InitInstance( )
 {
-	Load3rdParty();
-
 	return true;
 }
 
