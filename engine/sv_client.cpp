@@ -928,15 +928,8 @@ void CGameClient::ActivatePlayer( void )
 
 bool CGameClient::SendSignonData( void )
 {
-	bool bClientHasdifferentTables = false;
-
-	if ( SendTable_GetCRC() != (CRC32_t)0 )
-	{
-		bClientHasdifferentTables =  m_nSendtableCRC != SendTable_GetCRC();
-	}
-
-	// Write the send tables & class infos if needed
-	if ( bClientHasdifferentTables )
+	// check class table CRCs
+	if( m_nSendtableCRC != SendTable_GetCRC() )
 	{
 		Disconnect( "Server uses different class tables" );
 		return false;
