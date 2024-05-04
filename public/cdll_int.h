@@ -186,30 +186,30 @@ struct OcclusionParams_t
 
 // change this when the new version is incompatable with the old
 #define VENGINE_CLIENT_INTERFACE_VERSION		"VEngineClient014"
-#define VENGINE_CLIENT_INTERFACE_VERSION_13		"VEngineClient013"
 
 //-----------------------------------------------------------------------------
 // Purpose: Interface exposed from the engine to the client .dll
 //-----------------------------------------------------------------------------
-abstract_class IVEngineClient013
+
+abstract_class IVEngineClient
 {
 public:
 	// Find the model's surfaces that intersect the given sphere.
 	// Returns the number of surfaces filled in.
 	virtual int					GetIntersectingSurfaces(
 									const model_t *model,
-									const Vector &vCenter, 
+									const Vector &vCenter,
 									const float radius,
 									const bool bOnlyVisibleSurfaces,	// Only return surfaces visible to vCenter.
-									SurfInfo *pInfos, 
-									const int nMaxInfos) = 0;
-	
+									SurfInfo *pInfos,
+									const int nMaxInfos ) = 0;
+
 	// Get the lighting intensivty for a specified point
 	// If bClamp is specified, the resulting Vector is restricted to the 0.0 to 1.0 for each element
-	virtual Vector				GetLightForPoint(const Vector &pos, bool bClamp) = 0;
+	virtual Vector				GetLightForPoint( const Vector &pos, bool bClamp ) = 0;
 
 	// Traces the line and reports the material impacted as well as the lighting information for the impact point
-	virtual IMaterial			*TraceLineMaterialAndLighting( const Vector &start, const Vector &end, 
+	virtual IMaterial			*TraceLineMaterialAndLighting( const Vector &start, const Vector &end,
 									Vector &diffuseLightColor, Vector& baseColor ) = 0;
 
 	// Given an input text buffer data pointer, parses a single token into the variable token and returns the new
@@ -246,10 +246,10 @@ public:
 	virtual const model_t		*LoadModel( const char *pName, bool bProp = false ) = 0;
 
 	// Get accurate, sub-frame clock ( profiling use )
-	virtual float				Time( void ) = 0; 
+	virtual float				Time( void ) = 0;
 
 	// Get the exact server timesstamp ( server time ) from the last message received from the server
-	virtual float				GetLastTimeStamp( void ) = 0; 
+	virtual float				GetLastTimeStamp( void ) = 0;
 
 	// Given a CAudioSource (opaque pointer), retrieve the underlying CSentence object ( stores the words, phonemes, and close
 	//  captioning data )
@@ -263,7 +263,7 @@ public:
 	virtual void				GetViewAngles( QAngle& va ) = 0;
 	// Set current view orientation from va
 	virtual void				SetViewAngles( QAngle& va ) = 0;
-	
+
 	// Retrieve the current game's maxclients setting
 	virtual int					GetMaxClients( void ) = 0;
 
@@ -296,7 +296,7 @@ public:
 
 	// Is the specified world-space boudning box in the same PVS cluster as the view origin?
 	virtual int					IsBoxInViewCluster( const Vector& mins, const Vector& maxs ) = 0;
-	
+
 	// Returns true if the specified box is outside of the view frustum and should be culled
 	virtual bool				CullBox( const Vector& mins, const Vector& maxs ) = 0;
 
@@ -308,7 +308,7 @@ public:
 
 	// Get access to the world to screen transformation matrix
 	virtual const VMatrix& 		WorldToScreenMatrix() = 0;
-	
+
 	// Get the matrix to move a point from world space into view space
 	// (translate and rotate so the camera is at the origin looking down X).
 	virtual const VMatrix& 		WorldToViewMatrix() = 0;
@@ -325,10 +325,10 @@ public:
 
 	// Returns the number of leaves in the level
 	virtual int					LevelLeafCount() const = 0;
-	
+
 	// Gets a way to perform spatial queries on the BSP tree
 	virtual ISpatialQuery*		GetBSPTreeQuery() = 0;
-	
+
 	// Convert texlight to gamma...
 	virtual void		LinearToGamma( float* linear, float* gamma ) = 0;
 
@@ -362,7 +362,7 @@ public:
 	// Tell engine stats gathering system that the rendering frame is beginning/ending
 	virtual void		EngineStats_BeginFrame( void ) = 0;
 	virtual void		EngineStats_EndFrame( void ) = 0;
-	
+
 	// This tells the engine to fire any events (temp entity messages) that it has queued up this frame. 
 	// It should only be called once per frame.
 	virtual void		FireEvents() = 0;
@@ -389,7 +389,7 @@ public:
 	// Computes light due to dynamic lighting at a point
 	// If the normal isn't specified, then it'll return the maximum lighting
 	// If pBoxColors is specified (it's an array of 6), then it'll copy the light contribution at each box side.
-	virtual void		ComputeLighting( const Vector& pt, const Vector* pNormal, bool bClamp, Vector& color, Vector *pBoxColors=NULL ) = 0;
+	virtual void		ComputeLighting( const Vector& pt, const Vector* pNormal, bool bClamp, Vector& color, Vector *pBoxColors = NULL ) = 0;
 
 	// Activates/deactivates an occluder...
 	virtual void		ActivateOccluder( int nOccluderIndex, bool bActive ) = 0;
@@ -463,7 +463,7 @@ public:
 	// Passes in the actual size of the viewport
 	virtual void			GrabPreColorCorrectedFrame( int x, int y, int width, int height ) = 0;
 
-	virtual bool			IsHammerRunning( ) const = 0;
+	virtual bool			IsHammerRunning() const = 0;
 
 	// Inserts szCmdString into the command buffer as if it was typed by the client to his/her console.
 	// And then executes the command string immediately (vs ClientCmd() which executes in the next frame)
@@ -473,22 +473,22 @@ public:
 
 	// returns if the loaded map was processed with HDR info. This will be set regardless
 	// of what HDR mode the player is in.
-	virtual bool MapHasHDRLighting(void) = 0;
+	virtual bool MapHasHDRLighting( void ) = 0;
 
 	virtual int	GetAppID() = 0;
 
 	// Just get the leaf ambient light - no caching, no samples
-	virtual Vector			GetLightForPointFast(const Vector &pos, bool bClamp) = 0;
+	virtual Vector			GetLightForPointFast( const Vector &pos, bool bClamp ) = 0;
 
 	// This version does NOT check against FCVAR_CLIENTCMD_CAN_EXECUTE.
 	virtual void			ClientCmd_Unrestricted( const char *szCmdString ) = 0;
-	
+
 	// This used to be accessible through the cl_restrict_server_commands cvar.
 	// By default, Valve games restrict the server to only being able to execute commands marked with FCVAR_SERVER_CAN_EXECUTE.
 	// By default, mods are allowed to execute any server commands, and they can restrict the server's ability to execute client
 	// commands with this function.
 	virtual void			SetRestrictServerCommands( bool bRestrict ) = 0;
-	
+
 	// If set to true (defaults to true for Valve games and false for others), then IVEngineClient::ClientCmd
 	// can only execute things marked with FCVAR_CLIENTCMD_CAN_EXECUTE.
 	virtual void			SetRestrictClientCommands( bool bRestrict ) = 0;
@@ -502,14 +502,14 @@ public:
 	virtual void			ChangeTeam( const char *pTeamName ) = 0;
 
 	// Causes the engine to read in the user's configuration on disk
-	virtual void			ReadConfiguration( const bool readDefault = false ) = 0; 
+	virtual void			ReadConfiguration( const bool readDefault = false ) = 0;
 
 	virtual void SetAchievementMgr( IAchievementMgr *pAchievementMgr ) = 0;
 	virtual IAchievementMgr *GetAchievementMgr() = 0;
 
 	virtual bool			MapLoadFailed( void ) = 0;
 	virtual void			SetMapLoadFailed( bool bState ) = 0;
-	
+
 	virtual bool			IsLowViolence() = 0;
 	virtual const char		*GetMostRecentSaveGame( void ) = 0;
 	virtual void			SetMostRecentSaveGame( const char *lpszFilename ) = 0;
@@ -548,35 +548,30 @@ public:
 	//  returns the string name of the key to which this string is bound. Returns NULL if no such binding exists
 	// Unlike Key_LookupBinding, leading '+' characters are not stripped from bindings.
 	virtual	const char		*Key_LookupBindingExact( const char *pBinding ) = 0;
-	
+
 	virtual void			AddPhonemeFile( const char *pszPhonemeFile ) = 0;
 	virtual float			GetPausedExpireTime( void ) = 0;
 
 	virtual bool			StartDemoRecording( const char *pszFilename, const char *pszFolder = NULL ) = 0;
 	virtual void			StopDemoRecording( void ) = 0;
 	virtual void			TakeScreenshot( const char *pszFilename, const char *pszFolder = NULL ) = 0;
-};
 
-abstract_class IVEngineClient : public IVEngineClient013
-{
-public:
-	virtual uint GetProtocolVersion() = 0;
-	virtual bool IsWindowedMode() = 0;
+	virtual uint			GetProtocolVersion() = 0;
+	virtual bool			IsWindowedMode() = 0;
 
 	// Flash the window (os specific)
-	virtual void	FlashWindow() = 0;
+	virtual void			FlashWindow() = 0;
 
 	// Client version from the steam.inf, this will be compared to the GC version
-	virtual int GetClientVersion() const = 0; // engines build
+	virtual int				GetClientVersion() const = 0; // engines build
 
 	// Is App Active 
-	virtual bool IsActiveApp() = 0;
+	virtual bool			IsActiveApp() = 0;
 
-	virtual void DisconnectInternal() = 0;
+	virtual void			DisconnectInternal() = 0;
 
-	virtual int GetInstancesRunningCount( ) = 0;
+	virtual int				GetInstancesRunningCount( ) = 0;
 };
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Interface exposed from the client .dll back to the engine

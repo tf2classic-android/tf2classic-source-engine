@@ -113,7 +113,6 @@ extern	CGlobalVars g_ServerGlobalVariables;
 // globals
 //-----------------------------------------------------------------------------
 CSysModule		*g_ClientDLLModule = NULL; // also used by materialproxyfactory.cpp
-bool g_bClientGameDLLGreaterThanV13;
 
 void AddIntersectingLeafSurfaces( mleaf_t *pLeaf, GetIntersectingSurfaces_Struct *pStruct )
 {
@@ -566,6 +565,7 @@ public:
 
 	virtual bool	StartDemoRecording( const char *pszFilename, const char *pszFolder = NULL );
 	virtual void	StopDemoRecording( void );
+
 	virtual void	TakeScreenshot( const char *pszFilename, const char *pszFolder = NULL );
 };
 
@@ -576,7 +576,6 @@ public:
 static CEngineClient s_VEngineClient;
 IVEngineClient *engineClient = &s_VEngineClient;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CEngineClient, IVEngineClient, VENGINE_CLIENT_INTERFACE_VERSION, s_VEngineClient );
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CEngineClient, IVEngineClient013, VENGINE_CLIENT_INTERFACE_VERSION_13, s_VEngineClient );
 
 
 //-----------------------------------------------------------------------------
@@ -1730,7 +1729,6 @@ bool ClientDLL_Load()
 			g_ClientDLL = (IBaseClientDLL *)g_ClientFactory( CLIENT_DLL_INTERFACE_VERSION, NULL );
 			// this is to ensure the old format of the string table is used for clients version 13 and older.
 			// when the client version gets revved, there will need to be an else that sets this bool to true
-			g_bClientGameDLLGreaterThanV13 = false;
 			if ( !g_ClientDLL )
 			{
 				Sys_Error( "Could not get client.dll interface from library client" );
