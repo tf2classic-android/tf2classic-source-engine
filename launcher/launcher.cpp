@@ -103,8 +103,10 @@ extern void* CreateSDLMgr();
 static IEngineAPI *g_pEngineAPI;
 static IHammer *g_pHammer;
 
+#if !defined(PUBLIC_BUILD)
 bool g_bTextMode = false;
 bool g_MultiRun = false;
+#endif
 
 static char g_szBasedir[MAX_PATH];
 static char g_szGamedir[MAX_PATH];
@@ -831,7 +833,10 @@ bool CSourceAppSystemGroup::PreInit()
 	info.m_pInitialMod = DetermineDefaultMod();
 	info.m_pInitialGame = DetermineDefaultGame();
 	info.m_pParentAppSystemGroup = this;
+
+#if !defined( PUBLIC_BUILD )
 	info.m_bTextMode = g_bTextMode;
+#endif
 
 	g_pEngineAPI->SetStartupInfo( info );
 
@@ -915,8 +920,10 @@ char g_lockFilename[MAX_PATH];
 #endif
 bool GrabSourceMutex()
 {
+#if !defined( PUBLIC_BUILD )
 	if( g_MultiRun )
 		return true;
+#endif
 
 #ifdef WIN32
 	if ( IsPC() )
@@ -1012,8 +1019,10 @@ bool GrabSourceMutex()
 
 void ReleaseSourceMutex()
 {
+#if !defined( PUBLIC_BUILD )
 	if( g_MultiRun )
 		return;
+#endif
 
 #ifdef WIN32
 	if ( IsPC() && g_hMutex )
@@ -1279,7 +1288,9 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 
 	// Allow the user to explicitly say they want to be able to run multiple instances of the source mutex.
 	// Useful for side-by-side comparisons of different renderers.
+#if !defined( PUBLIC_BUILD )
 	g_MultiRun = CommandLine()->CheckParm( "-multirun" ) != NULL;
+#endif
 
 #if defined( _X360 )
 	bool bSpewDllInfo = CommandLine()->CheckParm( "-dllinfo" );
@@ -1433,12 +1444,18 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 			}
 			else
 			{
-				if (!g_MultiRun) {
+#if !defined( PUBLIC_BUILD )
+				if (!g_MultiRun)
+#endif
+				{
 					::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", MB_ICONINFORMATION | MB_OK);
 				}
 			}
 
-			if (!g_MultiRun) {
+#if !defined( PUBLIC_BUILD )
+			if (!g_MultiRun)
+#endif
+			{
 				return retval;
 			}
 		}
@@ -1446,7 +1463,11 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 #elif defined( POSIX )
 	else
 	{
+#if !defined( PUBLIC_BUILD )
 		if ( !GrabSourceMutex() && !g_MultiRun )
+#else
+		if ( !GrabSourceMutex() )
+#endif
 		{
 			::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", 0 );
 			return -1;

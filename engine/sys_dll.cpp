@@ -883,10 +883,12 @@ SpewRetval_t Sys_SpewFunc( SpewType_t spewType, const char *pMsg )
 			Plat_DebugString( pMsg );
 		}
 
+#if !defined( PUBLIC_BUILD )
 		if ( g_bTextMode )
 		{
 			printf( "%s", pMsg );
 		}
+#endif
 
 		if ((spewType != SPEW_LOG) || (sv.GetMaxClients() == 1))
 		{

@@ -1080,7 +1080,9 @@ void CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 	bool bDedicated = false; // Dedicated comes through CDedicatedServerAPI
 	eSteamInfoInit steamInfo = Sys_TryInitSteamInfo( this, g_SteamInfIDVersionInfo, info.m_pInitialMod, info.m_pBaseDirectory, bDedicated );
 
+#if !defined( PUBLIC_BUILD )
 	g_bTextMode = info.m_bTextMode;
+#endif
 
 	// Set up the engineparms_t which contains global information about the mod
 	host_parms.basedir = const_cast<char*>( info.m_pBaseDirectory );
@@ -2314,7 +2316,9 @@ bool CDedicatedServerAPI::ModInit( ModInfo_t &info )
 	host_parms.mod = const_cast<char*>(GetModDirFromPath(info.m_pInitialMod));
 	host_parms.game = const_cast<char*>(info.m_pInitialGame);
 
+#if !defined( PUBLIC_BUILD )
 	g_bTextMode = info.m_bTextMode;
+#endif
 
 	TRACEINIT( COM_InitFilesystem( info.m_pInitialMod ), COM_ShutdownFileSystem() );
 

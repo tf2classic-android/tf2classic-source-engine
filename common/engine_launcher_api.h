@@ -24,7 +24,9 @@ struct StartupInfo_t
 	const char *m_pInitialMod;		// Mod name ("cstrike", for example)
 	const char *m_pInitialGame;		// Root game name ("hl2", for example, in the case of cstrike)
 	CAppSystemGroup *m_pParentAppSystemGroup;
+#ifndef PUBLIC_BUILD
 	bool m_bTextMode;
+#endif
 };
 
 
