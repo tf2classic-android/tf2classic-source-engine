@@ -722,9 +722,6 @@ public:
 	virtual void			OnDemoPlaybackStart( char const* pDemoBaseName ) = 0;
 	virtual void			OnDemoPlaybackStop() = 0;
 
-	// Draw the console overlay?
-	virtual bool			ShouldDrawDropdownConsole() = 0;
-
 	// Get client screen dimensions
 	virtual int				GetScreenWidth() = 0;
 	virtual int				GetScreenHeight() = 0;

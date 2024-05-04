@@ -1256,11 +1256,6 @@ void CConPanel::Paint()
 {
 	VPROF( "CConPanel::Paint" );
 
-#if !defined( SWDS ) && !defined( DEDICATED )
-	if ( IsPC() && !g_ClientDLL->ShouldDrawDropdownConsole() )
-		return;
-#endif
-	
 	DrawDebugAreas();
 
 	DrawNotify();	// only draw notify in game

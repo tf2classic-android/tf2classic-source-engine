@@ -670,8 +670,6 @@ public:
 	virtual void			OnDemoPlaybackStart( char const* pDemoBaseName );
 	virtual void			OnDemoPlaybackStop();
 
-	virtual bool			ShouldDrawDropdownConsole();
-
 	// Get client screen dimensions
 	virtual int				GetScreenWidth();
 	virtual int				GetScreenHeight();
@@ -1312,24 +1310,6 @@ void CHLClient::HudReset( void )
 void CHLClient::HudText( const char * message )
 {
 	DispatchHudText( message );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-bool CHLClient::ShouldDrawDropdownConsole()
-{
-#if defined( REPLAY_ENABLED )
-	extern ConVar hud_freezecamhide;
-	extern bool IsTakingAFreezecamScreenshot();
-
-	if ( hud_freezecamhide.GetBool() && IsTakingAFreezecamScreenshot() )
-	{
-		return false;
-	}
-#endif
-
-	return true;
 }
 
 //-----------------------------------------------------------------------------
