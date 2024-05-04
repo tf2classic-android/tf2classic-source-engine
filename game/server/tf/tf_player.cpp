@@ -141,7 +141,9 @@ ConVar tf2c_player_powerup_explodeforce( "tf2c_player_powerup_explodeforce", "20
 ConVar tf2c_chat_protection( "tf2c_chat_protection", "0", FCVAR_NOTIFY, "Enable chat protection. Invulnerability is applied while the chat window is open." );
 
 ConVar tf_nav_in_combat_range( "tf_nav_in_combat_range", "1000", FCVAR_CHEAT );
-    
+
+ConVar sv_max_usercmd_future_ticks( "sv_max_usercmd_future_ticks", "8", 0, "Prevents clients from running usercmds too far in the future." );
+
 // -------------------------------------------------------------------------------- //
 // Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
 // -------------------------------------------------------------------------------- //
@@ -9986,4 +9988,16 @@ float CTFPlayer::GetTimeSinceLastInjuryByAnyEnemyTeam()
 	} );
 	
 	return flTimeSinceInjured;
+}
+
+void CTFPlayer::PlayerRunCommand( CUserCmd *ucmd, IMoveHelper *moveHelper )
+{
+	// don't run commands in the future
+	if( ucmd->tick_count > (gpGlobals->tickcount + sv_max_usercmd_future_ticks.GetInt()) )
+	{
+		DevMsg( "Client cmd out of sync (delta %i).\n", ucmd->tick_count - gpGlobals->tickcount );
+		return;
+	}
+
+	BaseClass::PlayerRunCommand( ucmd, moveHelper );
 }

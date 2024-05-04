@@ -430,6 +430,8 @@ public:
 	void RemoveSpawnProtection( void );
 	
 	float GetTimeSinceLastInjuryByAnyEnemyTeam();
+
+	virtual void    PlayerRunCommand( CUserCmd *ucmd, IMoveHelper *moveHelper );
 	
 	// Entity inputs
 	void	InputIgnitePlayer( inputdata_t &inputdata );
