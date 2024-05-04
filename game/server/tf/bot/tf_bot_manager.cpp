@@ -656,7 +656,7 @@ bool CTFBotManager::IsInOfflinePractice() const
 //----------------------------------------------------------------------------------------------------------------
 bool CTFBotManager::IsMeleeOnly() const
 {
-	return tf_bot_melee_only.GetBool();
+	return tf_bot_melee_only.GetBool() || TFGameRules()->IsInMedievalMode();
 }
 
 
