@@ -43,6 +43,7 @@ public:
 	unsigned int	m_nNodeCluster;  // if (1<<31) is set it's a node, otherwise a cluster
 };
 
+#if defined( ENABLE_REPLAY )
 // Replay needs some more data per entity 
 class CReplayEntityData
 {
@@ -50,6 +51,7 @@ public:
 	vec_t			origin[3];	// entity position
 	unsigned int	m_nNodeCluster;  // if (1<<31) is set it's a node, otherwise a cluster
 };
+#endif
 
 typedef struct
 {
@@ -98,7 +100,9 @@ public:
 
 	// Additional HLTV info
 	CHLTVEntityData			*m_pHLTVEntityData; // is NULL if not in HLTV mode or array of m_pValidEntities entries
+#if defined( ENABLE_REPLAY )
 	CReplayEntityData		*m_pReplayEntityData; // is NULL if not in replay mode or array of m_pValidEntities entries
+#endif
 
 	CEventInfo				**m_pTempEntities; // temp entities
 	int						m_nTempEntities;

@@ -86,7 +86,11 @@ CFrameSnapshot*	CFrameSnapshotManager::CreateEmptySnapshot( int tickcount, int m
 	snap->m_nValidEntities = 0;
 	snap->m_pValidEntities = NULL;
 	snap->m_pHLTVEntityData = NULL;
+
+#if defined( ENABLE_REPLAY )
 	snap->m_pReplayEntityData = NULL;
+#endif
+
 	snap->m_pEntities = new CFrameSnapshotEntry[maxEntities];
 
 	CFrameSnapshotEntry *entry = snap->m_pEntities;
@@ -470,10 +474,13 @@ CFrameSnapshot::~CFrameSnapshot()
 		delete [] m_pHLTVEntityData;
 	}
 
+#if defined( ENABLE_REPLAY )
 	if ( m_pReplayEntityData )
 	{
 		delete [] m_pReplayEntityData;
 	}
+#endif
+
 	Assert ( m_nReferences == 0 );
 
 #if defined( _DEBUG )

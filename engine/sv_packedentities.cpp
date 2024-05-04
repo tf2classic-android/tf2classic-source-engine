@@ -302,10 +302,10 @@ void SV_FillHLTVData( CFrameSnapshot *pSnapshot, edict_t *edict, int iValidEdict
 #endif
 }
 
+#if defined( ENABLE_REPLAY )
 // in Replay mode we ALWAYS have to store position and PVS info, even if entity didnt change
 void SV_FillReplayData( CFrameSnapshot *pSnapshot, edict_t *edict, int iValidEdict )
 {
-#if !defined( _XBOX )
 	if ( pSnapshot->m_pReplayEntityData && edict )
 	{
 		CReplayEntityData *pReplayData = &pSnapshot->m_pReplayEntityData[iValidEdict];
@@ -328,8 +328,8 @@ void SV_FillReplayData( CFrameSnapshot *pSnapshot, edict_t *edict, int iValidEdi
 		pReplayData->origin[1] = pvsInfo->m_vCenter[1];
 		pReplayData->origin[2] = pvsInfo->m_vCenter[2];
 	}
-#endif
 }
+#endif
 
 // Returns the SendTable that should be used with the specified edict.
 SendTable* GetEntSendTable(edict_t *pEdict)
@@ -423,8 +423,10 @@ void PackEntities_Normal(
 		// if HLTV is running save PVS info for each entity
 		SV_FillHLTVData( snapshot, edict, iValidEdict );
 		
+#if defined( ENABLE_REPLAY )
 		// if Replay is running save PVS info for each entity
 		SV_FillReplayData( snapshot, edict, iValidEdict );
+#endif
 
 		// Check to see if the entity changed this frame...
 		//ServerDTI_RegisterNetworkStateChange( pSendTable, ent->m_bStateChanged );

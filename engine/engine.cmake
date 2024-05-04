@@ -255,7 +255,6 @@ set(
 	"$<$<NOT:${IS_DEDICATED}>:${ENGINE_DIR}/matchmakingclient.cpp>"
 	"$<$<NOT:${IS_DEDICATED}>:${ENGINE_DIR}/matchmakingshared.cpp>"
 	"$<$<NOT:${IS_DEDICATED}>:${ENGINE_DIR}/matchmakingmigrate.cpp>"
-	"${ENGINE_DIR}/replaydemoplayer.cpp"
 	"${ENGINE_DIR}/materialproxyfactory.cpp"
 	"${ENGINE_DIR}/mem_fgets.cpp"
 	"${ENGINE_DIR}/mod_vis.cpp"
@@ -278,10 +277,6 @@ set(
 	"${ENGINE_DIR}/randomstream.cpp"
 	"${SRCDIR}/common/randoverride.cpp"
 	"${SRCDIR}/public/registry.cpp"
-	"${ENGINE_DIR}/engine_replay_int.cpp"
-	"${ENGINE_DIR}/replay_internal.cpp"
-	"${ENGINE_DIR}/replaydemo.cpp"
-	"${ENGINE_DIR}/replayserver.cpp"
 	"${SRCDIR}/public/sentence.cpp"
 	"$<$<NOT:${IS_DEDICATED}>:${ENGINE_DIR}/Session.cpp>"
 	"${ENGINE_DIR}/sound_shared.cpp"
@@ -1083,7 +1078,6 @@ target_compile_definitions(
 	"$<${IS_DEDICATED}:DEDICATED>"
 	"$<${IS_DEDICATED}:SWDS>"
 	"$<${IS_DEDICATED}:NO_STEAM>" # SanyaSho: required for nillerusr's engine
-	"$<${IS_LINUX}:USE_WEBM_FOR_REPLAY>"
 	"$<${ENGINE_GPROFILER}:GPROFILER>"
 	"$<${ENGINE_ENABLE_RPT}:ENABLE_RPT>"
 )
