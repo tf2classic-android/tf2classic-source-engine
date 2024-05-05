@@ -373,7 +373,7 @@ void CBaseServer::SetPassword(const char *password)
 	}
 }
 
-#define MAX_REUSE_PER_IP 6 // 6 outstanding connect request within timeout window, to account for NATs
+#define MAX_REUSE_PER_IP 4 // 4 outstanding connect request within timeout window, to account for NATs
 
 /*
 ================
@@ -390,9 +390,8 @@ bool CBaseServer::CheckIPConnectionReuse( netadr_t &adr )
 	{
 		CBaseClient *client = m_Clients[slot];
 
-		// if the user is connected but not fully in AND the addr's match
+		// if the user is connected and is not a fakeclient AND the addr's match
 		if ( client->IsConnected() &&
-			 !client->IsActive() &&
 			 !client->IsFakeClient() &&
 			 !adr.IsReservedAdr() && // make SURE its a public IP
 			 adr.CompareAdr ( client->m_NetChannel->GetRemoteAddress(), true ) )
@@ -400,7 +399,7 @@ bool CBaseServer::CheckIPConnectionReuse( netadr_t &adr )
 			nSimultaneouslyConnections++;
 		}
 	}
-	
+
 	if ( nSimultaneouslyConnections > MAX_REUSE_PER_IP ) 
 	{
 		Msg ("Too many connect packets from %s\n", adr.ToString( true ) );	
