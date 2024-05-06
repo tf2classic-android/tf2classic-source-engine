@@ -2642,11 +2642,12 @@ void CL_Shutdown( void )
 {
 }
 
+#if !defined( PUBLIC_BUILD )
 CON_COMMAND_F( cl_fullupdate, "Forces the server to send a full update packet", FCVAR_CHEAT )
 {
 	cl.ForceFullUpdate();
 }
-
+#endif
 
 #ifdef STAGING_ONLY
 
