@@ -258,6 +258,7 @@ public:
 
 	// Time when last name change was applied
 	double			m_fTimeLastNameChange;
+	bool			m_bPlayerHasSameName;
 	bool			m_bPlayerNameLocked;
 
 	// Does this client have a name change that is pending?
