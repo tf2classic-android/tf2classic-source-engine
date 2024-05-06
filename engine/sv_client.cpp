@@ -37,7 +37,7 @@
 
 extern CNetworkStringTableContainer *networkStringTableContainerServer;
 
-static ConVar	sv_timeout( "sv_timeout", "45", 0, "After this many seconds without a message from a client, the client is dropped" );
+static ConVar	sv_timeout( "sv_timeout", "30", 0, "After this many seconds without a message from a client, the client is dropped", true, 0, true, 65 );
 static ConVar	sv_maxrate( "sv_maxrate", "0", FCVAR_REPLICATED, "Max bandwidth rate allowed on server, 0 == unlimited" );
 static ConVar	sv_minrate( "sv_minrate", "3500", FCVAR_REPLICATED, "Min bandwidth rate allowed on server, 0 == unlimited" );
        
