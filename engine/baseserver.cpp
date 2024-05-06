@@ -78,6 +78,8 @@ static ConVar	sv_max_connects_window( "sv_max_connects_window", "4", 0, "Window 
 // This defaults to zero so that somebody spamming the server with packets cannot lock out other clients.
 static ConVar	sv_max_connects_sec_global( "sv_max_connects_sec_global", "0", 0, "Maximum connections per second to respond to from anywhere." );
 
+ConVar	sv_max_concurrent_connects( "sv_max_concurrent_connects", "3", 0, "Maximum concurrent connections from a single IP Address.");
+
 static CIPRateLimit s_queryRateChecker( &sv_max_queries_sec, &sv_max_queries_window, &sv_max_queries_sec_global );
 static CIPRateLimit s_connectRateChecker( &sv_max_connects_sec, &sv_max_connects_window, &sv_max_connects_sec_global );
 
@@ -373,8 +375,6 @@ void CBaseServer::SetPassword(const char *password)
 	}
 }
 
-#define MAX_REUSE_PER_IP 4 // 4 outstanding connect request within timeout window, to account for NATs
-
 /*
 ================
 CheckIPConnectionReuse
@@ -400,7 +400,7 @@ bool CBaseServer::CheckIPConnectionReuse( netadr_t &adr )
 		}
 	}
 
-	if ( nSimultaneouslyConnections > MAX_REUSE_PER_IP ) 
+	if ( nSimultaneouslyConnections > sv_max_concurrent_connects.GetInt() )
 	{
 		Msg ("Too many connect packets from %s\n", adr.ToString( true ) );	
 		return false; // too many connect packets!!!!
