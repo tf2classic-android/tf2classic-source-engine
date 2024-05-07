@@ -168,6 +168,8 @@ void CTFHudDeathNotice::Init( void )
 	ListenForGameEvent( "player_death" );
 	ListenForGameEvent( "object_destroyed" );
 	ListenForGameEvent( "teamplay_flag_event" );
+	ListenForGameEvent( "teamplay_point_captured" );
+	ListenForGameEvent( "teamplay_capture_blocked" );
 	//ListenForGameEvent( "rd_robot_killed" );
 }
 
@@ -686,6 +688,87 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 		default:
 			break;
 		}
+	}
+	else if( FStrEq( "teamplay_point_captured", pszEventName ) )
+	{
+		GetLocalizedControlPointName( event, m_DeathNotices[iMsg].Victim.szName, ARRAYSIZE( m_DeathNotices[iMsg].Victim.szName ) );
+
+		const char *szCaptureIcons[] = { "d_redcapture", "d_bluecapture", "d_greencapture", "d_yellowcapture" };
+
+		// Array of capper indices
+		const char *cappers = event->GetString( "cappers" );
+
+		char szCappers[256];
+		szCappers[0] = '\0';
+
+		int len = Q_strlen( cappers );
+		for( int i = 0; i < len; i++ )
+		{
+			int iPlayerIndex = (int)cappers[i];
+
+			Assert( iPlayerIndex > 0 && iPlayerIndex <= gpGlobals->maxClients );
+
+			const char *pPlayerName = g_PR->GetPlayerName( iPlayerIndex );
+
+			if( i == 0 )
+			{
+				// use first player as the team
+				m_DeathNotices[iMsg].Killer.iTeam = g_PR->GetTeam( iPlayerIndex );
+				m_DeathNotices[iMsg].Victim.iTeam = TEAM_UNASSIGNED;
+			}
+			else
+			{
+				Q_strncat( szCappers, ", ", sizeof( szCappers ), 2 );
+			}
+
+			Q_strncat( szCappers, pPlayerName, sizeof( szCappers ), COPY_ALL_CHARACTERS );
+			if( iLocalPlayerIndex == iPlayerIndex )
+				m_DeathNotices[iMsg].bLocalPlayerInvolved = true;
+		}
+
+		int iTeam = m_DeathNotices[iMsg].Killer.iTeam;
+		Assert( iTeam >= FIRST_GAME_TEAM );
+		Assert( iTeam < FIRST_GAME_TEAM + TF_TEAM_COUNT );
+		if( iTeam < FIRST_GAME_TEAM || iTeam >= FIRST_GAME_TEAM + TF_TEAM_COUNT )
+			return;
+
+		int iIndex = m_DeathNotices[iMsg].Killer.iTeam - FIRST_GAME_TEAM;
+		Assert( iIndex < ARRAYSIZE( szCaptureIcons ) );
+
+		Q_strncpy( m_DeathNotices[iMsg].Killer.szName, szCappers, sizeof( m_DeathNotices[iMsg].Killer.szName ) );
+		V_wcsncpy( m_DeathNotices[iMsg].wzInfoText, g_pVGuiLocalize->Find( len > 1 ? "#Msg_Captured_Multiple" : "#Msg_Captured" ), sizeof( m_DeathNotices[iMsg].wzInfoText ) );
+		Q_strncpy( m_DeathNotices[iMsg].szIcon, szCaptureIcons[iIndex], ARRAYSIZE( m_DeathNotices[iMsg].szIcon ) );
+
+		// print a log message
+		Msg( "%s captured %s for team #%d\n", m_DeathNotices[iMsg].Killer.szName, m_DeathNotices[iMsg].Victim.szName, m_DeathNotices[iMsg].Killer.iTeam );
+	}
+	else if( FStrEq( "teamplay_capture_blocked", pszEventName ) )
+	{
+		const char *szDefenseIcons[] = { "d_reddefend", "d_bluedefend", "d_greendefend", "d_yellowdefend" };
+
+		GetLocalizedControlPointName( event, m_DeathNotices[iMsg].Victim.szName, ARRAYSIZE( m_DeathNotices[iMsg].Victim.szName ) );
+		V_wcsncpy( m_DeathNotices[iMsg].wzInfoText, g_pVGuiLocalize->Find( "#Msg_Defended" ), sizeof( m_DeathNotices[iMsg].wzInfoText ) );
+
+		int iPlayerIndex = event->GetInt( "blocker" );
+		const char *blocker_name = g_PR->GetPlayerName( iPlayerIndex );
+		Q_strncpy( m_DeathNotices[iMsg].Killer.szName, blocker_name, ARRAYSIZE( m_DeathNotices[iMsg].Killer.szName ) );
+		m_DeathNotices[iMsg].Killer.iTeam = g_PR->GetTeam( iPlayerIndex );
+		if( iLocalPlayerIndex == iPlayerIndex )
+			m_DeathNotices[iMsg].bLocalPlayerInvolved = true;
+
+		int iTeam = m_DeathNotices[iMsg].Killer.iTeam;
+		Assert( iTeam >= FIRST_GAME_TEAM );
+		Assert( iTeam < FIRST_GAME_TEAM + TF_TEAM_COUNT );
+		if( iTeam < FIRST_GAME_TEAM || iTeam >= FIRST_GAME_TEAM + TF_TEAM_COUNT )
+			return;
+
+		int iIndex = m_DeathNotices[iMsg].Killer.iTeam - FIRST_GAME_TEAM;
+		Assert( iIndex < ARRAYSIZE( szCaptureIcons ) );
+
+		Q_strncpy( m_DeathNotices[iMsg].szIcon, szDefenseIcons[iIndex], ARRAYSIZE( m_DeathNotices[iMsg].szIcon ) );
+
+		// print a log message
+		Msg( "%s defended %s for team #%d\n", m_DeathNotices[iMsg].Killer.szName, m_DeathNotices[iMsg].Victim.szName, m_DeathNotices[iMsg].Killer.iTeam );
 	}
 	else if ( FStrEq( "teamplay_flag_event", pszEventName ) )
 	{
