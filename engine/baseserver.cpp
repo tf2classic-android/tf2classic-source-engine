@@ -355,8 +355,8 @@ const char *CBaseServer::GetPassword() const
 {
 	const char *password = sv_password.GetString();
 
-	// if password is empty or "none", return NULL
-	if ( !password[0] || !Q_stricmp(password, "none" ) )
+	// if password is empty return NULL
+	if ( !password[0] )
 	{
 		return NULL;
 	}
