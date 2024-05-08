@@ -184,13 +184,16 @@ static void SvTagsChangeCallback( IConVar *pConVar, const char *pOldValue, float
 
 ConVar			sv_region( "sv_region","-1", FCVAR_NONE, "The region of the world to report this server in." );
 static ConVar	sv_instancebaselines( "sv_instancebaselines", "1", FCVAR_DEVELOPMENTONLY, "Enable instanced baselines. Saves network overhead." );
-static ConVar	sv_stats( "sv_stats", "1", 0, "Collect CPU usage stats" );
 static ConVar	sv_password( "sv_password", "", FCVAR_NOTIFY | FCVAR_PROTECTED | FCVAR_DONTRECORD, "Server password for entry into multiplayer games" );
 ConVar			sv_tags( "sv_tags", "", FCVAR_NOTIFY, "Server tags. Used to provide extra information to clients when they're browsing for servers. Separate tags with a comma.", SvTagsChangeCallback );
 ConVar			sv_visiblemaxplayers( "sv_visiblemaxplayers", "-1", 0, "Overrides the max players reported to prospective clients" );
 ConVar			sv_alternateticks( "sv_alternateticks", ( IsX360() ) ? "1" : "0", FCVAR_SPONLY, "If set, server only simulates entities on even numbered ticks.\n" );
 ConVar			sv_allow_wait_command( "sv_allow_wait_command", "1", FCVAR_REPLICATED, "Allow or disallow the wait command on clients connected to this server." );
 ConVar			sv_allow_color_correction( "sv_allow_color_correction", "1", FCVAR_REPLICATED, "Allow or disallow clients to use color correction on this server." );
+
+#if !defined( ANDROID )
+static ConVar	sv_stats( "sv_stats", "1", 0, "Collect CPU usage stats" );
+#endif
 
 extern CNetworkStringTableContainer *networkStringTableContainerServer;
 extern ConVar sv_stressbots;
@@ -1118,6 +1121,7 @@ void CBaseServer::GetNetStats( float &avgIn, float &avgOut )
 
 void CBaseServer::CalculateCPUUsage( void )
 {
+#if !defined( ANDROID )
 	if ( !sv_stats.GetBool() )
 	{
 		return;
@@ -1201,6 +1205,7 @@ void CBaseServer::CalculateCPUUsage( void )
 #endif
 		m_fLastCPUCheckTime = curtime; 
 	}
+#endif
 }
 
 
@@ -1964,7 +1969,9 @@ void CBaseServer::RunFrame( void )
 	
 	SendPendingServerInfo(); // send outstanding signon packets after ALL user settings have been updated
 
+#if !defined( ANDROID )
 	CalculateCPUUsage(); // update CPU usage
+#endif
 
 	UpdateMasterServer();
 
