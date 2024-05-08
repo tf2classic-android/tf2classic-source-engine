@@ -52,10 +52,6 @@ public:
 #define PROCESS_CLC_MESSAGE( name )	\
 	virtual bool Process##name( CLC_##name *msg )
 
-#define PROCESS_MM_MESSAGE( name )	\
-	virtual bool Process##name( MM_##name *msg )
-
-
 #define REGISTER_NET_MSG( name )				\
 	NET_##name * p##name = new NET_##name();	\
 	p##name->m_pMessageHandler = this;			\
@@ -68,11 +64,6 @@ public:
 
 #define REGISTER_CLC_MSG( name )				\
 	CLC_##name * p##name = new CLC_##name();	\
-	p##name->m_pMessageHandler = this;			\
-	chan->RegisterMessage( p##name );			\
-
-#define REGISTER_MM_MSG( name )					\
-	MM_##name * p##name = new MM_##name();		\
 	p##name->m_pMessageHandler = this;			\
 	chan->RegisterMessage( p##name );			\
 
@@ -182,28 +173,6 @@ public:
 	PROCESS_SVC_MESSAGE( GetCvarValue ) = 0;
 	PROCESS_SVC_MESSAGE( CmdKeyValues ) = 0;
 	PROCESS_SVC_MESSAGE( SetPauseTimed ) = 0;
-};
-
-class MM_Heartbeat;
-class MM_ClientInfo;
-class MM_JoinResponse;
-class MM_RegisterResponse;
-class MM_Migrate;
-class MM_Mutelist;
-class MM_Checkpoint;
-
-class IMatchmakingMessageHandler : public INetMessageHandler
-{
-public:
-	virtual ~IMatchmakingMessageHandler( void ) {};
-
-	PROCESS_MM_MESSAGE( Heartbeat ) = 0;
-	PROCESS_MM_MESSAGE( ClientInfo ) = 0;
-	PROCESS_MM_MESSAGE( JoinResponse ) = 0;
-	PROCESS_MM_MESSAGE( RegisterResponse ) = 0;
-	PROCESS_MM_MESSAGE( Migrate ) = 0;
-	PROCESS_MM_MESSAGE( Mutelist ) = 0;
-	PROCESS_MM_MESSAGE( Checkpoint) = 0;
 };
 
 class IConnectionlessPacketHandler

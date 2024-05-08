@@ -510,7 +510,6 @@ public:
 	virtual bool				CopyFrameBufferToMaterial( const char *pMaterialName );
 
 	// Matchmaking
-	void						ChangeTeam( const char *pTeamName );
 	virtual void				ReadConfiguration( const bool readDefault = false );
 
 	virtual void SetAchievementMgr( IAchievementMgr *pAchievementMgr );
@@ -1397,11 +1396,6 @@ int CEngineClient::GetAppID()
 void CEngineClient::SetOverlayBindProxy( int iOverlayID, void *pBindProxy )
 {
 	OverlayMgr()->SetOverlayBindProxy( iOverlayID, pBindProxy );
-}
-
-void CEngineClient::ChangeTeam( const char *pTeamName )
-{
-
 }
 
 //-----------------------------------------------------------------------------

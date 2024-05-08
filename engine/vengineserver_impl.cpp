@@ -1534,16 +1534,6 @@ public:
 	{
 		ED_AllowImmediateReuse();
 	}
-			
-	virtual void MultiplayerEndGame()
-	{
-
-	}
-
-	virtual void ChangeTeam( const char *pTeamName )
-	{
-
-	}
 
 	virtual void SetAchievementMgr( IAchievementMgr *pAchievementMgr )
 	{

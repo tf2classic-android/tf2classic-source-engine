@@ -495,9 +495,6 @@ public:
 
 	virtual bool			CopyFrameBufferToMaterial( const char *pMaterialName ) = 0;
 
-	// Matchmaking
-	virtual void			ChangeTeam( const char *pTeamName ) = 0;
-
 	// Causes the engine to read in the user's configuration on disk
 	virtual void			ReadConfiguration( const bool readDefault = false ) = 0;
 

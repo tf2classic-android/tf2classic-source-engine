@@ -636,7 +636,6 @@ void CTeamplayRoundBasedRules::Think( void )
 					event->SetBool( "forceupload", true );
 					gameeventmanager->FireEvent( event );
 				}
-				engine->MultiplayerEndGame();
 			}
 
 			// Don't run this code again

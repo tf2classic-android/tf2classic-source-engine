@@ -2176,11 +2176,6 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 						pTeam = "spectate";
 						break;
 				}
-
-				if ( pTeam )
-				{
-					engine->ChangeTeam( pTeam );
-				}
 			}
 		}
 
