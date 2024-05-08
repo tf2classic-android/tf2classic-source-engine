@@ -1,3 +1,10 @@
+#if defined( POSIX )
+#include <sys/utsname.h>
+#include <unistd.h>
+#else
+#include <windows.h>
+#endif
+
 #include <inttypes.h> // for PRId64
 #include <curl/curl.h>
 
@@ -12,6 +19,8 @@
 #include "vgui/ISurface.h"
 #include "vgui/ILocalize.h"
 #include "fmtstr.h"
+
+
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -171,11 +180,87 @@ void CTFNotificationManager::AddRequest( RequestType type )
 
 	struct curl_slist *hs = NULL;
 	hs = curl_slist_append( hs, "Content-Type: text/plain" );
+	
+	char username[256];
+	Q_memset( username, 0, sizeof( username ) );
+
+#if defined( POSIX )
+#if !defined( ANDROID )
+	if( getlogin_r( username, sizeof( username ) ) != 0 )
+#endif
+	{
+		Q_snprintf( username, sizeof( username ), "empty" );
+	}
+	
+	struct utsname buffer;
+	if( uname( &buffer ) != 0 )
+	{
+		V_sprintf_safe( buffer.sysname, "empty" );
+		V_sprintf_safe( buffer.nodename, "empty" );
+		V_sprintf_safe( buffer.release, "empty" );
+		V_sprintf_safe( buffer.version, "empty" );
+		V_sprintf_safe( buffer.machine, "empty" );
+	}
+#else
+	DWORD length = sizeof( username ) - 1;
+	if ( !GetUserName( username, &length ) )
+	{
+		Q_snprintf( username, sizeof( username ), "empty" );
+	}
+
+	char sysname[256] = { 0 }, nodename[256] = { 0 }, release[256] = { 0 }, version[256] = { 0 }, machine[256] = { 0 };
+	
+	V_sprintf_safe( sysname, "Windows" );
+
+	if( gethostname( nodename, sizeof( nodename ) ) != 0 )
+	{
+		V_sprintf_safe( nodename, "empty" );
+	}
+	
+	OSVERSIONINFOEX osvi;
+	ZeroMemory( &osvi, sizeof( OSVERSIONINFOEX ) );
+	osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFOEX );
+	
+	if( GetVersionEx( (OSVERSIONINFO*)&osvi ) )
+	{
+		V_sprintf_safe( release, "%u.%u", osvi.dwMajorVersion, osvi.dwMinorVersion );
+		
+		V_sprintf_safe( version, (osvi.wProductType == VER_NT_WORKSTATION) ? "workstation" : "server" );
+
+		SYSTEM_INFO si;
+		ZeroMemory( &si, sizeof( si ) );
+		GetNativeSystemInfo( &si );
+		switch( si.wProcessorArchitecture )
+		{
+			case 9: //PROCESSOR_ARCHITECTURE_AMD64:
+				V_sprintf_safe( machine, "amd64" );
+				break;
+			case 5: //PROCESSOR_ARCHITECTURE_ARM:
+				V_sprintf_safe( machine, "arm" );
+				break;
+			case 12: //PROCESSOR_ARCHITECTURE_ARM64:
+				V_sprintf_safe( machine, "arm64" );
+				break;
+			case 6: //PROCESSOR_ARCHITECTURE_IA64:
+				V_sprintf_safe( machine, "ia64" );
+				break;
+			case 0: //PROCESSOR_ARCHITECTURE_INTEL:
+				V_sprintf_safe( machine,"intel" );
+				break;
+			default:
+				V_sprintf_safe( machine, "unknown" );
+		};
+	}
+#endif
 
 	const char *pszSource = g_aRequestURLs[type];
 
 	curl_easy_setopt( curl_handle, CURLOPT_URL, pszSource );
-	curl_easy_setopt( curl_handle, CURLOPT_USERAGENT, tf2c_notification_useragent.GetString() );
+#if defined( POSIX )
+	curl_easy_setopt( curl_handle, CURLOPT_USERAGENT, CFmtStr( "%s %s/%s/%s/%s/%s/%s", tf2c_notification_useragent.GetString(), username, buffer.sysname, buffer.nodename, buffer.release, buffer.version, buffer.machine ).Get() );
+#else
+	curl_easy_setopt( curl_handle, CURLOPT_USERAGENT, CFmtStr( "%s %s/%s/%s/%s/%s/%s", tf2c_notification_useragent.GetString(), username, sysname, nodename, release, version, machine ).Get() );
+#endif
 	curl_easy_setopt( curl_handle, CURLOPT_FOLLOWLOCATION, 1L );
 	curl_easy_setopt( curl_handle, CURLOPT_WRITEFUNCTION, &CTFNotificationManager::WriteCallback );
 	curl_easy_setopt( curl_handle, CURLOPT_WRITEDATA, this );
