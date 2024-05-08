@@ -113,7 +113,7 @@ linux_aarch64_client:
     - "game_tf2classic/tf2classic/bin/*.a"
 
 android32_client:
-  image: "registry.gitlab.com/mr0maks/debian_android_sdk:master"
+  image: "registry.worldspawn.party:5050/tf2classic-android/docker_android_sdk:master"
   stage: build
   tags:
     - linux
@@ -140,7 +140,7 @@ android32_client:
     - game_tf2classic_android32
 
 android64_client:
-  image: "registry.gitlab.com/mr0maks/debian_android_sdk:master"
+  image: "registry.worldspawn.party:5050/tf2classic-android/docker_android_sdk:master"
   stage: build
   tags:
     - linux
