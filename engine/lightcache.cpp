@@ -1817,7 +1817,7 @@ static void AddDLightsForStaticProps( LightingStateInfo_t& info, LightingState_t
 //-----------------------------------------------------------------------------
 
 
-ConVar r_lightcache_zbuffercache( "r_lightcache_zbuffercache", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+ConVar r_lightcache_zbuffercache( "r_lightcache_zbuffercache", "0" );
 
 static void AddStaticLighting( 
 	CBaseLightCache* pCache, 

@@ -40,7 +40,7 @@
 // this is hooked into the engines convar
 ConVar mat_debugalttab( "mat_debugalttab", "0", FCVAR_CHEAT );
 
-ConVar mat_forcemanagedtextureintohardware( "mat_forcemanagedtextureintohardware", "1", FCVAR_HIDDEN | FCVAR_ALLOWED_IN_COMPETITIVE );
+ConVar mat_forcemanagedtextureintohardware( "mat_forcemanagedtextureintohardware", "1", FCVAR_HIDDEN );
 
 ConVar mat_supportflashlight( "mat_supportflashlight", "-1", FCVAR_HIDDEN, "0 - do not support flashlight (don't load flashlight shader combos), 1 - flashlight is supported" );
 #ifdef OSX
@@ -1728,11 +1728,11 @@ static void MatProxyCallback( IConVar *pConVar, const char *old, float flOldValu
 //-----------------------------------------------------------------------------
 // Convars that control the config record
 //-----------------------------------------------------------------------------
-static ConVar mat_vsync(			"mat_vsync", "0", FCVAR_ALLOWED_IN_COMPETITIVE, "Force sync to vertical retrace", true, 0.0, true, 1.0 );
-static ConVar mat_forcehardwaresync( "mat_forcehardwaresync", IsPC() ? "1" : "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar mat_vsync(			"mat_vsync", "0", 0, "Force sync to vertical retrace", true, 0.0, true, 1.0 );
+static ConVar mat_forcehardwaresync( "mat_forcehardwaresync", IsPC() ? "1" : "0", 0 );
 
 // Texture-related
-static ConVar mat_trilinear(		"mat_trilinear", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar mat_trilinear(		"mat_trilinear", "0" );
 #ifdef _X360 // The code that reads this out of moddefaults.txt is #if'd out for the 360, so force aniso to 2 here.
 	static ConVar mat_forceaniso( "mat_forceaniso", "2", FCVAR_ARCHIVE ); // 0 = Bilinear, 1 = Trilinear, 2+ = Aniso
 #elif defined ( OSX )
@@ -1752,17 +1752,17 @@ static void mat_showmiplevels_Callback_f( IConVar *var, const char *pOldValue, f
 // Debugging textures
 static ConVar mat_showmiplevels(	"mat_showmiplevels", "0", FCVAR_CHEAT, "color-code miplevels 2: normalmaps, 1: everything else", mat_showmiplevels_Callback_f );
 
-static ConVar mat_specular(			"mat_specular", "1", FCVAR_ALLOWED_IN_COMPETITIVE, "Enable/Disable specularity for perf testing.  Will cause a material reload upon change." );
-static ConVar mat_bumpmap(			"mat_bumpmap", "1", FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar mat_specular(			"mat_specular", "1", 0, "Enable/Disable specularity for perf testing.  Will cause a material reload upon change." );
+static ConVar mat_bumpmap(			"mat_bumpmap", "1" );
 static ConVar mat_phong(			"mat_phong", "1" );
-static ConVar mat_parallaxmap(		"mat_parallaxmap", "1", FCVAR_HIDDEN | FCVAR_ALLOWED_IN_COMPETITIVE );
-static ConVar mat_reducefillrate(	"mat_reducefillrate", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar mat_parallaxmap(		"mat_parallaxmap", "1", FCVAR_HIDDEN );
+static ConVar mat_reducefillrate(	"mat_reducefillrate", "0" );
 
 static ConVar mat_picmip(			"mat_picmip", "0", FCVAR_ARCHIVE, "", true, -32, true, 8 );
 static ConVar mat_slopescaledepthbias_normal( "mat_slopescaledepthbias_normal", "0.0f", FCVAR_CHEAT );
-static ConVar mat_depthbias_normal( "mat_depthbias_normal", "0.0f", FCVAR_CHEAT | FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar mat_depthbias_normal( "mat_depthbias_normal", "0.0f", FCVAR_CHEAT );
 static ConVar mat_slopescaledepthbias_decal( "mat_slopescaledepthbias_decal", "-0.5", FCVAR_CHEAT );		// Reciprocals of these biases sent to API
-static ConVar mat_depthbias_decal(	"mat_depthbias_decal", "-262144", FCVAR_CHEAT | FCVAR_ALLOWED_IN_COMPETITIVE );						//
+static ConVar mat_depthbias_decal(	"mat_depthbias_decal", "-262144", FCVAR_CHEAT );						//
 
 static ConVar mat_slopescaledepthbias_shadowmap( "mat_slopescaledepthbias_shadowmap", "16", FCVAR_CHEAT );
 static ConVar mat_depthbias_shadowmap(	"mat_depthbias_shadowmap", "0.0005", FCVAR_CHEAT  );
@@ -1797,7 +1797,7 @@ static ConVar mat_fillrate(			"mat_fillrate", "0", FCVAR_CHEAT );
 static ConVar mat_reversedepth(		"mat_reversedepth", "0", FCVAR_CHEAT );
 static ConVar mat_bufferprimitives( "mat_bufferprimitives", "1" );
 static ConVar mat_drawflat(			"mat_drawflat","0", FCVAR_CHEAT );
-static ConVar mat_softwarelighting( "mat_softwarelighting", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar mat_softwarelighting( "mat_softwarelighting", "0" );
 static ConVar mat_proxy(			"mat_proxy", "0", FCVAR_CHEAT, "", MatProxyCallback );
 static ConVar mat_norendering(		"mat_norendering", "0", FCVAR_CHEAT );
 static ConVar mat_compressedtextures(  "mat_compressedtextures", "1" );
@@ -1810,7 +1810,7 @@ static ConVar r_flashlightdepthtexture(		"r_flashlightdepthtexture", "1" );
 #ifndef _X360
 static ConVar r_waterforceexpensive(		"r_waterforceexpensive", "0", FCVAR_ARCHIVE );
 #endif
-static ConVar r_waterforcereflectentities(	"r_waterforcereflectentities", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar r_waterforcereflectentities(	"r_waterforcereflectentities", "0" );
 static ConVar mat_motion_blur_enabled( "mat_motion_blur_enabled", "0", FCVAR_ARCHIVE );
 
 

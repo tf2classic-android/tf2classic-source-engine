@@ -399,7 +399,7 @@ static void PatchPixelShaderForAtiMsaaHack(DWORD *pShader, DWORD dwTexCoordMask)
 } 
 
 static ConVar mat_force_ps_patch( "mat_force_ps_patch", "0" );
-static ConVar mat_disable_ps_patch( "mat_disable_ps_patch", "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+static ConVar mat_disable_ps_patch( "mat_disable_ps_patch", "0" );
 
 //-----------------------------------------------------------------------------
 // The lovely low-level dx call to create a pixel shader

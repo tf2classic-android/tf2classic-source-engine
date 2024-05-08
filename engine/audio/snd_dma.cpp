@@ -6105,7 +6105,7 @@ void ConvertListenerVectorTo2D( Vector *pvforward, Vector *pvright )
 // If this is nonzero, we will only spatialize some of the static 
 // channels each frame. The round robin will spatialize 1 / (2 ^ x) 
 // of the spatial channels each frame.
-ConVar snd_spatialize_roundrobin( "snd_spatialize_roundrobin", "0", FCVAR_ALLOWED_IN_COMPETITIVE, "Lowend optimization: if nonzero, spatialize only a fraction of sound channels each frame. 1/2^x of channels will be spatialized per frame." );
+ConVar snd_spatialize_roundrobin( "snd_spatialize_roundrobin", "0", 0, "Lowend optimization: if nonzero, spatialize only a fraction of sound channels each frame. 1/2^x of channels will be spatialized per frame." );
 /*
 ============
 S_Update

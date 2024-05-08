@@ -1936,7 +1936,7 @@ void MIX_UpsampleAllPaintbuffers( CChannelList &list, int end, int count )
 	MIX_SetCurrentPaintbuffer(SOUND_BUFFER_PAINT);
 }
 
-ConVar snd_cull_duplicates("snd_cull_duplicates","0",FCVAR_ALLOWED_IN_COMPETITIVE,"If nonzero, aggressively cull duplicate sounds during mixing. The number specifies the number of duplicates allowed to be played.");
+ConVar snd_cull_duplicates("snd_cull_duplicates","0",0,"If nonzero, aggressively cull duplicate sounds during mixing. The number specifies the number of duplicates allowed to be played.");
 
 
 // Helper class for determining whether a given channel number should be culled from

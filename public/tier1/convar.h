@@ -376,13 +376,6 @@ public:
 	const char					*GetDefault( void ) const;
 	void						SetDefault( const char *pszDefault );
 
-	// True if it has a min/max competitive setting
-	bool						GetCompMin( float& minVal ) const;
-	bool						GetCompMax( float& maxVal ) const;
-
-	FORCEINLINE_CVAR bool		IsCompetitiveRestricted() const;
-	bool						SetCompetitiveMode( bool bCompetitive );
-
 private:
 	// Called by CCvar when the value of a var is changing.
 	virtual void				InternalSetValue(const char *value);
@@ -428,15 +421,6 @@ private:
 	float						m_fMinVal;
 	bool						m_bHasMax;
 	float						m_fMaxVal;
-
-	// Min/Max values for competitive.
-	bool						m_bHasCompMin;
-	float						m_fCompMinVal;
-	bool						m_bHasCompMax;
-	float						m_fCompMaxVal;
-
-	bool						m_bCompetitiveRestrictions;
-
 	
 	// Call this function when ConVar changes
 	FnChangeCallback_t			m_fnChangeCallback;
@@ -472,21 +456,6 @@ FORCEINLINE_CVAR const char *ConVar::GetString( void ) const
 		return "FCVAR_NEVER_AS_STRING";
 
 	return ( m_pParent->m_pszString ) ? m_pParent->m_pszString : "";
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Return whether this convar is restricted for competitive play.
-// Output : bool
-//-----------------------------------------------------------------------------
-FORCEINLINE_CVAR bool ConVar::IsCompetitiveRestricted() const
-{
-	const int nFlags = m_pParent->m_nFlags;
-
-	const bool bHasCompSettings = m_pParent->m_bHasCompMin || m_pParent->m_bHasCompMax;
-	const bool bClientCanAdjust = ( nFlags & ( FCVAR_ARCHIVE | FCVAR_ALLOWED_IN_COMPETITIVE ) ) != 0;
-	const bool bInternalUseOnly = ( nFlags & ( FCVAR_HIDDEN | FCVAR_DEVELOPMENTONLY | FCVAR_INTERNAL_USE | FCVAR_GAMEDLL | FCVAR_REPLICATED | FCVAR_CHEAT ) ) != 0;
-
-	return bHasCompSettings || !( bClientCanAdjust || bInternalUseOnly );
 }
 
 

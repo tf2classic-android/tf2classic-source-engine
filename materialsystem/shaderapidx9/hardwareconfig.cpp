@@ -887,7 +887,7 @@ int CHardwareConfig::GetShadowFilterMode() const
 	return 0;
 }
 
-static ConVar r_shader_srgb( "r_shader_srgb", "0", FCVAR_ALLOWED_IN_COMPETITIVE, "-1 = use hardware caps. 0 = use hardware srgb. 1 = use shader srgb(software lookup)" );		// -1=use caps 0=off 1=on
+static ConVar r_shader_srgb( "r_shader_srgb", "0", 0, "-1 = use hardware caps. 0 = use hardware srgb. 1 = use shader srgb(software lookup)" );		// -1=use caps 0=off 1=on
 
 int CHardwareConfig::NeedsShaderSRGBConversion() const
 {
@@ -917,7 +917,7 @@ bool CHardwareConfig::UsesSRGBCorrectBlending() const
 	return ( cValue == 0 ) && ( ( m_Caps.m_bDX10Blending ) || IsX360() );
 }
 
-static ConVar mat_disablehwmorph( "mat_disablehwmorph", "0", FCVAR_ALLOWED_IN_COMPETITIVE, "Disables HW morphing for particular mods" );
+static ConVar mat_disablehwmorph( "mat_disablehwmorph", "0", 0, "Disables HW morphing for particular mods" );
 bool CHardwareConfig::HasFastVertexTextures() const
 {
 	static int bEnableFastVertexTextures = -1;

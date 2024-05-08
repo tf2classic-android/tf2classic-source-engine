@@ -1149,7 +1149,7 @@ bool CMaterial::ParseMaterialFlag( KeyValues* pParseValue, IMaterialVar* pFlagVa
 }
 
 
-ConVar mat_reduceparticles( "mat_reduceparticles",  "0", FCVAR_ALLOWED_IN_COMPETITIVE );
+ConVar mat_reduceparticles( "mat_reduceparticles",  "0" );
 
 bool CMaterial::ShouldSkipVar( KeyValues *pVar, bool *pWasConditional )
 {

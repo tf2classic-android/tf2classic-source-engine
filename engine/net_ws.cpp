@@ -24,19 +24,19 @@ static ConVar net_showudp_wire( "net_showudp_wire", "0", 0, "Show incoming packe
 
 #define UDP_SO_RCVBUF_SIZE 131072
 
-static ConVar net_udp_rcvbuf( "net_udp_rcvbuf", NETSTRING( UDP_SO_RCVBUF_SIZE ), FCVAR_ALLOWED_IN_COMPETITIVE, "Default UDP receive buffer size", true, 8192, true, 128 * 1024 );
+static ConVar net_udp_rcvbuf( "net_udp_rcvbuf", NETSTRING( UDP_SO_RCVBUF_SIZE ), 0, "Default UDP receive buffer size", true, 8192, true, 128 * 1024 );
 
 static ConVar net_showsplits( "net_showsplits", "0", 0, "Show info about packet splits" );
 
 static ConVar net_splitrate( "net_splitrate", "1", 0, "Number of fragments for a splitpacket that can be sent per frame" );
 
-static ConVar ipname        ( "ip", "localhost", FCVAR_ALLOWED_IN_COMPETITIVE, "Overrides IP for multihomed hosts" );
-static ConVar hostport      ( "hostport", NETSTRING( PORT_SERVER ) , FCVAR_ALLOWED_IN_COMPETITIVE, "Host game server port" );
-static ConVar hostip		( "hostip", "", FCVAR_ALLOWED_IN_COMPETITIVE, "Host game server ip" );
+static ConVar ipname        ( "ip", "localhost", 0, "Overrides IP for multihomed hosts" );
+static ConVar hostport      ( "hostport", NETSTRING( PORT_SERVER ), 0, "Host game server port" );
+static ConVar hostip		( "hostip", "", 0, "Host game server ip" );
 
-static ConVar clientport    ( "clientport", NETSTRING( PORT_CLIENT ), FCVAR_ALLOWED_IN_COMPETITIVE, "Host game client port" );
-static ConVar hltvport		( "tv_port", NETSTRING( PORT_HLTV ), FCVAR_ALLOWED_IN_COMPETITIVE, "Host SourceTV port" );
-static ConVar systemlinkport( "systemlinkport", NETSTRING( PORT_SYSTEMLINK ), FCVAR_ALLOWED_IN_COMPETITIVE, "System Link port" );
+static ConVar clientport    ( "clientport", NETSTRING( PORT_CLIENT ), 0, "Host game client port" );
+static ConVar hltvport		( "tv_port", NETSTRING( PORT_HLTV ), 0, "Host SourceTV port" );
+static ConVar systemlinkport( "systemlinkport", NETSTRING( PORT_SYSTEMLINK ), 0, "System Link port" );
 
 static ConVar fakelag		( "net_fakelag", "0", FCVAR_CHEAT, "Lag all incoming network data (including loopback) by this many milliseconds." );
 static ConVar fakeloss		( "net_fakeloss", "0", FCVAR_CHEAT, "Simulate packet loss as a percentage (negative means drop 1/n packets)" ); 
