@@ -534,9 +534,9 @@ static LRESULT WINAPI CallDefaultWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam
 // Purpose: The user has accepted an invitation to a game, we need to detect if 
 //			it's TF2 and restart properly if it is
 //-----------------------------------------------------------------------------
+#ifdef _X360
 void XBX_HandleInvite( DWORD nUserId )
 {
-#ifdef _X360
 	// Grab our invite info
 	XINVITE_INFO inviteInfo;
 	DWORD dwError = XInviteGetAcceptedInfo( nUserId, &inviteInfo );
@@ -576,8 +576,9 @@ void XBX_HandleInvite( DWORD nUserId )
 		EngineVGui()->SystemNotification( SYSTEMNOTIFY_INVITE_SHUTDOWN );
 
 	}
-#endif //_X360
+
 }
+#endif //_X360
 
 #if defined( WIN32 ) && !defined( USE_SDL )
 //-----------------------------------------------------------------------------

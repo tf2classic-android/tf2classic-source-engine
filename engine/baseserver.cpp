@@ -1523,21 +1523,6 @@ bool CBaseServer::CheckChallengeType( CBaseClient * client, int nNewUserID, neta
 		//
 		// Any rejections below this must call SendUserDisconnect
 		//
-
-		// Now that we have auth'd with steam, client->GetSteamID() is now valid and we can verify against the GC lobby
-		bool bHasGCLobby = g_iServerGameDLLVersion >= 8 && serverGameDLL->GetServerGCLobby();
-		if ( bHasGCLobby )
-		{
-			if ( !serverGameDLL->GetServerGCLobby()->SteamIDAllowedToConnect( client->m_SteamID ) )
-			{
-				ISteamGameServer *pSteamGameServer = Steam3Server().SteamGameServer();
-				if ( pSteamGameServer )
-					pSteamGameServer->SendUserDisconnect( client->m_SteamID);
-
-				RejectConnection( adr, clientChallenge, "#GameUI_ServerRejectMustUseMatchmaking" );
-				return false;
-			}
-		}
 	}
 	else
 	{

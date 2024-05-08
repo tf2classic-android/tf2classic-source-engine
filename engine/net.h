@@ -94,7 +94,6 @@ enum
 	NS_CLIENT = 0,	// client socket
 	NS_SERVER,	// server socket
 	NS_HLTV,
-	NS_MATCHMAKING,
 	NS_SYSTEMLINK,
 #ifdef LINUX
 	NS_SVLAN,	// LAN udp port for Linux. See NET_OpenSockets for info.

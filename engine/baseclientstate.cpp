@@ -609,14 +609,11 @@ static ConVar cl_connectmethod( "cl_connectmethod", "", FCVAR_USERINFO | FCVAR_H
 	// Only HLTV should be allowed to redirect clients, but malicious servers can answer a connect
 	// attempt as HLTV and then redirect elsewhere. A somewhat-more complete fix for this would
 	// involve tracking our redirected status and refusing to interact with non-HLTV servers. For
-	// now, however, we just blacklist server browser / matchmaking connect methods from allowing
+	// now, however, we just blacklist server browser connect methods from allowing
 	// redirects and allow it for other types.
 	const char *pConnectMethod = cl_connectmethod.GetString();
 	if ( V_strcmp( pConnectMethod, "serverbrowser_internet" ) == 0 ||
-		 V_strncmp( pConnectMethod, "quickpick", 9 ) == 0 ||
-		 V_strncmp( pConnectMethod, "quickplay", 9 ) == 0 ||
-		 V_strcmp( pConnectMethod, "matchmaking" ) == 0 ||
-		 V_strcmp( pConnectMethod, "coaching" ) == 0 )
+		 V_strncmp( pConnectMethod, "quickpick", 9 ) == 0 )
 	 {
 		 return false;
 	 }
@@ -1840,10 +1837,3 @@ bool CBaseClientState::ProcessCmdKeyValues( SVC_CmdKeyValues *msg )
 {
 	return true;
 }
-
-bool CBaseClientState::IsClientConnectionViaMatchMaking( void )
-{
-	return ( V_strnistr( cl_connectmethod.GetString(), "quickplay", 9 ) || V_strnistr( cl_connectmethod.GetString(), "matchmaking", 11 ) );
-}
-
-

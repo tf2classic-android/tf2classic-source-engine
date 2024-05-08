@@ -132,9 +132,6 @@ public:
 	// Called after the steam API has been shutdown post-level startup
 	virtual void			GameServerSteamAPIShutdown( void ) OVERRIDE;
 
-	// interface to the new GC based lobby system
-	virtual IServerGCLobby *GetServerGCLobby() OVERRIDE;
-
 	virtual const char *GetServerBrowserMapOverride() OVERRIDE;
 	virtual const char *GetServerBrowserGameData() OVERRIDE;
 

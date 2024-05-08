@@ -163,8 +163,6 @@ public:
 	virtual void ReadPreserveEnt( CEntityReadInfo &u ) = 0;
 	virtual void ReadDeletions( CEntityReadInfo &u ) = 0;
 
-	bool IsClientConnectionViaMatchMaking( void );
-
 	static bool ConnectMethodAllowsRedirects( void );
 
 private:

@@ -1855,16 +1855,6 @@ void CServerGameDLL::InvalidateMdlCache()
 	}
 }
 
-// interface to the new GC based lobby system
-IServerGCLobby *CServerGameDLL::GetServerGCLobby()
-{
-#ifdef TF_DLL
-	return GTFGCClientSystem();
-#else	
-	return NULL;
-#endif
-}
-
 
 void CServerGameDLL::SetServerHibernation( bool bHibernating )
 {

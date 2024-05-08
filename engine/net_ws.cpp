@@ -36,7 +36,6 @@ static ConVar hostip		( "hostip", "", FCVAR_ALLOWED_IN_COMPETITIVE, "Host game s
 
 static ConVar clientport    ( "clientport", NETSTRING( PORT_CLIENT ), FCVAR_ALLOWED_IN_COMPETITIVE, "Host game client port" );
 static ConVar hltvport		( "tv_port", NETSTRING( PORT_HLTV ), FCVAR_ALLOWED_IN_COMPETITIVE, "Host SourceTV port" );
-static ConVar matchmakingport( "matchmakingport", NETSTRING( PORT_MATCHMAKING ), FCVAR_ALLOWED_IN_COMPETITIVE, "Host Matchmaking port" );
 static ConVar systemlinkport( "systemlinkport", NETSTRING( PORT_SYSTEMLINK ), FCVAR_ALLOWED_IN_COMPETITIVE, "System Link port" );
 
 static ConVar fakelag		( "net_fakelag", "0", FCVAR_CHEAT, "Lag all incoming network data (including loopback) by this many milliseconds." );
@@ -176,7 +175,7 @@ ConVar net_maxroutable
 netadr_t	net_local_adr;
 double		net_time = 0.0f;	// current time, updated each frame
 
-static	CUtlVector<netsocket_t> net_sockets;	// the 4 sockets, Server, Client, HLTV, Matchmaking
+static	CUtlVector<netsocket_t> net_sockets;	// the 3 sockets, Server, Client, HLTV
 static	CUtlVector<netpacket_t>	net_packets;
 
 static	bool net_multiplayer = false;	// if true, configured for Multiplayer
@@ -1208,8 +1207,6 @@ static char const *DescribeSocket( int sock )
 		return "sv ";
 	case NS_HLTV:
 		return "htv";
-	case NS_MATCHMAKING:
-		return "mat";
 	case NS_SYSTEMLINK:
 		return "lnk";
 #ifdef LINUX
@@ -2656,7 +2653,6 @@ void NET_OpenSockets (void)
 
 	if ( IsX360() )
 	{
-		OpenSocketInternal( NS_MATCHMAKING, matchmakingport.GetInt(), PORT_MATCHMAKING, "matchmaking", nProtocol, false );
 		OpenSocketInternal( NS_SYSTEMLINK, systemlinkport.GetInt(), PORT_SYSTEMLINK, "systemlink", IPPROTO_UDP, false );
 	}
 
@@ -3406,11 +3402,10 @@ CON_COMMAND( net_status, "Shows current network status" )
 	lan_str.sprintf( ", Lan %u", net_sockets[NS_SVLAN].nPort );
 #endif
 
-	ConMsg("- Ports: Client %u, Server %u, HLTV %u, Matchmaking %u, Systemlink %u%s\n",
+	ConMsg("- Ports: Client %u, Server %u, HLTV %u, Systemlink %u%s\n",
 		net_sockets[NS_CLIENT].nPort,
 		net_sockets[NS_SERVER].nPort, 
 		net_sockets[NS_HLTV].nPort, 
-		net_sockets[NS_MATCHMAKING].nPort, 
 		net_sockets[NS_SYSTEMLINK].nPort,
 		lan_str.Get() );
 

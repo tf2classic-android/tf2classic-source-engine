@@ -1714,17 +1714,7 @@ void CGameServer::UpdateHibernationState()
 		}
 	}
 
-	bool hibernateFromGCServer = ( g_iServerGameDLLVersion < 8 ) || !serverGameDLL->GetServerGCLobby() || serverGameDLL->GetServerGCLobby()->ShouldHibernate();
-
-	// If a restart was requested and we're supposed to reboot after XX amount of time, reboot the server.
-	if ( !bHaveAnyClients && ( sv_maxuptimelimit.GetFloat() > 0.0f ) &&
-		 Steam3Server().SteamGameServer() && Steam3Server().SteamGameServer()->WasRestartRequested() )
-	{
-		hibernateFromGCServer = true;
-		s_bExitWhenEmpty = true;
-	}
-
-	SetHibernating( sv_hibernate_when_empty.GetBool() && hibernateFromGCServer && !bHaveAnyClients );
+	SetHibernating( sv_hibernate_when_empty.GetBool() && !bHaveAnyClients );
 }
 
 void CGameServer::FinishRestore()

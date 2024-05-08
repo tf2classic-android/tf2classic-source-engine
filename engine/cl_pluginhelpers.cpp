@@ -532,10 +532,6 @@ void CPluginUIManager::Show( DIALOG_TYPE type, KeyValues *kv )
 	// Check for the special DIALOG_ASKCONNECT command.
 	if ( type == DIALOG_ASKCONNECT )
 	{
-		// Don't allow this prompt on QuickPlay servers
-		if ( cl.IsClientConnectionViaMatchMaking() )
-			return;
-		
 		// Do the askconnect dialog.
 		float flDuration = kv->GetFloat( "time", 4.0f );
 		const char *pIP = kv->GetString( "title", NULL );

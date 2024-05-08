@@ -453,8 +453,6 @@ typedef IVEngineServer IVEngineServer022;
 #define INTERFACEVERSION_SERVERGAMEDLL				"ServerGameDLL010"
 #define INTERFACEVERSION_SERVERGAMEDLL_INT			10
 
-class IServerGCLobby;
-
 //-----------------------------------------------------------------------------
 // Purpose: These are the interfaces that the game .dll exposes to the engine
 //-----------------------------------------------------------------------------
@@ -568,9 +566,6 @@ public:
 	virtual void			GameServerSteamAPIShutdown( void ) = 0;
 
 	virtual void			SetServerHibernation( bool bHibernating ) = 0;
-
-	// interface to the new GC based lobby system
-	virtual IServerGCLobby *GetServerGCLobby() = 0;
 
 	// Return override string to show in the server browser
 	// "map" column, or NULL to just use the default value
@@ -806,18 +801,6 @@ abstract_class IServerGameTags
 public:
 	// Get the list of cvars that require tags to show differently in the server browser
 	virtual void			GetTaggedConVarList( KeyValues *pCvarTagList ) = 0;
-};
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide hooks for the GC based lobby system
-//-----------------------------------------------------------------------------
-abstract_class IServerGCLobby
-{
-public:
-	virtual bool HasLobby() const = 0;
-	virtual bool SteamIDAllowedToConnect( const CSteamID &steamId ) const = 0;
-	virtual void UpdateServerDetails(void) = 0;
-	virtual bool ShouldHibernate() = 0;
 };
 
 #endif // EIFACE_H

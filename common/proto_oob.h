@@ -26,7 +26,6 @@
 #define PORT_CLIENT			27005	// Default client port, UDP/TCP
 #define PORT_SERVER			27015	// Default server port, UDP/TCP
 #define PORT_HLTV			27020	// Default hltv port
-#define PORT_MATCHMAKING	27025	// Default matchmaking port
 #define PORT_SYSTEMLINK		27030	// Default system link port
 #ifdef ENABLE_RPT
 #define PORT_RPT			27035	// default RPT (remote perf testing) port, TCP
