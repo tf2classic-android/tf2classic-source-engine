@@ -576,6 +576,8 @@ target_compile_definitions(
 target_link_libraries(
 	client_tf2classic PRIVATE
 
+	"$<${IS_WINDOWS}:ws2_32>"
+
 	# libcurl for tf_noticiationmanager.cpp
 	"$<$<AND:${IS_POSIX},$<NOT:${IS_ANDROID}>>:${CURL_LIBRARIES}>"
 	"$<${IS_WINDOWS}:${SRCDIR}/lib/win32/amd64/curl/RelWithDebInfo/libcurl_imp.lib>"
