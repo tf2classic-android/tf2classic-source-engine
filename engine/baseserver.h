@@ -189,7 +189,6 @@ protected:
 
 	void SetRestartOnLevelChange(bool state)  { m_bRestartOnLevelChange = state; }
 
-	bool RequireValidChallenge( netadr_t &adr );
 	bool ValidChallenge( netadr_t & adr, int challengeNr );
 	bool ValidInfoChallenge( netadr_t & adr, const char *nugget );
 

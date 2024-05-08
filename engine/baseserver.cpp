@@ -185,7 +185,6 @@ static void SvTagsChangeCallback( IConVar *pConVar, const char *pOldValue, float
 ConVar			sv_region( "sv_region","-1", FCVAR_NONE, "The region of the world to report this server in." );
 static ConVar	sv_instancebaselines( "sv_instancebaselines", "1", FCVAR_DEVELOPMENTONLY, "Enable instanced baselines. Saves network overhead." );
 static ConVar	sv_stats( "sv_stats", "1", 0, "Collect CPU usage stats" );
-static ConVar	sv_enableoldqueries( "sv_enableoldqueries", "0", 0, "Enable support for old style (HL1) server queries" );
 static ConVar	sv_password( "sv_password", "", FCVAR_NOTIFY | FCVAR_PROTECTED | FCVAR_DONTRECORD, "Server password for entry into multiplayer games" );
 ConVar			sv_tags( "sv_tags", "", FCVAR_NOTIFY, "Server tags. Used to provide extra information to clients when they're browsing for servers. Separate tags with a comma.", SvTagsChangeCallback );
 ConVar			sv_visiblemaxplayers( "sv_visiblemaxplayers", "-1", 0, "Overrides the max players reported to prospective clients" );
@@ -611,22 +610,6 @@ IClient *CBaseServer::ConnectClient ( netadr_t &adr, int protocol, int challenge
 	return client;
 }
 
-/*
-================
-RequireValidChallenge
-
-Return true if this server query must provide a valid challenge number
-================
-*/
-bool CBaseServer::RequireValidChallenge( netadr_t &adr )
-{
-	if ( sv_enableoldqueries.GetBool() == true )
-	{
-		return false; // don't enforce challenge numbers
-	}
-
-	return true;
-}
 
 /*
 ================
@@ -643,13 +626,10 @@ bool CBaseServer::ValidChallenge( netadr_t & adr, int challengeNr )
 	if ( !IsMultiplayer() )   // ignore in single player
 		return false ;
 
-	if ( RequireValidChallenge( adr) )
+	if ( !CheckChallengeNr( adr, challengeNr ) )
 	{
-		if ( !CheckChallengeNr( adr, challengeNr ) )
-		{
-			ReplyServerChallenge( adr );
-			return false;
-		}
+		ReplyServerChallenge( adr );
+		return false;
 	}
 
 	return true; 
@@ -666,12 +646,9 @@ bool CBaseServer::ValidInfoChallenge( netadr_t & adr, const char *nugget )
 	if ( IsReplay() )
 		return false;
 
-	if ( RequireValidChallenge( adr) )
+	if ( Q_stricmp( nugget, A2S_KEY_STRING ) ) // if the string isn't equal then fail out
 	{
-		if ( Q_stricmp( nugget, A2S_KEY_STRING ) ) // if the string isn't equal then fail out
-		{
-			return false;
-		}
+		return false;
 	}
 
 	return true; 
