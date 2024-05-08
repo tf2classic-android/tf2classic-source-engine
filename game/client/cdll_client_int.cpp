@@ -106,7 +106,6 @@
 #include "vgui/IVGui.h"
 #include "ixboxsystem.h"
 #include "ipresence.h"
-#include "engine/imatchmaking.h"
 #include "cdll_bounded_cvars.h"
 #include "matsys_controls/matsyscontrols.h"
 #include "gamestats.h"
@@ -194,7 +193,6 @@ ISoundEmitterSystemBase *soundemitterbase = NULL;
 IInputSystem *inputsystem = NULL;
 ISceneFileCache *scenefilecache = NULL;
 IXboxSystem *xboxsystem = NULL;	// Xbox 360 only
-IMatchmaking *matchmaking = NULL;
 IUploadGameStats *gamestatsuploader = NULL;
 IClientReplayContext *g_pClientReplayContext = NULL;
 #if defined( REPLAY_ENABLED )
@@ -944,8 +942,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	if ( (scenefilecache = (ISceneFileCache *)appSystemFactory( SCENE_FILE_CACHE_INTERFACE_VERSION, NULL )) == NULL )
 		return false;
 	if ( IsX360() && (xboxsystem = (IXboxSystem *)appSystemFactory( XBOXSYSTEM_INTERFACE_VERSION, NULL )) == NULL )
-		return false;
-	if ( IsX360() && (matchmaking = (IMatchmaking *)appSystemFactory( VENGINE_MATCHMAKING_VERSION, NULL )) == NULL )
 		return false;
 #ifndef _XBOX
 	if ( ( gamestatsuploader = (IUploadGameStats *)appSystemFactory( INTERFACEVERSION_UPLOADGAMESTATS, NULL )) == NULL )

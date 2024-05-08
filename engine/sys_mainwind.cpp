@@ -59,7 +59,6 @@
   #include "unicode/unicode.h"
 #endif
 #include "GameUI/IGameUI.h"
-#include "matchmaking.h"
 #include "sv_main.h"
 #include "video/ivideoservices.h"
 #include "sys.h"

@@ -46,7 +46,6 @@
 #include "ModInfo.h"
 #include "game/client/IGameClientExports.h"
 #include "materialsystem/imaterialsystem.h"
-#include "engine/imatchmaking.h"
 #include "ixboxsystem.h"
 #include "iachievementmgr.h"
 #include "IGameUIFuncs.h"
@@ -86,7 +85,6 @@
 
 IGameUIFuncs *gameuifuncs = NULL;
 IEngineVGui *enginevguifuncs = NULL;
-IMatchmaking *matchmaking = NULL;
 IXboxSystem *xboxsystem = NULL;		// 360 only
 vgui::ISurface *enginesurfacefuncs = NULL;
 IVEngineClient *engine = NULL;
@@ -184,7 +182,6 @@ void CGameUI::Initialize( CreateInterfaceFn factory )
 	enginevguifuncs = (IEngineVGui *)factory( VENGINE_VGUI_VERSION, NULL );
 	enginesurfacefuncs = (vgui::ISurface *)factory(VGUI_SURFACE_INTERFACE_VERSION, NULL);
 	gameuifuncs = (IGameUIFuncs *)factory( VENGINE_GAMEUIFUNCS_VERSION, NULL );
-	matchmaking = (IMatchmaking *)factory( VENGINE_MATCHMAKING_VERSION, NULL );
 	xboxsystem = (IXboxSystem *)factory( XBOXSYSTEM_INTERFACE_VERSION, NULL );
 	g_pEngineClientReplay = (IEngineClientReplay *)factory( ENGINE_REPLAY_CLIENT_INTERFACE_VERSION, NULL );
 
@@ -1145,10 +1142,6 @@ bool CGameUI::HasLoadingBackgroundDialog()
 //-----------------------------------------------------------------------------
 // Purpose: Xbox 360 calls from engine to GameUI 
 //-----------------------------------------------------------------------------
-void CGameUI::SessionNotification( const int notification, const int param )
-{
-	BasePanel()->SessionNotification( notification, param );
-}
 void CGameUI::SystemNotification( const int notification )
 {
 	BasePanel()->SystemNotification( notification );
@@ -1160,14 +1153,6 @@ void CGameUI::ShowMessageDialog( const uint nType, vgui::Panel *pOwner )
 void CGameUI::CloseMessageDialog( const uint nType )
 {
 	BasePanel()->CloseMessageDialog( nType );
-}
-void CGameUI::UpdatePlayerInfo( uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost )
-{
-	BasePanel()->UpdatePlayerInfo( nPlayerId, pName, nTeam, cVoiceState, nPlayersNeeded, bHost );
-}
-void CGameUI::SessionSearchResult( int searchIdx, void *pHostData, XSESSION_SEARCHRESULT *pResult, int ping )
-{
-	BasePanel()->SessionSearchResult( searchIdx, pHostData, pResult, ping );
 }
 void CGameUI::OnCreditsFinished( void )
 {

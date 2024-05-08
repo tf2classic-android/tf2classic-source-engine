@@ -244,18 +244,12 @@ public:
     // HPE_END
     //=============================================================================
 
-    void OnOpenAchievementsDialog_Xbox();
 	void OnOpenControllerDialog();
 
 	// Xbox 360
-	CMatchmakingBasePanel* GetMatchmakingBasePanel();
-	void OnOpenMatchmakingBasePanel();
-	void SessionNotification( const int notification, const int param = 0 );
 	void SystemNotification( const int notification );
 	void ShowMessageDialog( const uint nType, vgui::Panel *pParent = NULL );
 	void CloseMessageDialog( const uint nType );
-	void UpdatePlayerInfo( uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost );
-	void SessionSearchResult( int searchIdx, void *pHostData, XSESSION_SEARCHRESULT *pResult, int ping );
 	void OnChangeStorageDevice();
 	bool ValidateStorageDevice();
 	bool ValidateStorageDevice( int *pStorageDeviceValidated );
@@ -384,7 +378,6 @@ private:
 	vgui::DHANDLE<vgui::Frame> m_hAchievementsDialog;
 
 	// Xbox 360
-	vgui::DHANDLE<vgui::Frame> m_hMatchmakingBasePanel;
 	vgui::DHANDLE<vgui::Frame> m_hControllerDialog;
 
 	EBackgroundState m_eBackgroundState;

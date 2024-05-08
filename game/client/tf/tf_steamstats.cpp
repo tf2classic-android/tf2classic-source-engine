@@ -10,7 +10,6 @@
 #include "tf_steamstats.h"
 #include "tf_hud_statpanel.h"
 #include "achievementmgr.h"
-#include "engine/imatchmaking.h"
 #include "ipresence.h"
 #include "../game/shared/tf/tf_shareddefs.h"
 #include "../game/shared/tf/tf_gamestats_shared.h"

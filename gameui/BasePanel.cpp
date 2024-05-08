@@ -7,6 +7,11 @@
 
 #include <stdio.h>
 
+#if defined(_WIN32)
+#include <windows.h>
+#include <winreg.h>
+#endif
+
 #include "threadtools.h"
 
 #include "BasePanel.h"
@@ -66,8 +71,7 @@ using namespace vgui;
 #include "tier1/fmtstr.h"
 #include "inputsystem/iinputsystem.h"
 #include "ixboxsystem.h"
-#include "matchmaking/matchmakingbasepanel.h"
-#include "matchmaking/achievementsdialog.h"
+#include "achievementsdialog.h"
 #include "iachievementmgr.h"
 #include "UtlSortVector.h"
 
@@ -82,7 +86,6 @@ using namespace vgui;
 #include "xbox/xboxstubs.h"
 #endif
 
-#include "../engine/imatchmaking.h"
 #include "tier1/utlstring.h"
 #include "steam/steam_api.h"
 
@@ -1270,20 +1273,6 @@ void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
 	m_bRenderingBackgroundTransition = false;
 	m_bFadingInMenus = false;
 
-	CMatchmakingBasePanel *pPanel = GetMatchmakingBasePanel();
-
-	if ( pPanel )
-	{
-		if ( state == BACKGROUND_LOADING )
-		{
-			pPanel->SetVisible( false );
-		}
-		else
-		{
-			pPanel->SetVisible( true );
-		}
-	}
-
 	if ( state == BACKGROUND_EXITING )
 	{
 		// hide the menus
@@ -1333,12 +1322,6 @@ void CBasePanel::StartExitingProcess()
 	m_ExitingFrameCount = 30;
 	g_pInputSystem->DetachFromWindow();
 
-	CMatchmakingBasePanel *pPanel = GetMatchmakingBasePanel();
-	if ( pPanel )
-	{
-		pPanel->CloseAllDialogs( false );
-	}
-
 	engine->StartXboxExitingProcess();
 }
 
@@ -1349,11 +1332,6 @@ void CBasePanel::OnSizeChanged( int newWide, int newTall )
 {
 	// Recenter message dialogs
 	m_MessageDialogHandler.PositionDialogs( newWide, newTall );
-
-	if ( m_hMatchmakingBasePanel.Get() )
-	{
-		m_hMatchmakingBasePanel->SetBounds( 0, 0, newWide, newTall );
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1364,11 +1342,6 @@ void CBasePanel::OnLevelLoadingStarted()
 	m_bLevelLoading = true;
 
 	m_pGameMenu->ShowFooter( false );
-
-	if ( m_hMatchmakingBasePanel.Get() )
-	{
-		m_hMatchmakingBasePanel->OnCommand( "LevelLoadingStarted" );
-	}
 
 	if ( IsX360() && m_eBackgroundState == BACKGROUND_LEVEL )
 	{
@@ -1384,11 +1357,6 @@ void CBasePanel::OnLevelLoadingStarted()
 void CBasePanel::OnLevelLoadingFinished()
 {
 	m_bLevelLoading = false;
-
-	if ( m_hMatchmakingBasePanel.Get() )
-	{
-		m_hMatchmakingBasePanel->OnCommand( "LevelLoadingFinished" );
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2127,10 +2095,6 @@ void CBasePanel::RunMenuCommand(const char *command)
 	{
 		OpenLoadSingleplayerCommentaryDialog();	
 	}
-	else if ( !Q_stricmp( command, "OpenMatchmakingBasePanel" ) )
-	{
-		OnOpenMatchmakingBasePanel();
-	}
 	else if ( !Q_stricmp( command, "OpenAchievementsDialog" ) )
 	{
 		if ( IsPC() )
@@ -2144,10 +2108,6 @@ void CBasePanel::RunMenuCommand(const char *command)
 			}
 #endif
 			OnOpenAchievementsDialog();
-		}
-		else
-		{
-			OnOpenAchievementsDialog_Xbox();
 		}
 	}
     //=============================================================================
@@ -2242,23 +2202,7 @@ void CBasePanel::RunMenuCommand(const char *command)
 	}
 	else if ( !Q_stricmp( command, "DisconnectNoConfirm" ) )
 	{
-		ConVarRef commentary( "commentary" );
-		if ( commentary.IsValid() && commentary.GetBool() )
-		{
-			engine->ClientCmd_Unrestricted( "disconnect" );
-
-			CMatchmakingBasePanel *pBase = GetMatchmakingBasePanel();
-			if ( pBase )
-			{
-				pBase->CloseAllDialogs( false );
-				pBase->OnCommand( "OpenWelcomeDialog" );
-			}
-		}
-		else
-		{
-			// Leave our current session, if we have one
-			matchmaking->KickPlayerFromSession( 0 );
-		}
+		engine->ClientCmd_Unrestricted( "disconnect" );
 	}
 	else if ( !Q_stricmp( command, "ReleaseModalWindow" ) )
 	{
@@ -2837,14 +2781,6 @@ void CBasePanel::IssuePostPromptCommand( void )
 		if ( m_bSinglePlayer )
 		{
 			OnCommand( m_strPostPromptCommand );
-		}
-		else
-		{
-			CMatchmakingBasePanel *pMatchMaker = GetMatchmakingBasePanel();
-			if ( pMatchMaker )
-			{
-				pMatchMaker->OnCommand( m_strPostPromptCommand );
-			}
 		}
 	}
 }
@@ -3427,61 +3363,6 @@ void CBasePanel::OnOpenCSAchievementsDialog()
 // HPE_END
 //=============================================================================
 
-void CBasePanel::OnOpenAchievementsDialog_Xbox()
-{
-	if (!m_hAchievementsDialog.Get())
-	{
-		m_hAchievementsDialog = new CAchievementsDialog_XBox( this );
-		PositionDialog(m_hAchievementsDialog);
-	}
-	m_hAchievementsDialog->Activate();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CBasePanel::OnOpenMatchmakingBasePanel()
-{
-	if (!m_hMatchmakingBasePanel.Get())
-	{
-		m_hMatchmakingBasePanel = new CMatchmakingBasePanel( this );
-		int x, y, wide, tall;
-		GetBounds( x, y, wide, tall );
-		m_hMatchmakingBasePanel->SetBounds( x, y, wide, tall );
-	}
-
-	if ( m_pGameLogo )
-	{
-		m_pGameLogo->SetVisible( false );
-	}
-
-	// Hide the standard game menu
-	for ( int i = 0; i < m_pGameMenuButtons.Count(); ++i ) 
-	{
-		m_pGameMenuButtons[i]->SetVisible( false );
-	}
-
-	// Hide the BasePanel's button footer
-	m_pGameMenu->ShowFooter( false );
-
-	m_hMatchmakingBasePanel->SetVisible( true );
-
-	m_hMatchmakingBasePanel->Activate();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Helper function for this common operation
-//-----------------------------------------------------------------------------
-CMatchmakingBasePanel *CBasePanel::GetMatchmakingBasePanel()
-{
-	CMatchmakingBasePanel *pBase = NULL;
-	if ( m_bUseMatchmaking )
-	{
-		pBase = dynamic_cast< CMatchmakingBasePanel* >( m_hMatchmakingBasePanel.Get() );
-	}
-	return pBase;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: moves the game menu button to the right place on the taskbar
 //-----------------------------------------------------------------------------
@@ -3520,29 +3401,10 @@ void CBasePanel::CloseMessageDialog( const uint nType )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Matchmaking notification from engine
-//-----------------------------------------------------------------------------
-void CBasePanel::SessionNotification( const int notification, const int param )
-{
-	// This is a job for the matchmaking panel
-	CMatchmakingBasePanel *pBase = GetMatchmakingBasePanel();
-	if ( pBase )
-	{
-		pBase->SessionNotification( notification, param );
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: System notification from engine
 //-----------------------------------------------------------------------------
 void CBasePanel::SystemNotification( const int notification )
 {
-	CMatchmakingBasePanel *pBase = GetMatchmakingBasePanel();
-	if ( pBase )
-	{
-		pBase->SystemNotification( notification );
-	}
-
 	if ( notification == SYSTEMNOTIFY_USER_SIGNEDIN )
 	{
 #if defined( _X360 )
@@ -3706,30 +3568,6 @@ void CBasePanel::SystemNotification( const int notification )
 		m_bRestartFromInvite = true;
 		m_bXUIVisible = true;
 		OnCommand( "QuitNoConfirm" );
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Matchmaking notification that a player's info has changed
-//-----------------------------------------------------------------------------
-void CBasePanel::UpdatePlayerInfo( uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost )
-{
-	CMatchmakingBasePanel *pBase = GetMatchmakingBasePanel();
-	if ( pBase )
-	{
-		pBase->UpdatePlayerInfo( nPlayerId, pName, nTeam, cVoiceState, nPlayersNeeded, bHost );
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Matchmaking notification to add a session to the browser
-//-----------------------------------------------------------------------------
-void CBasePanel::SessionSearchResult( int searchIdx, void *pHostData, XSESSION_SEARCHRESULT *pResult, int ping )
-{
-	CMatchmakingBasePanel *pBase = GetMatchmakingBasePanel();
-	if ( pBase )
-	{
-		pBase->SessionSearchResult( searchIdx, pHostData, pResult, ping );
 	}
 }
 

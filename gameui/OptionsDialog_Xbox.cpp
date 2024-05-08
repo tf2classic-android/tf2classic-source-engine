@@ -23,7 +23,6 @@
 #include "EngineInterface.h"
 #include "KeyValues.h"
 #include "ModInfo.h"
-#include "matchmaking/matchmakingbasepanel.h"
 #include "vgui_controls/AnimationController.h"
 
 #include "tier1/utlbuffer.h"
@@ -443,12 +442,6 @@ void COptionsDialogXbox::ApplySchemeSettings( vgui::IScheme *pScheme )
 //-----------------------------------------------------------------------------
 void COptionsDialogXbox::OnClose( void )
 {
-	CMatchmakingBasePanel *pBase = BasePanel()->GetMatchmakingBasePanel();
-	if ( pBase )
-	{
-		pBase->ShowFooter( true );
-	}
-
 	ConVarRef varOption( "option_duck_method" );
 
 	char szCommand[ 256 ];
@@ -863,12 +856,6 @@ void COptionsDialogXbox::UpdateFooter( void )
 	else
 	{
 		m_pFooter->UseDefaultButtonGap();
-	}
-
-	CMatchmakingBasePanel *pBase = BasePanel()->GetMatchmakingBasePanel();
-	if ( pBase )
-	{
-		pBase->ShowFooter( false );
 	}
 }
 

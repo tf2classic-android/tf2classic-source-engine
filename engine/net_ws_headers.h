@@ -31,7 +31,6 @@
 #include "tier0/tslist.h"
 #include "tier1/mempool.h"
 #include "../utils/bzip2/bzlib.h"
-#include "matchmaking.h"
 
 #if defined(_WIN32)
 

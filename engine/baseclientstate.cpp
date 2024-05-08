@@ -33,7 +33,6 @@
 #include "cl_steamauth.h"
 #include "server.h"
 #include "steam/steam_api.h"
-#include "matchmaking.h"
 #include "sv_plugin.h"
 #include "sys_dll.h"
 #include "host.h"
@@ -473,12 +472,6 @@ bool CBaseClientState::SetSignonState ( int state, int count )
 			g_pClientReplayContext->OnSignonStateFull();
 		}
 #endif
-
-		if ( IsX360() && 
-			g_pMatchmaking->PreventFullServerStartup() )
-		{
-			return true;
-		}
 	}
 
 	m_nSignonState = state;

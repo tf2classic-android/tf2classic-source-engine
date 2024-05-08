@@ -350,11 +350,8 @@ public:
 	virtual void ShowNewGameDialog( int chapter = -1 ); // -1 means just keep the currently select chapter
 
 	// Xbox 360
-	virtual void SessionNotification( const int notification, const int param = 0 );
 	virtual void SystemNotification( const int notification );
 	virtual void ShowMessageDialog( const uint nType, vgui::Panel *pOwner = NULL );
-	virtual void UpdatePlayerInfo( uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost );
-	virtual void SessionSearchResult( int searchIdx, void *pHostData, XSESSION_SEARCHRESULT *pResult, int ping );
 	virtual void OnCreditsFinished( void );
 
 	// Storage device validation:
@@ -1858,11 +1855,6 @@ void CEngineVGui::NotifyOfServerDisconnect()
 //-----------------------------------------------------------------------------
 // Xbox 360: Matchmaking sessions send progress notifications to GameUI
 //-----------------------------------------------------------------------------
-void CEngineVGui::SessionNotification( const int notification, const int param )
-{
-	staticGameUIFuncs->SessionNotification( notification, param );
-}
-
 void CEngineVGui::SystemNotification( const int notification )
 {
 	staticGameUIFuncs->SystemNotification( notification );
@@ -1875,16 +1867,6 @@ void CEngineVGui::ShowMessageDialog( const uint nType, vgui::Panel *pOwner )
 {
 	ActivateGameUI();
 	staticGameUIFuncs->ShowMessageDialog( nType, pOwner );
-}
-
-void CEngineVGui::UpdatePlayerInfo( uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost )
-{
-	staticGameUIFuncs->UpdatePlayerInfo( nPlayerId, pName, nTeam, cVoiceState, nPlayersNeeded, bHost );
-}
-
-void CEngineVGui::SessionSearchResult( int searchIdx, void *pHostData, XSESSION_SEARCHRESULT *pResult, int ping )
-{
-	staticGameUIFuncs->SessionSearchResult( searchIdx, pHostData, pResult, ping );
 }
 
 //-----------------------------------------------------------------------------

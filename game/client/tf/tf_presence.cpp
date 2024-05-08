@@ -12,11 +12,12 @@
 #include "tf_gamerules.h"
 #include "c_tf_team.h"
 #include "c_tf_playerresource.h"
-#include "engine/imatchmaking.h"
 #include "ixboxsystem.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+#define NO_TIME_LIMIT	65000
 
 // Global singleton
 static CTF_Presence s_presence;

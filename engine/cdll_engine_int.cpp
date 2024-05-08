@@ -77,7 +77,6 @@
 #include "view.h"
 #include "game/client/iclientrendertargets.h"
 #include "tier2/tier2.h"
-#include "matchmaking.h"
 #include "inputsystem/iinputsystem.h"
 #include "iachievementmgr.h"
 #include "profile.h"
@@ -1402,7 +1401,7 @@ void CEngineClient::SetOverlayBindProxy( int iOverlayID, void *pBindProxy )
 
 void CEngineClient::ChangeTeam( const char *pTeamName )
 {
-	g_pMatchmaking->ChangeTeam( pTeamName );
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1538,14 +1537,12 @@ bool CEngineClient::IsSaveInProgress()
 	return saverestore->IsSaveInProgress();
 }
 
-extern IXboxSystem *g_pXboxSystem;
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 uint CEngineClient::OnStorageDeviceAttached( void )
 {
-	return g_pXboxSystem->OpenContainers();
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1553,8 +1550,7 @@ uint CEngineClient::OnStorageDeviceAttached( void )
 //-----------------------------------------------------------------------------
 void CEngineClient::OnStorageDeviceDetached( void )
 {
-	XBX_SetStorageDeviceId( XBX_INVALID_STORAGE_ID );
-	g_pXboxSystem->CloseContainers();
+
 }
 
 void CEngineClient::ResetDemoInterpolation( void )

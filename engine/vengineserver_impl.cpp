@@ -41,7 +41,6 @@
 #include "networkstringtableserver.h"
 #include "networkstringtable.h"
 #include "LocalNetworkBackdoor.h"
-#include "matchmaking.h"
 #include "sv_plugin.h"
 #include "sv_steamauth.h"
 #include "replay_internal.h"
@@ -1538,16 +1537,12 @@ public:
 			
 	virtual void MultiplayerEndGame()
 	{
-#if !defined( SWDS )
-		g_pMatchmaking->EndGame();
-#endif
+
 	}
 
 	virtual void ChangeTeam( const char *pTeamName )
 	{
-#if !defined( SWDS )
-		g_pMatchmaking->ChangeTeam( pTeamName );
-#endif
+
 	}
 
 	virtual void SetAchievementMgr( IAchievementMgr *pAchievementMgr )

@@ -22,7 +22,6 @@
 #include "sv_remoteaccess.h" // NotifyDedicatedServerUI()
 #include "MapReslistGenerator.h"
 #include "sv_steamauth.h"
-#include "matchmaking.h"
 #include "iregistry.h"
 #include "sv_main.h"
 #include "hltvserver.h"
@@ -711,12 +710,6 @@ bool CBaseClient::SendServerInfo( void )
 	m_Server->FillServerInfo( serverinfo ); // fill rest of info message
 	
 	serverinfo.WriteToBuffer( msg );
-
-	if ( IsX360() && serverinfo.m_nMaxClients > 1 )
-	{
-		Msg( "Telling clients to connect" );
-		g_pMatchmaking->TellClientsToConnect();
-	}
 
 	// send first tick
 	m_nSignonTick = m_Server->m_nTickCount;

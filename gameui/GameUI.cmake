@@ -143,34 +143,11 @@ set(
 		"${GAMEUI_DIR}/OptionsDialog_Xbox.cpp"
 		"${GAMEUI_DIR}/ControllerDialog.cpp"
 		"${GAMEUI_DIR}/ControllerDialog.h"
+		"${GAMEUI_DIR}/achievementsdialog.cpp"
+		"${GAMEUI_DIR}/achievementsdialog.h"
 	#}
 
-	#$Folder	"Matchmaking"
-	#{
-		"${GAMEUI_DIR}/matchmaking/achievementsdialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/achievementsdialog.h"
-		"${GAMEUI_DIR}/matchmaking/basedialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/basedialog.h"
-		"${GAMEUI_DIR}/matchmaking/dialogmenu.cpp"
-		"${GAMEUI_DIR}/matchmaking/dialogmenu.h"
-		"${GAMEUI_DIR}/matchmaking/leaderboarddialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/leaderboarddialog.h"
-		"${GAMEUI_DIR}/matchmaking/matchmakingbasepanel.cpp"
-		"${GAMEUI_DIR}/matchmaking/matchmakingbasepanel.h"
-		"${GAMEUI_DIR}/matchmaking/pausedialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/pausedialog.h"
-		"${GAMEUI_DIR}/matchmaking/sessionlobbydialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/sessionlobbydialog.h"
-		"${GAMEUI_DIR}/matchmaking/sessionoptionsdialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/sessionoptionsdialog.h"
-		"${GAMEUI_DIR}/matchmaking/sessionbrowserdialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/sessionbrowserdialog.h"
-		"${GAMEUI_DIR}/matchmaking/welcomedialog.cpp"
-		"${GAMEUI_DIR}/matchmaking/welcomedialog.h"
-	#}
-
-	#$Folder	"Options Dialog"
-	#{
+	#$Folder "Options Dialog" {
 		"${GAMEUI_DIR}/OptionsDialog.cpp"
 		"${GAMEUI_DIR}/OptionsDialog.h"
 		"${GAMEUI_DIR}/OptionsSubAudio.cpp"

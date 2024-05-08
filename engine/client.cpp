@@ -43,7 +43,6 @@
 #include "materialsystem/materialsystem_config.h"
 #include "tier1/fmtstr.h"
 #include "cl_steamauth.h"
-#include "matchmaking.h"
 #include "server.h"
 #include "eiface.h"
 
@@ -329,11 +328,6 @@ bool CClientState::SetSignonState ( int state, int count )
 				}
 
 				HostState_OnClientConnected();
-				
-				if ( m_nMaxClients > 1 )
-				{
-					g_pMatchmaking->AddLocalPlayersToTeams();
-				}
 			}
 			break;
 
