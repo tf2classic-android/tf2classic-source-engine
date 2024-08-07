@@ -41,8 +41,6 @@ ConVar sv_netspike_on_reliable_snapshot_overflow( "sv_netspike_on_reliable_snaps
 ConVar sv_netspike_sendtime_ms( "sv_netspike_sendtime_ms", "0", FCVAR_NONE, "If nonzero, the server will dump a netspike trace if it takes more than N ms to prepare a snapshot to a single client.  This feature does take some CPU cycles, so it should be left off when not in use." );
 ConVar sv_netspike_output( "sv_netspike_output", "1", FCVAR_NONE, "Where the netspike data be written?  Sum of the following values: 1=netspike.txt, 2=ordinary server log" );
 
-ConVar sv_max_concurrent_clients_with_same_name( "sv_max_concurrent_clients_with_same_name", "3", FCVAR_NONE, "How many clients there can be with the same nickname" );
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -67,7 +65,6 @@ CBaseClient::CBaseClient()
 	m_bReportFakeClient = true;
 	m_iTracing = 0;
 	m_bPlayerNameLocked = false;
-	m_bPlayerHasSameName = false;
 }
 
 CBaseClient::~CBaseClient()
@@ -412,8 +409,6 @@ void CBaseClient::SetName(const char * playerName)
 	int			dupc = 1;
 	char		*p, *val;
 
-	bool		DidHaveSameNickname = false;
-
 	char	newname[MAX_PLAYER_NAME_LENGTH];
 
 	// remove evil char '%'
@@ -443,61 +438,60 @@ void CBaseClient::SetName(const char * playerName)
 
 	val = m_Name;
 
-	// Check to see if another user by the same name exists
-	while ( true )
+	// Don't care about duplicate names on the xbox. It can only occur when a player
+	// is reconnecting after crashing, and we don't want to ever show the (X) then.
+	if ( !IsX360() )
 	{
-		for ( i = 0; i < m_Server->GetClientCount(); i++ )
+		// Check to see if another user by the same name exists
+		while ( true )
 		{
-			IClient *client = m_Server->GetClient( i );
+			for ( i = 0; i < m_Server->GetClientCount(); i++ )
+			{
+				IClient *client = m_Server->GetClient( i );
 
-			if( !client->IsConnected() || client == this )
-				continue;
+				if( !client->IsConnected() || client == this )
+					continue;
 				
-			// If it's 2 bots they're allowed to have matching names, otherwise there's a conflict
-			if( !Q_stricmp( client->GetClientName(), val ) && !( IsFakeClient() && client->IsFakeClient() ) )
-			{
-				CBaseClient *pClient = dynamic_cast< CBaseClient* >( client );
-				if ( IsFakeClient() && pClient )
+				// If it's 2 bots they're allowed to have matching names, otherwise there's a conflict
+				if( !Q_stricmp( client->GetClientName(), val ) && !( IsFakeClient() && client->IsFakeClient() ) )
 				{
-					// We're a bot so we get to keep the name... change the other guy
-					pClient->m_Name[ 0 ] = '\0';
-					pClient->SetName( val );
+					CBaseClient *pClient = dynamic_cast< CBaseClient* >( client );
+					if ( IsFakeClient() && pClient )
+					{
+						// We're a bot so we get to keep the name... change the other guy
+						pClient->m_Name[ 0 ] = '\0';
+						pClient->SetName( val );
+					}
+					else
+					{
+						break;
+					}
 				}
-				else
+			}
+
+			if (i >= m_Server->GetClientCount())
+				break;
+
+			p = val;
+
+			if (val[0] == '(')
+			{
+				if (val[2] == ')')
 				{
-					break;
+					p = val + 3;
+				}
+				else if (val[3] == ')')	//assumes max players is < 100
+				{
+					p = val + 4;
 				}
 			}
-		}
 
-		if (i >= m_Server->GetClientCount())
-			break;
-
-		p = val;
-
-		if (val[0] == '(')
-		{
-			if (val[2] == ')')
-			{
-				p = val + 3;
-			}
-			else if (val[3] == ')')	//assumes max players is < 100
-			{
-				p = val + 4;
-			}
-		}
-
-		Q_snprintf(newname, sizeof(newname), "(%d)%-.*s", dupc++, MAX_PLAYER_NAME_LENGTH - 4, p );
-		Q_strncpy(m_Name, newname, sizeof(m_Name));
-
-		if( !IsFakeClient() )
-			DidHaveSameNickname = true;
+			Q_snprintf(newname, sizeof(newname), "(%d)%-.*s", dupc++, MAX_PLAYER_NAME_LENGTH - 4, p );
+			Q_strncpy(m_Name, newname, sizeof(m_Name));
 			
-		val = m_Name;
+			val = m_Name;		
+		}	
 	}
-
-	if( dupc > sv_max_concurrent_clients_with_same_name.GetInt() && DidHaveSameNickname )
-		m_bPlayerHasSameName = true;
 
 	m_ConVars->SetString( "name", m_Name );
 	m_bConVarsChanged = true;
@@ -743,13 +737,6 @@ bool CBaseClient::SendServerInfo( void )
 	{
 		MemFreeScratch();
 		Disconnect("Server info data overflow");
-		return false;
-	}
-
-	if( m_bPlayerHasSameName )
-	{
-		MemFreeScratch();
-		Disconnect( "Too many concurrent players with the same name" );
 		return false;
 	}
 		
