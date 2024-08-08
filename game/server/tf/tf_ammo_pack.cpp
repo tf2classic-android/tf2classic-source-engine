@@ -180,7 +180,7 @@ void CTFAmmoPack::PackTouch( CBaseEntity *pOther )
 			float flCloak = pTFPlayer->m_Shared.GetSpyCloakMeter();
 			if( flCloak < 100.0f )
 			{
-				pTFPlayer->m_Shared.SetSpyCloakMeter( MIN( 100.0f, flCloak + 50.0f ) );
+				pTFPlayer->m_Shared.SetSpyCloakMeter( MIN( 100.0f, flCloak + 25.0f ) );
 				bSuccess = true;
 			}
 		}
