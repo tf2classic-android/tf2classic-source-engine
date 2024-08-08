@@ -101,7 +101,7 @@ void CAchievementNotificationPanel::FireGameEvent( IGameEvent * event )
 		int iMax = event->GetInt( "max_val" );
 		wchar_t szLocalizedName[256]=L"";
 
-#ifndef DISABLE_STEAM
+#if 0
 		if ( IsPC() )
 		{
 			// shouldn't ever get achievement progress if steam not running and user logged in, but check just in case
