@@ -1495,7 +1495,10 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 #endif // #if defined(TF_CLIENT_DLL) || defined(TF_DLL)
 	else
 	{
-		m_flStateTransitionTime = gpGlobals->curtime + 5 * mp_enableroundwaittime.GetFloat();
+		// Don't apply waiting time during waiting for players
+		if( !IsInWaitingForPlayers() )
+			m_flStateTransitionTime = gpGlobals->curtime + 5 * mp_enableroundwaittime.GetFloat();
+
 	}
 
 	StopWatchModeThink();
