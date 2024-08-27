@@ -1264,6 +1264,7 @@ void CTFPlayer::Spawn()
 
 	SetViewOffset( GetClassEyeHeight() );
 
+	RemoveAllScenesInvolvingActor( this );
 	ClearExpression();
 	m_flNextSpeakWeaponFire = gpGlobals->curtime;
 
