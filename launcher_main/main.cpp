@@ -88,6 +88,29 @@ static char *GetBaseDir( const char *pszBuffer )
 
 #ifdef WIN32
 
+static void WaitForDebuggerConnect( LPSTR lpCmdLine, int time )
+{
+	if( strstr( lpCmdLine, "-wait_for_debugger" ) )
+	{
+		DWORD startTick = GetTickCount64();
+		DWORD timeoutMS = time * 1000;
+
+		printf( "\nArg -wait_for_debugger found.\nWaiting %dsec for debugger...\n", time );
+
+		while( GetTickCount64() - startTick < timeoutMS )
+		{
+			if( IsDebuggerPresent() )
+			{
+				printf( "Debugger connected...\n\n" );
+				return;
+			}
+
+			Sleep( 100 );
+		}
+	}
+}
+
+
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 {
 	// Must add 'bin' to the path....
@@ -101,6 +124,8 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		MessageBox( 0, "Failed calling GetModuleFileName", "Launcher Error", MB_OK );
 		return 0;
 	}
+
+	WaitForDebuggerConnect( lpCmdLine, 30 );
 
 	// Get the root directory the .exe is in
 	char* pRootDir = GetBaseDir( moduleName );
