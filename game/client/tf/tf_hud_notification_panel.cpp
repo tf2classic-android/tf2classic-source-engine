@@ -92,6 +92,7 @@ void CHudNotificationPanel::MsgFunc_HudNotify( bf_read &msg )
 
 	int iType = msg.ReadByte();
 
+	InvalidateLayout( true, true );
 	LoadControlSettings( GetNotificationByType( iType ) );
 
 	// set up the fade time
