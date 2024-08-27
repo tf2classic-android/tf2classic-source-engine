@@ -1015,6 +1015,7 @@ void ValidateSpew( CValidator &validator )
 //-----------------------------------------------------------------------------
 void COM_TimestampedLog( char const *fmt, ... )
 {
+#if defined(_DEBUG) || defined(STAGING_ONLY) // tyabus: ifdef this out for release build
 	static float s_LastStamp = 0.0;
 	static bool s_bShouldLog = false;
 	static bool s_bShouldLogToETW = false;
@@ -1070,6 +1071,7 @@ void COM_TimestampedLog( char const *fmt, ... )
 	}
 
 	s_LastStamp = curStamp;
+#endif
 }
 
 //-----------------------------------------------------------------------------
