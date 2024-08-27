@@ -1071,6 +1071,36 @@ class CPlayerTintColor : public CResultProxy
 EXPOSE_INTERFACE( CPlayerTintColor, IMaterialProxy, "PlayerTintColor" IMATERIAL_PROXY_INTERFACE_VERSION );
 
 //-----------------------------------------------------------------------------
+// FFA Shield Resist Proxy
+//-----------------------------------------------------------------------------
+class CProxyResistShield : public CResultProxy
+{
+public:
+	void OnBind( void *pC_BaseEntity )
+	{
+		Assert( m_pResult );
+		C_BaseEntity *pEntity = BindArgToEntity( pC_BaseEntity );
+
+		if( pEntity )
+		{
+			// This should be the owning player
+			C_TFPlayer *pTFPlayer = ToTFPlayer( pEntity->GetOwnerEntity() );
+			if( pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_POWERUP_SHIELD ) )
+			{
+				float flTimeSince = gpGlobals->curtime - pTFPlayer->m_flLastDamageTime;
+				float flOut = RemapValClamped( flTimeSince, 0, 0.4f, 7.f, -4.f );
+				m_pResult->SetVecValue( flOut, flOut, flOut, 1.f );
+				return;
+			}
+		}
+
+		m_pResult->SetVecValue( 1.0, 1.0, 1.0, 1.0 );
+	}
+};
+
+EXPOSE_INTERFACE( CProxyResistShield, IMaterialProxy, "ShieldFalloff" IMATERIAL_PROXY_INTERFACE_VERSION );
+
+//-----------------------------------------------------------------------------
 // Purpose: Used for invulnerability material
 //			Returns 1 if the player is invulnerable, and 0 if the player is losing / doesn't have invuln.
 //-----------------------------------------------------------------------------
