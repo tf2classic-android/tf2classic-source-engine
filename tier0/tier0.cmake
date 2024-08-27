@@ -76,8 +76,6 @@ set(
 		"${TIER0_DIR}/vprof.cpp"
 		"$<${IS_WINDOWS}:${TIER0_DIR}/vcrmode.cpp>"
 		"$<${IS_POSIX}:${TIER0_DIR}/vcrmode_posix.cpp>"
-		"$<${IS_WINDOWS}:${TIER0_DIR}/security.cpp>"
-		"$<${IS_POSIX}:${TIER0_DIR}/security_linux.cpp>"
 		"$<${IS_WINDOWS}:${TIER0_DIR}/win32consoleio.cpp>"	#[$WINDOWS]
 		#"$<${IS_LINUX}:${SRCDIR}/tier1/pathmatch.cpp>" #[$LINUXALL] # SanyaSho: we dont need it anymore
 	#}

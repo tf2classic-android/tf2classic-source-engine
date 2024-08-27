@@ -1208,12 +1208,6 @@ DLL_EXPORT int LauncherMain( int argc, char **argv )
 
 	// Hook the debug output stuff.
 	SpewOutputFunc( LauncherDefaultSpewFunc );
-
-	// Quickly check the hardware key, essentially a warning shot.  
-	if ( !Plat_VerifyHardwareKeyPrompt() )
-	{
-		return -1;
-	}
 	
 	const char *filename;
 #ifdef WIN32
