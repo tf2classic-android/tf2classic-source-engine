@@ -22,11 +22,7 @@
 #define CTFProjectile_Arrow C_TFProjectile_Arrow
 #endif
 
-#ifdef GAME_DLL
-class CTFProjectile_Arrow : public CTFBaseRocket, public IScorer
-#else
-class CTFProjectile_Arrow : public C_TFBaseRocket
-#endif
+class CTFProjectile_Arrow : public CTFBaseRocket
 {
 public:
 	DECLARE_CLASS( CTFProjectile_Arrow, CTFBaseRocket );

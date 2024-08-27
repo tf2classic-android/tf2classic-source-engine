@@ -265,12 +265,7 @@ void CTFProjectile_Arrow::Precache( void )
 //-----------------------------------------------------------------------------
 void CTFProjectile_Arrow::Spawn( void )
 {
-
 	BaseClass::Spawn();
-
-#ifdef TF_ARROW_FIX
-	SetSolidFlags( FSOLID_NOT_SOLID | FSOLID_TRIGGER );
-#endif
 
 	if ( m_iProjType == TF_PROJECTILE_HEALING_BOLT || m_iProjType == TF_PROJECTILE_FESTIVE_HEALING_BOLT )
 		SetModelScale( 3.0f );
