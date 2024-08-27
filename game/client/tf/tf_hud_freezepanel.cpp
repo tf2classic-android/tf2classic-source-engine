@@ -571,6 +571,7 @@ void CTFFreezePanel::UpdateCallout( void )
 void CTFFreezePanel::Show()
 {
 	m_flShowCalloutsAt = 0;
+	InvalidateLayout( true, true );
 	SetVisible( true );
 }
 
