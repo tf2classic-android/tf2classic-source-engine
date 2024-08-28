@@ -1005,7 +1005,7 @@ void CTFClientScoreBoardDialog::UpdateArenaWaitingToPlayList( void )
 		return;
 	}
 #else
-	if( !g_TF_PR )
+	if( !g_TF_PR || ( TFGameRules() && !TFGameRules()->IsInArenaMode() ) )
 	{
 		SetDialogVariable( "waitingtoplay", "" );
 		return;
@@ -1014,6 +1014,7 @@ void CTFClientScoreBoardDialog::UpdateArenaWaitingToPlayList( void )
 
 	// Spectators
 	char szSpectatorList[512] = "";
+	wchar_t wzSpectators[512] = L"";
 	int nSpectators = 0;
 
 	for ( int i = 1; i <= MAX_PLAYERS; i++ )
@@ -1022,7 +1023,7 @@ void CTFClientScoreBoardDialog::UpdateArenaWaitingToPlayList( void )
 			continue;
 
 		// TODO: ARENA
-		if ( g_TF_PR->GetTeam( i ) == TEAM_SPECTATOR /*&& !g_TF_PR->IsArenaSpectator( i )*/ )
+		if ( g_TF_PR->GetTeam( i ) == TEAM_SPECTATOR && !g_TF_PR->IsArenaSpectator( i ) )
 		{
 			if ( nSpectators > 0 )
 			{
@@ -1032,19 +1033,19 @@ void CTFClientScoreBoardDialog::UpdateArenaWaitingToPlayList( void )
 			V_strcat_safe( szSpectatorList, g_TF_PR->GetPlayerName( i ) );
 			nSpectators++;
 		}
+
+		if ( nSpectators > 0 )
+		{
+			const char *pchFormat = (1 == nSpectators ? "#TF_Arena_ScoreBoard_Spectator" : "#TF_Arena_ScoreBoard_Spectators");
+
+			wchar_t wzSpectatorCount[16];
+			wchar_t wzSpectatorList[1024];
+			V_swprintf_safe( wzSpectatorCount, L"%i", nSpectators );
+			g_pVGuiLocalize->ConvertANSIToUnicode( szSpectatorList, wzSpectatorList, sizeof( wzSpectatorList ) );
+			g_pVGuiLocalize->ConstructString( wzSpectators, sizeof( wzSpectators ), g_pVGuiLocalize->Find( pchFormat ), 2, wzSpectatorCount, wzSpectatorList );
+		}
 	}
 
-	wchar_t wzSpectators[512] = L"";
-	if ( nSpectators > 0 )
-	{
-		const char *pchFormat = ( 1 == nSpectators ? "#TF_Arena_ScoreBoard_Spectator" : "#TF_Arena_ScoreBoard_Spectators" );
-
-		wchar_t wzSpectatorCount[16];
-		wchar_t wzSpectatorList[1024];
-		V_swprintf_safe( wzSpectatorCount, L"%i", nSpectators );
-		g_pVGuiLocalize->ConvertANSIToUnicode( szSpectatorList, wzSpectatorList, sizeof( wzSpectatorList ) );
-		g_pVGuiLocalize->ConstructString( wzSpectators, sizeof( wzSpectators ), g_pVGuiLocalize->Find( pchFormat ), 2, wzSpectatorCount, wzSpectatorList );
-	}
 	SetDialogVariable( "waitingtoplay", wzSpectators );
 }
 
