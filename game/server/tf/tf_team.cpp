@@ -11,6 +11,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+extern ConVar tf2c_dm_allow_normal_classes;
 
 //-----------------------------------------------------------------------------
 // Purpose: SendProxy that converts the UtlVector list of objects to entindexes, where it's reassembled on the client
@@ -147,7 +148,8 @@ void CTFTeamManager::RemoveExtraTeams( void )
 {
 	int nActiveTeams = TF_TEAM_COUNT;
 	
-	if ( TFGameRules()->IsDeathmatch() )
+	// Register opposing teams if we're allowing normal classes in dm, otherwise joining spy will crash the game.
+	if ( TFGameRules()->IsDeathmatch() && !tf2c_dm_allow_normal_classes.GetBool() )
 	{
 		nActiveTeams = FIRST_GAME_TEAM + 1;
 	}
