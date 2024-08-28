@@ -245,7 +245,7 @@ void Bot_RunAll( void )
 	{
 		CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
 
-		if ( pPlayer && (pPlayer->GetFlags() & FL_FAKECLIENT) )
+		if ( ( pPlayer && pPlayer->IsBot() ) && !pPlayer->MyNextBotPointer() )
 		{
 			Bot_Think( pPlayer );
 		}
