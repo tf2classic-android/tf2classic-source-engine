@@ -41,7 +41,6 @@
 #endif
 
 extern ConVar r_drawviewmodel;
-extern ConVar tf_useparticletracers;
 
 #ifdef CLIENT_DLL
 extern ConVar tf2c_model_muzzleflash;
@@ -2086,7 +2085,7 @@ float CTFWeaponBase::GetMuzzleFlashModelScale( void )
 //-----------------------------------------------------------------------------
 const char *CTFWeaponBase::GetTracerType( void )
 {
-	if ( tf_useparticletracers.GetBool() && GetTFWpnData().m_szTracerEffect && GetTFWpnData().m_szTracerEffect[0] )
+	if ( GetTFWpnData().m_szTracerEffect && GetTFWpnData().m_szTracerEffect[0] )
 	{
 		if ( GetOwner() && !m_szTracerName[0] )
 		{

@@ -66,7 +66,6 @@ ConVar tf_debug_bullets( "tf_debug_bullets", "0", FCVAR_CHEAT, "Visualize bullet
 ConVar tf_damage_events_track_for( "tf_damage_events_track_for", "30", FCVAR_DEVELOPMENTONLY );
 #endif
 
-ConVar tf_useparticletracers( "tf_useparticletracers", "1", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Use particle tracers instead of old style ones." );
 ConVar tf_spy_cloak_consume_rate( "tf_spy_cloak_consume_rate", "10.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to use per second while cloaked, from 100 max )" );	// 10 seconds of invis
 ConVar tf_spy_cloak_regen_rate( "tf_spy_cloak_regen_rate", "3.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to regen per second, up to 100 max" );		// 30 seconds to full charge
 ConVar tf_spy_cloak_no_attack_time( "tf_spy_cloak_no_attack_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "time after uncloaking that the spy is prohibited from attacking" );
@@ -3316,24 +3315,17 @@ void CTFPlayer::FireBullet( const FireBulletsInfo_t &info, bool bDoEffects, int 
 					}
 				}
 
-				if ( tf_useparticletracers.GetBool() )
+				const char *pszTracerEffect = GetTracerType();
+				if ( pszTracerEffect && pszTracerEffect[0] )
 				{
-					const char *pszTracerEffect = GetTracerType();
-					if ( pszTracerEffect && pszTracerEffect[0] )
+					if ( nDamageType & DMG_CRITICAL )
 					{
-						if ( nDamageType & DMG_CRITICAL )
-						{
-							char szTracerEffect[128];
-							Q_snprintf( szTracerEffect, sizeof(szTracerEffect), "%s_crit", pszTracerEffect );
-							pszTracerEffect = szTracerEffect;
-						}
-
-						FX_TFTracer( pszTracerEffect, vecStart, trace.endpos, entindex(), true );
+						char szTracerEffect[128];
+						Q_snprintf( szTracerEffect, sizeof(szTracerEffect), "%s_crit", pszTracerEffect );
+						pszTracerEffect = szTracerEffect;
 					}
-				}
-				else
-				{
-					UTIL_Tracer( vecStart, trace.endpos, entindex(), iUseAttachment, 5000, true, GetTracerType() );
+
+					FX_TFTracer( pszTracerEffect, vecStart, trace.endpos, entindex(), true );
 				}
 			}
 #endif
