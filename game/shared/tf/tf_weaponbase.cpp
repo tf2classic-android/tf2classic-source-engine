@@ -1988,10 +1988,9 @@ int CTFWeaponBase::GetActivityWeaponRole( void )
 void CTFWeaponBase::MakeTracer( const Vector &vecTracerSrc, const trace_t &tr )
 {
 	CTFPlayer *pOwner = GetTFPlayerOwner();
+
 	if( !pOwner )
-	{
 		return;
-	}
 	
 	const char *pszTracer = GetTracerType();
 	if( pszTracer && pszTracer[0] )
@@ -2003,7 +2002,7 @@ void CTFWeaponBase::MakeTracer( const Vector &vecTracerSrc, const trace_t &tr )
 		data.m_vOrigin = tr.endpos;
 
 #ifdef CLIENT_DLL
-		data.m_hEntity = this;
+		data.m_hEntity = GetRefEHandle();
 #else
 		data.m_nEntIndex = entindex();
 #endif
@@ -2019,8 +2018,11 @@ void CTFWeaponBase::MakeTracer( const Vector &vecTracerSrc, const trace_t &tr )
 			data.m_nAttachmentIndex = iAttachment;
 		}
 		
-		data.m_bCustomColors = TFGameRules()->IsDeathmatch();
-		data.m_CustomColors.m_vecColor1 = pOwner->m_vecPlayerColor;
+		if( TFGameRules() && TFGameRules()->IsDeathmatch() )
+		{
+			data.m_bCustomColors = true;
+			data.m_CustomColors.m_vecColor1 = pOwner->m_vecPlayerColor;
+		}
 
 		DispatchEffect( "TFParticleTracer", data );
 	}

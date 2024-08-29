@@ -3270,7 +3270,7 @@ void CTFPlayer::FireBullet( const FireBulletsInfo_t &info, bool bDoEffects, int 
 				int iUseAttachment = TRACER_DONT_USE_ATTACHMENT;
 				int iAttachment = 1;
 
-				C_BaseCombatWeapon *pWeapon = GetActiveWeapon();
+				C_TFWeaponBase *pWeapon = GetActiveTFWeapon();
 
 				if( pWeapon )
 				{
@@ -3293,8 +3293,6 @@ void CTFPlayer::FireBullet( const FireBulletsInfo_t &info, bool bDoEffects, int 
 				else if ( !IsDormant() )
 				{
 					// fill in with third person weapon model index
-					C_BaseCombatWeapon *pWeapon = GetActiveWeapon();
-
 					if( pWeapon )
 					{
 						iEntIndex = pWeapon->entindex();
@@ -3325,11 +3323,13 @@ void CTFPlayer::FireBullet( const FireBulletsInfo_t &info, bool bDoEffects, int 
 						pszTracerEffect = szTracerEffect;
 					}
 
-					FX_TFTracer( pszTracerEffect, vecStart, trace.endpos, entindex(), true );
+					if ( pWeapon )
+					{
+						pWeapon->MakeTracer( vecStart, trace );
+					}
 				}
 			}
 #endif
-
 		}
 
 		// Server specific.

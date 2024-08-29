@@ -175,7 +175,7 @@ void TFParticleTracerCallback( const CEffectData &data )
 	VectorNormalize( vecToEnd );
 	VectorAngles( vecToEnd, vecAngles );
 
-	if ( TFGameRules() && TFGameRules()->IsDeathmatch() && pPlayer )
+	if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 	{
 		// Paint tracers with player's color in Deathmatch.
 		CEffectData	newData;
@@ -189,8 +189,8 @@ void TFParticleTracerCallback( const CEffectData &data )
 		newData.m_fFlags |= PARTICLE_DISPATCH_FROM_ENTITY;
 		newData.m_nDamageType = PATTACH_CUSTOMORIGIN;
 
-		newData.m_bCustomColors = true;
-		newData.m_CustomColors.m_vecColor1 = pPlayer->m_vecPlayerColor;
+		newData.m_bCustomColors = data.m_bCustomColors;
+		newData.m_CustomColors.m_vecColor1 = data.m_CustomColors.m_vecColor1;
 
 		DispatchEffect( "ParticleEffect", newData );
 	}

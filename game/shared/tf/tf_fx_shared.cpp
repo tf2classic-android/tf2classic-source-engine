@@ -110,28 +110,6 @@ void EndGroupingSounds() {}
 
 #endif
 
-void FX_TFTracer( const char *pszTracerEffectName, const Vector &vecStart, const Vector &vecEnd, int iEntIndex, bool bWhiz )
-{
-	int iParticleIndex = GetParticleSystemIndex( pszTracerEffectName );
-
-	CEffectData data;
-	data.m_vStart = vecStart;
-	data.m_vOrigin = vecEnd;
-#ifdef CLIENT_DLL
-	data.m_hEntity = ClientEntityList().EntIndexToHandle( iEntIndex );
-#else
-	data.m_nEntIndex = iEntIndex;
-#endif
-	data.m_nHitBox = iParticleIndex;
-
-	if ( bWhiz )
-	{
-		data.m_fFlags |= TRACER_FLAG_WHIZ;
-	}
-
-	DispatchEffect( "TFParticleTracer", data );
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: This runs on both the client and the server.  On the server, it 
 // only does the damage calculations.  On the client, it does all the effects.
