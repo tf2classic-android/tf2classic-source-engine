@@ -65,6 +65,7 @@ void CTFMainMenuPanel::ApplySchemeSettings( IScheme *pScheme )
 
 void CTFMainMenuPanel::PerformLayout()
 {
+	m_pProfileAvatar->SetDefaultAvatar( scheme()->GetImage( "../vgui/avatar_default_merc", true ) );
 	m_pProfileAvatar->SetPlayer( m_SteamID, k_EAvatarSize64x64 );
 	m_pProfileAvatar->SetShouldDrawFriendIcon( false );
 
