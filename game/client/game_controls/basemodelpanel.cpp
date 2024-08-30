@@ -332,6 +332,7 @@ const char *CModelPanel::GetModelName( void )
 	if ( !m_pModelInfo )
 		return NULL;
 
+#ifndef TF_CLASSIC_CLIENT
 	// check to see if we want to use a HWM model
 	if ( UseHWMorphModels() )
 	{
@@ -346,6 +347,7 @@ const char *CModelPanel::GetModelName( void )
 			}
 		}
 	}
+#endif
 
 	return m_pModelInfo->m_pszModelName;
 }

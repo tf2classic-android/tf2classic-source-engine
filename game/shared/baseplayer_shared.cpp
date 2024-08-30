@@ -83,6 +83,13 @@
 	};
 #endif
 
+// Don't use hwmmodels since they tank the perf
+#ifdef TF_CLASSIC_CLIENT
+bool UseHWMorphModels()
+{
+	return false;
+}
+#else
 #ifdef CLIENT_DLL
 ConVar mp_usehwmmodels( "mp_usehwmmodels", "0", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
 #endif
@@ -98,6 +105,7 @@ bool UseHWMorphModels()
 	return false;
 #endif
 }
+#endif // TF_CLASSIC_CLIENT
 
 void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int nMaxLenInChars, const char *pchToken )
 {

@@ -997,6 +997,8 @@ void CTFPlayer::PrecachePlayerModels( void )
 			PrecacheGibsForModel( iModel );
 		}
 
+		// Disabled since they tank the perf
+#if 0
 		if ( !IsX360() )
 		{
 			// Precache the hardware facial morphed models as well.
@@ -1006,6 +1008,7 @@ void CTFPlayer::PrecachePlayerModels( void )
 				PrecacheModel( pszHWMModel );
 			}
 		}
+#endif
 
 		const char *pszHandModel = GetPlayerClassData(i)->m_szModelHandsName;
 		if ( pszHandModel[0] )

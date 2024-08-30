@@ -80,7 +80,10 @@ char const *C_SceneEntity::GetSceneFileName()
 	return g_pStringTableClientSideChoreoScenes->GetString( m_nSceneStringIndex );
 }
 
+#ifndef TF_CLASSIC_CLIENT
 ConVar mp_usehwmvcds( "mp_usehwmvcds", "0", NULL, "Enable the use of the hw morph vcd(s). (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
+#endif
+
 bool UseHWMorphVCDs()
 {
 // 	if ( mp_usehwmvcds.GetInt() == 0 )
@@ -94,6 +97,7 @@ bool UseHWMorphVCDs()
 //-----------------------------------------------------------------------------
 bool C_SceneEntity::GetHWMorphSceneFileName( const char *pFilename, char *pHWMFilename )
 {
+#ifndef TF_CLASSIC_CLIENT // Disabled since they tank the perf
 	// Are we even using hardware morph?
 	if ( !UseHWMorphVCDs() )
 		return false;
@@ -141,6 +145,9 @@ bool C_SceneEntity::GetHWMorphSceneFileName( const char *pFilename, char *pHWMFi
 
 	V_strcpy( pHWMFilename, szSceneHWM );
 	return true;
+#else
+	return false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -208,11 +215,13 @@ void C_SceneEntity::SetupClientOnlyScene( const char *pszFilename, C_BaseFlex *p
 	Assert( V_strlen( pszFilename ) < 128 );
 	V_strcpy( szFilename, pszFilename );
 
+	#if defined( TF_CLIENT_DLL ) //|| defined( TF_CLASSIC_CLIENT )
 	char szSceneHWM[128];
 	if ( GetHWMorphSceneFileName( szFilename, szSceneHWM ) )
 	{
 		V_strcpy( szFilename, szSceneHWM );
 	}
+#endif
 
 	Assert( szFilename && szFilename[ 0 ] );
 	if (  szFilename && szFilename[ 0 ] )
@@ -327,11 +336,13 @@ void C_SceneEntity::PostDataUpdate( DataUpdateType_t updateType )
 		szFilename[0] = '\0';
 	}
 
+#if defined( TF_CLIENT_DLL ) //|| defined( TF_CLASSIC_CLIENT )
 	char szSceneHWM[MAX_PATH];
 	if ( GetHWMorphSceneFileName( szFilename, szSceneHWM ) )
 	{
 		V_strcpy( szFilename, szSceneHWM );
 	}
+#endif
 
 	if ( updateType == DATA_UPDATE_CREATED )
 	{

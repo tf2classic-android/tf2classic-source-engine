@@ -75,6 +75,7 @@ END_PREDICTION_DATA()
 //-----------------------------------------------------------------------------
 bool GetHWMExpressionFileName( const char *pFilename, char *pHWMFilename )
 {
+#ifndef TF_CLASSIC_CLIENT // Disabled since they tank the perf
 	// Are we even using hardware morph?
 	if ( !UseHWMorphVCDs() )
 		return false;
@@ -115,6 +116,9 @@ bool GetHWMExpressionFileName( const char *pFilename, char *pHWMFilename )
 
 	V_strcpy( pHWMFilename, szExpressionHWM );
 	return true;
+#else
+	return false;
+#endif
 }
 
 C_BaseFlex::C_BaseFlex() : 
@@ -433,7 +437,8 @@ void *CFlexSceneFileManager::FindSceneFile( IHasLocalToGlobalFlexSettings *insta
 	Assert( V_strlen( filename ) < MAX_PATH );
 	V_strcpy( szFilename, filename );
 	
-#if defined( TF_CLIENT_DLL ) || defined( TF_CLASSIC_CLIENT )
+	// Disabled since they tank the perf
+#if defined( TF_CLIENT_DLL ) //|| defined( TF_CLASSIC_CLIENT )
 	char szHWMFilename[MAX_PATH];
 	if ( GetHWMExpressionFileName( szFilename, szHWMFilename ) )
 	{

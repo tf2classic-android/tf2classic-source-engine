@@ -124,7 +124,7 @@ void TFPlayerClassData_t::Parse( const char *szName )
 //-----------------------------------------------------------------------------
 const char *TFPlayerClassData_t::GetModelName() const
 {
-#ifdef CLIENT_DLL
+#if 0 //def CLIENT_DLL
 	if ( UseHWMorphModels() )
 	{
 		if ( m_szHWMModelName[0] != '\0' )
@@ -148,7 +148,9 @@ void TFPlayerClassData_t::ParseData( KeyValues *pKeyValuesData )
 	Q_strncpy( m_szClassName, pKeyValuesData->GetString( "name" ), TF_NAME_LENGTH );
 
 	// Load the high res model or the lower res model.
+#if 0
 	Q_strncpy( m_szHWMModelName, pKeyValuesData->GetString( "model_hwm" ), TF_NAME_LENGTH );
+#endif
 	Q_strncpy( m_szModelName, pKeyValuesData->GetString( "model" ), TF_NAME_LENGTH );
 	Q_strncpy( m_szModelHandsName, pKeyValuesData->GetString("model_hands"), TF_NAME_LENGTH);
 	Q_strncpy( m_szLocalizableName, pKeyValuesData->GetString( "localize_name" ), TF_NAME_LENGTH );

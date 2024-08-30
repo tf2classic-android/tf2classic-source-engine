@@ -68,9 +68,12 @@ CTFPlayerModelPanel::CTFPlayerModelPanel( Panel *pParent, const char *pName ) : 
 		if ( pszClassModel[0] != '\0' )
 			engine->LoadModel( pszClassModel );
 
+		// Disabled since they tank the perf
+#if 0
 		const char *pszClassHWMModel = GetPlayerClassData( iClass )->m_szHWMModelName;
 		if ( pszClassHWMModel[0] != '\0' )
 			engine->LoadModel( pszClassHWMModel );
+#endif
 	}
 
 	// Load phonemes for MP3s.
