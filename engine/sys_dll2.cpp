@@ -1151,13 +1151,6 @@ InitReturnVal_t CEngineAPI::Init()
 	m_bRunningSimulation = false;
 
 	// Initialize the FPU control word
-#if defined(WIN32) && !defined( SWDS ) && !defined( _X360 ) && !defined (__arm__) && !defined(PLATFORM_WINDOWS_PC64)
-	_asm
-	{
-		fninit
-	}
-#endif
-
 	SetupFPUControlWord();
 
 	// This creates the videomode singleton object, it doesn't depend on the registry
@@ -1315,13 +1308,6 @@ void CEngineAPI::PumpMessages()
 		XBX_ProcessEvents();
 	}
 
-	// NOTE: Under some implementations of Win9x, 
-	// dispatching messages can cause the FPU control word to change
-	if ( IsPC() )
-	{
-		SetupFPUControlWord();
-	}
-
 	game->DispatchAllStoredGameMessages();
 
 	if ( IsPC() )
@@ -1377,11 +1363,6 @@ void CEngineAPI::PumpMessagesEditMode( bool &bIdle, long &lIdleCount )
 #else
 #error
 #endif
-
-
-	// NOTE: Under some implementations of Win9x, 
-	// dispatching messages can cause the FPU control word to change
-	SetupFPUControlWord();
 
 	game->DispatchAllStoredGameMessages();
 }

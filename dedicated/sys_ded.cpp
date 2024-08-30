@@ -470,13 +470,6 @@ bool CDedicatedSteamApplication::Create( )
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-#if !defined( POSIX ) && !defined( PLATFORM_64BITS )
-	_asm
-	{
-		fninit
-	}
-#endif
-
 	SetupFPUControlWord();
 
 #ifdef POSIX
