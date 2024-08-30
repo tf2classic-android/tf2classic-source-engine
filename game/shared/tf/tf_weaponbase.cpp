@@ -2095,6 +2095,13 @@ const char *CTFWeaponBase::GetTracerType( void )
 			V_snprintf( m_szTracerName, MAX_TRACER_NAME, "%s_%s", GetTFWpnData().m_szTracerEffect, pszTeamName );
 		}
 
+		if( IsCurrentAttackACrit() && m_szTracerName[0] )
+		{
+			static char szCritEffect[MAX_TRACER_NAME];
+			V_sprintf_safe( szCritEffect, "%s_crit", m_szTracerName );
+			return szCritEffect;
+		}
+
 		return m_szTracerName;
 	}
 
