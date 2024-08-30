@@ -186,16 +186,15 @@ CWeaponMedigun::~CWeaponMedigun()
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::WeaponReset( void )
 {
+	BaseClass::WeaponReset();
+
 #if defined( CLIENT_DLL )
-	memset( &m_hHealingTargetEffect, 0, sizeof( healingtargeteffects_t ) );
 	m_flFlashCharge = -1.f;
-#else
-	m_bHealingSelf = false;
+//#else
+//	m_bHealingSelf = false;
 #endif
 
 	m_flNextTargetCheckTime = -1.f;
-
-	BaseClass::WeaponReset();
 
 	m_flHealEffectLifetime = 0;
 
@@ -1242,10 +1241,26 @@ void CWeaponMedigun::UpdateEffects( void )
 
 	C_BaseEntity *pEffectOwner = m_hHealingTargetEffect.hOwner.Get();
 
+	// If we're still healing and our owner changed, then we did something
+	// like changed
+	bool bImmediate = pEffectOwner != m_hHealingTargetEffect.hOwner.Get() && m_bHealing;
+
 	// Remove all the effects
-	if ( m_hHealingTargetEffect.pEffect && pEffectOwner )
+	if ( pEffectOwner )
 	{
-		pEffectOwner->ParticleProp()->StopEmission( m_hHealingTargetEffect.pEffect );
+		if ( m_hHealingTargetEffect.pEffect )
+		{
+			bImmediate ? pEffectOwner->ParticleProp()->StopEmissionAndDestroyImmediately( m_hHealingTargetEffect.pEffect )
+				: pEffectOwner->ParticleProp()->StopEmission( m_hHealingTargetEffect.pEffect );
+		}
+		//pEffectOwner->ParticleProp()->StopEmission( m_hHealingTargetEffect.pEffect );
+	}
+	else
+	{
+		if( m_hHealingTargetEffect.pEffect )
+		{
+			m_hHealingTargetEffect.pEffect->StopEmission();
+		}
 	}
 
 	m_hHealingTargetEffect.hOwner = NULL;

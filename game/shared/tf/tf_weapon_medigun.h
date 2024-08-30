@@ -126,7 +126,7 @@ protected:
 	
 #ifdef GAME_DLL
 	CDamageModifier			m_DamageModifier;		// This attaches to whoever we're healing.
-	bool					m_bHealingSelf;
+	//bool					m_bHealingSelf;
 #endif
 
 #ifdef CLIENT_DLL
