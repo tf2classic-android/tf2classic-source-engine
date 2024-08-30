@@ -3576,11 +3576,6 @@ void CTFPlayer::TeamFortress_SetSpeed()
 		}
 	}
 
-	if( IsBot() )
-	{
-		maxfbspeed *= 0.5f;
-	}
-
 	// Set the speed
 	SetMaxSpeed( maxfbspeed );
 }
