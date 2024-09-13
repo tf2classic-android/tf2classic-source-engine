@@ -576,7 +576,8 @@ bool CTFPlayerAnimState::HandleMoving( Activity &idealActivity )
 		return BaseClass::HandleMoving( idealActivity );
 	}
 
-	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIMING ) ) 
+	// Mercenary has no DEPLOYED anims.
+	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIMING ) && !m_pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
 	{
 		if ( flSpeed > MOVING_MINIMUM_SPEED )
 		{
@@ -587,7 +588,7 @@ bool CTFPlayerAnimState::HandleMoving( Activity &idealActivity )
 			idealActivity = ACT_MP_DEPLOYED_IDLE;
 		}
 	}
-	else if ( m_flHoldDeployedPoseUntilTime > gpGlobals->curtime )
+	else if ( m_flHoldDeployedPoseUntilTime > gpGlobals->curtime && !m_pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
 	{
 		// Unless we move, hold the deployed pose for a number of seconds after being deployed
 		idealActivity = ACT_MP_DEPLOYED_IDLE;
@@ -611,8 +612,9 @@ bool CTFPlayerAnimState::HandleDucking( Activity &idealActivity )
 	{
 		if ( GetOuterXYSpeed() < MOVING_MINIMUM_SPEED || m_pTFPlayer->m_Shared.IsLoser() )
 		{
-			idealActivity = ACT_MP_CROUCH_IDLE;		
-			if ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIMING ) || m_flHoldDeployedPoseUntilTime > gpGlobals->curtime )
+			idealActivity = ACT_MP_CROUCH_IDLE;
+			// Mercenary has no DEPLOYED anims.
+			if ( ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIMING ) && !m_pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) ) || m_flHoldDeployedPoseUntilTime > gpGlobals->curtime )
 			{
 				idealActivity = ACT_MP_CROUCH_DEPLOYED_IDLE;
 			}
@@ -621,7 +623,8 @@ bool CTFPlayerAnimState::HandleDucking( Activity &idealActivity )
 		{
 			idealActivity = ACT_MP_CROUCHWALK;		
 
-			if ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIMING ) )
+			// Mercenary has no DEPLOYED anims.
+			if ( m_pTFPlayer->m_Shared.InCond( TF_COND_AIMING ) && !m_pTFPlayer->IsPlayerClass( TF_CLASS_MERCENARY ) )
 			{
 				// Don't do this for the heavy! we don't usually let him deployed crouch walk
 				bool bIsMinigun = false;
