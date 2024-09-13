@@ -119,7 +119,7 @@ void CTFHudDeathMatchObjectives::OnTick( void )
 
 	// Get the local player's score.
 	int iLocalIndex = pPlayer->entindex();
-	int iLocalScore = g_TF_PR->GetTotalScore( iLocalIndex );
+	int iLocalScore = g_TF_PR->GetPlayerScore( iLocalIndex );
 
 	m_pLocalPlayerPanel->SetDialogVariable( "score", iLocalScore );
 
@@ -131,7 +131,7 @@ void CTFHudDeathMatchObjectives::OnTick( void )
 	{
 		if ( g_TF_PR->IsConnected( i ) && g_PR->GetTeam( i ) >= FIRST_GAME_TEAM )
 		{
-			int iScore = g_TF_PR->GetTotalScore( i );
+			int iScore = g_TF_PR->GetPlayerScore( i );
 
 			if ( i != iLocalIndex && iScore >= iBestScore )
 			{
@@ -209,7 +209,7 @@ public:
 		{
 			if ( g_TF_PR->IsConnected( i ) && g_PR->GetTeam( i ) >= FIRST_GAME_TEAM )
 			{
-				int iScore = g_TF_PR->GetTotalScore( i );
+				int iScore = g_TF_PR->GetPlayerScore( i );
 
 				if ( i != iLocalIndex && iScore >= iBestScore )
 				{

@@ -3304,8 +3304,7 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 			CTFPlayer *pTFPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
 			if (pTFPlayer)
 			{
-				PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( pTFPlayer );
-				int iScore = CalcPlayerScore( &pStats->statsCurrentRound );
+				int iScore = pTFPlayer->FragCount();
 
 				if (iScore >= fraglimit.GetInt())
 				{
