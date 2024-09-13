@@ -2972,9 +2972,6 @@ void CTFPlayer::ChangeTeam( int iTeamNum )
 //-----------------------------------------------------------------------------
 void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 {
-	if ( GetNextChangeClassTime() > gpGlobals->curtime )
-		return;
-
 	// In case we don't get the class menu message before the spawn timer
 	// comes up, fake that we've closed the menu.
 	SetClassMenuOpen( false );
@@ -3003,7 +3000,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 				break;
 			}
 		}
-		
+
 		if ( iClass == TF_CLASS_UNDEFINED )
 		{
 			ClientPrint( this, HUD_PRINTCONSOLE, UTIL_VarArgs( "Invalid class name \"%s\".", pClassName ) );
@@ -3210,6 +3207,9 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	}
 	else if ( FStrEq( pcmd, "joinclass" ) ) 
 	{
+		if( GetNextChangeClassTime() > gpGlobals->curtime )
+			return true;
+
 		if ( args.ArgC() >= 2 )
 		{
 			HandleCommand_JoinClass( args[1] );
