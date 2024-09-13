@@ -2994,6 +2994,13 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName )
 	{
 		for ( int i = TF_FIRST_NORMAL_CLASS; i < TF_CLASS_COUNT_ALL; i++ )
 		{
+			// Handle legacy classname
+			if( !V_stricmp( pClassName, "heavyweapons" ) )
+			{
+				iClass = TF_CLASS_HEAVYWEAPONS;
+				break;
+			}
+
 			if ( V_stricmp( pClassName, g_aPlayerClassNames_NonLocalized[i] ) == 0 )
 			{
 				iClass = i;
