@@ -1110,6 +1110,8 @@ void CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 		}
 	}
 
+	// We don't have working sv_pure.
+#if 0
 	if ( IsPC() )
 	{
 		KeyValues *modinfo = new KeyValues("ModInfo");
@@ -1131,6 +1133,10 @@ void CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 		}
 		modinfo->deleteThis();
 	}
+#else
+	DevMsg( "Disabling whitelist file tracking in filesystem...\n" );
+	g_pFileSystem->EnableWhitelistFileTracking( false, false, false );
+#endif
 }
 
 
@@ -2319,6 +2325,7 @@ bool CDedicatedServerAPI::ModInit( ModInfo_t &info )
 	// this happens even before the ConCommand's are processed, but we need to be sure to either CRC every file
 	// that is loaded, or not bother doing any
 	// Note that this mirrors g_sv_pure_mode from sv_main.cpp
+#if 0 // We don't have working sv_pure
 	int pure_mode = 1; // default to on, +sv_pure 0 or -sv_pure 0 will turn it off
 	if ( CommandLine()->CheckParm("+sv_pure") )
 		pure_mode = CommandLine()->ParmValue( "+sv_pure", 1 );
@@ -2327,6 +2334,7 @@ bool CDedicatedServerAPI::ModInit( ModInfo_t &info )
 	if ( pure_mode )
 		g_pFullFileSystem->EnableWhitelistFileTracking( true, true, CommandLine()->FindParm( "-sv_pure_verify_hashes" ) ? true : false );
 	else
+#endif
 		g_pFullFileSystem->EnableWhitelistFileTracking( false, false, false );
 
 	materials->ModInit();

@@ -118,11 +118,17 @@ static bool g_sv_pure_waiting_on_reload = false;
 static int g_sv_pure_mode = 0;
 int GetSvPureMode()
 {
+	// We don't have working sv_pure.
+#if 0
 	return g_sv_pure_mode;
+#else
+	return -1;
+#endif
 }
 
 static void SV_Pure_f( const CCommand &args )
 {
+#if 0
     int pure_mode = -2;
     if ( args.ArgC() == 2 )
     {
@@ -184,14 +190,26 @@ static void SV_Pure_f( const CCommand &args )
 		Msg( "Note: Waiting for the next changelevel to apply the current value.\n" );
 	}
     Msg( "--------------------------------------------------------\n" );
+#else
+	Msg( "sv_pure: Not supported.\n" );
+#endif
 }
 
+#if 0 // We don't have working sv_pure
 static ConCommand sv_pure( "sv_pure", SV_Pure_f, "Show user data." );
 
 ConVar	sv_pure_kick_clients( "sv_pure_kick_clients", "1", 0, "If set to 1, the server will kick clients with mismatching files. Otherwise, it will issue a warning to the client." );
 ConVar	sv_pure_trace( "sv_pure_trace", "0", 0, "If set to 1, the server will print a message whenever a client is verifying a CRC for a file." );
 ConVar	sv_pure_consensus( "sv_pure_consensus", "5", 0, "Minimum number of file hashes to agree to form a consensus." );
 ConVar	sv_pure_retiretime( "sv_pure_retiretime", "900", 0, "Seconds of server idle time to flush the sv_pure file hash cache." );
+#else
+static ConCommand sv_pure( "sv_pure", SV_Pure_f, "Show user data.", FCVAR_HIDDEN );
+
+ConVar	sv_pure_kick_clients( "sv_pure_kick_clients", "0", 0, "If set to 1, the server will kick clients with mismatching files. Otherwise, it will issue a warning to the client." );
+ConVar	sv_pure_trace( "sv_pure_trace", "0", FCVAR_DEVELOPMENTONLY, "If set to 1, the server will print a message whenever a client is verifying a CRC for a file." );
+ConVar	sv_pure_consensus( "sv_pure_consensus", "5", FCVAR_DEVELOPMENTONLY, "Minimum number of file hashes to agree to form a consensus." );
+ConVar	sv_pure_retiretime( "sv_pure_retiretime", "900", FCVAR_DEVELOPMENTONLY, "Seconds of server idle time to flush the sv_pure file hash cache." );
+#endif
 
 ConVar  sv_cheats( "sv_cheats", "0", FCVAR_NOTIFY|FCVAR_REPLICATED, "Allow cheats on server", SV_CheatsChanged_f );
 ConVar  sv_lan( "sv_lan", "0", 0, "Server is a lan server ( no heartbeat, no authentication, no non-class C addresses )" );
@@ -537,12 +555,15 @@ void CGameServer::SetQueryPortFromSteamServer()
 
 void CGameServer::CopyPureServerWhitelistToStringTable()
 {
+	// We don't have sv_pure.
+#if 0
 	if ( !m_pPureServerWhitelist )
 		return;
 	
 	CUtlBuffer buf;
 	m_pPureServerWhitelist->Encode( buf );
 	m_pServerStartupTable->AddString( true, "PureServerWhitelist", buf.TellPut(), buf.Base() );
+#endif
 }
 
 
@@ -1271,8 +1292,11 @@ CGameServer::CGameServer()
 
 CGameServer::~CGameServer()
 {
+	// We don't have sv_pure.
+#if 0
 	if ( m_pPureServerWhitelist )
 		m_pPureServerWhitelist->Release();
+#endif
 }
 
 
@@ -1504,12 +1528,22 @@ void CGameServer::BroadcastSound( SoundInfo_t &sound, IRecipientFilter &filter )
 
 bool CGameServer::IsInPureServerMode() const
 {
+	// We don't have sv_pure.
+#if 0
 	return (m_pPureServerWhitelist != NULL);
+#else
+	return false;
+#endif
 }
 
 CPureServerWhitelist * CGameServer::GetPureServerWhitelist() const
 {
+	// We don't have sv_pure.
+#if 0
 	return m_pPureServerWhitelist;
+#else
+	return NULL;
+#endif
 }
 
 static void OnHibernateWhenEmptyChanged( IConVar *var, const char *pOldValue, float flOldValue )
@@ -2267,6 +2301,8 @@ static void SV_AllocateEdicts()
 
 void CGameServer::ReloadWhitelist( const char *pMapName )
 {
+	// We don't have sv_pure.
+#if 0
 	// Always return - until we get the whitelist stuff resolved for TF2.
 	if ( m_pPureServerWhitelist )
 	{
@@ -2311,7 +2347,7 @@ void CGameServer::ReloadWhitelist( const char *pMapName )
 			m_pPureServerWhitelist->LoadCommandsFromKeyValues( kv );
 		kv->deleteThis();
 	}
-
+#endif
 }
 
 
@@ -2342,7 +2378,10 @@ bool CGameServer::SpawnServer( const char *szMapName, const char *szMapFile, con
 	// be from a client load connecting to a different server, and we know we're at the beginning of a new load now.
 	modelloader->ResetModelServerCounts();
 
+	// We don't have sv_pure.
+#if 0
 	ReloadWhitelist( szMapName );
+#endif
 
 	COM_TimestampedLog( "SV_SpawnServer(%s)", szMapName );
 #ifndef SWDS

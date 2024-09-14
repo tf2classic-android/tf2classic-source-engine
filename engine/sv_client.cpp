@@ -253,6 +253,7 @@ bool CGameClient::ProcessRespondCvarValue( CLC_RespondCvarValue *msg )
 #include "pure_server.h"
 bool CGameClient::ProcessFileCRCCheck( CLC_FileCRCCheck *msg )
 {
+#if 0 // We don't have working sv_pure
 	// Ignore this message if we're not in pure server mode...
 	if ( !sv.IsInPureServerMode() )
 		return true;
@@ -310,6 +311,7 @@ bool CGameClient::ProcessFileCRCCheck( CLC_FileCRCCheck *msg )
 			Msg( "Pure server CRC check: client %s passed check for [%s]\\%s\n", GetClientName(), msg->m_szPathID, msg->m_szFilename );
 		}
 	}
+#endif
 
 	return true;
 }

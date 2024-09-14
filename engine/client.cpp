@@ -105,8 +105,11 @@ CClientState::CClientState()
 
 CClientState::~CClientState()
 {
+	// We don't have working sv_pure.
+#if 0
 	if ( m_pPureServerWhitelist )
 		m_pPureServerWhitelist->Release();
+#endif
 }
 
 // HL1 CD Key

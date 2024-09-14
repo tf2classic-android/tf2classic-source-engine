@@ -191,6 +191,8 @@ void CL_ReloadFilesInList( IFileList *pFilesToReload )
 
 void CL_HandlePureServerWhitelist( CPureServerWhitelist *pWhitelist, /* out */ IFileList *&pFilesToReload )
 {
+	// We don't have working sv_pure.
+#if 0
 	// Free the old whitelist and get the new one.
 	if ( cl.m_pPureServerWhitelist )
 		cl.m_pPureServerWhitelist->Release();
@@ -200,6 +202,7 @@ void CL_HandlePureServerWhitelist( CPureServerWhitelist *pWhitelist, /* out */ I
 		cl.m_pPureServerWhitelist->AddRef();
 
 	g_pFileSystem->RegisterFileWhitelist( pWhitelist, &pFilesToReload );
+#endif
 
 	// Now that we've flushed any files that shouldn't have been on disk, we should have a CRC
 	// set that we can check with the server.
@@ -208,6 +211,8 @@ void CL_HandlePureServerWhitelist( CPureServerWhitelist *pWhitelist, /* out */ I
 
 void PrintSvPureWhitelistClassification( const CPureServerWhitelist *pWhiteList )
 {
+	// We don't have working sv_pure.
+#if 0
 	if ( pWhiteList == NULL )
 	{
 		Msg( "The server is using sv_pure -1 (no file checking).\n" );
@@ -234,15 +239,21 @@ void PrintSvPureWhitelistClassification( const CPureServerWhitelist *pWhiteList 
 		}
 	}
 	pStandardList->Release();
+#else
+	Msg( "The server is using sv_pure -1 (no file checking).\n" );
+#endif
 }
 
 void CL_PrintWhitelistInfo()
 {
+	// We don't have working sv_pure.
+#if 0
 	PrintSvPureWhitelistClassification( cl.m_pPureServerWhitelist );
 	if ( cl.m_pPureServerWhitelist )
 	{
 		cl.m_pPureServerWhitelist->PrintWhitelistContents();
 	}
+#endif
 }
 
 // Console command to force a whitelist on the system.
@@ -862,9 +873,8 @@ CPureServerWhitelist* CL_LoadWhitelist( INetworkStringTable *pTable, const char 
 
 void CL_CheckForPureServerWhitelist( /* out */ IFileList *&pFilesToReload )
 {
-#ifdef DISABLE_PURE_SERVER_STUFF
-	return;
-#endif
+	// We don't have working sv_pure.
+#if 0 //ndef DISABLE_PURE_SERVER_STUFF
 
 	// Don't do sv_pure stuff in SP games or HLTV/replay
 	if ( cl.m_nMaxClients <= 1 || cl.ishltv || demoplayer->IsPlayingBack()
@@ -884,6 +894,7 @@ void CL_CheckForPureServerWhitelist( /* out */ IFileList *&pFilesToReload )
 	{
 		pWhitelist->Release();
 	}
+#endif
 }
 
 int CL_GetServerQueryPort()

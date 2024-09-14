@@ -63,6 +63,9 @@ void CPureServerWhitelist::Load( int iPureMode )
 {
 	Term();
 
+	// We don't have working sv_pure.
+#if 0
+
 	// Not pure at all?
 	if ( iPureMode < 0 )
 		return;
@@ -130,6 +133,7 @@ void CPureServerWhitelist::Load( int iPureMode )
 
 	// Hardcoded rules last
 	AddHardcodedFileCommands();
+#endif
 }		
 
 bool operator==( const PureServerPublicKey_t &a, const PureServerPublicKey_t &b )
