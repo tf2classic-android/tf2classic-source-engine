@@ -1,4 +1,4 @@
-# Source Engine
+# TF2Classic Source Engine
 
 Information from [wikipedia](https://wikipedia.org/wiki/Source_(game_engine)):
 
@@ -9,10 +9,10 @@ Source does not have a concise version numbering scheme; instead, it was release
 
 The repo is based on the TF2 2018 leak. Do NOT use it for any commercial purposes.
 
-This project is using the cmake buildsystem.
+Original TF2Classic Source Code repo: [click](https://github.com/danielmm8888/TF2Classic)
 
 # Features:
-- Android, OSX, FreeBSD, Windows, Linux( glibc, musl ) support
+- Android, OSX, FreeBSD, Windows, Linux( glibc, musl ) support (NOTE: FreeBSD and musl libc is not supported in the cmake scripts)
 - Arm support( except windows )
 - 64bit support
 - Modern toolchains support
