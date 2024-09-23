@@ -2157,7 +2157,7 @@ public:
 typedef struct _RTL_CRITICAL_SECTION RTL_CRITICAL_SECTION;
 typedef RTL_CRITICAL_SECTION CRITICAL_SECTION;
 
-// kys tranny (VCR)
+// VCR
 #undef EnterCriticalSection
 
 #ifndef _X360
