@@ -14,8 +14,7 @@ set(
 	"${LAUNCHER_DIR}/launcher.cpp"
 	"${LAUNCHER_DIR}/reslistgenerator.cpp"
 	"$<${IS_ANDROID}:${LAUNCHER_DIR}/android/main.cpp>"
-	#"$<${IS_ANDROID}:${LAUNCHER_DIR}/android/crashhandler.cpp>" # SanyaSho: disable stolen crashhandler
-	"$<${IS_ANDROID}:${LAUNCHER_DIR}/android/crashhandler_stub.cpp>"
+	"$<${IS_ANDROID}:${LAUNCHER_DIR}/android/crashhandler.cpp>"
 
 	# Header Files
 	"${SRCDIR}/public/tier0/basetypes.h"
