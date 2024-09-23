@@ -156,7 +156,12 @@ endif()
 
 option( BUILD_64BIT "64 bit build of engine" OFF )
 if( BUILD_64BIT )
-	message( STATUS "Build arch: x86_64" )
+	if( IS_ARM64 )
+		message( STATUS "Build arch: aarch64/arm64" )
+	else()
+		message( STATUS "Build arch: x86_64" )
+	endif()
+
 	set( IS_64BIT 1 )
 
 	add_compile_definitions(
