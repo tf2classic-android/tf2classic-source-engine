@@ -763,7 +763,7 @@ void CTFHudDeathNotice::FireGameEvent( IGameEvent *event )
 			return;
 
 		int iIndex = m_DeathNotices[iMsg].Killer.iTeam - FIRST_GAME_TEAM;
-		Assert( iIndex < ARRAYSIZE( szCaptureIcons ) );
+		Assert( iIndex < ARRAYSIZE( szDefenseIcons ) );
 
 		Q_strncpy( m_DeathNotices[iMsg].szIcon, szDefenseIcons[iIndex], ARRAYSIZE( m_DeathNotices[iMsg].szIcon ) );
 
