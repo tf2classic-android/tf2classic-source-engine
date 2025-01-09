@@ -4,6 +4,7 @@
 #include "tf_hud_musicinfo.h"
 #include "util_shared.h"
 #include "vgui/IScheme.h"
+#include "vgui_controls/TextImage.h"
 #include "iclientmode.h"
 #include "tf_music_controller.h"
 
@@ -44,66 +45,36 @@ void CTFHudMusicInfo::LevelInit()
 
 void CTFHudMusicInfo::OnTick()
 {
-	// FIXME: ???????
-
-	/*
-	if( (m_flShowAt == 0.f) || gpGlobals->curtime < m_flShowAt )
+	// Can't put this into HUD animations script file since we have to set the width through the code.
+	if ( m_flShowAt != 0.0f && gpGlobals->curtime >= m_flShowAt )
 	{
-		if( (m_flHideAt != 0.f) && gpGlobals->curtime >= m_flHideAt )
-		{
-			vgui::GetAnimationController()->RunAnimationCommand( m_pInfoPanel, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-			vgui::GetAnimationController()->RunAnimationCommand( m_pNameLabel, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-			vgui::GetAnimationController()->RunAnimationCommand( m_pComposerLabel, "alpha", 0.0f, 0.5f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-			vgui::GetAnimationController()->RunAnimationCommand( this, "wide", GetTall(), 0.25f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		}
+		// Calculate width.
+		int nameWide, nameTall, composerWide, composerTall;
+		m_pNameLabel->GetTextImage()->GetContentSize( nameWide, nameTall );
+		m_pComposerLabel->GetTextImage()->GetContentSize( composerWide, composerTall );
+
+		int iPanelWidth = Max( nameWide, composerWide ) + YRES( 10 );
+
+		vgui::GetAnimationController()->RunAnimationCommand( m_pInfoPanel, "alpha", 255.0f, 0.0f, 0.5f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+		vgui::GetAnimationController()->RunAnimationCommand( m_pInfoPanel, "wide", iPanelWidth, 0.5f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+
+		vgui::GetAnimationController()->RunAnimationCommand( m_pNameLabel, "alpha", 255.0f, 0.65f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+		vgui::GetAnimationController()->RunAnimationCommand( m_pComposerLabel, "alpha", 255.0f, 0.65f, 0.1f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+
+		// Show it for 3 seconds.
+		m_flHideAt = gpGlobals->curtime + 4.0f;
+		m_flShowAt = 0.0f;
 	}
-	else
+	else if ( m_flHideAt != 0.0f && gpGlobals->curtime >= m_flHideAt )
 	{
-		int nameWide, nameTall;
-		m_pNameLabel->GetSize( nameWide, nameTall );
-		int composerWide, composerTall;
-		m_pComposerLabel->GetSize( composerWide, composerTall );
-
-		int newWide = composerWide;
-		if( nameWide > composerWide )
-			newWide = nameWide;
-
-		int height = (int)(ScreenHeight() * 0.002f * 10.f + newWide);
-
-		vgui::GetAnimationController()->RunAnimationCommand( m_pInfoPanel, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
 		vgui::GetAnimationController()->RunAnimationCommand( m_pNameLabel, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		vgui::GetAnimationController()->RunAnimationCommand( m_pComposerLabel, "alpha", 0.0f, 0.5f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		vgui::GetAnimationController()->RunAnimationCommand( this, "wide", GetTall(), 0.25f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+		vgui::GetAnimationController()->RunAnimationCommand( m_pComposerLabel, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+
+		vgui::GetAnimationController()->RunAnimationCommand( m_pInfoPanel, "alpha", 0.0f, 0.5f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+		vgui::GetAnimationController()->RunAnimationCommand( m_pInfoPanel, "wide", GetTall(), 0.25f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
+
+		m_flHideAt = 0.0f;
 	}
-	*/
-	/*
-	if( true )
-	{
-		vgui::GetAnimationController()->RunAnimationCommand( this, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-
-		vgui::GetAnimationController()->RunAnimationCommand( this, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		vgui::GetAnimationController()->RunAnimationCommand( this, "alpha", 0.0f, 0.5f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		vgui::GetAnimationController()->RunAnimationCommand( this, "wide", GetTall(), 0.25f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-	}
-	else
-	{
-		int nameWide, nameTall;
-		m_pNameLabel->GetSize( nameWide, nameTall );
-		int composerWide, composerTall;
-		m_pComposerLabel->GetSize( composerWide, composerTall );
-
-		int newWide = composerWide;
-		if( nameWide > composerWide )
-			newWide = nameWide;
-
-		int height = (int)(ScreenHeight() * 0.002f * 10.f + newWide);
-
-		vgui::GetAnimationController()->RunAnimationCommand( this, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		vgui::GetAnimationController()->RunAnimationCommand( m_pInfoPanel, "alpha", 0.0f, 0.0f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		vgui::GetAnimationController()->RunAnimationCommand( m_pNameLabel, "alpha", 0.0f, 0.5f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-		vgui::GetAnimationController()->RunAnimationCommand( m_pComposerLabel, "wide", GetTall(), 0.25f, 0.25f, vgui::AnimationController::INTERPOLATOR_LINEAR );
-	}
-	*/
 }
 
 void CTFHudMusicInfo::ResetAnimation()
@@ -127,13 +98,8 @@ void CTFHudMusicInfo::FireGameEvent( IGameEvent *event )
 	const char *pszEventName = event->GetName();
 	if( !Q_stricmp( pszEventName, "song_started" ) )
 	{
-		const char *pszSongName = event->GetString( "name" );
-		const char *pszSongCompositor = event->GetString( "composer" );
-
-		m_pInfoPanel->SetDialogVariable( "songname", pszSongName );
-		m_pInfoPanel->SetDialogVariable( "composername", pszSongCompositor );
-
-		Msg( "Playing:\n\t%s by %s\n", pszSongName, pszSongCompositor );
+		m_pInfoPanel->SetDialogVariable( "songname", event->GetString( "name" ) );
+		m_pInfoPanel->SetDialogVariable( "composername", event->GetString( "composer" ) );
 
 		ResetAnimation();
 
