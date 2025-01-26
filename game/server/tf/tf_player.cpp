@@ -1799,28 +1799,22 @@ void CTFPlayer::ValidateWearables( void )
 {
 	int iClass = m_PlayerClass.GetClassIndex();
 
-	for ( int i = 0; i < GetNumWearables(); i++ )
+	for ( int i = GetNumWearables() - 1; i >= 0; i-- )
 	{
-		CTFWearable *pWearable = static_cast<CTFWearable *>( GetWearable( i ) );
+		CTFWearable *pWearable = static_cast<CTFWearable *>(GetWearable( i ));
 		if ( !pWearable )
 			continue;
 
-		CEconItemDefinition *pItemDef = pWearable->GetItem()->GetStaticData();
+		ETFLoadoutSlot iSlot = pWearable->GetItem()->GetLoadoutSlot( iClass );
 
-		if ( pItemDef )
+		if ( iSlot == TF_LOADOUT_SLOT_INVALID || !ItemsMatch( pWearable->GetItem(), GetLoadoutItem( iClass, iSlot ), NULL ) )
 		{
-			int iSlot = pItemDef->GetLoadoutSlot( iClass );
-			CEconItemView *pLoadoutItem = GetLoadoutItem( iClass, iSlot );
-
-			if ( !ItemsMatch( pWearable->GetItem(), pLoadoutItem, NULL ) )
-			{
-				// Not supposed to carry this wearable, nuke it.
-				RemoveWearable( pWearable );
-			}
-			else if ( m_bRegenerating == false )
-			{
-				pWearable->UpdateModelToClass();
-			}
+			// Not supposed to carry this wearable, nuke it.
+			RemoveWearable( pWearable );
+		}
+		else if ( m_bRegenerating == false )
+		{
+			pWearable->UpdateModelToClass();
 		}
 	}
 }
@@ -1832,28 +1826,36 @@ void CTFPlayer::ManageRegularWeapons( TFPlayerClassData_t *pData )
 {
 	ValidateWeapons( true );
 	ValidateWearables();
-	
-	for ( int i = TF_LOADOUT_SLOT_PRIMARY; i < TF_LOADOUT_SLOT_COUNT; i++ )
-	{
-		if ( i != TF_LOADOUT_SLOT_BUILDING && !GetEntityForLoadoutSlot( (ETFLoadoutSlot)i ) )
-		{
-			CEconItemView *pItem = GetLoadoutItem( m_PlayerClass.GetClassIndex(), i );
-			if ( pItem )
-			{
-				if ( ItemIsAllowed( pItem ) )
-				{
-					const char *pszClassname = pItem->GetEntityName();
-					if( !pszClassname || !pszClassname[0] )
-						continue;
 
-					if ( V_stricmp( pszClassname, "no_entity" ) )
-						GiveNamedItem( pszClassname, 0, pItem );
-				}
-			}
+	for ( int iSlot = 0; iSlot < TF_LOADOUT_SLOT_COUNT; ++iSlot )
+	{
+		// Skip building slot as we'll handle it separately.
+		if ( iSlot == TF_LOADOUT_SLOT_BUILDING )
+			continue;
+
+		if ( GetEntityForLoadoutSlot( (ETFLoadoutSlot)iSlot ) != NULL )
+		{
+			// Nothing to do here.
+			continue;
+		}
+
+		// Give us an item from the inventory.
+		CEconItemView *pItem = GetLoadoutItem( m_PlayerClass.GetClassIndex(), (ETFLoadoutSlot)iSlot );
+
+		if ( pItem && ItemIsAllowed( pItem ) )
+		{
+			const char *pszClassname = pItem->GetEntityName();
+			Assert( pszClassname );
+
+			if ( V_stricmp( pszClassname, "no_entity" ) == 0 )
+				continue;
+
+			GiveNamedItem( pszClassname, 0, pItem );
 		}
 	}
-	
+
 	PostInventoryApplication();
+
 }
 
 //-----------------------------------------------------------------------------
@@ -2118,19 +2120,27 @@ CBaseEntity *CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, CEconI
 				SetAmmoCount( iAmmo, pWeapon->GetPrimaryAmmoType() );
 			}
 		}
+	}
 
+	if ( pEcon )
+	{
 		pEcon->GiveTo( this );
-		pWeapon->GiveTo( this ); // FIXME(SanyaSho): should call this to prevent broken pickup animation and other logic
-
-		if ( iAmmo == TF_GIVEAMMO_MAX && pWeapon->UsesPrimaryAmmo() )
-		{
-			// If we want max ammo then update the ammo count once more so we actually get the proper amount.
-			SetAmmoCount( GetMaxAmmo( pWeapon->GetPrimaryAmmoType() ), pWeapon->GetPrimaryAmmoType() );
-		}
 	}
 	else
 	{
 		pEntity->Touch( this );
+	}
+
+	if ( iAmmo == TF_GIVEAMMO_MAX && pWeapon && pWeapon->UsesPrimaryAmmo() )
+	{
+		// IF we want max ammo then update the ammo count once more so we actually get the proper amount.
+		SetAmmoCount( GetMaxAmmo( pWeapon->GetPrimaryAmmoType() ), pWeapon->GetPrimaryAmmoType() );
+	}
+
+	if ( GetActiveWeapon() == NULL )
+	{
+		// Failed to switch to a new weapon or replaced a weapon with a wearable.
+		SwitchToNextBestWeapon( NULL );
 	}
 
 	return pEntity;
