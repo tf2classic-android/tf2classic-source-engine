@@ -27,6 +27,9 @@ public:
 
 	virtual bool	ShouldBlockPrimaryFire( void ) { return true; }
 
+
+	virtual void	WeaponReset( void );
+	virtual bool	Deploy( void );
 	virtual void	PrimaryAttack( void );
 	virtual void	SecondaryAttack( void );
 

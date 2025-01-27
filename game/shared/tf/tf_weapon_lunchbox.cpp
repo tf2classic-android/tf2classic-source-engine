@@ -20,6 +20,34 @@ CREATE_SIMPLE_WEAPON_TABLE( TFLunchBox, tf_weapon_lunchbox )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void CTFLunchBox::WeaponReset( void )
+{
+	BaseClass::WeaponReset();
+
+#ifdef GAME_DLL
+	// Reset "eaten" status.
+	SetBodygroup( 0, 0 );
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFLunchBox::Deploy( void )
+{
+	if ( BaseClass::Deploy() )
+	{
+		// Reset "eaten" status.
+		SetBodygroup( 0, 0 );
+		return true;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFLunchBox::PrimaryAttack( void )
 {
 	CTFPlayer *pOwner = GetTFPlayerOwner();
@@ -141,6 +169,9 @@ void CTFLunchBox::ApplyBiteEffects( void )
 	{
 		pOwner->TakeHealth( 30, DMG_GENERIC );
 	}
+
+	// Show bite marks.
+	SetBodygroup( 0, 1 );
 }
 
 #endif
