@@ -335,7 +335,7 @@ CON_COMMAND_F( server_game_time, "Gives the game time in seconds (server's curti
 		Msg( "Server game time: %.3f\n", gpGlobals->curtime );
 		return;
 	}
-#endif
 
 	ClientPrint( pPlayer, HUD_PRINTCONSOLE, CFmtStr( "Server game time: %.3f\n", gpGlobals->curtime ) );
+#endif
 }

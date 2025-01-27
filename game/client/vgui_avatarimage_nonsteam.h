@@ -11,6 +11,7 @@
 
 #include <vgui/IImage.h>
 #include "vgui_controls/Panel.h"
+#include "vgui_controls/ImagePanel.h" // for CS:S
 
 #include "fmtstr.h"
 

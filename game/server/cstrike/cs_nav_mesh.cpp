@@ -78,9 +78,9 @@ void CSNavMesh::SaveCustomData( CUtlBuffer &fileBuffer ) const
 /**
  * Load custom mesh data for derived classes
  */
-void CSNavMesh::LoadCustomData( CUtlBuffer &fileBuffer, unsigned int subVersion )
+NavErrorType CSNavMesh::LoadCustomData( CUtlBuffer &fileBuffer, unsigned int subVersion )
 {
-
+	return NAV_OK;
 }
 
 //--------------------------------------------------------------------------------------------------------------

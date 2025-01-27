@@ -29,7 +29,6 @@
 #include "vgui_avatarimage.h"
 
 #include "achievementmgr.h"
-#include "engine/imatchmaking.h"
 
 using namespace vgui;
 

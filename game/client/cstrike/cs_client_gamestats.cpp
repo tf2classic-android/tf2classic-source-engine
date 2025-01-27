@@ -12,7 +12,6 @@
 #include "cbase.h"
 #include "cs_client_gamestats.h"
 #include "achievementmgr.h"
-#include "engine/imatchmaking.h"
 #include "ipresence.h"
 #include "usermessages.h"
 #include "c_cs_player.h"

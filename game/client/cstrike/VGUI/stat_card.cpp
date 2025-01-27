@@ -100,7 +100,11 @@ void StatCard::UpdateInfo()
 	// Display the player avatar
 	if (m_pAvatar && steamapicontext && steamapicontext->SteamUser())
 	{
+#if defined( ENABLE_STEAM_AVATAR )
 		m_pAvatar->SetPlayer( steamapicontext->SteamUser()->GetSteamID(), k_EAvatarSize64x64 );	
+#else
+		m_pAvatar->SetPlayer( IP_LOCALPLAYER_IMAGE, k_EAvatarSize64x64 ); 
+#endif
 		m_pAvatar->SetVisible( true );
 	}
 }

@@ -19,8 +19,7 @@
 #include "materialsystem/imaterialvar.h"
 #include "IEffects.h"
 #include "hudelement.h"
-// NVNT damage
-#include "haptics/haptic_utils.h"
+
 using namespace vgui;
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -339,12 +338,6 @@ void CHudDamageIndicator::CalcDamageDirection( const Vector &vecFrom )
 		if ( f > 0.3 )
 			m_flAttackLeft = MAX( m_flAttackLeft, f );
 	}
-
-	// NVNT pass damage. (use hap_damage amount to apply)
-	// do rotation
-	Vector hapDir(-flSide,-flUp,flFront);
-	if ( haptics )
-		haptics->ApplyDamageEffect(hap_damage_amount, 0, hapDir);
 }
 
 

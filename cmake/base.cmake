@@ -9,6 +9,7 @@
 
 # SanyaSho: ADD YOUR GAME HERE!
 set( IS_GAME_TF2CLASSIC	0 )
+set( IS_GAME_CSTRIKE	0 )
 
 set( IS_64BIT		0 )
 set( IS_ARM64		0 )

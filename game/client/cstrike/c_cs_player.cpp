@@ -40,9 +40,6 @@
 #include "ragdoll_shared.h"
 #include "collisionutils.h"
 
-// NVNT - haptics system for spectating
-#include "haptics/haptic_utils.h"
-
 #include "steam/steam_api.h"
 
 #include "cs_blackmarket.h"				// for vest/helmet prices
@@ -199,7 +196,7 @@ public:
 
 	int GetPlayerEntIndex() const;
 	IRagdoll* GetIRagdoll() const;
-	void GetRagdollInitBoneArrays( matrix3x4_t *pDeltaBones0, matrix3x4_t *pDeltaBones1, matrix3x4_t *pCurrentBones, float boneDt ) OVERRIDE;
+	bool GetRagdollInitBoneArrays( matrix3x4_t *pDeltaBones0, matrix3x4_t *pDeltaBones1, matrix3x4_t *pCurrentBones, float boneDt ) OVERRIDE;
 
 	void ImpactTrace( trace_t *pTrace, int iDamageType, const char *pCustomImpactName );
 
@@ -265,12 +262,13 @@ C_CSRagdoll::~C_CSRagdoll()
 	PhysCleanupFrictionSounds( this );
 }
 
-void C_CSRagdoll::GetRagdollInitBoneArrays( matrix3x4_t *pDeltaBones0, matrix3x4_t *pDeltaBones1, matrix3x4_t *pCurrentBones, float boneDt )
+bool C_CSRagdoll::GetRagdollInitBoneArrays( matrix3x4_t *pDeltaBones0, matrix3x4_t *pDeltaBones1, matrix3x4_t *pCurrentBones, float boneDt )
 {
 	// otherwise use the death pose to set up the ragdoll
 	ForceSetupBonesAtTime( pDeltaBones0, gpGlobals->curtime - boneDt );
 	GetRagdollCurSequenceWithDeathPose( this, pDeltaBones1, gpGlobals->curtime, m_iDeathPose, m_iDeathFrame );
 	SetupBones( pCurrentBones, MAXSTUDIOBONES, BONE_USED_BY_ANYTHING, gpGlobals->curtime );
+	return true;
 }
 
 void C_CSRagdoll::Interp_Copy( C_BaseAnimatingOverlay *pSourceEntity )
@@ -1281,8 +1279,6 @@ void C_CSPlayer::UpdateMinModels( void )
 	SetModelByIndex( modelIndex );
 }
 
-// NVNT gate for spectating.
-static bool inSpectating_Haptics = false;
 //-----------------------------------------------------------------------------
 void C_CSPlayer::ClientThink()
 {
@@ -1303,27 +1299,6 @@ void C_CSPlayer::ClientThink()
 	// NVNT - check for spectating forces
 	if ( IsLocalPlayer() )
 	{
-		if ( GetTeamNumber() == TEAM_SPECTATOR || !this->IsAlive() || GetLocalOrInEyeCSPlayer() != this )
-		{
-			if (!inSpectating_Haptics)
-			{
-				if ( haptics )
-					haptics->SetNavigationClass("spectate");
-
-				inSpectating_Haptics = true;
-			}
-		}
-		else
-		{
-			if (inSpectating_Haptics)
-			{
-				if ( haptics )
-					haptics->SetNavigationClass("on_foot");
-
-				inSpectating_Haptics = false;
-			}
-		}
-
 		if ( m_iObserverMode == OBS_MODE_FREEZECAM )
 		{
 			//=============================================================================
