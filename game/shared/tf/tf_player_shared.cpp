@@ -3948,6 +3948,12 @@ bool CTFPlayer::CanAttack( void )
 		return false;
 	}
 
+	if ( pRules->IsDeathmatch() && pRules->State_Get() == GR_STATE_PREROUND )
+	{
+		return false;
+	}
+
+
 	return true;
 }
 
