@@ -41,6 +41,7 @@ public:
 	virtual void OnTick( void );
 
 	void UpdateCPImages( bool bUpdatePositions, int iIndex );
+	void UpdateHillPanels( void );
 	void UpdateStatusTeardropFor( int iIndex );
 	void UpdateAlarmAnimations( void );
 	void SetTeam( int iTeam ) { m_iTeamNum = iTeam; }
@@ -79,6 +80,7 @@ private:
 	bool m_bOnTop;
 	bool m_bAlarm;
 	int m_iNumHills;
+	bool m_bCPReady;
 };
 
 

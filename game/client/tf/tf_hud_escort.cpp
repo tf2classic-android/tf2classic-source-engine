@@ -64,6 +64,7 @@ CTFHudEscort::CTFHudEscort( Panel *pParent, const char *pszName, int iTeam, bool
 	m_bOnTop = true;
 	m_bAlarm = false;
 	m_iNumHills = 0;
+	m_bCPReady = true;
 
 	ivgui()->AddTickSignal( GetVPanel() );
 
@@ -169,43 +170,7 @@ void CTFHudEscort::PerformLayout( void )
 		m_pCapHighlightImage->SetBounds( x + CAP_BOX_INDENT_X, y - iSwoopHeight + CAP_BOX_INDENT_Y, wide - ( CAP_BOX_INDENT_X * 2 ), iSwoopHeight );
 	}
 
-	// Update hill panels.
-	for ( int i = 0; i < TEAM_TRAIN_MAX_HILLS; i++ )
-	{
-		CEscortHillPanel *pPanel = m_pHillPanels[i];
-		if ( !pPanel )
-			continue;
-
-		if ( !ObjectiveResource() || i >= ObjectiveResource()->GetNumNodeHillData( m_iTeamNum ) || !m_pLevelBar )
-		{
-			if ( pPanel->IsVisible() )
-				pPanel->SetVisible( false );
-
-			continue;
-		}
-
-		pPanel->SetTeam( m_iTeamNum );
-		pPanel->SetHillIndex( i );
-
-		if ( !pPanel->IsVisible() )
-			pPanel->SetVisible( true );
-
-		// Set the panel's bounds according to starting and ending points of the hill.
-		int x, y, wide, tall;
-		m_pLevelBar->GetBounds( x, y, wide, tall );
-
-		float flStart, flEnd;
-		ObjectiveResource()->GetHillData( m_iTeamNum, i, flStart, flEnd );
-
-		int iStartPos = flStart * wide;
-		int iEndPos = flEnd * wide;
-
-		pPanel->SetBounds( x + iStartPos, y, iEndPos - iStartPos, tall );
-
-		// Show it on top of the track bar.
-		pPanel->SetZPos( m_pLevelBar->GetZPos() + 1 );
-	}
-
+	UpdateHillPanels();
 	UpdateCPImages( true, -1 );
 }
 
@@ -406,6 +371,13 @@ void CTFHudEscort::OnTick( void )
 		m_bAlarm = bInAlarm;
 		UpdateAlarmAnimations();
 	}
+
+	// Apparently, this is Valve's fix for delayed activation of team_train_watcher.
+	if ( !m_bCPReady )
+	{
+		UpdateHillPanels();
+		UpdateCPImages( true, -1 );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -415,6 +387,11 @@ void CTFHudEscort::UpdateCPImages( bool bUpdatePositions, int iIndex )
 {
 	if ( !ObjectiveResource() )
 		return;
+
+	if ( bUpdatePositions )
+	{
+		m_bCPReady = false;
+	}
 
 	for ( int i = 0; i < MAX_CONTROL_POINTS; i++ )
 	{
@@ -454,6 +431,11 @@ void CTFHudEscort::UpdateCPImages( bool bUpdatePositions, int iIndex )
 
 				pImage->SetPos( x + pos, pImage->GetYPos() );
 			}
+
+			if ( flDist > 0.0f )
+			{
+				m_bCPReady = true;
+			}
 		}
 
 		// Set the icon according to team.
@@ -473,6 +455,48 @@ void CTFHudEscort::UpdateCPImages( bool bUpdatePositions, int iIndex )
 		}
 
 		pImage->SetImage( pszImage );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudEscort::UpdateHillPanels( void )
+{
+	for ( int i = 0; i < TEAM_TRAIN_MAX_HILLS; i++ )
+	{
+		CEscortHillPanel *pPanel = m_pHillPanels[i];
+		if ( !pPanel )
+			continue;
+
+		if ( !ObjectiveResource() || i >= ObjectiveResource()->GetNumNodeHillData( m_iTeamNum ) || !m_pLevelBar )
+		{
+			if ( pPanel->IsVisible() )
+				pPanel->SetVisible( false );
+
+			continue;
+		}
+
+		pPanel->SetTeam( m_iTeamNum );
+		pPanel->SetHillIndex( i );
+
+		if ( !pPanel->IsVisible() )
+			pPanel->SetVisible( true );
+
+		// Set the panel's bounds according to starting and ending points of the hill.
+		int x, y, wide, tall;
+		m_pLevelBar->GetBounds( x, y, wide, tall );
+
+		float flStart, flEnd;
+		ObjectiveResource()->GetHillData( m_iTeamNum, i, flStart, flEnd );
+
+		int iStartPos = flStart * wide;
+		int iEndPos = flEnd * wide;
+
+		pPanel->SetBounds( x + iStartPos, y, iEndPos - iStartPos, tall );
+
+		// Show it on top of the track bar.
+		pPanel->SetZPos( m_pLevelBar->GetZPos() + 1 );
 	}
 }
 
