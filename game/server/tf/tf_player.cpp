@@ -8599,6 +8599,18 @@ void CTFPlayer::DoTauntAttack( void )
 				
 				CTakeDamageInfo info( this, this, GetActiveTFWeapon(), vecForce, vecDamagePos, flDamage, nDamageType, iCustomDamage );
 				pPlayer->TakeDamage( info );
+
+				if ( iTauntType == TF_TAUNT_MEDIC_KILL )
+				{
+					// Give 50% uber on kill. That way, a taunt kill fills ubercharge completely.
+					CWeaponMedigun *pMedigun = GetMedigun();
+
+					if ( pMedigun )
+					{
+						pMedigun->AddCharge( 0.5f );
+					}
+				}
+
 			}
 
 			if ( iTauntType == TF_TAUNT_SNIPER_STUN )
