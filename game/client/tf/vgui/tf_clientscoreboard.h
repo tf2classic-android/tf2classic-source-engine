@@ -91,7 +91,11 @@ protected:
 	vgui::SectionedListPanel	*m_pPlayerLists[TF_TEAM_COUNT];
 
 	vgui::ImageList				*m_pImageList;
+#if defined( ENABLE_STEAM_AVATARS )
 	CUtlMap<CSteamID, int>		m_mapAvatarsToImageList;
+#else
+	CUtlMap< int, int >			m_mapAvatarsToImageList;
+#endif
 
 	CPanelAnimationVar( int, m_iDeviceWidth, "device_width", "34" );		// Avatar width doesn't scale with resolution
 	CPanelAnimationVar( int, m_iAvatarWidth, "avatar_width", "34" );		// Avatar width doesn't scale with resolution

@@ -842,6 +842,7 @@ void CVoteSetupDialog::RefreshIssueParameters()
 						pKeyValues->SetString( "Properties", "" );
 					}
 
+#if defined( ENABLE_STEAM_AVATARS )
 					CSteamID steamID;
 					C_BasePlayer* pPlayer = UTIL_PlayerByIndex( playerIndex );
 					if ( pPlayer && pPlayer->GetSteamID( &steamID ) && steamID.GetAccountID() != 0 )
@@ -852,6 +853,17 @@ void CVoteSetupDialog::RefreshIssueParameters()
 						int iImageIndex = m_pImageList->AddImage( pAvatar );
 						pKeyValues->SetInt( "Avatar", iImageIndex );
 					}
+#else
+					player_info_t pi;
+					if ( engine->GetPlayerInfo( playerIndex, &pi ) && !CRC_AVATAR_INVALID( CRC_AVATAR( pi ) ) )
+					{
+						CAvatarImage *pAvatar = new CAvatarImage();
+						pAvatar->SetAvatarFromPI( pi );
+						pAvatar->SetAvatarSize( 32, 32 );
+						int iImageIndex = m_pImageList->AddImage( pAvatar );
+						pKeyValues->SetInt( "Avatar", iImageIndex );
+					}
+#endif
 
 					m_pVoteParameterList->InvalidateItem( index );
 				}

@@ -85,7 +85,11 @@ void CTFHudDeathMatchObjectives::LevelInit( void )
 //-----------------------------------------------------------------------------
 void CTFHudDeathMatchObjectives::Reset()
 {
+#if defined( ENABLE_STEAM_AVATARS )
 	m_pPlayerAvatar->SetPlayer( ClientSteamContext().GetLocalPlayerSteamID(), k_EAvatarSize32x32 );
+#else
+	m_pPlayerAvatar->SetPlayer( C_TFPlayer::GetLocalPlayer(), k_EAvatarSize32x32 );
+#endif
 }
 
 //-----------------------------------------------------------------------------

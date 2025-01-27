@@ -14,6 +14,7 @@ set( IS_64BIT		0 )
 set( IS_ARM64		0 )
 set( IS_DEDICATED	0 )
 set( IS_TOGLES		0 )
+set( STEAM_AVATARS	0 )
 
 # Platforms
 set( IS_WINDOWS		0 )
@@ -182,6 +183,16 @@ message( STATUS "BUILD_FOR_PUBLIC_USE: ${BUILD_FOR_PUBLIC_USE}" )
 if( BUILD_FOR_PUBLIC_USE )
 	add_compile_definitions(
 		PUBLIC_BUILD
+	)
+endif()
+
+option( ENABLE_STEAM_AVATARS "Enables old avatar behavior" OFF )
+message( STATUS "ENABLE_STEAM_AVATARS: ${ENABLE_STEAM_AVATARS}" )
+if( ENABLE_STEAM_AVATARS )
+	set( STEAM_AVATARS 1 )
+
+	add_compile_definitions(
+		ENABLE_STEAM_AVATARS
 	)
 endif()
 

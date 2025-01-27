@@ -105,7 +105,11 @@ protected:
 	void MoveToCenterOfScreen();
 
 	vgui::ImageList				*m_pImageList;
+#if defined( ENABLE_STEAM_AVATARS )
 	CUtlMap<CSteamID,int>		m_mapAvatarsToImageList;
+#else
+	CUtlMap<int,int>			m_mapAvatarsToImageList;
+#endif
 	
 #if defined( TF_CLASSIC_CLIENT )
 	CPanelAnimationVar( int, m_iPlatformWidth, "platform_width", "8" );

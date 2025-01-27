@@ -83,7 +83,11 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
 
 	m_pImageList = NULL;
 
+#if defined( ENABLE_STEAM_AVATARS )
 	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( CSteamID ) );
+#else
+	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( int ) );
+#endif
 	m_mapAvatarsToImageList.RemoveAll();
 }
 
@@ -504,6 +508,7 @@ void CClientScoreBoardDialog::UpdatePlayerAvatar( int playerIndex, KeyValues *kv
 		player_info_t pi;
 		if ( engine->GetPlayerInfo( playerIndex, &pi ) )
 		{
+#if defined( ENABLE_STEAM_AVATARS )
 			if ( pi.friendsID )
 			{
 				CSteamID steamIDForPlayer( pi.friendsID, 1,  steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
@@ -530,6 +535,33 @@ void CClientScoreBoardDialog::UpdatePlayerAvatar( int playerIndex, KeyValues *kv
 				CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage( iImageIndex );
 				pAvIm->UpdateFriendStatus();
 			}
+#else
+			if ( !CRC_AVATAR_INVALID( CRC_AVATAR( pi ) ) )
+			{
+				int iImageIndex = -1;
+
+				// See if we already have that avatar in our list
+				int iMapIndex = m_mapAvatarsToImageList.Find( pi.userID );
+				if ( iMapIndex == m_mapAvatarsToImageList.InvalidIndex() )
+				{
+					CAvatarImage *pImage = new CAvatarImage();
+					pImage->SetAvatarFromPI( pi );
+					pImage->SetAvatarSize( 32, 32 );	// Deliberately non scaling
+					iImageIndex = m_pImageList->AddImage( pImage );
+
+					m_mapAvatarsToImageList.Insert( pi.userID, iImageIndex );
+				}
+				else
+				{
+					iImageIndex = m_mapAvatarsToImageList[iMapIndex];
+				}
+
+				kv->SetInt( "avatar", iImageIndex );
+
+				CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage( iImageIndex );
+				pAvIm->UpdateFriendStatus();
+			}
+#endif
 		}
 	}
 }

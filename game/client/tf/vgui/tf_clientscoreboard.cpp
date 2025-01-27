@@ -120,7 +120,11 @@ CTFClientScoreBoardDialog::CTFClientScoreBoardDialog( IViewPort *pViewPort, cons
 	m_pContextMenu->AddMenuItem( "#TF_ScoreBoard_ShowProfile", "showprofile", this );
 
 	m_pImageList = NULL;
+#if defined( ENABLE_STEAM_AVATARS )
 	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( CSteamID ) );
+#else
+	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( int ) );
+#endif
 
 	ListenForGameEvent( "server_spawn" );
 
@@ -366,10 +370,8 @@ void CTFClientScoreBoardDialog::UpdatePlayerAvatar( int playerIndex, KeyValues *
 	}
 	else
 	{
-		// FIXME: STEAM
-		kv->SetInt( "avatar", GetDefaultAvatar( playerIndex ) );
+#if defined( ENABLE_STEAM_AVATARS )
 		// Get their avatar from Steam.
-		/*
 		CSteamID steamIDForPlayer;
 		if ( g_TF_PR->GetSteamID( playerIndex, &steamIDForPlayer ) )
 		{
@@ -395,7 +397,34 @@ void CTFClientScoreBoardDialog::UpdatePlayerAvatar( int playerIndex, KeyValues *
 			CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage( iImageIndex );
 			pAvIm->UpdateFriendStatus();
 		}
-		*/
+#else
+		player_info_t pi;
+		if ( engine->GetPlayerInfo( playerIndex, &pi ) && !CRC_AVATAR_INVALID( CRC_AVATAR( pi ) ) )
+		{
+			int iImageIndex = -1;
+
+			// See if we already have that avatar in our list
+			int iMapIndex = m_mapAvatarsToImageList.Find( pi.userID );
+			if ( iMapIndex == m_mapAvatarsToImageList.InvalidIndex() )
+			{
+				CAvatarImage *pImage = new CAvatarImage();
+				pImage->SetAvatarFromPI( pi );
+				pImage->SetAvatarSize( 32, 32 );	// Deliberately non scaling
+				iImageIndex = m_pImageList->AddImage( pImage );
+
+				m_mapAvatarsToImageList.Insert( pi.userID, iImageIndex );
+			}
+			else
+			{
+				iImageIndex = m_mapAvatarsToImageList[iMapIndex];
+			}
+
+			kv->SetInt( "avatar", iImageIndex );
+
+			CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage( iImageIndex );
+			pAvIm->UpdateFriendStatus();
+		}
+#endif
 	}
 }
 

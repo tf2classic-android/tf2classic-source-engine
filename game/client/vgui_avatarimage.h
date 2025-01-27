@@ -4,6 +4,12 @@
 //
 //=============================================================================
 
+#if !defined( ENABLE_STEAM_AVATARS )
+
+#include "vgui_avatarimage_nonsteam.h"
+
+#else
+
 #ifndef VGUI_AVATARIMAGE_H
 #define VGUI_AVATARIMAGE_H
 #ifdef _WIN32
@@ -252,3 +258,5 @@ private:
 };
 
 #endif // VGUI_AVATARIMAGE_H
+
+#endif // !ENABLE_STEAM_AVATARS

@@ -27,6 +27,7 @@
 #include "OptionsSubVideo.h"
 #include "OptionsSubVoice.h"
 #include "OptionsSubMultiplayer.h"
+#include "OptionsSubPlayerSettings.h"
 #include "OptionsSubDifficulty.h"
 #include "OptionsSubPortal.h"
 #include "ModInfo.h"
@@ -91,8 +92,11 @@ COptionsDialog::COptionsDialog(vgui::Panel *parent) : PropertyDialog(parent, "Op
 	if ( (ModInfo().IsMultiplayerOnly() && !ModInfo().IsSinglePlayerOnly()) ||
 		 (!ModInfo().IsMultiplayerOnly() && !ModInfo().IsSinglePlayerOnly()) )
 	{
-		m_pOptionsSubMultiplayer = new COptionsSubMultiplayer(this);
-		AddPage(m_pOptionsSubMultiplayer, "#GameUI_Multiplayer");
+		m_pOptionsSubMultiplayer = new COptionsSubMultiplayer( this );
+		AddPage( m_pOptionsSubMultiplayer, "#GameUI_Multiplayer" );
+
+		m_pOptionsSubPlayerSettings = new COptionsSubPlayerSettings( this );
+		AddPage( m_pOptionsSubPlayerSettings, "#GameUI_PlayerSettings" );
 	}
 
 //	double s5 = system()->GetCurrentTime();

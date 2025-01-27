@@ -66,7 +66,11 @@ void CTFMainMenuPanel::ApplySchemeSettings( IScheme *pScheme )
 void CTFMainMenuPanel::PerformLayout()
 {
 	m_pProfileAvatar->SetDefaultAvatar( scheme()->GetImage( "../vgui/avatar_default_merc", true ) );
+#if defined( ENABLE_STEAM_AVATARS )
 	m_pProfileAvatar->SetPlayer( m_SteamID, k_EAvatarSize64x64 );
+#else
+	m_pProfileAvatar->SetPlayer( IP_LOCALPLAYER_IMAGE, k_EAvatarSize64x64 );
+#endif
 	m_pProfileAvatar->SetShouldDrawFriendIcon( false );
 
 	char szNickName[64];
@@ -75,7 +79,7 @@ void CTFMainMenuPanel::PerformLayout()
 		(steamapicontext->SteamFriends() ? steamapicontext->SteamFriends()->GetPersonaName() : "Unknown"));
 #else
 	ConVarRef playername( "name" );
-	Q_snprintf(szNickName, sizeof(szNickName), "%s", playername.GetString() );
+	Q_snprintf(szNickName, sizeof(szNickName), "%s", playername.IsValid() ? playername.GetString() : "Unknown" );
 #endif
 	SetDialogVariable("nickname", szNickName);
 
