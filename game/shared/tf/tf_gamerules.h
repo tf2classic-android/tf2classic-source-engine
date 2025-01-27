@@ -224,6 +224,8 @@ public:
 	// Called when a new round is off and running
 	virtual void	SetupOnRoundRunning( void );
 
+	virtual void	PreRound_End( void );
+
 	// Called before a new round is started (so the previous round can end)
 	virtual void	PreviousRoundEnd( void );
 

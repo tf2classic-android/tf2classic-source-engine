@@ -2435,6 +2435,31 @@ void CTFGameRules::SetupOnRoundStart( void )
 #ifdef GAME_DLL
 	m_szMostRecentCappers[0] = 0;
 #endif
+
+	if ( IsDeathmatch() && !IsInWaitingForPlayers() )
+	{
+		HideActiveTimer();
+
+		if ( !m_hStalemateTimer )
+		{
+			m_hStalemateTimer = (CTeamRoundTimer*)CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle );
+		}
+
+		m_hStalemateTimer->KeyValue( "show_in_hud", "1" );
+
+		variant_t sVariant;
+		sVariant.SetInt( 5 * mp_enableroundwaittime.GetInt() + 1 );
+
+		m_hStalemateTimer->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
+		m_hStalemateTimer->AcceptInput( "Resume", NULL, NULL, sVariant, 0 );
+		m_hStalemateTimer->AcceptInput( "Enable", NULL, NULL, sVariant, 0 );
+
+		IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_update_timer" );
+		if ( event )
+		{
+			gameeventmanager->FireEvent( event );
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2470,6 +2495,28 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		if( !IsHalloweenScenario( HALLOWEEN_SCENARIO_DOOMSDAY ) )
 		{
 			g_TFAnnouncer.Speak( 255, TF_ANNOUNCER_SD_ROUNDSTART );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFGameRules::PreRound_End( void )
+{
+	if ( IsDeathmatch() )
+	{
+		if ( m_hStalemateTimer.Get() )
+		{
+			UTIL_Remove( m_hStalemateTimer );
+
+			RestoreActiveTimer();
+
+			IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_update_timer" );
+			if ( event )
+			{
+				gameeventmanager->FireEvent( event );
+			}
 		}
 	}
 }
