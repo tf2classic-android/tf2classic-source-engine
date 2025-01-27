@@ -207,9 +207,17 @@ void CDamageAccountPanel::OnDamaged( IGameEvent *event )
 	int iDmgAmount = event->GetInt( "damageamount" );
 	int iHealth = event->GetInt( "health" );
 
-	// Did we shoot the guy?
+	// Show damage to the attacker and his healer.
 	if ( iAttacker != pPlayer->GetUserID() )
-		return;
+	{
+		C_BasePlayer *pHealTarget = ToBasePlayer( pPlayer->MedicGetHealTarget() );
+
+		if ( !pHealTarget )
+			return;
+
+		if ( pHealTarget->GetUserID() != iAttacker )
+			return;
+	}
 
 	// No self-damage notifications.
 	if ( bIsPlayer && iAttacker == iVictim )
