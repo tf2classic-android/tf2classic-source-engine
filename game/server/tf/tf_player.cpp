@@ -972,6 +972,7 @@ void CTFPlayer::Precache()
 	PrecacheParticleSystem( "blood_spray_red_01_far" );
 	PrecacheParticleSystem( "water_blood_impact_red_01" );
 	PrecacheParticleSystem( "blood_impact_red_01" );
+	PrecacheParticleSystem( "blood_headshot" );
 	PrecacheParticleSystem( "water_playerdive" );
 	PrecacheParticleSystem( "water_playeremerge" );
 	PrecacheParticleSystem( "rocketjump_smoke" );
@@ -4826,7 +4827,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		}
 
 		CPVSFilter filter( vDamagePos );
-		TE_TFBlood( filter, 0.0, vDamagePos, -vecDir, entindex() );
+		TE_TFBlood( filter, 0.0, vDamagePos, -vecDir, entindex(), info.GetDamageCustom() );
 	}
 
 	// Done.

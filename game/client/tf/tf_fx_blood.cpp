@@ -26,30 +26,39 @@
 //-----------------------------------------------------------------------------
 // Purpose: Intercepts the blood spray message.
 //-----------------------------------------------------------------------------
-void TFBloodSprayCallback( Vector vecOrigin, Vector vecNormal, ClientEntityHandle_t hEntity )
+void TFBloodSprayCallback( Vector vecOrigin, Vector vecNormal, int iDamageCustom, ClientEntityHandle_t hEntity )
 {
 	QAngle	vecAngles;
 	VectorAngles( -vecNormal, vecAngles );
 
-	// determine if the bleeding player is underwater
-	bool bUnderwater = false;
 	C_TFPlayer *pPlayer = dynamic_cast<C_TFPlayer*>( ClientEntityList().GetBaseEntityFromHandle( hEntity ) );
-	if ( pPlayer && ( WL_Eyes == pPlayer->GetWaterLevel() )	)
-	{
-		bUnderwater = true;
-	}
-	 
+	
+	// determine if the bleeding player is underwater
+	bool bUnderwater = ( pPlayer && pPlayer->GetWaterLevel() == WL_Eyes );
+	bool bHeadshot = ( pPlayer && !pPlayer->IsAlive() && iDamageCustom == TF_DMG_CUSTOM_HEADSHOT );
+	const char *pszEffect = NULL;
+
 	if ( !bUnderwater && TFGameRules() && TFGameRules()->IsBirthday() && RandomFloat(0,1) < 0.2 )
 	{
-		DispatchParticleEffect( "bday_blood", vecOrigin, vecAngles, pPlayer );
+		pszEffect = "bday_blood";
+	}
+	else if ( bUnderwater )
+	{
+		pszEffect = "water_blood_impact_red_01";
+	}
+	else if ( bHeadshot )
+	{
+		pszEffect = "blood_headshot";
 	}
 	else
 	{
-		DispatchParticleEffect( bUnderwater ? "water_blood_impact_red_01" : "blood_impact_red_01", vecOrigin, vecAngles, pPlayer );
+		pszEffect = "blood_impact_red_01";
 	}
 
-	// if underwater, don't add additional spray
-	if ( bUnderwater )
+	DispatchParticleEffect( pszEffect, vecOrigin, vecAngles, pPlayer );
+
+	// if underwater or headshot, don't add additional spray
+	if ( bUnderwater || bHeadshot )
 		return;
 
 	// Now throw out a spray away from the view
@@ -122,6 +131,7 @@ public:
 	Vector		m_vecOrigin;
 	Vector		m_vecNormal;
 	ClientEntityHandle_t m_hEntity;
+	int			m_iDamageCustom;
 };
 
 //-----------------------------------------------------------------------------
@@ -141,7 +151,7 @@ void C_TETFBlood::PostDataUpdate( DataUpdateType_t updateType )
 {
 	VPROF( "C_TETFBlood::PostDataUpdate" );
 
-	TFBloodSprayCallback( m_vecOrigin, m_vecNormal, m_hEntity );
+	TFBloodSprayCallback( m_vecOrigin, m_vecNormal, m_iDamageCustom, m_hEntity );
 }
 
 static void RecvProxy_BloodEntIndex( const CRecvProxyData *pData, void *pStruct, void *pOut )
@@ -156,6 +166,7 @@ IMPLEMENT_CLIENTCLASS_EVENT_DT(C_TETFBlood, DT_TETFBlood, CTETFBlood)
 	RecvPropFloat( RECVINFO( m_vecOrigin[2] ) ),
 	RecvPropVector( RECVINFO(m_vecNormal)),
 	RecvPropInt( "entindex", 0, SIZEOF_IGNORE, 0, RecvProxy_BloodEntIndex ),
+	RecvPropInt( RECVINFO( m_iDamageCustom ) ),
 END_RECV_TABLE()
 
 
