@@ -67,16 +67,29 @@ void CTFDeathMatchScoreBoardDialog::InitPlayerList( vgui::SectionedListPanel *pP
 	
 	pPlayerList->AddColumnToSection( 0, "device", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iDeviceWidth );
 
-	pPlayerList->AddColumnToSection( 0, "avatar", "", 2, this->m_iAvatarWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "name", "#TF_Scoreboard_Name", 0, this->m_iNameWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "status", "", 2, this->m_iStatusWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "domination", "", 2, this->m_iNemesisWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "nemesis", "", 2, this->m_iNemesisWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "score", "#TF_Scoreboard_Score", 16, this->m_iScoreWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "kills", "#TF_ScoreBoard_Kills", 16, this->m_iKillsWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "deaths", "#TF_ScoreBoard_Deaths", 16, this->m_iDeathsWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "streak", "#TF_ScoreBoard_KillStreak", 16, this->m_iKillstreakWidth, 0 );
-	pPlayerList->AddColumnToSection( 0, "ping", "#TF_Scoreboard_Ping", 16, this->m_iPingWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "avatar", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iAvatarWidth, 0 );
+
+	pPlayerList->AddColumnToSection( 0, "name", "#TF_Scoreboard_Name", 0,
+		pPlayerList->GetWide()
+		+ -15
+		- 2 * this->m_iNemesisWidth
+		- this->m_iDeviceWidth
+		- this->m_iAvatarWidth
+		- this->m_iStatusWidth
+		- this->m_iPingWidth
+		- this->m_iScoreWidth
+		- this->m_iKillsWidth
+		- this->m_iDeathsWidth
+		- this->m_iKillstreakWidth,
+		0 );
+	pPlayerList->AddColumnToSection( 0, "status", "", SectionedListPanel::COLUMN_IMAGE, m_iStatusWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "domination", "", SectionedListPanel::COLUMN_IMAGE, m_iNemesisWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "nemesis", "", SectionedListPanel::COLUMN_IMAGE, m_iNemesisWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "score", "#TF_Scoreboard_Score", SectionedListPanel::COLUMN_RIGHT, m_iScoreWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "kills", "#TF_ScoreBoard_Kills", SectionedListPanel::COLUMN_RIGHT, m_iKillsWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "deaths", "#TF_ScoreBoard_Deaths", SectionedListPanel::COLUMN_RIGHT, m_iDeathsWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "streak", "#TF_ScoreBoard_KillStreak", SectionedListPanel::COLUMN_RIGHT, m_iKillstreakWidth, 0 );
+	pPlayerList->AddColumnToSection( 0, "ping", "#TF_Scoreboard_Ping", SectionedListPanel::COLUMN_RIGHT, m_iPingWidth, 0 );
 }
 
 void CTFDeathMatchScoreBoardDialog::UpdatePlayerList()
