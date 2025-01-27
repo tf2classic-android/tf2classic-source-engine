@@ -566,6 +566,14 @@ void CTeamRoundTimer::OnDataChanged( DataUpdateType_t updateType )
 		CalculateOutputMessages();
 	}
 
+#ifdef TF_CLASSIC
+	// Fix for finished outputs not firing when time is reduced to 0.
+	if ( iSecondsToAdd < 0 && GetTimeRemaining() <= 0.0f )
+	{
+		m_bFireFinished = true;
+	}
+#endif
+
 	// if we were in state_setup and now we're in state_normal, play the bell sound
 	if ( ( m_nOldTimerState == RT_STATE_SETUP ) && ( m_nState == RT_STATE_NORMAL ) )
 	{
