@@ -54,7 +54,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-COptionsSubPlayerSettings::COptionsSubPlayerSettings(vgui::Panel *parent) : vgui::PropertyPage(parent, "OptionsSubPlayerSettings") 
+COptionsSubPlayerSettings::COptionsSubPlayerSettings(vgui::Panel *parent) : vgui::PropertyPage( parent, "OptionsSubPlayerSettings" ) 
 {
 	Button *ok = new Button( this, "OK", "#GameUI_OK" );
 	ok->SetCommand( "Ok" );
@@ -374,8 +374,10 @@ void COptionsSubPlayerSettings::OnApplyChanges()
 	}
 	engine->ClientCmd_Unrestricted( cmd );
 
-#if defined( GAME_TF2CLASSIC )
-	// HACK: Reload our avatar and player name
-	engine->ClientCmd_Unrestricted( "tf2c_mainmenu_reload\n" );
-#endif
+	const char *pGame = Q_UnqualifiedFileName( engine->GetGameDirectory() );
+	if ( !Q_stricmp( pGame, "tf2classic" ) )
+	{
+		// HACK: Reload our avatar and player name
+		engine->ClientCmd_Unrestricted( "tf2c_mainmenu_reload\n" );
+	}
 }
