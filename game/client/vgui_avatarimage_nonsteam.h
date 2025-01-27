@@ -114,7 +114,7 @@ public:
 	void SetDefaultImage( vgui::IImage *pImage ) { m_pDefaultImage = pImage; }
 
 	void UpdateFriendStatus() { IP_UNSUPPORTED }
-	void ClearAvatarSteamID() { IP_UNSUPPORTED }
+	void ClearAvatarSteamID() { SetAvatar( NULL ); }
 
 	void SetAvatar( vgui::IImage *pImage ) { m_pImage = pImage; }
 
