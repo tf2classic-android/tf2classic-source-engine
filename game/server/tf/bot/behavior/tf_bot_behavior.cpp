@@ -406,6 +406,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnContact( CTFBot *me, CBaseEntit
 		m_lastTouch = other;
 		m_lastTouchTime = gpGlobals->curtime;
 
+#if defined( TF_ENABLE_MVM )
 		// Mini-bosses destroy non-Sentrygun objects they bump into (ie: Dispensers)
 		if ( TFGameRules()->IsMannVsMachineMode() && me->IsMiniBoss() )
 		{
@@ -424,6 +425,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnContact( CTFBot *me, CBaseEntit
 				}
 			}
 		}
+#endif
 	}
 
 	return TryContinue();
