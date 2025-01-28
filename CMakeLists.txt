@@ -42,7 +42,7 @@ endif()
 
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
-set( CMAKE_CXX_VISIBILITY_PRESET default )
+set( CMAKE_CXX_VISIBILITY_PRESET hidden )
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 # This is a way to emulate groups.vgc
