@@ -1348,6 +1348,9 @@ bool CTFBot::ShouldGib( const CTakeDamageInfo &info )
 //-----------------------------------------------------------------------------------------------------
 bool CTFBot::IsAllowedToPickUpFlag( void )
 {
+	if( IsPlayerClass( TF_CLASS_ENGINEER ) )
+		return false;
+
 	if ( !BaseClass::IsAllowedToPickUpFlag() )
 	{
 		return false;
