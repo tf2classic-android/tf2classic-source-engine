@@ -1126,7 +1126,7 @@ target_link_libraries(
 	"$<${IS_WINDOWS}:dsound>"
 	"$<${IS_WINDOWS}:dxguid>"
 
-	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:openal>"
+	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>,$<NOT:${IS_DEDICATED}>>:openal>"
 	"$<$<AND:${IS_LINUX},$<NOT:${IS_ANDROID}>>:${CURL_LIBRARIES}>"
 	"$<${IS_ANDROID}:curl>"
 	"$<${IS_ANDROID}:crypto>"
