@@ -96,7 +96,8 @@ ActionResult< CTFBot >	CTFBotEngineerBuildTeleportEntrance::Update( CTFBot *me, 
 		if ( !near_exit_areas.IsEmpty() )
 		{
 			Vector goal = near_exit_areas.Random()->GetCenter();
-			m_path.Compute( me, goal, CTFBotPathCost( me, DEFAULT_ROUTE ) );
+			CTFBotPathCost cost( me, DEFAULT_ROUTE );
+			m_path.Compute( me, goal, cost );
 
 			if ( tf_bot_debug_teleporter.GetBool() )
 			{
