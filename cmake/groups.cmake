@@ -69,6 +69,9 @@ if( ${BUILD_GROUP} STREQUAL "game" )
 	include( "${SRCDIR}/vstdlib/vstdlib.cmake" )
 	include( "${SRCDIR}/vtf/vtf.cmake" )
 	include( "${SRCDIR}/utils/vtex/vtex_dll.cmake" )
+	if( NOT ${IS_ANDROID} )
+		include( "${SRCDIR}/utils/vtex/vtex_launcher.cmake" )
+	endif()
 	if( ${IS_WINDOWS} )
 		include( "${SRCDIR}/unicode/unicode.cmake" )
 	endif()
@@ -84,9 +87,9 @@ if( ${BUILD_GROUP} STREQUAL "game" )
 	if( ${IS_TOGLES} )
 		include( "${SRCDIR}/togles/togles.cmake" )
 	endif()
-	
+
 	#include( "${SRCDIR}/thirdparty/opus-1.4/opus.cmake" )
-	
+
 elseif( ${BUILD_GROUP} STREQUAL "dedicated" )
 
 	include( "${SRCDIR}/appframework/appframework.cmake" )

@@ -987,10 +987,6 @@ static void InitializeSrcTexture_PNG( IVTFTexture *pTexture, const char *pInputF
 	nWidth /= info.m_nReduceX;
 	nHeight /= info.m_nReduceY;
 
-	FILE *f = fopen("shit", "wb");
-	fwrite(pngBuffer.Base(), 1, 256*256*4, f);
-	fclose(f);
-
 	if (!pTexture->Init( nWidth, nHeight, nDepth, IMAGE_FORMAT_DEFAULT, info.m_nFlags, nFrameCount ))
 	{
 		Error( "Error initializing texture %s\n", pInputFileName );
@@ -2059,7 +2055,7 @@ static bool LoadConfigFile( const char *pFileBaseName, VTexConfigInfo_t &info, b
 
 	// Try TGA file with config
 	memcpy( pFileName + lenBaseName, ".tga", 4 );
-	if ( !bOK && ( 00 == access( pFileName, 00 ) ) ) // TGA file exists
+	if ( !bOK && ( access( pFileName, 00 ) == 0 ) ) // TGA file exists
 	{
 		g_eMode = eModeTGA;
 
@@ -2092,11 +2088,10 @@ static bool LoadConfigFile( const char *pFileBaseName, VTexConfigInfo_t &info, b
 			bOK = true;
 		}
 	}
-	memcpy( pFileName + lenBaseName, ".tga", 4 );
 
 	// PSD file attempt
 	memcpy( pFileName + lenBaseName, ".psd", 4 );
-	if ( !bOK && ( 00 == access( pFileName, 00 ) ) ) // If PSD mode was not disabled
+	if ( !bOK && ( access( pFileName, 00 ) == 0 ) ) // If PSD mode was not disabled
 	{
 		g_eMode = eModePSD;
 
@@ -2139,15 +2134,6 @@ static bool LoadConfigFile( const char *pFileBaseName, VTexConfigInfo_t &info, b
 		}
 	}
 
-	// PNG file attempt
-	memcpy( pFileName + lenBaseName, ".png", 4 );
-	if ( !bOK ) // If PNG mode was not disabled
-	{
-		g_eMode = eModePNG;
-		info.m_nFlags |= TEXTUREFLAGS_NOMIP;
-		bOK = true;
-	}
-
 	// Try TXT file as config again for TGA cubemap / PFM
 	memcpy( pFileName + lenBaseName, ".txt", 4 );
 	if ( !bOK )
@@ -2185,9 +2171,18 @@ static bool LoadConfigFile( const char *pFileBaseName, VTexConfigInfo_t &info, b
 		}
 	}
 
+	// PNG file attempt
+	memcpy( pFileName + lenBaseName, ".png", 4 );
+	if ( !bOK && ( access( pFileName, 00 ) == 0 ) ) // If PNG mode was not disabled
+	{
+		g_eMode = eModePNG;
+		info.m_nFlags |= TEXTUREFLAGS_NOMIP;
+		bOK = true;
+	}
+
 	if ( !bOK )
 	{
-		VTexError( "\"%s\" does not specify valid PSD or TGA or PFM+TXT files!\n");
+		VTexError( "\"%s\" does not specify valid PSD or TGA or PNG or PFM+TXT files!\n");
 		return false;
 	}
 
@@ -2688,7 +2683,7 @@ bool CSuggestGameDirHelper::MySuggestFn( CFSSteamSetupInfo const *pFsSteamSetupI
 
 int CVTex::VTex( int argc, char **argv )
 {
-//	CommandLine()->CreateCmdLine( argc, argv );
+	CommandLine()->CreateCmdLine( argc, argv );
 
 	if ( g_bUsedAsLaunchableDLL )
 	{

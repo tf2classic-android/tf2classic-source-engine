@@ -12,8 +12,8 @@
 
 int main( int argc, char **argv )
 {
-	const char *pModuleName = "vtex_dll.dll";
-	
+	const char *pModuleName = "vtex_dll" DLL_EXT_STRING;
+
 	CSysModule *pModule = Sys_LoadModule( pModuleName );
 	if ( !pModule )
 	{
