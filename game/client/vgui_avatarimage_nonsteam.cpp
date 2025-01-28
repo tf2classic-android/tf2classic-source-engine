@@ -107,8 +107,13 @@ void CAvatarImagePanel::SetPlayer( int entindex, EAvatarSize avatarSize )
 	if ( entindex == IP_LOCALPLAYER_IMAGE )
 	{
 		ConVarRef cl_avatarfile( "cl_avatarfile" );
-		m_pImage->SetAvatar( vgui::scheme()->GetImage( CFmtStr( "../../%s", cl_avatarfile.GetString() ), true ) ); // materials/vgui/../../materials/vgui/
+		if ( cl_avatarfile.IsValid() )
+		{
+			char szAvatarFile[MAX_PATH];
+			V_FileBase( cl_avatarfile.GetString(), szAvatarFile, sizeof( szAvatarFile ) );
 
+			m_pImage->SetAvatar( vgui::scheme()->GetImage( CFmtStr( "avatars/%s", szAvatarFile ), true ) );
+		}
 		return;
 	}
 
