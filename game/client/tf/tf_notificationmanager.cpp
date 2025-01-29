@@ -107,8 +107,8 @@ CON_COMMAND_F( tf2c_checkmessages, "Check for the messages", TF2C_CHECKCVARS_FLA
 	GetNotificationManager()->CheckVersionAndMessages();
 }
 
-ConVar tf2c_checkfrequency( "tf2c_checkfrequency", "900", TF2C_CHECKCVARS_FLAGS, "Messages check frequency (seconds)" );
-ConVar tf2c_updatefrequency( "tf2c_updatefrequency", "15", TF2C_CHECKCVARS_FLAGS, "Updatelist update frequency (seconds)" );
+ConVar tf2c_checkfrequency( "tf2c_checkfrequency", "1800", TF2C_CHECKCVARS_FLAGS, "Messages check frequency (seconds)" );
+//ConVar tf2c_updatefrequency( "tf2c_updatefrequency", "15", TF2C_CHECKCVARS_FLAGS, "Updatelist update frequency (seconds)" ); // seems unused
 ConVar tf2c_notification_useragent( "tf2c_notification_useragent", "Steam/3.0", TF2C_CHECKCVARS_FLAGS, "Set cURL user agent string" );
 ConVar tf2c_latest_notification( "tf2c_latest_notification", "0", FCVAR_ARCHIVE );
 
