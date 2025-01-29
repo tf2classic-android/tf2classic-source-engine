@@ -1326,9 +1326,9 @@ public:
 			return;
 		}
 
-		Vector vecColor = Vector( 1, 1, 1 );
+		Vector vecColor( 1, 1, 1 );
 
-		C_TFPlayer *pPlayer = ToTFPlayer( pEntity );;
+		C_TFPlayer *pPlayer = ToTFPlayer( pEntity );
 
 		if ( !pPlayer )
 		{
@@ -1369,10 +1369,7 @@ public:
 		{
 			if ( TFGameRules() && TFGameRules()->IsDeathmatch() )
 			{
-				Vector critColor = pPlayer->m_vecPlayerColor;
-				critColor *= 255;
-				critColor *= 0.30;
-				vecColor = critColor;
+				vecColor = pPlayer->m_vecPlayerColor * 75;
 			}
 			else if ( !pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) ||
 				!pPlayer->IsEnemyPlayer() ||
